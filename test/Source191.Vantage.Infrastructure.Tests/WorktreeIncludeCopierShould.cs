@@ -12,7 +12,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 public sealed class WorktreeIncludeCopierShould : IDisposable
 {
     private readonly string root = Path.Combine(Path.GetTempPath(), "vantage-include-" + Guid.NewGuid().ToString("N"));
-    private readonly GitCli git = new(new ProcessRunner(), "git");
+    private readonly GitCli git = new(new ProcessRunner(TimeSpan.FromMinutes(1)), "git");
 
     private string Repository => Path.Combine(root, "Northwind.Orders");
 
@@ -151,7 +151,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
 
     private async Task RunGitAsync(params string[] arguments)
     {
-        ProcessResult result = await new ProcessRunner().RunAsync(new ProcessRequest("git", arguments, new WorkingFolder.At(Repository)), TestContext.Current.CancellationToken);
+        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(new ProcessRequest("git", arguments, new WorkingFolder.At(Repository)), TestContext.Current.CancellationToken);
         result.ExitCode.ShouldBe(0, result.StandardError);
     }
 }

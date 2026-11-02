@@ -23,7 +23,7 @@ public sealed class PowerShellQuotingShould
         string script = $"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\nWrite-Output {PowerShellScript.Quote(Text)}";
         ProcessRequest request = new("pwsh.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(script)], WorkingFolder.Inherit);
 
-        ProcessResult result = await new ProcessRunner().RunAsync(request, TestContext.Current.CancellationToken);
+        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(request, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(0, result.StandardError);
         result.StandardError.ShouldBeEmpty("nothing in the text may run as a command");
@@ -38,7 +38,7 @@ public sealed class PowerShellQuotingShould
         string script = $"$errors = $null\n[void][System.Management.Automation.Language.Parser]::ParseInput({PowerShellScript.Quote(update)}, [ref]$null, [ref]$errors)\nWrite-Output $errors.Count";
         ProcessRequest request = new("pwsh.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(script)], WorkingFolder.Inherit);
 
-        ProcessResult result = await new ProcessRunner().RunAsync(request, TestContext.Current.CancellationToken);
+        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(request, TestContext.Current.CancellationToken);
 
         result.ExitCode.ShouldBe(0, result.StandardError);
         result.StandardOutput.Trim().ShouldBe("0");
