@@ -25,7 +25,8 @@ public sealed class ProblemReportsShould
     [Fact]
     public async Task BuildTheEnvironmentEventsCountsAndCrash()
     {
-        crashFile.Write("2026-10-28T09:00:00.000Z view Sessions\n2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException\n");
+        string crashLine = CrashLine.At(new DateTimeOffset(2026, 10, 28, 9, 0, 1, TimeSpan.Zero));
+        crashFile.Write($"2026-10-28T09:00:00.000Z view Sessions\n{crashLine}\n");
         log.Record(new ViewShown(ViewKind.Worktrees));
         counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(12));
         CurrentSettings settings = TestSettings.Current(@"C:\Users\me\source\repos", @"D:\work");
@@ -40,7 +41,7 @@ public sealed class ProblemReportsShould
             string.Empty,
             "Last crash",
             "2026-10-28T09:00:00.000Z view Sessions",
-            "2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException",
+            crashLine,
             string.Empty,
             "Recent events",
             "2026-10-29T12:00:00.000Z view Worktrees",

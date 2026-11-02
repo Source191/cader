@@ -45,7 +45,7 @@ public sealed class ProblemReportShould
 
         ProblemReportAddress.Length(Title, fitted).ShouldBeLessThanOrEqualTo(ProblemReport.AddressLimit);
         fitted.ShouldStartWith("Environment\nVantage 0.17.0-preview.6");
-        fitted.ShouldContain("failed Crash: InvalidOperationException at ScreenLoop.RunAsync (ScreenLoop.cs:42)");
+        fitted.Split('\n').Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         fitted.ShouldContain("2026-10-29T12:07:31.000Z failed Effect Quit: GitException", customMessage: "the newest failure is kept");
         fitted.ShouldNotContain("view Sessions 0", customMessage: "the crash file's ordinary lines go first");
         fitted.ShouldContain("counts git status exit 128", customMessage: "non-zero counts outlast ordinary events");

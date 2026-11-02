@@ -16,7 +16,6 @@ public sealed class ProblemReports(DiagnosticLog log, ProcessCounts counts, ICra
     private const int OrdinaryBand = 100_000;
     private const int ExitZeroBand = 200_000;
     private const int FailureBand = 300_000;
-    private const string CrashMarker = " failed Crash: ";
 
     /// <summary>The title a report takes when its title box is left blank.</summary>
     public ReportTitle DefaultTitle => ReportTitle.From(Wording.DefaultReportTitle(start.Vantage));
@@ -50,7 +49,7 @@ public sealed class ProblemReports(DiagnosticLog log, ProcessCounts counts, ICra
     }
 
     private static IEnumerable<ReportLine> CrashLines(string crash) => crash.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-        .Select((line, index) => new ReportLine(line, line.Contains(CrashMarker, StringComparison.Ordinal) ? ReportLine.Never : CrashBand + index));
+        .Select((line, index) => new ReportLine(line, DiagnosticLine.IsCrashLine(line) ? ReportLine.Never : CrashBand + index));
 
     private IEnumerable<ReportLine> EventLines() => log.Snapshot()
         .Select((timed, index) => new ReportLine(DiagnosticLine.Render(timed), (timed.Event is Failed or ProcessFailedToStart ? FailureBand : OrdinaryBand) + index));

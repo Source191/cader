@@ -9,6 +9,10 @@ namespace Source191.Vantage.Application.Diagnostics;
 /// </summary>
 public static class DiagnosticLine
 {
+    private const string FailedWord = "failed";
+
+    private static readonly string CrashMarker = $" {FailedWord} {FailureSite.Crash}";
+
     public static string Render(TimedEvent timed)
     {
         ArgumentNullException.ThrowIfNull(timed);
@@ -35,6 +39,21 @@ public static class DiagnosticLine
         return [.. Render(counts.Processes, at), .. refreshes, stalls];
     }
 
+    /// <summary>Whether a line is a crash: a failure at <see cref="FailureSite.Crash"/>, with or without a What after the site.</summary>
+    public static bool IsCrashLine(string line)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+        int start = line.IndexOf(CrashMarker, StringComparison.Ordinal);
+        if (start < 0)
+        {
+            return false;
+        }
+
+        int end = start + CrashMarker.Length;
+
+        return end == line.Length || line[end] is ':' or ' ';
+    }
+
     /// <summary>The start facts without the time, as a problem report's environment line shows them.</summary>
     public static string Environment(Started started)
     {
@@ -56,7 +75,7 @@ public static class DiagnosticLine
         UiThreadStalled stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}",
         ProcessTimedOut timedOut => $"timed out {timedOut.Command} after {Milliseconds(timedOut.Limit)}",
         ProcessFailedToStart failed => $"not started {failed.Command}: {failed.Failure}",
-        Failed failed => failed.What is null ? $"failed {failed.Site}: {failed.Failure}" : $"failed {failed.Site} {failed.What}: {failed.Failure}",
+        Failed failed => failed.What is null ? $"{FailedWord} {failed.Site}: {failed.Failure}" : $"{FailedWord} {failed.Site} {failed.What}: {failed.Failure}",
         TerminalGuiReported reported => reported.Failure is null ? $"terminal.gui {reported.Level}" : $"terminal.gui {reported.Level}: {reported.Failure}",
         _ => throw new UnreachableException(),
     };

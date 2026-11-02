@@ -4,6 +4,7 @@ using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Reporting;
 using Source191.Vantage.Application.Views;
+using Source191.Vantage.Core.Tests.Application.Reporting;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 using Source191.Vantage.TestDoubles;
@@ -21,7 +22,7 @@ public sealed class OpenProblemReportHandlerShould
     [Fact]
     public async Task OpenTheFittedAddressAndRemoveTheCrash()
     {
-        crashFile.Write("2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException\n");
+        crashFile.Write(CrashLine.At(new DateTimeOffset(2026, 10, 28, 9, 0, 1, TimeSpan.Zero)) + "\n");
         ProblemReport report = await Report();
 
         Outcome outcome = await new OpenProblemReportHandler(desktop, crashFile).HandleAsync(new OpenProblemReport(Title, report), CancellationToken.None);
@@ -44,7 +45,7 @@ public sealed class OpenProblemReportHandlerShould
     [Fact]
     public async Task LeaveTheCrashWhenTheBrowserFails()
     {
-        crashFile.Write("2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException\n");
+        crashFile.Write(CrashLine.At(new DateTimeOffset(2026, 10, 28, 9, 0, 1, TimeSpan.Zero)) + "\n");
         desktop.OpenFailure = new ProgramNotStartedException("No application is associated with the address.");
         ProblemReport report = await Report();
 
