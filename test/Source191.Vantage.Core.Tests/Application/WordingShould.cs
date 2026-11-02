@@ -639,7 +639,7 @@ public sealed class WordingShould
     [Fact]
     public void SayWhatToTypeWhenNothingIsTypedYet()
     {
-        Wording.NothingTypedYet("worktree folder", "Northwind.Orders-fix-123").ShouldBe("Nothing typed yet; the worktree folder is Northwind.Orders-fix-123.");
+        Wording.NothingTypedYet("Northwind.Orders-fix-123").ShouldBe("Nothing typed yet; the folder name is Northwind.Orders-fix-123.");
     }
 
     [Fact]
@@ -1035,5 +1035,25 @@ public sealed class WordingShould
     {
         Wording.Describe(ReportTitleProblem.TooLong).ShouldBe("A title can have at most 200 characters.");
         Wording.Describe(ReportTitleProblem.Missing).ShouldBe("Type a title.");
+    }
+
+    [Fact]
+    public void PreviewWhatTheWizardsNameBecomes()
+    {
+        FolderPath root = FolderPath.From(@"C:\Users\me\source\worktrees");
+
+        Wording.PreviewCurrentBranch("Northwind.Orders").ShouldBe("Runs in Northwind.Orders on its current branch; the name is only the session's label.");
+        Wording.PreviewNeedsRepository.ShouldBe("A worktree needs a repository; this folder is not one.");
+        Wording.PreviewBeforeAName("Northwind.Orders", root).ShouldBe(@"The name becomes the worktree folder Northwind.Orders-<name> under C:\Users\me\source\worktrees and its branch.");
+        Wording.PreviewWorktree("Northwind.Orders-fix-123-flaky-tests", root, BranchName.From("fix-123-flaky-tests"))
+            .ShouldBe(@"Worktree Northwind.Orders-fix-123-flaky-tests under C:\Users\me\source\worktrees, on branch fix-123-flaky-tests.");
+    }
+
+    [Fact]
+    public void TitleTheTrustAndUpdateTabs()
+    {
+        Wording.TrustTabTitle("Northwind.Orders").ShouldBe("Trust Northwind.Orders");
+        Wording.TrustTabMessage("Bob's tools").ShouldBe("Vantage: accept the trust prompt for Bob's tools, then exit Claude and press n in Vantage to retry.");
+        Wording.UpdateTabTitle.ShouldBe("Update Vantage");
     }
 }

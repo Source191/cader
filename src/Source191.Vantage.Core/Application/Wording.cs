@@ -36,8 +36,25 @@ public static partial class Wording
 
     public static string ForceRemoveWarning => "This deletes the folder below and everything in it that is not committed and pushed.\nTo confirm, give its name:";
 
-    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box; expectedKind names what must be typed.</summary>
-    public static string NothingTypedYet(string expectedKind, string expected) => $"Nothing typed yet; the {expectedKind} is {expected}.";
+    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the force-remove dialog asks for the worktree's folder name.</summary>
+    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the folder name is {expected}.";
+
+    /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
+    public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
+
+    public static string PreviewNeedsRepository => "A worktree needs a repository; this folder is not one.";
+
+    /// <summary>The wizard's preview for a worktree whose name has not yielded a folder yet.</summary>
+    public static string PreviewBeforeAName(string repositoryName, FolderPath worktreeRoot) => $"The name becomes the worktree folder {repositoryName}-<name> under {worktreeRoot} and its branch.";
+
+    public static string PreviewWorktree(string folderName, FolderPath worktreeRoot, BranchName branch) => $"Worktree {folderName} under {worktreeRoot}, on branch {branch}.";
+
+    /// <summary>The title of the tab that lets a person accept Claude Code's trust prompt for a folder.</summary>
+    public static string TrustTabTitle(string folderName) => $"Trust {folderName}";
+
+    public static string TrustTabMessage(string folderName) => $"Vantage: accept the trust prompt for {folderName}, then exit Claude and press n in Vantage to retry.";
+
+    public static string UpdateTabTitle => "Update Vantage";
 
     public static string NotTheSame(string typed) => $"Not the same: you typed {typed}.";
 

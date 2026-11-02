@@ -17,7 +17,7 @@ namespace Source191.Vantage.Tui;
 /// </summary>
 internal static class TypedConfirmationDialog
 {
-    public static TypedAnswer Show(IApplication app, DiagnosticLog log, DialogName name, string title, string message, string expected, string expectedKind)
+    public static TypedAnswer Show(IApplication app, DiagnosticLog log, DialogName name, string title, string message, string expected)
     {
         TypedAnswer confirmed = new TypedAnswer.Cancelled();
         using Dialog dialog = new() { Title = title, Width = 76, Height = 15 };
@@ -62,7 +62,7 @@ internal static class TypedConfirmationDialog
             }
 
             problem.Text = typed.Length == 0
-                ? Wording.NothingTypedYet(expectedKind, expected)
+                ? Wording.NothingTypedYet(expected)
                 : Wording.NotTheSame(typed);
         };
         dialog.KeyDown += (_, key) =>

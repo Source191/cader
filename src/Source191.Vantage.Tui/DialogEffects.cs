@@ -94,8 +94,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
             DialogName.ForceRemove,
             "Force remove",
             Wording.ForceRemoveWarning,
-            confirm.ConfirmationText,
-            "folder name");
+            confirm.ConfirmationText);
         ViewInput answered = answer switch
         {
             TypedAnswer.Typed typed => new ForceConfirmed(confirm.Row, confirm.ConfirmationText, typed.Text),

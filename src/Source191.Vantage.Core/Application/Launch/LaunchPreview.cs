@@ -12,21 +12,21 @@ public static class LaunchPreview
     {
         if (mode == LaunchMode.CurrentBranch)
         {
-            return $"Runs in {repository.Name} on its current branch; the name is only the session's label.";
+            return Wording.PreviewCurrentBranch(repository.Name);
         }
 
         if (!repository.IsRepository)
         {
-            return "A worktree needs a repository; this folder is not one.";
+            return Wording.PreviewNeedsRepository;
         }
 
         if (!WorktreeSlug.TryParse(nameText, out WorktreeSlug? slug))
         {
-            return $"The name becomes the worktree folder {repository.Name}-<name> under {worktreeRoot} and its branch.";
+            return Wording.PreviewBeforeAName(repository.Name, worktreeRoot);
         }
 
         PlannedWorktree worktree = PlannedWorktree.For(worktreeRoot, repository.Path, slug);
 
-        return $"Worktree {worktree.Path.Name} under {worktreeRoot}, on branch {worktree.Branch}.";
+        return Wording.PreviewWorktree(worktree.Path.Name, worktreeRoot, worktree.Branch);
     }
 }

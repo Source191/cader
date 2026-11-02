@@ -34,11 +34,11 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
     /// user text, so the whole message is one quoted value, never script source.
     /// </summary>
     public TabLaunch Trust(FolderPath directory) => new(
-        $"Trust {directory.Name}",
+        Wording.TrustTabTitle(directory.Name),
         TrustColour,
         directory,
         string.Join('\n',
-            $"Write-Host {PowerShellScript.Quote($"Vantage: accept the trust prompt for {directory.Name}, then exit Claude and press n in Vantage to retry.")} -ForegroundColor Cyan",
+            $"Write-Host {PowerShellScript.Quote(Wording.TrustTabMessage(directory.Name))} -ForegroundColor Cyan",
             PowerShellScript.Invoke(claudeExecutable, [])));
 
     /// <summary>
@@ -47,7 +47,7 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
     /// succeeded; otherwise dotnet's output stays on screen with a hint.
     /// </summary>
     public TabLaunch Update(int vantageProcessId, FolderPath startingDirectory) => new(
-        "Update Vantage",
+        Wording.UpdateTabTitle,
         ShellColour,
         startingDirectory,
         string.Join('\n',
