@@ -41,30 +41,26 @@ public abstract partial record CaptureMarker
         {
             StringBuilder plain = new();
             List<int> rawIndex = [];
-            int position = from;
-            foreach (Match sequence in EscapeSequence().Matches(capture, from))
+            int index = from;
+            while (index < capture.Length)
             {
-                Keep(capture, position, sequence.Index, plain, rawIndex);
-                position = sequence.Index + sequence.Length;
+                if (capture[index] == '\x1b')
+                {
+                    index = EscapeSequences.EndOf(capture, index);
+                    continue;
+                }
+
+                plain.Append(capture[index]);
+                rawIndex.Add(index);
+                index++;
             }
 
-            Keep(capture, position, capture.Length, plain, rawIndex);
             int found = plain.ToString().IndexOf(Text, StringComparison.Ordinal);
 
             return found < 0 ? null : rawIndex[found + Text.Length - 1] + 1;
         }
 
         public override string ToString() => $"the text \"{Text}\"";
-
-        /// <summary>Copies the visible characters between two raw positions, remembering where each one came from.</summary>
-        private static void Keep(string capture, int start, int end, StringBuilder plain, List<int> rawIndex)
-        {
-            for (int index = start; index < end; index++)
-            {
-                plain.Append(capture[index]);
-                rawIndex.Add(index);
-            }
-        }
     }
 
     private sealed record NothingAtAll : CaptureMarker
@@ -76,7 +72,4 @@ public abstract partial record CaptureMarker
 
     [GeneratedRegex(@"\x1b\][02];(?<title>[^\x07\x1b]*)(\x07|\x1b\\)")]
     private static partial Regex TitleSequence();
-
-    [GeneratedRegex(@"\x1b\[[0-9;?<>=]*[A-Za-z_@`]|\x1b[\]P][^\x07\x1b]*(\x07|\x1b\\)")]
-    private static partial Regex EscapeSequence();
 }
