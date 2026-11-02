@@ -8,7 +8,6 @@ using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
-using Alignment = Terminal.Gui.ViewBase.Alignment;
 using GuiKey = Terminal.Gui.Input.Key;
 
 namespace Source191.Vantage.Tui;
@@ -478,21 +477,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         {
             ColumnStyle style = table.Style.GetOrCreateColumnStyle(column);
             style.ColorGetter = CellColour;
-            switch (definition.Columns[column].Fit)
-            {
-                case ColumnFit.Capped capped:
-                    style.MaxWidth = capped.Cells;
-                    style.TruncationIndicator = "…";
-                    break;
-                case ColumnFit.RightAligned:
-                    style.Alignment = Alignment.End;
-                    break;
-                case ColumnFit.Natural:
-                case ColumnFit.Elastic:
-                    break;
-                default:
-                    throw new UnreachableException();
-            }
+            ColumnFits.Apply(style, definition.Columns[column].Fit);
         }
     }
 
