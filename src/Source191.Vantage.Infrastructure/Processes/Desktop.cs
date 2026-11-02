@@ -24,7 +24,7 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
         string executable = powerShell switch
         {
             ProgramLocation.Found found => found.Path,
-            ProgramLocation.Missing => throw new InvalidOperationException("PowerShell 7 (pwsh.exe) was not found on the PATH, so nothing can be opened."),
+            ProgramLocation.Missing => throw new ProgramNotStartedException("PowerShell 7 (pwsh.exe) was not found on the PATH, so nothing can be opened."),
             _ => throw new UnreachableException(),
         };
 
@@ -39,7 +39,7 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
         if (result.ExitCode != 0)
         {
             string reason = result.StandardError.Trim();
-            throw new InvalidOperationException(reason.Length > 0 ? reason : $"PowerShell stopped with exit code {result.ExitCode} before Windows opened it.");
+            throw new ProgramNotStartedException(reason.Length > 0 ? reason : $"PowerShell stopped with exit code {result.ExitCode} before Windows opened it.");
         }
     }
 

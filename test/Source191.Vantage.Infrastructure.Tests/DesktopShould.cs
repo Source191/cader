@@ -107,7 +107,7 @@ public sealed class DesktopShould : IDisposable
     {
         string gone = Path.Combine(folder, "Northwind.Orders.txt");
 
-        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).OpenAsync(gone, TestContext.Current.CancellationToken));
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).OpenAsync(gone, TestContext.Current.CancellationToken));
 
         failure.Message.ShouldNotBeNullOrWhiteSpace();
     }
@@ -150,7 +150,7 @@ public sealed class DesktopShould : IDisposable
     {
         FakeProcessRunner processes = new();
 
-        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(processes, new ProgramLocation.Missing()).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Missing()).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
 
         failure.Message.ShouldBe("PowerShell 7 (pwsh.exe) was not found on the PATH, so nothing can be opened.");
         processes.CapturedRequests.ShouldBeEmpty();
@@ -161,7 +161,7 @@ public sealed class DesktopShould : IDisposable
     {
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(1, string.Empty, "Cannot find the file.\r\n"));
 
-        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
 
         failure.Message.ShouldBe("Cannot find the file.");
     }
@@ -171,7 +171,7 @@ public sealed class DesktopShould : IDisposable
     {
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(5, string.Empty, string.Empty));
 
-        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).OpenAsync(@"C:\Users\me\Northwind.Orders.txt", TestContext.Current.CancellationToken));
 
         failure.Message.ShouldContain("5");
     }

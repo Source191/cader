@@ -25,9 +25,9 @@ public sealed class OpenProblemReportHandler(IDesktop desktop, ICrashFile crashF
         {
             await desktop.OpenAsync(ProblemReportAddress.For(effect.Title, fitted).AbsoluteUri, cancellationToken);
         }
-        catch (InvalidOperationException failure)
+        catch (ProgramNotStartedException failure)
         {
-            return new ProblemReportOutcome.NotOpened(failure.Message);
+            return new ProblemReportOutcome.NotOpened(failure.Reason);
         }
 
         if (effect.Report.HasCrash)
