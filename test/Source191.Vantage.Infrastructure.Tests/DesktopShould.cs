@@ -33,7 +33,7 @@ public sealed class DesktopShould : IDisposable
         string report = Path.Combine(folder, "environment.txt");
         string script = $"Start-Sleep -Milliseconds 1500; Get-ChildItem env: | ForEach-Object Name | Set-Content '{report}'";
 
-        await new Desktop(new ProcessRunner(ProcessRunner.DefaultLimit), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest("pwsh", ["-NoProfile", "-Command", script], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
+        await new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest("pwsh", ["-NoProfile", "-Command", script], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
 
         File.Exists(report).ShouldBeFalse("the call returned before the child had finished");
         await WaitForAsync(report);
@@ -49,7 +49,7 @@ public sealed class DesktopShould : IDisposable
         string notAProgram = Path.Combine(folder, "Northwind.notes.txt");
         await File.WriteAllTextAsync(notAProgram, "not a program", TestContext.Current.CancellationToken);
 
-        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(new ProcessRunner(ProcessRunner.DefaultLimit), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(notAProgram, [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(notAProgram, [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
 
         failure.Reason.ShouldNotBeNullOrWhiteSpace();
         failure.Reason.ShouldNotContain(notAProgram, Case.Insensitive, "Windows' reason, not .NET's sentence naming the file");
@@ -67,7 +67,7 @@ public sealed class DesktopShould : IDisposable
         // The report is renamed into place once set has finished writing it, so a reader never sees half of it.
         await File.WriteAllTextAsync(file, $"@set > \"{report}.tmp\"\r\n@ren \"{report}.tmp\" \"{Path.GetFileName(report)}\"", TestContext.Current.CancellationToken);
 
-        await new Desktop(new ProcessRunner(ProcessRunner.DefaultLimit), new ProgramLocation.Found(Pwsh)).OpenAsync(file, TestContext.Current.CancellationToken);
+        await new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).OpenAsync(file, TestContext.Current.CancellationToken);
 
         await WaitForAsync(report);
         string[] lines = await File.ReadAllLinesAsync(report, TestContext.Current.CancellationToken);
@@ -95,7 +95,7 @@ public sealed class DesktopShould : IDisposable
         using CancellationTokenSource limit = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         limit.CancelAfter(TimeSpan.FromSeconds(30));
 
-        await new Desktop(new ProcessRunner(ProcessRunner.DefaultLimit), new ProgramLocation.Found(Pwsh)).OpenAsync(file, limit.Token);
+        await new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).OpenAsync(file, limit.Token);
 
         File.Exists(report).ShouldBeFalse("the opened program finished before it was released");
         await File.WriteAllTextAsync(release, "go", TestContext.Current.CancellationToken);
@@ -107,7 +107,7 @@ public sealed class DesktopShould : IDisposable
     {
         string gone = Path.Combine(folder, "Northwind.Orders.txt");
 
-        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(new ProcessRunner(ProcessRunner.DefaultLimit), new ProgramLocation.Found(Pwsh)).OpenAsync(gone, TestContext.Current.CancellationToken));
+        InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).OpenAsync(gone, TestContext.Current.CancellationToken));
 
         failure.Message.ShouldNotBeNullOrWhiteSpace();
     }

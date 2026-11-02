@@ -11,9 +11,6 @@ namespace Source191.Vantage.Adapters.Processes;
 /// </summary>
 public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
 {
-    /// <summary>How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.</summary>
-    public static readonly TimeSpan DefaultLimit = TimeSpan.FromSeconds(60);
-
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         using Process process = new();

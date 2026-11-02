@@ -122,7 +122,7 @@ public sealed class FolderDeletionShould : IDisposable
     {
         Directory.CreateDirectory(Path.GetDirectoryName(link)!);
         ProcessRequest request = new("cmd.exe", ["/c", "mklink", "/J", link, target], WorkingFolder.Inherit);
-        ProcessResult result = await new ProcessRunner(ProcessRunner.DefaultLimit).RunAsync(request, TestContext.Current.CancellationToken);
+        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(request, TestContext.Current.CancellationToken);
         result.ExitCode.ShouldBe(0, result.StandardError);
         junctions.Add(link);
     }

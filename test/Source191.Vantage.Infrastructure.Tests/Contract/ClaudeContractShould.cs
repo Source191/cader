@@ -24,7 +24,7 @@ public sealed class ClaudeContractShould
     /// <summary>The fields an idle background row carries and the listing's parser reads.</summary>
     private static readonly string[] FieldsVantageReads = ["pid", "id", "cwd", "kind", "startedAt", "sessionId", "name", "status"];
 
-    private readonly ProcessRunner runner = new(ProcessRunner.DefaultLimit);
+    private readonly ProcessRunner runner = new(TimeSpan.FromMinutes(1));
 
     private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
 

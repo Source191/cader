@@ -42,7 +42,9 @@ internal sealed record SharedParts(
         DiagnosticLog log = new(TimeProvider.System, logSetting is DiagnosticLogSetting.File logFile ? [new DiagnosticFile(logFile.Path)] : []);
         ProcessCounts processCounts = new();
         PerformanceCounts counts = new(processCounts, new RefreshCounts(TimeProvider.System, log), new StallCounts());
-        RecordedProcessRunner processes = new(new ProcessRunner(ProcessRunner.DefaultLimit), log, processCounts, TimeProvider.System);
+        // How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.
+        TimeSpan captureLimit = TimeSpan.FromSeconds(60);
+        RecordedProcessRunner processes = new(new ProcessRunner(captureLimit), log, processCounts, TimeProvider.System);
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
