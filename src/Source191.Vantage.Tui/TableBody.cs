@@ -1,11 +1,9 @@
 using Source191.Vantage.Application;
-using Source191.Vantage.Application.Detail;
 using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Views;
 using System.Diagnostics;
 using Terminal.Gui.App;
-using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using GuiKey = Terminal.Gui.Input.Key;
@@ -13,20 +11,16 @@ using GuiKey = Terminal.Gui.Input.Key;
 namespace Source191.Vantage.Tui;
 
 /// <summary>
-/// One tab of the console: a view's rows in a table with its waiting indicator (its title goes on the frame), the detail pane under
-/// the table when the view has one (read for the selected row off the UI thread, only while the tab is shown), the reducer it
+/// One tab of the console: a view's rows in a table with its waiting indicator (its title goes on the frame), the reducer it
 /// feeds keys to, and the effects it routes (a dialog to <see cref="DialogEffects"/>, a background effect to its handler
-/// through the <see cref="EffectDispatcher"/>, a tab switch or an exit to the console). Its message and whether an action
+/// through the <see cref="EffectDispatcher"/>, a tab switch or an exit to the console). It keeps the state and the loads. The
+/// column styles and widths are <see cref="ColumnSizing{TRow}"/>'s, the header and row tooltips <see cref="TableToolTips{TRow}"/>'s
+/// and the detail pane under the table <see cref="DetailReader{TRow}"/>'s. Its message and whether an action
 /// is running go to the console's status line, outside the tab. A definition supplies everything specific to the view.
 /// </summary>
 internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDisposable
     where TState : IListViewState<TRow>
 {
-    private const int ElasticFloor = 20;
-
-    /// <summary>The table's header: the overline, the names and the line under them.</summary>
-    private const int HeaderRows = 3;
-
     private readonly IScreenDefinition<TState, TRow> definition;
     private readonly DialogEffects dialogs;
     private readonly EffectDispatcher dispatcher;
@@ -37,26 +31,9 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     private readonly ITabHost host;
     private readonly TableView table;
     private readonly WaitingIndicator waiting;
-    private readonly string[] columnNames;
-    private readonly int elasticColumn;
-    private readonly DetailPart detailPart;
-    private readonly CancellationTokenSource lifetime = new();
+    private readonly ColumnSizing<TRow> sizing;
+    private readonly DetailReader<TRow> detail;
     private readonly LoadSequence sequence = new();
-
-    /// <summary>What <see cref="detailKey"/> holds when the next redraw must ask for the selected row's detail again; no row's key equals it.</summary>
-    private readonly object askAgain = new();
-
-    /// <summary>
-    /// What a tooltip hangs from: Terminal.Gui draws a tooltip under its target's frame, and under the whole table that is
-    /// the detail pane, so the target is this view, as wide as nothing, laid over the header or the row under the pointer.
-    /// </summary>
-    private readonly View toolTipAnchor = new() { X = 0, Y = 0, Width = 0, Height = HeaderRows, CanFocus = false };
-
-    /// <summary>The key of the row whose detail was last asked for, or <see cref="askAgain"/>.</summary>
-    private object detailKey;
-    private TRow? selected;
-    private PointerOver pointer = new PointerOver.Nothing();
-    private int columnOffset;
     private bool isShown;
     private int inFlight;
 
@@ -71,9 +48,6 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         this.app = app;
         this.host = host;
         State = initial;
-        columnNames = [.. definition.Columns.Select(column => column.Help.Name)];
-        elasticColumn = IndexOfElastic(definition.Columns);
-        detailKey = askAgain;
 
         // The tab's title is the view's Title; it can take focus because Tabs shows whichever tab has it.
         View = new View { Title = Wording.TabTitleFor(definition.Tab), Width = Dim.Fill(), Height = Dim.Fill(), CanFocus = true };
@@ -95,21 +69,18 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         table.Style.HeaderScheme = Palette.Plain(Palette.White);
         table.Style.ExpandLastColumn = true;
         table.SetScheme(Palette.Plain(Palette.Grey));
-        table.Style.RowColorGetter = RowColour;
-        StyleColumns();
+        sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, app);
+        TableToolTips<TRow> toolTips = new(table, app, [.. definition.Columns.Select(column => column.Help)], definition.RowTip);
+        detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, host);
 
         // In the middle of the table, whatever the pane under it takes, so the spinner never lands in the pane.
         waiting = new WaitingIndicator(definition.WaitingText) { Y = Pos.Func(_ => table.Frame.Y + (table.Frame.Height / 2), table) };
 
-        View.Add(table, waiting, toolTipAnchor);
-        detailPart = definition.Detail switch
+        View.Add(table, waiting, toolTips.Anchor);
+        foreach (View part in detail.Views)
         {
-            TableDetail<TRow>.Pane pane => AddPane(pane.Source),
-            TableDetail<TRow>.None => new DetailPart.NoPane(),
-            _ => throw new UnreachableException(),
-        };
-
-        ShowColumnToolTips();
+            View.Add(part);
+        }
     }
 
     public View View { get; }
@@ -142,8 +113,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     /// <summary>Drops the detail still being read, then disposes the tab's view and everything in it; the console removes it from the window first, so nothing is disposed twice.</summary>
     public void Dispose()
     {
-        lifetime.Cancel();
-        lifetime.Dispose();
+        detail.Release();
         View.Dispose();
     }
 
@@ -161,9 +131,9 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
                     return;
                 }
 
-                object before = detailKey;
+                object before = detail.Current;
                 Apply(input);
-                if (Equals(detailKey, before))
+                if (Equals(detail.Current, before))
                 {
                     AskForDetail(refreshed: true);
                 }
@@ -181,7 +151,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         key.Handled = true;
         if (!State.List.FilterEditing && ScrollKeys.TryFor(mapped, out int step))
         {
-            Scroll(step);
+            sizing.Scroll(step);
             return;
         }
 
@@ -235,7 +205,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         isShown = shown;
         if (shown)
         {
-            detailKey = askAgain;
+            detail.AskAgain();
         }
 
         Redraw();
@@ -245,10 +215,10 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     {
         DateTimeOffset now = clock.GetUtcNow();
         IReadOnlyList<TRow> rows = State.List.Visible;
-        selected = State.List.Selected;
-        int elasticWidth = ElasticWidth(rows, now);
-        table.Table = new TableSource<TRow>(rows, columnNames, (row, column) => definition.Columns[column].Cell(row, now, column == elasticColumn ? elasticWidth : int.MaxValue));
-        table.ColumnOffset = columnOffset;
+        TRow? selected = State.List.Selected;
+        sizing.Selected(selected);
+        table.Table = sizing.Source(rows, now);
+        sizing.RestoreOffset();
         if (rows.Count > 0)
         {
             int index = selected is null ? 0 : Math.Max(rows.ToList().IndexOf(selected), 0);
@@ -261,87 +231,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         host.FrameChanged();
     }
 
-
-    /// <summary>Builds the pane under the table and its requests; the pane closes the tab, since the status line is the console's.</summary>
-    private DetailPart.Pane AddPane(IDetailSource<TRow> source)
-    {
-        DetailPane pane = new(source.Rows);
-        pane.Y = Pos.AnchorEnd(pane.Rows);
-        table.Height = Dim.Fill(pane.Rows);
-        View.Add(pane);
-
-        return new DetailPart.Pane(source, new DetailRequests(), pane);
-    }
-
-    /// <summary>
-    /// Asks for the selected row's detail while the tab is shown (a hidden tab draws nothing of its own, or it lands on top
-    /// of the shown one): when the selection moved, or for every refresh; an empty table empties the pane.
-    /// </summary>
-    private void AskForDetail(bool refreshed)
-    {
-        if (detailPart is not DetailPart.Pane part || !isShown)
-        {
-            return;
-        }
-
-        if (State.List.Selected is not TRow row)
-        {
-            part.Requests.Cleared();
-            detailKey = askAgain;
-            part.View.Show(DetailContent.Empty);
-            return;
-        }
-
-        object key = part.Source.KeyOf(row);
-        if (!refreshed && Equals(key, detailKey))
-        {
-            return;
-        }
-
-        detailKey = key;
-        ReadDetail(part, row, part.Requests.Ask(key));
-    }
-
-    /// <summary>Reads one request's detail off the UI thread and shows it there, unless a newer answer or another row came first.</summary>
-    private void ReadDetail(DetailPart.Pane part, TRow row, DetailRequest request)
-    {
-        CancellationToken token = lifetime.Token;
-        Task.Run(async () =>
-        {
-            DetailAnswer read = await Attempt.RunAsync<DetailAnswer>(Diagnostics, FailureSite.Load, CodeName.For(typeof(DetailContent)), () => ReadAsync(part.Source, row, token), _ => new DetailAnswer.Dropped());
-            if (read is not DetailAnswer.Show { Content: DetailContent content } || token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            app.Invoke(() => ShowDetail(part, request, content));
-        }, token);
-    }
-
-    /// <summary>The row's detail as read, or dropped when the tab was disposed while it was being read.</summary>
-    private static async Task<DetailAnswer> ReadAsync(IDetailSource<TRow> source, TRow row, CancellationToken token)
-    {
-        try
-        {
-            return new DetailAnswer.Show(await source.ReadAsync(row, token));
-        }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
-        {
-            return new DetailAnswer.Dropped();
-        }
-    }
-
-    private void ShowDetail(DetailPart.Pane part, DetailRequest request, DetailContent content)
-    {
-        if (lifetime.IsCancellationRequested || part.Requests.Accept(request, content) is not DetailAnswer.Show shown)
-        {
-            return;
-        }
-
-        part.View.Show(shown.Content);
-        View.SetNeedsDraw();
-        host.FrameChanged();
-    }
+    private void AskForDetail(bool refreshed) => detail.AskFor(State.List.Selected, isShown, refreshed);
 
     private void Apply(ViewInput input)
     {
@@ -388,195 +278,5 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
             default:
                 throw new UnreachableException();
         }
-    }
-
-    private void Scroll(int step)
-    {
-        // Kept here as well as on the table, because every redraw replaces the table's source, which resets its offset.
-        columnOffset = Math.Clamp(columnOffset + step, 0, columnNames.Length - 1);
-        table.ColumnOffset = columnOffset;
-        table.SetNeedsDraw();
-    }
-
-    /// <summary>Shows a column's meaning as a tooltip while the mouse rests on the column's header.</summary>
-    private void ShowColumnToolTips()
-    {
-        table.MousePositionTracking = true;
-        table.MouseEvent += (_, mouse) => ShowColumnToolTip(mouse);
-        table.MouseLeave += (_, _) => HideColumnToolTip();
-    }
-
-    private void HideColumnToolTip()
-    {
-        if (pointer is not PointerOver.Nothing)
-        {
-            app.ToolTips?.Hide();
-        }
-
-        pointer = new PointerOver.Nothing();
-    }
-
-    /// <summary>A column's meaning while the pointer rests on its header; a row's tip, when the view gives one, while it rests on the row.</summary>
-    private void ShowColumnToolTip(Terminal.Gui.Input.Mouse mouse)
-    {
-        PointerOver over = mouse.Position is System.Drawing.Point position ? PointerAt(position) : new PointerOver.Nothing();
-        if (over == pointer)
-        {
-            return;
-        }
-
-        HideColumnToolTip();
-        pointer = over;
-        int x = table.Frame.X + (mouse.Position?.X ?? 0);
-        if (over is PointerOver.Header header && header.Column < definition.Columns.Count)
-        {
-            ColumnHelp help = definition.Columns[header.Column].Help;
-            ShowToolTip(x, table.Frame.Y, HeaderRows, $"{help.Name}: {help.Meaning}");
-            return;
-        }
-
-        if (over is PointerOver.Row row && table.Table is TableSource<TRow> source && row.Index < source.Rows && definition.RowTip(source.RowAt(row.Index)) is { Length: > 0 } tip)
-        {
-            ShowToolTip(x, table.Frame.Y + (mouse.Position?.Y ?? 0), 1, tip);
-        }
-    }
-
-    /// <summary>What the pointer is over, from Terminal.Gui's answer: a header's column, else the row of the cell under it, else nothing.</summary>
-    private PointerOver PointerAt(System.Drawing.Point position)
-    {
-        System.Drawing.Point? cell = table.ScreenToCell(position, out int? header);
-
-        return (header, cell) switch
-        {
-            (int column, _) => new PointerOver.Header(column),
-            (null, System.Drawing.Point { Y: int index }) => new PointerOver.Row(index),
-            _ => new PointerOver.Nothing(),
-        };
-    }
-
-    /// <summary>Lays the anchor over the header or the row at the pointer and shows the tooltip on the row under it.</summary>
-    private void ShowToolTip(int x, int y, int height, string text)
-    {
-        toolTipAnchor.X = x;
-        toolTipAnchor.Y = y;
-        toolTipAnchor.Height = height;
-        View.Layout();
-        app.ToolTips?.ShowFor(toolTipAnchor, new ToolTipProvider(() => ToolTips.View(text)));
-    }
-
-    /// <summary>
-    /// Each column is styled from its own fit: a capped one is cut at its cells with an ellipsis, so one long value cannot push the other
-    /// columns off screen (rows keep the full values), and a right-aligned one ends flush right. Every column asks the definition for a cell's own paint.
-    /// </summary>
-    private void StyleColumns()
-    {
-        for (int column = 0; column < columnNames.Length; column++)
-        {
-            ColumnStyle style = table.Style.GetOrCreateColumnStyle(column);
-            style.ColorGetter = CellColour;
-            ColumnFits.Apply(style, definition.Columns[column].Fit);
-        }
-    }
-
-    /// <summary>The one column whose fit is elastic; every view has exactly one, which its definition's fact keeps.</summary>
-    private static int IndexOfElastic(IReadOnlyList<TableColumn<TRow>> columns)
-    {
-        for (int column = 0; column < columns.Count; column++)
-        {
-            if (columns[column].Fit is ColumnFit.Elastic)
-            {
-                return column;
-            }
-        }
-
-        throw new InvalidOperationException("A table view needs one elastic column.");
-    }
-    /// <summary>
-    /// The cells the elastic column may have: the table's content width minus the other columns' widest visible cells (capped as the
-    /// styles cap them) and a separator per column, never below the floor. The elastic column's style is held to it, both ways.
-    /// </summary>
-    private int ElasticWidth(IReadOnlyList<TRow> rows, DateTimeOffset now)
-    {
-        int contentWidth = table.Viewport.Width > 0 ? table.Viewport.Width : app.Screen.Width - 2;
-        int others = 0;
-        for (int column = 0; column < columnNames.Length; column++)
-        {
-            if (column != elasticColumn)
-            {
-                others += WidestCell(rows, column, now);
-            }
-        }
-
-        // The table sizes a column to its content, so the minimum is what makes the elastic column take the spare width.
-        int width = Math.Max(contentWidth - others - columnNames.Length - 1, ElasticFloor);
-        ColumnStyle style = table.Style.GetOrCreateColumnStyle(elasticColumn);
-        style.MaxWidth = width;
-        style.MinWidth = width;
-
-        return width;
-    }
-
-    private int WidestCell(IReadOnlyList<TRow> rows, int column, DateTimeOffset now)
-    {
-        int widest = Math.Max(columnNames[column].Length, rows.Count == 0 ? 0 : rows.Max(row => definition.Columns[column].Cell(row, now, int.MaxValue).Length));
-        ColumnStyle? style = table.Style.GetColumnStyleIfAny(column);
-
-        return style?.MaxWidth is int cap ? Math.Min(widest, cap) : widest;
-    }
-
-    /// <summary>A cell's own paint, from the definition: a fill (the TAB swatch) shows on every row, the selected one included; a foreground colour only off the selected row, which keeps its highlight.</summary>
-    private Scheme? CellColour(CellColorGetterArgs args)
-    {
-        if (args.Table is not TableSource<TRow> source)
-        {
-            return null;
-        }
-
-        TRow row = source.RowAt(args.RowIndex);
-        bool onSelected = Equals(row, selected);
-
-        // Null is Terminal.Gui's "the row's own scheme applies".
-        return definition.Columns[args.ColIdex].Paint(row) switch
-        {
-            CellPaint.Fill fill when onSelected => Palette.SelectedRow(fill.Foreground),
-            CellPaint.Fill fill => Palette.Plain(fill.Foreground),
-            CellPaint.Text when onSelected => null,
-            CellPaint.Text text => Palette.Plain(text.Foreground),
-            CellPaint.None => null,
-            _ => throw new UnreachableException(),
-        };
-    }
-
-    private Scheme? RowColour(RowColorGetterArgs args)
-    {
-        if (args.Table is not TableSource<TRow> source)
-        {
-            return null;
-        }
-
-        TRow row = source.RowAt(args.RowIndex);
-
-        return Equals(row, selected)
-            ? Palette.SelectedRow()
-            : Palette.Plain(definition.RowColour(row));
-    }
-
-    /// <summary>What the pointer rests on, so a tooltip is shown once per header or row it enters.</summary>
-    private abstract record PointerOver
-    {
-        public sealed record Nothing : PointerOver;
-
-        public sealed record Header(int Column) : PointerOver;
-
-        public sealed record Row(int Index) : PointerOver;
-    }
-
-    /// <summary>The tab's detail pane as the tab holds it: none, or the pane with its source and the order of its requests.</summary>
-    private abstract record DetailPart
-    {
-        /// <summary>No pane: nothing is added under the table, which fills the tab.</summary>
-        public sealed record NoPane : DetailPart;
-
-        public sealed record Pane(IDetailSource<TRow> Source, DetailRequests Requests, DetailPane View) : DetailPart;
     }
 }
