@@ -41,7 +41,7 @@ public sealed class TabScriptsShould
 
         tab.Title.ShouldBe("Trust Northwind.Orders");
         tab.StartingDirectory.ShouldBe(Repository);
-        tab.Colour.ShouldBe(TabPalette.Default[2]);
+        tab.Colour.ShouldBe(TabPalette.Green);
         tab.Script.ShouldContain($"& '{Claude}'");
         tab.Script.ShouldContain("accept the trust prompt");
     }
@@ -53,7 +53,7 @@ public sealed class TabScriptsShould
 
         TabLaunch tab = TabScripts.Shell(worktree);
 
-        tab.ShouldBe(new TabLaunch("Northwind.Orders-fix-123", TabPalette.Default[^1], worktree, "Clear-Host"));
+        tab.ShouldBe(new TabLaunch("Northwind.Orders-fix-123", TabPalette.Last, worktree, "Clear-Host"));
     }
 
     [Fact]

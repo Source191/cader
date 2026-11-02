@@ -58,12 +58,12 @@ internal static class ProblemReportDialog
 
         title.TextChanging += (_, changing) => Apply(new ProblemReportInput.TitleChanged(changing.Result ?? string.Empty));
         // Enter in the title box opens the report, as the default button would.
-        title.Accepting += (_, accepting) => accepting.Handled = WizardControls.Handled(() => Apply(new ProblemReportInput.Open()));
-        Button open = WizardControls.Button(Wording.ProblemReportButtons[0], () => Apply(new ProblemReportInput.Open()));
+        title.Accepting += (_, accepting) => accepting.Handled = DialogButtons.Handled(() => Apply(new ProblemReportInput.Open()));
+        Button open = DialogButtons.Button(Wording.ProblemReportButtons[0], () => Apply(new ProblemReportInput.Open()));
         open.IsDefault = true;
         dialog.AddButton(open);
-        dialog.AddButton(WizardControls.Button(Wording.ProblemReportButtons[1], () => Apply(new ProblemReportInput.Copy())));
-        dialog.AddButton(WizardControls.Button(Wording.ProblemReportButtons[2], () => Apply(new ProblemReportInput.Cancel())));
+        dialog.AddButton(DialogButtons.Button(Wording.ProblemReportButtons[1], () => Apply(new ProblemReportInput.Copy())));
+        dialog.AddButton(DialogButtons.Button(Wording.ProblemReportButtons[2], () => Apply(new ProblemReportInput.Cancel())));
         dialog.Initialized += (_, _) => title.SetFocus();
 
         app.Run(dialog);

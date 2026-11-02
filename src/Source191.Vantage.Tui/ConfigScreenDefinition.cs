@@ -16,7 +16,6 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
     /// <summary>What the setting does or the setup is for, shown only as the row's tooltip.</summary>
     public string RowTip(ConfigRow row) => Wording.ConfigDescription(row);
 
-
     public string WaitingText => Wording.WaitingText(ConsoleTab.Config);
 
     public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Config);
@@ -37,7 +36,7 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
 
     public IReadOnlyList<TextPart> Counts(ConfigViewState state) => Wording.ConfigCounts(state.List.Rows);
 
-    public KeyBar Bar(ConfigViewState state, bool updateKnown) => Wording.ConfigBar(state, updateKnown);
+    public KeyBar Bar(ConfigViewState state, bool updateKnown) => Wording.ConfigBar(updateKnown);
 
     public ConfigViewState WithMessage(ConfigViewState state, StatusMessage message) => state with { Message = message };
 

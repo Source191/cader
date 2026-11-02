@@ -96,6 +96,19 @@ public sealed class AzureDevOpsPullRequestsShould
     }
 
     [Fact]
+    public async Task SkipARowMissingAProperty()
+    {
+        processes.AnswerAll(new ProcessResult(0, """
+            [{"creationDate":"2026-10-20T09:12:00+00:00","isDraft":false,"pullRequestId":4521,"sourceRefName":"refs/heads/fix-123"},
+             {"creationDate":"2026-10-12T08:01:44+00:00","isDraft":false,"pullRequestId":4460,"sourceRefName":"refs/heads/fix-123","status":"completed"}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Select(row => row.PullRequest.Number).ShouldBe([4460]);
+    }
+
+    [Fact]
     public async Task ReportCliMissingWhenAzCannotStart()
     {
         processes.Fail(new Win32Exception(2, "The system cannot find the file specified."));

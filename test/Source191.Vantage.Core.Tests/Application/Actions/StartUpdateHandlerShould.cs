@@ -17,7 +17,7 @@ public sealed class StartUpdateHandlerShould
     public async Task OpenTheUpdateTabAndReportIt()
     {
         FakeWindowsTerminal terminal = new();
-        StartUpdateHandler handler = new(terminal, new TabScripts(@"C:\Users\me\.local\bin\claude.exe", Vantage), 4242, Home);
+        StartUpdateHandler handler = new(terminal, new TabScripts(@"C:\Users\me\.local\bin\claude.exe", Vantage), new VantageProcess(4242, Home));
 
         Outcome outcome = await handler.HandleAsync(new StartUpdate(ReleaseVersions.Version("0.10.0")), CancellationToken.None);
 

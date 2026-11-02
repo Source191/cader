@@ -59,7 +59,7 @@ public sealed class WordingOfKeyBarShould
     {
         Wording.SessionsBar(Selecting([Running], Running), updateKnown: true).First[^1].ShouldBe(Wording.SessionsBar(Selecting([Running], Running), updateKnown: true).First.Single(item => item.Key == "U"));
         Texts(Wording.SessionsBar(Selecting([Running], Running), updateKnown: true).First)[^1].ShouldBe("U Update");
-        Wording.WorktreesBar(Loaded(WorktreesViewState.Empty), updateKnown: true).First[^1].Key.ShouldBe("U");
+        Wording.WorktreesBar(updateKnown: true).First[^1].Key.ShouldBe("U");
         Wording.SessionsBar(Selecting([Running], Running), updateKnown: false).First.ShouldNotContain(item => item.Key == "U");
     }
 
@@ -75,7 +75,7 @@ public sealed class WordingOfKeyBarShould
     [Fact]
     public void NameTheWorktreesKeys()
     {
-        KeyBar bar = Wording.WorktreesBar(Loaded(WorktreesViewState.Empty), updateKnown: false);
+        KeyBar bar = Wording.WorktreesBar(updateKnown: false);
 
         Texts(bar.First).ShouldBe(["d Remove", "D Force remove", "P Prune", "n New session", "o Open shell", "Enter Open session"]);
         Texts(bar.Second).ShouldBe(["c Copy path", "f Open folder", "s Open solution", "p Open PR", "/ Filter", "? Help", "! Report", "q Quit"]);
@@ -84,7 +84,7 @@ public sealed class WordingOfKeyBarShould
     [Fact]
     public void NameTheConfigKeys()
     {
-        KeyBar bar = Wording.ConfigBar(ConfigLoaded, updateKnown: false);
+        KeyBar bar = Wording.ConfigBar(updateKnown: false);
 
         Texts(bar.First).ShouldBe(["Enter Edit"]);
         Texts(bar.Second).ShouldBe(["c Copy", "f Open folder", "/ Filter", "? Help", "! Report", "q Quit"]);
@@ -93,14 +93,10 @@ public sealed class WordingOfKeyBarShould
     [Fact]
     public void AddUpdateToTheConfigBarWhenAReleaseIsKnown()
     {
-        KeyBar bar = Wording.ConfigBar(ConfigLoaded with { List = ConfigLoaded.List.Select("worktree-root") }, updateKnown: true);
+        KeyBar bar = Wording.ConfigBar(updateKnown: true);
 
         Texts(bar.First).ShouldBe(["Enter Edit", "U Update"]);
     }
-
-    private static readonly ConfigViewState ConfigLoaded = ConfigView.Reduce(
-        ConfigViewState.Empty,
-        new ConfigRowsLoaded(ConfigRows.For(Settings.Resolve([FolderPath.From(@"C:\Users\me\source\repos"), FolderPath.From(@"D:\work")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me")), SetupFacts.Reading))).State;
 
     [Fact]
     public void PlaceEachItemOneCellFromTheEdgeAndTwoCellsAfterTheLast()
@@ -125,11 +121,8 @@ public sealed class WordingOfKeyBarShould
                 bar.Width.ShouldBeLessThanOrEqualTo(MostCells, $"{selected.Session.Name} with update {updateKnown}");
             }
 
-            Wording.WorktreesBar(Loaded(WorktreesViewState.Empty), updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
-            foreach (ConfigRow selected in ConfigLoaded.List.Rows)
-            {
-                Wording.ConfigBar((ConfigLoaded with { List = ConfigLoaded.List.Select(selected.Key) }), updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
-            }
+            Wording.WorktreesBar(updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
+            Wording.ConfigBar(updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
         }
     }
 
@@ -141,8 +134,6 @@ public sealed class WordingOfKeyBarShould
 
         return loaded with { List = loaded.List.Select(selected.Session.SessionId.Value) };
     }
-
-    private static WorktreesViewState Loaded(WorktreesViewState state) => WorktreesView.Reduce(state, new WorktreeRowsLoaded([])).State;
 
     private static SessionRow Background(string id, string name, DisplayState state, JobProcess process)
     {

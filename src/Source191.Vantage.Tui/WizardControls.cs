@@ -148,24 +148,8 @@ internal sealed class WizardControls
     {
         foreach (View option in Mode.SubViews.Concat(BaseRef.SubViews).Append(Mode).Append(BaseRef))
         {
-            option.KeyDown += (_, key) => key.Handled = key == GuiKey.Enter && Handled(next);
+            option.KeyDown += (_, key) => key.Handled = key == GuiKey.Enter && DialogButtons.Handled(next);
         }
-    }
-
-    /// <summary>Runs a key's or button's action and marks the event handled.</summary>
-    public static bool Handled(Action action)
-    {
-        action();
-
-        return true;
-    }
-
-    public static Button Button(string text, Action pressed)
-    {
-        Button button = new() { Text = text };
-        button.Accepting += (_, accepting) => accepting.Handled = Handled(pressed);
-
-        return button;
     }
 
     private static Label Text(int x, Pos y, Color colour, Dim width)

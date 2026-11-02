@@ -1,5 +1,4 @@
 using Source191.Vantage.Ports;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,8 +13,6 @@ namespace Source191.Vantage.Adapters.Claude;
 public sealed class ClaudeSettings(string claudeHome) : IClaudeSettings
 {
     private const string Property = "preferredNotifChannel";
-
-    private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 
     private static readonly JsonWriterOptions WriterOptions = new()
     {
@@ -101,8 +98,11 @@ public sealed class ClaudeSettings(string claudeHome) : IClaudeSettings
             settings.WriteTo(writer);
         }
 
-        string json = Utf8.GetString(stream.ToArray());
+        if (trailingNewline)
+        {
+            stream.WriteByte((byte)'\n');
+        }
 
-        return Utf8.GetBytes(trailingNewline ? json + "\n" : json);
+        return stream.ToArray();
     }
 }

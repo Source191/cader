@@ -244,7 +244,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     public async Task NotTakeVantagesOwnTabForASessionsTab()
     {
         Session session = Session(@"C:\repos\Northwind.Orders");
-        await store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Default.Single(colour => colour.Name == "Green"), Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
+        await store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Green, Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
         registry.Running(7001, Noon.AddMinutes(-5));
 
         SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
@@ -290,14 +290,14 @@ public sealed class SessionRowEnricherShould : IDisposable
     {
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
         Session inWorktree = Session(@"C:\repos\Northwind.Orders-fix");
-        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(inWorktree.SessionId), TabPalette.Default[2], Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(inWorktree.SessionId), TabPalette.Green, Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
         registry.Running(7001, Noon.AddMinutes(-5));
         Session outside = Session(@"C:\Users\me\scratch\notes");
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([inWorktree, outside], CancellationToken.None);
 
         rows[0].Location.ShouldBe(new SessionLocation.InRepository("Northwind.Orders", FolderPath.From(@"C:\repos\Northwind.Orders")));
-        rows[0].Tab.ShouldBe(new LiveTab.Open(TabPalette.Default[2]));
+        rows[0].Tab.ShouldBe(new LiveTab.Open(TabPalette.Green));
         rows[1].Location.ShouldBe(new SessionLocation.Outside("notes"));
         rows[1].Tab.ShouldBe(new LiveTab.None());
     }

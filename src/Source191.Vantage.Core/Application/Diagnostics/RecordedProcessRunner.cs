@@ -15,7 +15,7 @@ public sealed class RecordedProcessRunner(IProcessRunner inner, DiagnosticLog lo
     {
         ChildCommand command = ChildCommand.For(request);
         long started = clock.GetTimestamp();
-        ProcessResult result = await Started(command, () => inner.RunAsync(request, cancellationToken));
+        ProcessResult result = await GuardingStart(command, () => inner.RunAsync(request, cancellationToken));
         TimeSpan duration = clock.GetElapsedTime(started);
         counts.Add(command, result.ExitCode, duration);
         if (duration > Slow)
@@ -30,13 +30,13 @@ public sealed class RecordedProcessRunner(IProcessRunner inner, DiagnosticLog lo
     {
         ChildCommand command = ChildCommand.For(request);
         long started = clock.GetTimestamp();
-        int exitCode = await Started(command, () => inner.RunInteractiveAsync(request, cancellationToken));
+        int exitCode = await GuardingStart(command, () => inner.RunInteractiveAsync(request, cancellationToken));
         counts.Add(command, exitCode, clock.GetElapsedTime(started));
 
         return exitCode;
     }
 
-    private async Task<T> Started<T>(ChildCommand command, Func<Task<T>> run)
+    private async Task<T> GuardingStart<T>(ChildCommand command, Func<Task<T>> run)
     {
         try
         {

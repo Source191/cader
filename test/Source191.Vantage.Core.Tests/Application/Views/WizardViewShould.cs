@@ -229,7 +229,6 @@ public sealed class WizardViewShould
         plan.Place.ShouldBeOfType<LaunchPlace.NewWorktree>();
     }
 
-
     [Fact]
     public void StartReusesAWorktreeFolderThatExists()
     {
@@ -239,7 +238,6 @@ public sealed class WizardViewShould
 
         started.Effect.ShouldBeOfType<WizardEffect.Launch>().Plan.Place.ShouldBeOfType<LaunchPlace.ExistingWorktree>();
     }
-
 
     [Fact]
     public void CancelYieldsClose()

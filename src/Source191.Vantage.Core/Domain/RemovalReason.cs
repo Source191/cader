@@ -15,7 +15,6 @@ public abstract record RemovalReason
 
     public sealed record UnpushedCommits(string Branch, int Count) : RemovalReason;
 
-
     /// <summary>A live worktree of a repository outside the roots: not a leftover, so never deleted as one.</summary>
     public sealed record RepositoryOutsideRoots : RemovalReason;
 

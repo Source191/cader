@@ -9,10 +9,10 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class TabScripts(string claudeExecutable, string vantageExecutable)
 {
-    private static readonly TabColour TrustColour = TabPalette.Default[2];
+    private static readonly TabColour TrustColour = TabPalette.Green;
 
     /// <summary>The last palette colour, so a plain shell never looks like a session.</summary>
-    private static readonly TabColour ShellColour = TabPalette.Default[^1];
+    private static readonly TabColour ShellColour = TabPalette.Last;
 
     /// <summary>
     /// A session's tab: the shell claims the registration with its own $PID (so it outlives the short-lived claim-tab

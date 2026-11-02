@@ -17,7 +17,6 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public TableDetail<SessionRow> Detail => new TableDetail<SessionRow>.Pane(detail);
 
-
     public string WaitingText => Wording.WaitingText(ConsoleTab.Sessions);
 
     public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Sessions);

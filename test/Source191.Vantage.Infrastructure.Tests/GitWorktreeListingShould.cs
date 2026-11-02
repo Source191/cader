@@ -113,4 +113,12 @@ public sealed class GitWorktreeListingShould
     {
         GitWorktreeListing.Parse(string.Empty).ShouldBeEmpty();
     }
+
+    [Fact]
+    public void ReadABlockWithNoWorktreeLineAsAnEmptyPath()
+    {
+        IReadOnlyList<GitWorktreeEntry> entries = GitWorktreeListing.Parse("worktree C:/Users/me/source/repos/Northwind.Billing\nHEAD b7b91cb\nbranch refs/heads/main\n\nHEAD ab1044d\nbranch refs/heads/fix-123\n");
+
+        entries[1].Path.ShouldBe(string.Empty);
+    }
 }

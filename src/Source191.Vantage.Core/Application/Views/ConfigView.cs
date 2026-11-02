@@ -85,5 +85,10 @@ public static class ConfigView
     private static RowDecision WithPath(ConfigRow row, Func<string, ViewEffect> effect) => TryPathOf(row, out string? path) ? new RowDecision.Act(effect(path)) : new RowDecision.Explain(new StatusMessage.NoPathHere());
 
     /// <summary>A setup row's path is a file, so the folder holding it is the one to open; a root is a folder already.</summary>
-    private static FolderPath FolderOf(ConfigRow row, string path) => row is ConfigRow.Setup && FolderPath.From(path).Parent is FolderPath parent ? parent : FolderPath.From(path);
+    private static FolderPath FolderOf(ConfigRow row, string path)
+    {
+        FolderPath folder = FolderPath.From(path);
+
+        return row is ConfigRow.Setup && folder.Parent is FolderPath parent ? parent : folder;
+    }
 }

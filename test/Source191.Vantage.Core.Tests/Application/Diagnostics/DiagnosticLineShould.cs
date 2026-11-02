@@ -63,7 +63,6 @@ public sealed class DiagnosticLineShould
         Body(ran).ShouldBe("effect StopSession -> StopSessionOutcome in 412 ms");
     }
 
-
     [Fact]
     public void RenderAFailureWithWhatFailed()
     {
@@ -78,6 +77,22 @@ public sealed class DiagnosticLineShould
         Failed failed = new(FailureSite.Crash, null, ExceptionSummary.From(new GitException("x")));
 
         Body(failed).ShouldBe("failed Crash: GitException");
+    }
+
+    [Fact]
+    public void RecogniseACrashLineWithOrWithoutWhat()
+    {
+        DiagnosticLine.IsCrashLine(CrashLine(null)).ShouldBeTrue();
+        DiagnosticLine.IsCrashLine(CrashLine(CodeName.For(typeof(ScreenLoop)))).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NotTakeOtherLinesForACrashLine()
+    {
+        Failed load = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x")));
+
+        DiagnosticLine.IsCrashLine(DiagnosticLine.Render(new TimedEvent(At, load))).ShouldBeFalse();
+        DiagnosticLine.IsCrashLine(DiagnosticLine.Render(new TimedEvent(At, new ViewShown(ViewKind.Sessions)))).ShouldBeFalse();
     }
 
     [Fact]
@@ -193,6 +208,8 @@ public sealed class DiagnosticLineShould
     }
 
     private sealed record Unknown : DiagnosticEvent;
+
+    private static string CrashLine(CodeName? what) => DiagnosticLine.Render(new TimedEvent(At, new Failed(FailureSite.Crash, what, ExceptionSummary.From(new InvalidOperationException()))));
 
     private static string Body(DiagnosticEvent diagnostic)
     {

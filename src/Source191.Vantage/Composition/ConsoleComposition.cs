@@ -47,7 +47,7 @@ internal static class ConsoleComposition
 
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
-        FolderLabels folderLabels = new(() => [.. settings.Value.RepositoryRoots, settings.Value.WorktreeRoot], home);
+        FolderLabels folderLabels = new(settings, home);
         ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests);
         ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
@@ -122,8 +122,8 @@ internal static class ConsoleComposition
         PullRequestCatalogue pullRequests)
     {
         SessionRowEnricher enricher = new(launch.Git, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
-        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests);
-        SetupFactsReader setup = new(parts.TerminalFragment, ClaudeSettings.ForCurrentUser(), parts.Store, parts.Store.ConfigFile, parts.LogSetting);
+        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
+        SetupFactsReader setup = new(parts.TerminalFragment, ClaudeSettings.ForCurrentUser(), parts.Store, parts.Store.ConfigFile, parts.LogSetting, parts.Log);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
@@ -142,7 +142,7 @@ internal static class ConsoleComposition
     {
         StateTransitionNotifier notifier = new(Console.Out);
         SessionActivity activity = new(TimeProvider.System);
-        DetailLoader details = new(launch.Git, parts.Store, activity);
+        DetailLoader details = new(launch.Git, parts.Store, activity, parts.Log);
         RunningLoads listings = new();
         RunningLoads scans = new();
         Func<CancellationToken, Task<ViewInput>> scanWorktrees = scans.Track<ViewInput>(loads.ScanWorktreesAsync);

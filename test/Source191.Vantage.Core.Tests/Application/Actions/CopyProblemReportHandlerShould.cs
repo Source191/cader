@@ -4,6 +4,7 @@ using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Reporting;
 using Source191.Vantage.Application.Views;
+using Source191.Vantage.Core.Tests.Application.Reporting;
 using Source191.Vantage.Domain;
 using Source191.Vantage.TestDoubles;
 
@@ -20,7 +21,7 @@ public sealed class CopyProblemReportHandlerShould
     [Fact]
     public async Task CopyTheTitleAndTheFullText()
     {
-        crashFile.Write("2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException\n");
+        crashFile.Write(CrashLine.At(new DateTimeOffset(2026, 10, 28, 9, 0, 1, TimeSpan.Zero)) + "\n");
         ProblemReport report = await Report();
 
         Outcome outcome = await new CopyProblemReportHandler(clipboard).HandleAsync(new CopyProblemReport(Title, report), CancellationToken.None);

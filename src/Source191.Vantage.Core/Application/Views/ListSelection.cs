@@ -29,6 +29,7 @@ public sealed record ListSelection<TRow>(
 
         return new TableTitle(noun, Choosable.Count, Rows.Count(Policy.Selectable), Filter.Text, current is null ? null : labelOf(current));
     }
+
     /// <summary>
     /// New rows keep the selected key when it is still visible, otherwise the selectable row nearest its position; the
     /// first load selects the first selectable row.

@@ -3,10 +3,15 @@ using Source191.Vantage.Domain;
 namespace Source191.Vantage.Application;
 
 /// <summary>
-/// The text of a FOLDER cell. The roots are asked for on every call rather than copied, so a change to the
-/// configuration shows on the next redraw without touching the rows.
+/// The text of a FOLDER cell. The roots are the repository roots and the worktree root, read from the settings on every
+/// call rather than copied, so a save shows on the next redraw without touching the rows.
 /// </summary>
-public sealed class FolderLabels(Func<IReadOnlyList<FolderPath>> roots, FolderPath home)
+public sealed class FolderLabels(CurrentSettings settings, FolderPath home)
 {
-    public string For(FolderPath folder) => FolderLabel.For(folder, roots(), home);
+    public string For(FolderPath folder)
+    {
+        Settings current = settings.Value;
+
+        return FolderLabel.For(folder, [.. current.RepositoryRoots, current.WorktreeRoot], home);
+    }
 }

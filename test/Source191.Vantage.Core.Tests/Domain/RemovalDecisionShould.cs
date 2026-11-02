@@ -73,7 +73,6 @@ public sealed class RemovalDecisionShould
         decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.LiveSession(Listed.As("remove-sonar")), CanBeForced: false));
     }
 
-
     [Fact]
     public void AskAboutTheBranchWhenVantageDidNotCreateIt()
     {

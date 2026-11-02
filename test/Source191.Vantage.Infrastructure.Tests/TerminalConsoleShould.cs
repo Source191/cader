@@ -12,12 +12,12 @@ public sealed class TerminalConsoleShould : IDisposable
     {
         TerminalConsole console = new(writer, "Vantage");
 
-        console.ShowOwnTab(TabPalette.Default.Single(colour => colour.Name == "Green"));
+        console.ShowOwnTab(TabPalette.Green);
         console.ShowOwnTab();
         console.ClearOwnTab();
 
         writer.ToString().ShouldBe(
-            TabEscapes.Title("Vantage") + TabEscapes.Background(TabPalette.Default.Single(colour => colour.Name == "Green"))
+            TabEscapes.Title("Vantage") + TabEscapes.Background(TabPalette.Green)
             + TabEscapes.Title("Vantage")
             + TabEscapes.ClearTitle + TabEscapes.ResetBackground);
     }

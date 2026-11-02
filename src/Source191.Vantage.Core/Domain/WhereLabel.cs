@@ -85,7 +85,6 @@ public abstract record WhereLabel
             .First();
     }
 
-
     private static string CutEnd(string text, int width) => (text.Length <= width, width) switch
     {
         (true, _) => text,

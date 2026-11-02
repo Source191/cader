@@ -129,7 +129,6 @@ public sealed class SessionsViewShould
         cleared.Title.ShouldBe(new TableTitle("session", Shown: 4, Total: 4, Filter: string.Empty, Selected: "change-feed"));
     }
 
-
     [Fact]
     public void StopCarriesTheSelectedRow()
     {
@@ -573,7 +572,6 @@ public sealed class SessionsViewShould
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
     }
-
 
     [Fact]
     public void ClearTheLastMessageWhenAFolderKeyActs()

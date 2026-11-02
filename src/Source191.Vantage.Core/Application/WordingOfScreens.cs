@@ -80,7 +80,6 @@ public static partial class Wording
         return $"{title.Shown} of {Count(title.Total, title.Noun)} {verb} \"{title.Filter}\"{selection}";
     }
 
-
     /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>
     private static readonly KeyHelp[] TabKeyHelp =
     [
@@ -278,8 +277,6 @@ public static partial class Wording
         new("Changes", "changed or untracked files, and commits on its branch that no remote has"),
         new("Unpushed", "the newest five unpushed commits, or the changed files when none, and how many more"),
     ];
-
-
 
     /// <summary>The sessions view's help: its keys and columns, then the Claude Code executable Vantage drives.</summary>
     public static string SessionsHelp(string claudeExecutable) => $"{Help(SessionsKeys, SessionsColumns, SessionsPane)}\n\nClaude Code: {claudeExecutable}";

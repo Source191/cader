@@ -94,12 +94,12 @@ internal static class LaunchWizardDialog
         controls.BaseRef.ValueChanged += (_, _) => Apply(new WizardInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
         controls.Prompt.ContentsChanged += (_, _) => Apply(new WizardInput.PromptChanged(controls.Prompt.Text));
         // Arrow and page keys typed in the filter drive the list; a letter or Backspace typed in the list is typing in the filter.
-        controls.Filter.KeyDown += (_, key) => key.Handled = controls.ListDelta(key) is int delta && WizardControls.Handled(() => Apply(new WizardInput.ListMoved(delta)));
+        controls.Filter.KeyDown += (_, key) => key.Handled = controls.ListDelta(key) is int delta && DialogButtons.Handled(() => Apply(new WizardInput.ListMoved(delta)));
         controls.Repositories.KeyDown += (_, key) => key.Handled = (key == GuiKey.Backspace || (!key.IsAlt && !key.IsCtrl && key.AsRune.Value >= ' ')) && controls.Filter.SetFocus() && controls.Filter.NewKeyDownEvent(key);
-        controls.Filter.Accepting += (_, accepting) => accepting.Handled = WizardControls.Handled(() => Apply(new WizardInput.ConfirmRepository()));
-        controls.Repositories.Accepting += (_, accepting) => accepting.Handled = WizardControls.Handled(() => Apply(new WizardInput.ConfirmRepository()));
+        controls.Filter.Accepting += (_, accepting) => accepting.Handled = DialogButtons.Handled(() => Apply(new WizardInput.ConfirmRepository()));
+        controls.Repositories.Accepting += (_, accepting) => accepting.Handled = DialogButtons.Handled(() => Apply(new WizardInput.ConfirmRepository()));
         // Enter in the name moves on, or for a fixed folder starts the session in a tab, so the texts are read again first as Start does.
-        controls.Name.Accepting += (_, accepting) => accepting.Handled = WizardControls.Handled(() =>
+        controls.Name.Accepting += (_, accepting) => accepting.Handled = DialogButtons.Handled(() =>
         {
             Apply(new WizardInput.NameChanged(controls.Name.Text));
             Apply(new WizardInput.PromptChanged(controls.Prompt.Text));
@@ -110,10 +110,10 @@ internal static class LaunchWizardDialog
         controls.WhenEnterInSelectors(() => Apply(new WizardInput.NextField()));
         // An Enter no control took would otherwise close the dialog with nothing started.
         dialog.Accepting += (_, accepting) => accepting.Handled = true;
-        dialog.KeyDown += (_, key) => key.Handled = key == GuiKey.F5 && WizardControls.Handled(Start);
+        dialog.KeyDown += (_, key) => key.Handled = key == GuiKey.F5 && DialogButtons.Handled(Start);
         // No default button: Enter never starts anything by itself. F5 and the Start button do, and both open the session's tab.
-        dialog.AddButton(WizardControls.Button(Wording.StartButton, Start));
-        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new WizardInput.Cancel())));
+        dialog.AddButton(DialogButtons.Button(Wording.StartButton, Start));
+        dialog.AddButton(DialogButtons.Button(Wording.CancelWithEscButton, () => Apply(new WizardInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
 
         app.Run(dialog);

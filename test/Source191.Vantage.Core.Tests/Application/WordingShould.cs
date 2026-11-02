@@ -118,7 +118,6 @@ public sealed class WordingShould
         Wording.Describe(new StatusMessage.InvalidName(NameProblem.Missing)).ShouldBe("A session name is required.");
     }
 
-
     [Fact]
     public void SayABackgroundSessionIsAlreadyUnderVantage()
     {
@@ -506,7 +505,6 @@ public sealed class WordingShould
         Wording.Describe(reason).ShouldNotBe(reason.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
 
-
     [Fact]
     public void NameTheSessionUsingTheWorktree()
     {
@@ -542,7 +540,6 @@ public sealed class WordingShould
     {
         Wording.Describe(new RemovalReason.UnpushedCommits("fix-123", 2)).ShouldBe("branch fix-123 has 2 unpushed commits");
     }
-
 
     [Fact]
     public void SayAWorktreeOfARepositoryOutsideTheRootsIsNotRemoved()

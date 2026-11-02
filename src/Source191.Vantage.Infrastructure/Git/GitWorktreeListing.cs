@@ -1,5 +1,6 @@
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
+
 namespace Source191.Vantage.Adapters.Git;
 
 /// <summary>
@@ -49,8 +50,6 @@ public static class GitWorktreeListing
                     break;
                 case "prunable":
                     prunable = true;
-                    break;
-                default:
                     break;
             }
         }

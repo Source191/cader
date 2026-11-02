@@ -30,9 +30,8 @@ public static partial class Wording
     }
 
     /// <summary>The Config tab's key bar: edit, then Update when a release is known; the folder and view keys below.</summary>
-    public static KeyBar ConfigBar(ConfigViewState state, bool updateKnown)
+    public static KeyBar ConfigBar(bool updateKnown)
     {
-        ArgumentNullException.ThrowIfNull(state);
         IReadOnlyList<string> first = ["enter", .. updateKnown ? ["U"] : Array.Empty<string>()];
 
         return new KeyBar(Placed(ConfigKeys, first, []), Placed(ConfigKeys, SecondBarRowForConfig, []));
@@ -110,9 +109,8 @@ public static partial class Wording
     }
 
     /// <summary>The worktrees tab's key bar: the keys that act on a worktree and Update when a release is known; the folder and view keys below.</summary>
-    public static KeyBar WorktreesBar(WorktreesViewState state, bool updateKnown)
+    public static KeyBar WorktreesBar(bool updateKnown)
     {
-        ArgumentNullException.ThrowIfNull(state);
         IReadOnlyList<string> first = [.. FirstBarRowForWorktrees, .. updateKnown ? ["U"] : Array.Empty<string>()];
 
         return new KeyBar(Placed(WorktreesKeys, first, []), Placed(WorktreesKeys, SecondBarRowForSessions, []));

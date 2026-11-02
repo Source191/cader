@@ -122,7 +122,7 @@ public sealed class ScreenLoopShould : IDisposable
         int exitCode = await Loop(screen).RunAsync(processId: 100, CancellationToken.None);
 
         exitCode.ShouldBe(0);
-        console.Coloured.ShouldBe([TabPalette.Default.Single(colour => colour.Name == "Green")]);
+        console.Coloured.ShouldBe([TabPalette.Green]);
         console.TitledOnly.ShouldBe(0);
         console.Cleared.ShouldBe(1);
     }

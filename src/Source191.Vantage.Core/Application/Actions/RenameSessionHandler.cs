@@ -22,7 +22,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
             return new RenameSessionOutcome.NoMessages(session.Name);
         }
 
-        TabRegistration? earlier = (await registrations.ReadTabsAsync()).FirstOrDefault(tab => tab.Owner == new TabOwner.ForSession(session.SessionId));
+        TabRegistration? earlier = new TabRegistrations(await registrations.ReadTabsAsync()).For(session.SessionId) is [TabRegistration first, ..] ? first : null;
         try
         {
             await claude.RemoveAsync(session.JobId, cancellationToken);

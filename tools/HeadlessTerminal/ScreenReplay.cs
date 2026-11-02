@@ -90,43 +90,28 @@ public sealed class ScreenReplay(int columns, int rows)
 
     private int Escape(string capture, int i)
     {
-        char next = capture[i + 1];
-        if (next == '[')
+        int end = EscapeSequences.EndOf(capture, i);
+        if (capture[i + 1] == '[')
         {
-            return ControlSequence(capture, i);
+            ControlSequence(capture[(i + 2)..end]);
         }
 
-        if (next is ']' or 'P')
-        {
-            int bel = capture.IndexOf('\x07', i);
-            int st = capture.IndexOf("\x1b\\", i, StringComparison.Ordinal);
-            int terminator = st >= 0 && (bel < 0 || st < bel) ? st + 1 : bel;
-
-            return terminator < 0 ? capture.Length : terminator + 1;
-        }
-
-        return i + 2;
+        return end;
     }
 
-    private int ControlSequence(string capture, int i)
+    /// <summary>Applies a CSI sequence given without its introducer; one that is cut short, or whose final byte is not a letter this replay knows, changes nothing.</summary>
+    private void ControlSequence(string body)
     {
-        int j = i + 2;
-        while (j < capture.Length && !IsFinal(capture[j]))
+        if (body.Length == 0 || body[^1] is not (>= '\x40' and <= '\x7E'))
         {
-            j++;
+            return;
         }
 
-        if (j >= capture.Length)
-        {
-            return capture.Length;
-        }
-
-        int[] numbers = [.. capture[(i + 2)..j].TrimStart('?', '<', '>', '=').Split(';').Select(n => int.TryParse(n, out int value) ? value : 0)];
+        string parameters = new([.. body[..^1].Where(character => character is >= '\x30' and <= '\x3F')]);
+        int[] numbers = [.. parameters.TrimStart('?', '<', '>', '=').Split(';').Select(n => int.TryParse(n, out int value) ? value : 0)];
         int first = numbers.Length > 0 && numbers[0] > 0 ? numbers[0] : 1;
         int second = numbers.Length > 1 && numbers[1] > 0 ? numbers[1] : 1;
-        Apply(capture[j], first, second, numbers);
-
-        return j + 1;
+        Apply(body[^1], first, second, numbers);
     }
 
     private void Apply(char final, int first, int second, int[] numbers)
@@ -188,6 +173,4 @@ public sealed class ScreenReplay(int columns, int rows)
             grid[r][c] = ch;
         }
     }
-
-    private static bool IsFinal(char ch) => char.IsAsciiLetter(ch) || ch is '_' or '@' or '`';
 }

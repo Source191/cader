@@ -20,7 +20,7 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
 {
     public async Task OpenAsync(string file, CancellationToken cancellationToken)
     {
-        // Thrown inside the task, as before, so a caller holding the task sees the failure when it awaits.
+        // Thrown inside the task, so a caller holding the task sees the failure when it awaits.
         string executable = powerShell switch
         {
             ProgramLocation.Found found => found.Path,
@@ -46,7 +46,8 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
     /// <summary>
     /// Starts the program detached. A <see cref="Win32Exception"/> (Windows refused the start: access denied, not a program,
     /// a broken install) becomes <see cref="ProgramNotStartedException"/> with Windows' sentence for its error code alone,
-    /// since .NET's own message also names the path and the working folder.
+    /// since .NET's own message also names the path and the working folder. The start happens before the task is returned,
+    /// so a refusal is thrown at the call site, nothing is cancelled, and the returned task is always complete.
     /// </summary>
     public Task StartAsync(ProcessRequest request, CancellationToken cancellationToken)
     {

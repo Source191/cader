@@ -1,3 +1,4 @@
+using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
@@ -8,16 +9,18 @@ namespace Source191.Vantage.Application.Detail;
 /// Reads the selected row's detail, off the UI thread, one fact at a time: a fact whose read fails is unavailable on its
 /// own, so one failing call never blanks the pane, and nothing here throws into the screen.
 /// </summary>
-public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionActivity activity)
+public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionActivity activity, DiagnosticLog log)
 {
     private readonly WorktreeInspector inspector = new(git);
+    private readonly OncePerFolder unreadableFacts = new(log, FailureSite.Load, CodeName.For(typeof(DetailLoader)));
+    private readonly OncePerFolder unreadableOrigins = new(log, FailureSite.Load, CodeName.For(typeof(DetailLoader)));
 
     public async Task<SessionDetail> SessionAsync(SessionRow row, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(row);
         DetailFact<WorktreeCounts> counts = row.Location is SessionLocation.Outside
             ? new DetailFact<WorktreeCounts>.NotApplicable()
-            : await Read(() => inspector.CountAsync(row.Session.WorkingDirectory, cancellationToken));
+            : await Read(row.Session.WorkingDirectory, () => inspector.CountAsync(row.Session.WorkingDirectory, cancellationToken));
 
         return new SessionDetail(row, activity.LastPromptedAt(row.Session.SessionId), counts);
     }
@@ -30,7 +33,7 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
         ArgumentNullException.ThrowIfNull(row);
         WorktreeOrigin origin = await OriginAsync(row);
         DetailFact<MergeState> merge = row.Head is Head.OnBranch { Branch: BranchName branch } && row.OwnerExists
-            ? await Read(() => inspector.MergeStateAsync(row.Repository, branch, cancellationToken))
+            ? await Read(row.Path, () => inspector.MergeStateAsync(row.Repository, branch, cancellationToken))
             : new DetailFact<MergeState>.NotApplicable();
         if (!row.FolderExists)
         {
@@ -38,40 +41,33 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
         }
 
         DetailFact<IReadOnlyList<UnpushedCommit>> commits = row.UnpushedCommits > 0
-            ? await Read(() => git.UnpushedCommitsAsync(row.Path.Value, listRows, cancellationToken))
+            ? await Read(row.Path, () => git.UnpushedCommitsAsync(row.Path.Value, listRows, cancellationToken))
             : new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable();
         DetailFact<IReadOnlyList<string>> changed = row.UnpushedCommits == 0 && row.DirtyFiles > 0
-            ? await Read(() => git.ChangedFilesAsync(row.Path.Value, listRows, cancellationToken))
+            ? await Read(row.Path, () => git.ChangedFilesAsync(row.Path.Value, listRows, cancellationToken))
             : new DetailFact<IReadOnlyList<string>>.NotApplicable();
 
         return new WorktreeDetail(row, origin, merge, commits, changed);
     }
 
-    private async Task<WorktreeOrigin> OriginAsync(WorktreeRow row)
-    {
-        try
+    private Task<WorktreeOrigin> OriginAsync(WorktreeRow row) => unreadableOrigins.RunAsync<WorktreeOrigin>(
+        row.Path,
+        async () =>
         {
             IReadOnlyList<CreatedWorktree> records = await created.ReadCreatedWorktreesAsync();
 
             return records.FirstOrDefault(record => record.Path.Equals(row.Path)) is CreatedWorktree record
                 ? new WorktreeOrigin.CreatedByVantage(record)
                 : new WorktreeOrigin.NotByVantage();
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            return new WorktreeOrigin.NotByVantage();
-        }
-    }
+        },
+        IsNotCancellation,
+        _ => new WorktreeOrigin.NotByVantage());
 
-    private static async Task<DetailFact<T>> Read<T>(Func<Task<T>> read)
-    {
-        try
-        {
-            return new DetailFact<T>.Known(await read());
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            return new DetailFact<T>.Unavailable();
-        }
-    }
+    private Task<DetailFact<T>> Read<T>(FolderPath folder, Func<Task<T>> read) => unreadableFacts.RunAsync<DetailFact<T>>(
+        folder,
+        async () => new DetailFact<T>.Known(await read()),
+        IsNotCancellation,
+        _ => new DetailFact<T>.Unavailable());
+
+    private static bool IsNotCancellation(Exception exception) => exception is not OperationCanceledException;
 }

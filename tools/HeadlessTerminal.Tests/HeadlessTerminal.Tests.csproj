@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HeadlessTerminal\HeadlessTerminal.csproj" />
+    <ProjectReference Include="..\..\src\Source191.Vantage.Infrastructure\Source191.Vantage.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

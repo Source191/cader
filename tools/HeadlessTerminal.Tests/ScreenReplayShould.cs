@@ -1,3 +1,5 @@
+using Source191.Vantage.Adapters.Terminal;
+
 namespace Source191.Vantage.HeadlessTerminal.Tests;
 
 public sealed class ScreenReplayShould
@@ -11,6 +13,16 @@ public sealed class ScreenReplayShould
 
         replay.Lines.ShouldBe(["  Hello world", "row four"]);
         replay.FilledCells.ShouldBe(17, "ten letters in Hello world and seven in row four");
+    }
+
+    [Fact]
+    public void KeepTheTextAfterTheTabReset()
+    {
+        string capture = TabEscapes.ResetBackground + "done";
+
+        ScreenReplay replay = new ScreenReplay(20, 3).Replay(capture, capture.Length);
+
+        replay.Lines.ShouldBe(["done"]);
     }
 
     [Fact]
