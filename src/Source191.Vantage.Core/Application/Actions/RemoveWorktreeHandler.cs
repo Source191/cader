@@ -11,10 +11,9 @@ namespace Source191.Vantage.Application.Actions;
 /// <see cref="WorktreeRemover"/>.
 /// Not a dispatcher handler: the screen may ask about the branch afterwards, so it needs the outcome.
 /// </summary>
-public sealed class RemoveWorktreeHandler(IGit git, ICreatedWorktrees createdWorktrees, IFolders folders, CurrentSettings settings)
+public sealed class RemoveWorktreeHandler(IGit git, ICreatedWorktrees createdWorktrees, IFolders folders, WorktreeRemover remover)
 {
     private readonly WorktreeInspector inspector = new(git);
-    private readonly WorktreeRemover remover = new(git, createdWorktrees, folders, settings);
 
     public async Task<RemoveWorktreeOutcome> RemoveAsync(WorktreeRow scanned, bool forced, CancellationToken cancellationToken)
     {

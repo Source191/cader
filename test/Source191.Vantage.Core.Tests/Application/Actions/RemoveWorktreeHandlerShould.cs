@@ -14,7 +14,7 @@ public sealed class RemoveWorktreeHandlerShould
     private readonly FakeFolders folders = new();
     private readonly InMemoryState store = new();
 
-    private RemoveWorktreeHandler Handler => new(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root));
+    private RemoveWorktreeHandler Handler => new(new GitCli(processes, "git"), store, folders, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root)));
 
     [Fact]
     public async Task RemoveACleanWorktreeAndOfferToDeleteAHandMadeBranch()

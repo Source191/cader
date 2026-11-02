@@ -3,7 +3,7 @@ using Source191.Vantage.Ports;
 namespace Source191.Vantage.Adapters.Files;
 
 /// <summary>The file system as <see cref="IFolders"/> sees it.</summary>
-public sealed class Folders : IFolders
+public sealed class Folders : IFolders, IFolderDeleter
 {
     private static readonly EnumerationOptions EveryFile = new()
     {
