@@ -15,5 +15,10 @@ public sealed class TextValueJsonConverter<T> : JsonConverter<T>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         T.TryParse(reader.GetString(), out T? value) ? value : throw new JsonException($"A state file holds a {typeof(T).Name} it cannot read.");
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) => writer.WriteStringValue(value.Value);
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(value);
+        writer.WriteStringValue(value.Value);
+    }
 }

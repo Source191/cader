@@ -13,6 +13,8 @@ public sealed class WorktreeIncludeCopier(IGit git) : IWorktreeIncludeCopier
 
     public async Task<IReadOnlyList<string>> CopyAsync(FolderPath repository, FolderPath worktree, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(worktree);
         string includeFile = Path.Combine(repository.Value, IncludeFileName);
         if (!File.Exists(includeFile))
         {

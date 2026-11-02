@@ -33,6 +33,7 @@ public sealed class TerminalFragment(string fragmentsRoot, string iconSource) : 
 
     public async Task WriteAsync(TerminalProfiles profiles, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(profiles);
         Directory.CreateDirectory(FragmentFolder);
         bool withIcon = TryCopyIcon();
         JsonObject fragment = new()

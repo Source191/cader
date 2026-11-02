@@ -13,6 +13,7 @@ public static class GitWorktreeListing
 
     public static IReadOnlyList<GitWorktreeEntry> Parse(string porcelain)
     {
+        ArgumentNullException.ThrowIfNull(porcelain);
         string[] blocks = porcelain
             .Replace("\r\n", "\n")
             .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

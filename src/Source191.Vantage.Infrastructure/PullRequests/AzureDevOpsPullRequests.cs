@@ -18,12 +18,18 @@ public sealed class AzureDevOpsPullRequests(IProcessRunner processes, ProgramLoc
 {
     private const string BranchPrefix = "refs/heads/";
 
-    public Task<PullRequestListing> ListAsync(RemoteRepository.AzureDevOps repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken) => az switch
+    public Task<PullRequestListing> ListAsync(RemoteRepository.AzureDevOps repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
     {
-        ProgramLocation.Found found => ListAsync(found.Path, repository, checkout, branch, cancellationToken),
-        ProgramLocation.Missing => Task.FromResult<PullRequestListing>(new PullRequestListing.Unavailable(PullRequestGap.CliMissing)),
-        _ => throw new UnreachableException(),
-    };
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(checkout);
+        ArgumentNullException.ThrowIfNull(branch);
+        return az switch
+        {
+            ProgramLocation.Found found => ListAsync(found.Path, repository, checkout, branch, cancellationToken),
+            ProgramLocation.Missing => Task.FromResult<PullRequestListing>(new PullRequestListing.Unavailable(PullRequestGap.CliMissing)),
+            _ => throw new UnreachableException(),
+        };
+    }
 
     private async Task<PullRequestListing> ListAsync(string executable, RemoteRepository.AzureDevOps repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
     {

@@ -13,6 +13,7 @@ public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
 {
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
         using Process process = new();
         process.StartInfo = StartInfo(request, capture: true);
         process.Start();
@@ -62,6 +63,7 @@ public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
 
     public async Task<int> RunInteractiveAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
         using Process process = new();
         process.StartInfo = StartInfo(request, capture: false);
         process.Start();

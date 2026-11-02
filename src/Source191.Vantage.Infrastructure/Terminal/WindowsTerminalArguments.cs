@@ -16,6 +16,7 @@ public static class WindowsTerminalArguments
     /// </summary>
     public static IReadOnlyList<string> ForTab(TabLaunch launch, IReadOnlyList<string> profile, string pwsh)
     {
+        ArgumentNullException.ThrowIfNull(launch);
         string[] arguments =
         [
             "-w", "0", "new-tab",

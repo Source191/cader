@@ -23,6 +23,7 @@ public static class TabEscapes
 
     public static string Background(TabColour colour)
     {
+        ArgumentNullException.ThrowIfNull(colour);
         string hex = colour.Hex.TrimStart('#').ToLowerInvariant();
 
         return $"\u001b]4;264;rgb:{hex[..2]}/{hex[2..4]}/{hex[4..6]}\u001b\\";

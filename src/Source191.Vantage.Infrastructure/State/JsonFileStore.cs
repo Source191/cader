@@ -45,7 +45,11 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     public async Task<IReadOnlyList<TabRegistration>> ReadTabsAsync() => [.. (await ReadAllAsync<TabFile>(TabsFolder)).Select(file => file.ToRegistration())];
 
-    public Task WriteTabAsync(TabRegistration registration) => WriteJsonAsync(Path.Combine(TabsFolder, $"{registration.Id:N}.json"), TabFile.From(registration));
+    public Task WriteTabAsync(TabRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        return WriteJsonAsync(Path.Combine(TabsFolder, $"{registration.Id:N}.json"), TabFile.From(registration));
+    }
 
     public Task RemoveTabAsync(Guid id)
     {
@@ -64,6 +68,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     public async Task RecordRecentRepositoryAsync(FolderPath repository)
     {
+        ArgumentNullException.ThrowIfNull(repository);
         await ImportLegacyRecentAsync();
         await WriteJsonAsync(RecentFile(repository), new RecentRepository(repository, clock.GetUtcNow()));
         await TrimRecentAsync();
@@ -71,10 +76,15 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     public async Task<IReadOnlyList<CreatedWorktree>> ReadCreatedWorktreesAsync() => await ReadAllAsync<CreatedWorktree>(CreatedFolder);
 
-    public Task RecordCreatedWorktreeAsync(CreatedWorktree worktree) => WriteJsonAsync(CreatedFile(worktree.Path), worktree);
+    public Task RecordCreatedWorktreeAsync(CreatedWorktree worktree)
+    {
+        ArgumentNullException.ThrowIfNull(worktree);
+        return WriteJsonAsync(CreatedFile(worktree.Path), worktree);
+    }
 
     public Task ForgetCreatedWorktreeAsync(FolderPath path)
     {
+        ArgumentNullException.ThrowIfNull(path);
         TryDelete(CreatedFile(path));
 
         return Task.CompletedTask;
@@ -91,7 +101,11 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         return file is null ? new UpdateCheckRecord.Never() : new UpdateCheckRecord.Checked(file.CheckedAt, NewestOf(file.Newest), NotesOf(file.Notes));
     }
 
-    public Task WriteUpdateCheckAsync(UpdateCheckRecord.Checked record) => WriteJsonAsync(UpdateCheckPath, new UpdateCheckFile(record.CheckedAt, RecordedText(record.Newest), RecordedNotes(record.NewestNotes)));
+    public Task WriteUpdateCheckAsync(UpdateCheckRecord.Checked record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        return WriteJsonAsync(UpdateCheckPath, new UpdateCheckFile(record.CheckedAt, RecordedText(record.Newest), RecordedNotes(record.NewestNotes)));
+    }
 
     public async Task<LastRun> ReadLastRunAsync()
     {
@@ -100,7 +114,11 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         return ReleaseVersion.TryParse(file?.Version, out ReleaseVersion? version) ? new LastRun.Ran(version) : new LastRun.Never();
     }
 
-    public Task WriteLastRunAsync(ReleaseVersion version) => WriteJsonAsync(LastRunPath, new LastRunFile(version.ToString()));
+    public Task WriteLastRunAsync(ReleaseVersion version)
+    {
+        ArgumentNullException.ThrowIfNull(version);
+        return WriteJsonAsync(LastRunPath, new LastRunFile(version.ToString()));
+    }
 
     /// <summary>The notes as the file keeps them, the text read from nuget.org; text that is not a changelog, or none, is no notes.</summary>
     private static ReleaseNotes NotesOf(string? text) => ReleaseNotes.TryParse(text, out ReleaseNotes? notes) ? notes : ReleaseNotes.None;

@@ -14,6 +14,7 @@ public sealed class WindowsTerminal(IProcessRunner processes, ITerminalFragment 
 {
     public async Task OpenTabAsync(TabLaunch launch, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(launch);
         string executable = wt switch
         {
             ProgramLocation.Found found => found.Path,

@@ -37,6 +37,8 @@ public sealed class ClaudeCli(IProcessRunner processes, string executable) : ICl
 
     public async Task<StartResult> StartBackgroundAsync(FolderPath directory, SessionName name, OpeningPrompt openingPrompt, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(directory);
         List<string> arguments = ["--bg", "-n", name.Value];
         if (openingPrompt is OpeningPrompt.Text text)
         {
@@ -48,14 +50,30 @@ public sealed class ClaudeCli(IProcessRunner processes, string executable) : ICl
         return InterpretStart(result);
     }
 
-    public Task<int> AttachAsync(JobId jobId, CancellationToken cancellationToken) => processes.RunInteractiveAsync(Request(["attach", jobId.Value], WorkingFolder.Inherit), cancellationToken);
+    public Task<int> AttachAsync(JobId jobId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(jobId);
+        return processes.RunInteractiveAsync(Request(["attach", jobId.Value], WorkingFolder.Inherit), cancellationToken);
+    }
 
-    public Task StopAsync(JobId jobId, CancellationToken cancellationToken) => RunOrThrowAsync(["stop", jobId.Value], cancellationToken);
+    public Task StopAsync(JobId jobId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(jobId);
+        return RunOrThrowAsync(["stop", jobId.Value], cancellationToken);
+    }
 
-    public Task RemoveAsync(JobId jobId, CancellationToken cancellationToken) => RunOrThrowAsync(["rm", jobId.Value], cancellationToken);
+    public Task RemoveAsync(JobId jobId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(jobId);
+        return RunOrThrowAsync(["rm", jobId.Value], cancellationToken);
+    }
 
-    public Task<ResumeResult> ResumeBackgroundAsync(SessionId sessionId, FolderPath directory, ListedName name, CancellationToken cancellationToken) =>
-        ResumeAsync(["--bg", "--resume", sessionId.Value, .. NameArguments(name)], directory, cancellationToken);
+    public Task<ResumeResult> ResumeBackgroundAsync(SessionId sessionId, FolderPath directory, ListedName name, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(sessionId);
+        ArgumentNullException.ThrowIfNull(directory);
+        return ResumeAsync(["--bg", "--resume", sessionId.Value, .. NameArguments(name)], directory, cancellationToken);
+    }
 
     private static string[] NameArguments(ListedName name) => name switch
     {

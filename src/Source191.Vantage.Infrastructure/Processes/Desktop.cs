@@ -51,6 +51,7 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
     /// </summary>
     public Task StartAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
         ProcessStartInfo startInfo = ProcessRunner.StartInfo(request, capture: false);
         startInfo.CreateNoWindow = true;
         try

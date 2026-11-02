@@ -39,6 +39,7 @@ public static partial class ConsoleRecovery
     /// <summary>Writes escape sequences (such as the tab title) to the console, making sure they are interpreted rather than printed.</summary>
     public static void WriteSequence(TextWriter console, string sequence)
     {
+        ArgumentNullException.ThrowIfNull(console);
         EnableEscapeSequencesOnOutput();
         console.Write(sequence);
         console.Flush();
@@ -46,6 +47,7 @@ public static partial class ConsoleRecovery
 
     public static void AfterChildProcess(TextWriter console)
     {
+        ArgumentNullException.ThrowIfNull(console);
         EnableEscapeSequencesOnOutput();
         console.Write(ResetSequence);
         console.Flush();

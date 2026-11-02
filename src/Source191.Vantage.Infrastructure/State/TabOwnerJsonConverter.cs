@@ -20,10 +20,14 @@ public sealed class TabOwnerJsonConverter : JsonConverter<TabOwner>
         _ => throw new JsonException("A tab file has no owner."),
     };
 
-    public override void Write(Utf8JsonWriter writer, TabOwner value, JsonSerializerOptions options) => writer.WriteStringValue(value switch
+    public override void Write(Utf8JsonWriter writer, TabOwner value, JsonSerializerOptions options)
     {
-        TabOwner.ForSession session => session.Id.Value,
-        TabOwner.ForVantage => Vantage,
-        _ => throw new UnreachableException(),
-    });
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteStringValue(value switch
+        {
+            TabOwner.ForSession session => session.Id.Value,
+            TabOwner.ForVantage => Vantage,
+            _ => throw new UnreachableException(),
+        });
+    }
 }
