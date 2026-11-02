@@ -30,6 +30,14 @@ public sealed class ClaudeExecutableShould
     }
 
     [Fact]
+    public void NotSearchARelativePathEntryForTheShim()
+    {
+        FakeFolders folders = new FakeFolders().WithFile(Path.GetFullPath(@"npm\claude.cmd"));
+
+        ClaudeExecutable.Locate(folders, ["npm", @"C:\Tools"], Home).ShouldBe(new ClaudeLocation.Missing());
+    }
+
+    [Fact]
     public void PreferAnExeLaterOnThePathToAShimEarlier()
     {
         FakeFolders folders = new FakeFolders().WithFile(Shim).WithFile(@"C:\Tools\claude.exe");

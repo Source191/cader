@@ -30,7 +30,7 @@ public static class ClaudeExecutable
             return new ClaudeLocation.Found(executable.Path);
         }
 
-        string? batchFile = pathFolders
+        string? batchFile = PathFolders.Searchable(pathFolders)
             .SelectMany(folder => BatchFiles.Select(name => Path.Combine(folder, name)))
             .FirstOrDefault(folders.FileExists);
 

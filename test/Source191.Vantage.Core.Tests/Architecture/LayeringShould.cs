@@ -74,6 +74,21 @@ public sealed class LayeringShould
         dependants.ShouldBe([$"{Root}.Adapters.Files.Folders", $"{Root}.Application.Actions.WorktreeRemover", $"{Root}.TestDoubles.FakeFolders"]);
     }
 
+    /// <summary>
+    /// Boundary interfaces belong in Ports. Domain declares two: ITextValue (the three doors of a text value) and
+    /// IProcessRegistry (the process table the tab rules read; implemented in Adapters, faked in TestDoubles).
+    /// </summary>
+    [Fact]
+    public void DeclareNoDomainInterfaceButTheTwoNamed()
+    {
+        IEnumerable<string> interfaces = typeof(Session).Assembly.GetTypes()
+            .Where(type => type.IsInterface && type.Namespace == $"{Root}.Domain" && !type.IsNested)
+            .Select(type => type.Name)
+            .Order(StringComparer.Ordinal);
+
+        interfaces.ShouldBe(["IProcessRegistry", "ITextValue`1"]);
+    }
+
     [Fact]
     public void KeepSystemCommandLineInsideCommandLine()
     {
