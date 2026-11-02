@@ -22,17 +22,8 @@ internal interface IScreenDefinition<TState, TRow>
 
     string HelpText { get; }
 
-    /// <summary>The table's columns, in cell order: their names head the table and their meanings are the tooltips and the help.</summary>
-    IReadOnlyList<ColumnHelp> Columns { get; }
-
-    /// <summary>The column that takes the width the others leave (REPOSITORY, WORKTREE), or null when every column has its natural width.</summary>
-    int? ElasticColumn { get; }
-
-    /// <summary>A cell's text; <paramref name="width"/> is the cells the elastic column has, and int.MaxValue for every other column.</summary>
-    string Cell(TRow row, int column, DateTimeOffset now, int width);
-
-    /// <summary>One cell's own paint (the TAB swatch), or <see cref="Tui.CellPaint.None"/> for the row's colour.</summary>
-    CellPaint CellPaint(TRow row, int column);
+    /// <summary>The table's columns, in cell order: each its help (the name that heads it, the tooltip and the help), its cell, its fit and its paint. Exactly one is elastic.</summary>
+    IReadOnlyList<TableColumn<TRow>> Columns { get; }
 
     Color RowColour(TRow row);
 

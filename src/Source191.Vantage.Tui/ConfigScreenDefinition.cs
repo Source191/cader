@@ -9,8 +9,6 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
 {
     private const string Ellipsis = "…";
 
-    private readonly TimeProvider clock = clock ?? throw new ArgumentNullException(nameof(clock));
-
     /// <summary>Never used to refresh: the tab reads the setup when it is shown and after each save.</summary>
     public TimeSpan RefreshEvery => TimeSpan.FromMinutes(5);
 
@@ -27,21 +25,11 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
 
     public string HelpText => Wording.ConfigHelp;
 
-    public IReadOnlyList<ColumnHelp> Columns => Wording.ConfigColumns;
-
-    public int? ElasticColumn => 1;
-
-    public string Cell(ConfigRow row, int column, DateTimeOffset now, int width)
-    {
-        return column switch
-        {
-            0 => Wording.ConfigSetting(row),
-            _ => Middle(Wording.ConfigValue(row, now, clock.LocalTimeZone), width),
-        };
-    }
-
-    public CellPaint CellPaint(ConfigRow row, int column) => new CellPaint.None();
-
+    public IReadOnlyList<TableColumn<ConfigRow>> Columns { get; } =
+    [
+        TableColumn<ConfigRow>.Plain(Wording.SettingColumn, (row, _, _) => Wording.ConfigSetting(row), new ColumnFit.Natural()),
+        TableColumn<ConfigRow>.Plain(Wording.ValueColumn, (row, now, width) => Middle(Wording.ConfigValue(row, now, clock.LocalTimeZone), width), new ColumnFit.Elastic()),
+    ];
     public Color RowColour(ConfigRow row) => row switch
     {
         ConfigRow.Heading => Palette.Orange,
