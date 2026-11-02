@@ -37,7 +37,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
 
     private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, CancellationToken cancellationToken)
     {
-        await recent.RecordRecentRepositoryAsync(plan.Repository.Path.Value);
+        await recent.RecordRecentRepositoryAsync(plan.Repository.Path);
         BackgroundSession? listed = await ListedSessionAsync(jobId, cancellationToken);
 
         return listed is null ? new LaunchOutcome.NotListedYet(jobId) : new LaunchOutcome.Listed(jobId, listed);

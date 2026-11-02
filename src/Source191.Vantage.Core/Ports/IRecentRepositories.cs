@@ -1,9 +1,11 @@
+using Source191.Vantage.Domain;
+
 namespace Source191.Vantage.Ports;
 
 /// <summary>The repositories sessions were last launched in, most recent first, capped at ten.</summary>
 public interface IRecentRepositories
 {
-    Task<IReadOnlyList<string>> ReadRecentRepositoriesAsync();
+    Task<IReadOnlyList<FolderPath>> ReadRecentRepositoriesAsync();
 
-    Task RecordRecentRepositoryAsync(string repository);
+    Task RecordRecentRepositoryAsync(FolderPath repository);
 }

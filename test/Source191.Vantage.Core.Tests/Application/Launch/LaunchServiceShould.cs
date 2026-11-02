@@ -144,7 +144,7 @@ public sealed class LaunchServiceShould
     {
         await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([@"C:\repos\Northwind.Orders"]);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\Northwind.Orders")]);
     }
 
     [Fact]

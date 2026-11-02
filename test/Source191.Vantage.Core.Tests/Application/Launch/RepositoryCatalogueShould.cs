@@ -1,5 +1,6 @@
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Launch;
+using Source191.Vantage.Domain;
 using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Launch;
@@ -29,7 +30,7 @@ public sealed class RepositoryCatalogueShould
     [Fact]
     public void OfferNoRootAsAChoice()
     {
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [Path.Combine(Root, "Northwind.Templates")], filter: string.Empty);
+        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [FolderPath.From(Path.Combine(Root, "Northwind.Templates"))], filter: string.Empty);
 
         choices.ShouldAllBe(choice => choice.IsRepository, "vantage here starts a session in any folder");
         choices.Select(choice => choice.Name).ShouldBe(["Northwind.Templates", "Northwind.Agents", "Northwind.Billing"]);
@@ -38,7 +39,7 @@ public sealed class RepositoryCatalogueShould
     [Fact]
     public void PutRecentlyUsedRepositoriesFirstInRecentOrder()
     {
-        IReadOnlyList<string> recent = [Path.Combine(Root, "Northwind.Agents"), Path.Combine(Root, "Northwind.Templates"), Path.Combine(Root, "gone")];
+        IReadOnlyList<FolderPath> recent = [FolderPath.From(Path.Combine(Root, "Northwind.Agents")), FolderPath.From(Path.Combine(Root, "Northwind.Templates")), FolderPath.From(Path.Combine(Root, "gone"))];
 
         IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent, filter: string.Empty);
 

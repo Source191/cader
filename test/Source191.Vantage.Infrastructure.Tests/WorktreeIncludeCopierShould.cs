@@ -1,6 +1,6 @@
-using Source191.Vantage.Domain;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Adapters.Processes;
+using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 using Source191.Vantage.TestDoubles;
 
