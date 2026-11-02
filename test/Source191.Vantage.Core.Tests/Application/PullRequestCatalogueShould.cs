@@ -16,6 +16,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
     private static readonly Head OnFix = new Head.OnBranch(Fix);
     private static readonly PullRequest Open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero));
     private static readonly PullRequest Merged = Open with { State = PullRequestState.Merged };
+    private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(5);
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
         .Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
@@ -94,7 +95,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
         hosts.Answer(Orders, Listing(Merged)).Hold();
 
         Task refresh = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
-        await WaitForCallsAsync(2);
+        await hosts.WhenCalledAsync(2).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         catalogue.Find(Checkout, OnFix).ShouldBe(new PullRequestLookup.Found(Open));
         hosts.Release();
         await refresh;
@@ -109,9 +110,11 @@ public sealed class PullRequestCatalogueShould : IDisposable
         (FolderPath, BranchName)[] twelve = [.. Enumerable.Range(1, 12).Select(number => (Checkout, BranchName.From($"fix-{number}")))];
 
         Task refresh = catalogue.RefreshStaleAsync(twelve);
-        await WaitForCallsAsync(4);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await hosts.WhenCalledAsync(4).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         hosts.Calls.Count.ShouldBe(4, "the rest wait for a free slot");
+        hosts.ReleaseOne();
+        await hosts.WhenCalledAsync(5).WaitAsync(Deadline, TestContext.Current.CancellationToken);
+        hosts.Calls.Count.ShouldBe(5, "a released slot lets the fifth start");
         hosts.Release();
         await refresh;
 
@@ -124,7 +127,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
         hosts.Hold();
 
         Task first = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
-        await WaitForCallsAsync(1);
+        await hosts.WhenCalledAsync(1).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         Task second = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
         hosts.Release();
         await Task.WhenAll(first, second);
@@ -183,7 +186,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
         hosts.Hold();
 
         Task refresh = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
-        await WaitForCallsAsync(1);
+        await hosts.WhenCalledAsync(1).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         clock.Advance(TimeSpan.FromMilliseconds(1200));
         hosts.Release();
         await refresh;
@@ -209,7 +212,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
     {
         hosts.Hold();
         Task first = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
-        await WaitForCallsAsync(1);
+        await hosts.WhenCalledAsync(1).WaitAsync(Deadline, TestContext.Current.CancellationToken);
 
         Task second = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
         hosts.Release();
@@ -224,7 +227,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
         hosts.Hold();
 
         Task refresh = catalogue.RefreshStaleAsync([(Checkout, Fix)]);
-        await WaitForCallsAsync(1);
+        await hosts.WhenCalledAsync(1).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         clock.Advance(TimeSpan.FromSeconds(4));
         hosts.Release();
         await refresh;
@@ -233,14 +236,6 @@ public sealed class PullRequestCatalogueShould : IDisposable
     }
 
     private static PullRequestListing.Listed Listing(PullRequest pullRequest) => new([new BranchPullRequest(Fix, pullRequest)]);
-
-    private async Task WaitForCallsAsync(int count)
-    {
-        while (hosts.Calls.Count < count)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
-    }
 
     public void Dispose()
     {

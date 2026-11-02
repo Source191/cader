@@ -67,12 +67,7 @@ public sealed class WorktreeInventoryShould : IDisposable
         await root.GitAsync(orders, "worktree", "add", "--detach", $"{orders}-spike", "main");
 
         await Inventory.ScanAsync([], TestContext.Current.CancellationToken);
-        while (hosts.Requests.Count < 2)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
-
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await hosts.WhenCalledAsync(2).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         hosts.Requests.Select(request => request.Branch.Value).ShouldBe(["fix-1", "fix-2"], ignoreOrder: true);
     }
 

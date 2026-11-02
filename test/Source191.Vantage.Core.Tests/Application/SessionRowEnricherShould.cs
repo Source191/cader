@@ -57,12 +57,7 @@ public sealed class SessionRowEnricherShould : IDisposable
         AnswerGit(@"C:\repos\Northwind.Orders-spike", root: "C:/repos/Northwind.Orders-spike", commonDir: "C:/repos/Northwind.Orders/.git", branch: string.Empty);
 
         await Enricher.EnrichAsync([Session(@"C:\repos\Northwind.Orders-fix"), Session(@"C:\repos\Northwind.Orders-spike")], CancellationToken.None);
-        while (hosts.Requests.Count < 1)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
-
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await hosts.WhenCalledAsync(1).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         hosts.Requests.Select(request => request.Branch.Value).ShouldBe(["fix"], "a detached head has no branch to look up");
     }
 
