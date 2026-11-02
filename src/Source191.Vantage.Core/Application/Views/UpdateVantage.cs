@@ -17,6 +17,7 @@ public sealed record UpdateVantage : ViewEffect, IDialogEffect
         return status switch
         {
             UpdateStatus.Available available => new UpdateDecision.Ask(available.Current, available.Newest, notes.Between(available.Current, available.Newest)),
+            UpdateStatus.MoveToWinget move => new UpdateDecision.Move(move.Current, move.Newest, notes.Between(move.Current, move.Newest)),
             UpdateStatus.UpToDate => new UpdateDecision.Refuse(new StatusMessage.UpToDate()),
             UpdateStatus.Off => new UpdateDecision.Refuse(new StatusMessage.UpdateCheckOff()),
             _ => throw new UnreachableException(),

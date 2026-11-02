@@ -50,7 +50,7 @@ public static partial class Wording
         ConfigRow.OpenFolderWith => "The program f opens a row's folder with: one of the editors Vantage knows, or a program of your own.",
         ConfigRow.DefaultBase => "New worktrees branch from origin's default branch as of your last git fetch (no fetch is made), or from HEAD.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
-        ConfigRow.CheckForUpdates => "Whether Vantage asks nuget.org once a day for a newer release, which U then installs.",
+        ConfigRow.CheckForUpdates => "Whether Vantage asks the winget community repository once a day for a newer release, which U then installs.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
         _ => string.Empty,
     };
@@ -116,7 +116,7 @@ public static partial class Wording
             SetupItem.TerminalProfiles => "Run vantage setup-terminal, then restart Windows Terminal, to add the Vantage profiles.",
             SetupItem.ClaudeBell => "Run vantage setup-terminal to make Claude ring the terminal bell when a session needs you.",
             SetupItem.DiagnosticLog => "Set the VANTAGE_LOG environment variable to a file path before starting Vantage to keep a diagnostic log.",
-            SetupItem.LastUpdateCheck => "Vantage asks nuget.org at most once a day; turn the check on or off with Check for updates.",
+            SetupItem.LastUpdateCheck => "Vantage asks the winget community repository at most once a day; turn the check on or off with Check for updates.",
         };
     }
 
@@ -128,7 +128,7 @@ public static partial class Wording
             SetupItem.TerminalProfiles => "Windows Terminal profiles that give Vantage tabs a bell and the Vantage icon.",
             SetupItem.ClaudeBell => "Claude's terminal bell, which rings when a session finishes or needs permission while you are away.",
             SetupItem.DiagnosticLog => "The file VANTAGE_LOG names, where Vantage writes its diagnostic log as it runs.",
-            SetupItem.LastUpdateCheck => "When Vantage last asked nuget.org for a newer release, and the newest it found.",
+            SetupItem.LastUpdateCheck => "When Vantage last asked the winget community repository for a newer release, and the newest it found.",
         };
     }
 

@@ -1,7 +1,7 @@
 namespace Source191.Vantage.Domain;
 
 /// <summary>
-/// The newest release Vantage knows of: none yet, one found on nuget.org or in the update-check record, or recorded
+/// The newest release Vantage knows of: none yet, one found in the winget community repository or in the update-check record, or recorded
 /// text that is not a version. A named case stands where a null would, because <see cref="UpdateCheckRule.Offer"/>
 /// offers only a <see cref="Found"/> one.
 /// </summary>

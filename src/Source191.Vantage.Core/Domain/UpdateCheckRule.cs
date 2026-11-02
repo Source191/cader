@@ -1,6 +1,6 @@
 namespace Source191.Vantage.Domain;
 
-/// <summary>When Vantage asks nuget.org for its newest release, which answer counts, and whether it is worth offering.</summary>
+/// <summary>When Vantage asks the winget community repository for its newest release, which answer counts, and whether it is worth offering.</summary>
 public static class UpdateCheckRule
 {
     public static readonly TimeSpan Interval = TimeSpan.FromHours(24);
@@ -21,8 +21,11 @@ public static class UpdateCheckRule
         return highest is null ? new NewestRelease.None() : new NewestRelease.Found(highest);
     }
 
-    /// <summary>An update is offered only to a release build with the check on, and only when the newest known release is higher.</summary>
-    public static UpdateStatus Offer(ToolVersion running, bool enabled, NewestRelease newest)
+    /// <summary>
+    /// An update is offered only to a release build with the check on, and only when the newest known release is higher.
+    /// A dotnet tool install is offered the move to winget instead, as soon as winget has its own version or a newer one.
+    /// </summary>
+    public static UpdateStatus Offer(ToolVersion running, bool enabled, NewestRelease newest, InstallChannel channel)
     {
         ReleaseVersion? current = ReleaseOf(running);
         if (!enabled || current is null)
@@ -30,9 +33,16 @@ public static class UpdateCheckRule
             return new UpdateStatus.Off();
         }
 
-        return newest is NewestRelease.Found found && found.Version.IsHigherThan(current)
-            ? new UpdateStatus.Available(current, found.Version)
-            : new UpdateStatus.UpToDate();
+        if (newest is not NewestRelease.Found found)
+        {
+            return new UpdateStatus.UpToDate();
+        }
+
+        return channel switch
+        {
+            InstallChannel.Winget => found.Version.IsHigherThan(current) ? new UpdateStatus.Available(current, found.Version) : new UpdateStatus.UpToDate(),
+            InstallChannel.DotnetTool => current.IsHigherThan(found.Version) ? new UpdateStatus.UpToDate() : new UpdateStatus.MoveToWinget(current, found.Version),
+        };
     }
 
     private static ReleaseVersion? ReleaseOf(ToolVersion running) => ReleaseVersion.TryParse(running.Text, out ReleaseVersion? version) && !version.IsPrerelease ? version : null;

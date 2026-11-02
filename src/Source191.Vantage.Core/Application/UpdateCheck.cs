@@ -6,24 +6,28 @@ using System.Diagnostics;
 namespace Source191.Vantage.Application;
 
 /// <summary>
-/// The newest release Vantage knows of and its notes: read from the record at start, then asked of the package registry
+/// The newest release Vantage knows of and its notes: read from the record at start, then asked of the winget community repository
 /// at most once a day, the notes only when that release is newer than the running one and none are recorded for it.
 /// <see cref="ScreenLoop"/> runs <see cref="RunAsync"/> on a pool thread as the console opens; the settings row, the
 /// update key and the screen read <see cref="Status"/>, <see cref="Notes"/> and <see cref="TakeAnnouncement"/>, which
 /// never wait for it. A failed request records nothing, so the next start tries again.
 /// </summary>
-public sealed class UpdateCheck(ToolVersion running, Func<bool> enabled, IUpdateCheckRecords records, IPackageVersions packages, TimeProvider clock)
+public sealed class UpdateCheck(ToolVersion running, InstallChannel channel, Func<bool> enabled, IUpdateCheckRecords records, IPackageVersions packages, TimeProvider clock)
 {
+    /// <summary>The winget package the check looks up and the update and move tabs install.</summary>
     public const string PackageId = "Source191.Vantage";
 
-    /// <summary>The feed the check consults, and the only one the update tab installs from, whatever else the machine has configured.</summary>
-    public const string Source = "https://api.nuget.org/v3/index.json";
+    /// <summary>The winget source the check follows, and the only one the tabs install from, whatever else the machine has configured.</summary>
+    public const string Source = "winget";
 
     private readonly SharedSnapshot<KnownRelease> known = new(new KnownRelease(new NewestRelease.None(), ReleaseNotes.None));
     private readonly SharedSnapshot<StatusMessage> announcement = new(StatusMessage.None);
 
     /// <summary>What the update key and the settings row offer now, read on every use so turning the setting off applies at once.</summary>
-    public UpdateStatus Status => UpdateCheckRule.Offer(running, enabled(), known.Value.Newest);
+    public UpdateStatus Status => UpdateCheckRule.Offer(running, enabled(), known.Value.Newest, channel);
+
+    /// <summary>Whether the update key has something to offer: an update, or the move to winget.</summary>
+    public bool Offers => Status is UpdateStatus.Available or UpdateStatus.MoveToWinget;
 
     /// <summary>The newest release's notes, or <see cref="ReleaseNotes.None"/> when none were read.</summary>
     public ReleaseNotes Notes => known.Value.Notes;
@@ -65,18 +69,29 @@ public sealed class UpdateCheck(ToolVersion running, Func<bool> enabled, IUpdate
         ReleaseNotes notes = await NotesOfAsync(found, recorded, cancellationToken);
         await records.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(now, found, notes));
         known.Replace(new KnownRelease(found, notes));
-        if (UpdateCheckRule.Offer(running, enabled(), found) is UpdateStatus.Available available && IsNewerThan(available.Newest, recorded.Newest))
+        if (UpdateCheckRule.Offer(running, enabled(), found, channel) is UpdateStatus.Available available && IsNewerThan(available.Newest, recorded.Newest))
         {
             announcement.Replace(new StatusMessage.NewerReleaseFound(available.Newest));
         }
     }
 
-    /// <summary>The notes of a release worth offering: those already recorded for it, or else asked for once; none for a release that is not newer.</summary>
+    /// <summary>
+    /// The notes of a release worth offering: those already recorded for it, or else asked for once; none for a release
+    /// that is not newer than the running one, including the move to winget's own version.
+    /// </summary>
     private async Task<ReleaseNotes> NotesOfAsync(NewestRelease found, KnownRelease recorded, CancellationToken cancellationToken)
     {
-        if (UpdateCheckRule.Offer(running, enabled(), found) is not UpdateStatus.Available available)
+        ReleaseVersion newest;
+        switch (UpdateCheckRule.Offer(running, enabled(), found, channel))
         {
-            return ReleaseNotes.None;
+            case UpdateStatus.Available available:
+                newest = available.Newest;
+                break;
+            case UpdateStatus.MoveToWinget move when move.Newest.IsHigherThan(move.Current):
+                newest = move.Newest;
+                break;
+            default:
+                return ReleaseNotes.None;
         }
 
         if (recorded.Newest == found && recorded.Notes != ReleaseNotes.None)
@@ -84,7 +99,7 @@ public sealed class UpdateCheck(ToolVersion running, Func<bool> enabled, IUpdate
             return recorded.Notes;
         }
 
-        PackageNotes read = await packages.NotesAsync(PackageId, available.Newest, cancellationToken);
+        PackageNotes read = await packages.NotesAsync(PackageId, newest, cancellationToken);
 
         return read is PackageNotes.Read text && ReleaseNotes.TryParse(text.Text, out ReleaseNotes? notes) ? notes : ReleaseNotes.None;
     }

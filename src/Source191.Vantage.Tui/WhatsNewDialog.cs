@@ -9,7 +9,7 @@ namespace Source191.Vantage.Tui;
 
 /// <summary>
 /// What changed, in a read-only box that scrolls (Tab reaches it, then the arrow keys and PageUp and PageDown), as tall as
-/// the lines need up to nine tenths of the screen, like the help. Before an update its buttons are Update now, Release
+/// the lines need up to nine tenths of the screen, like the help. Before an update its buttons are Update now (Move now for the move to winget), Release
 /// page and Later, with Later the default so an Enter pressed as it opens does nothing; Release page leaves it open.
 /// After an update it has Close alone. Esc closes it either way. Update now has no hotkey, so a second U never updates.
 /// The lines are notes read from outside Vantage, already stripped of control characters, and the box shows them as
@@ -19,13 +19,16 @@ internal static class WhatsNewDialog
 {
     private static readonly Rune NoHotKey = new('￿');
 
-    /// <summary>Before an update: true when Update now was chosen; Release page calls <paramref name="openReleasePage"/> and stays open.</summary>
-    public static bool AskBeforeUpdate(IApplication app, DiagnosticLog log, string title, IReadOnlyList<string> lines, Action openReleasePage)
+    /// <summary>
+    /// Before an update or the move to winget: true when <paramref name="go"/> (Update now or Move now) was chosen; Release
+    /// page calls <paramref name="openReleasePage"/> and stays open.
+    /// </summary>
+    public static bool AskBeforeUpdate(IApplication app, DiagnosticLog log, string title, IReadOnlyList<string> lines, string go, Action openReleasePage)
     {
         bool update = false;
         using Dialog dialog = Create(app, log, title, lines);
 
-        Button updateNow = Plain(Wording.UpdateNowButton);
+        Button updateNow = Plain(go);
         updateNow.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;

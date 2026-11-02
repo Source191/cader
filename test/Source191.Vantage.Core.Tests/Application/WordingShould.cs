@@ -1009,6 +1009,14 @@ public sealed class WordingShould
         Wording.TrustTabTitle("Northwind.Orders").ShouldBe("Trust Northwind.Orders");
         Wording.TrustTabMessage("Bob's tools").ShouldBe("Vantage: accept the trust prompt for Bob's tools, then exit Claude and press n in Vantage to retry.");
         Wording.UpdateTabTitle.ShouldBe("Update Vantage");
+        Wording.MoveTabTitle.ShouldBe("Move Vantage to winget");
+    }
+
+    [Fact]
+    public void HintWhatToDoWhenTheUpgradeOrTheMoveFails()
+    {
+        Wording.UpdateFailedHint.ShouldBe("Vantage: the upgrade failed. If winget says a file is in use, quit every Vantage that is still open; if it found no newer package, winget may not have this release yet. Then press U in Vantage again.");
+        Wording.MoveFailedHint.ShouldBe("Vantage: winget could not install Vantage, so the dotnet tool is still installed. Start vantage again and press U to retry.");
     }
 
     [Fact]

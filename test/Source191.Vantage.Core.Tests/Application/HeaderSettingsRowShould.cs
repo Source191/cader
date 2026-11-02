@@ -20,7 +20,7 @@ public sealed class HeaderSettingsRowShould
 
     public HeaderSettingsRowShould()
     {
-        updates = new UpdateCheck(Running, () => true, state, new FakePackageVersions(["0.20.0"]), clock);
+        updates = new UpdateCheck(Running, InstallChannel.Winget, () => true, state, new FakePackageVersions(["0.20.0"]), clock);
     }
 
     [Fact]

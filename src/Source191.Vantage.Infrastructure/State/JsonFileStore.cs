@@ -102,7 +102,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     public Task WriteLastRunAsync(ReleaseVersion version) => WriteJsonAsync(LastRunPath, new LastRunFile(version.ToString()));
 
-    /// <summary>The notes as the file keeps them, the text read from nuget.org; text that is not a changelog, or none, is no notes.</summary>
+    /// <summary>The notes as the file keeps them, the changelog text read from GitHub; text that is not a changelog, or none, is no notes.</summary>
     private static ReleaseNotes NotesOf(string? text) => ReleaseNotes.TryParse(text, out ReleaseNotes? notes) ? notes : ReleaseNotes.None;
 
     /// <summary>No notes are left out of the file, which then reads as every earlier version wrote it.</summary>

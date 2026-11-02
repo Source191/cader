@@ -109,7 +109,7 @@ public sealed class DiagnosticsPrivacyShould
         FakePackageVersions packages = new(["0.9.0", "0.10.0"]);
         packages.Notes["0.10.0"] = changelog;
         InMemoryState state = new();
-        UpdateCheck updates = new(new ToolVersion("0.9.0"), () => true, state, packages, clock);
+        UpdateCheck updates = new(new ToolVersion("0.9.0"), InstallChannel.Winget, () => true, state, packages, clock);
         await updates.RunAsync(CancellationToken.None);
         await state.WriteLastRunAsync(ReleaseVersion("0.9.0"));
         WhatsNewAtStart shown = await new WhatsNewOnStart(new ToolVersion("0.10.0"), state, new FakePackagedReleaseNotes(changelog), log).DecideAsync();
@@ -172,7 +172,7 @@ public sealed class DiagnosticsPrivacyShould
         LaunchService launches = new(claude, git, store, store, new WorktreeIncludeCopier(git), clock);
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile());
 
-        return Composition.Handlers(ports, launches, new TabScripts(Claude, Vantage), TestSettings.Current(), new VantageProcess(4242, FolderPath.From(@"C:\Users\me")), log);
+        return Composition.Handlers(ports, launches, new TabScripts(Claude, Vantage), TestSettings.Current(), new VantageProcess(4242, FolderPath.From(@"C:\Users\me"), new VantageInstall(InstallChannel.Winget, new ProgramLocation.Missing(), new ProgramLocation.Missing(), FolderPath.From(@"C:\Users\me\AppData\Local"))), log);
     }
 
     private async Task StartASessionWithAPromptAsync(ClaudeCli claude, GitCli git)

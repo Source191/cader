@@ -10,6 +10,8 @@ public sealed class TabScriptsShould
 {
     private const string Claude = @"C:\Users\me\.local\bin\claude.exe";
     private const string Vantage = @"C:\Users\me\.dotnet\tools\vantage.exe";
+    private const string Winget = @"C:\Users\me\AppData\Local\Microsoft\WindowsApps\winget.exe";
+    private const string Dotnet = @"C:\Program Files\dotnet\dotnet.exe";
 
     private static readonly FolderPath Repository = FolderPath.From(@"C:\repos\Northwind.Orders");
 
@@ -56,28 +58,54 @@ public sealed class TabScriptsShould
     }
 
     [Fact]
-    public void WaitUpdateAndRestartInTheUpdateTab()
+    public void WaitUpgradeWithWingetAndRestartInTheUpdateTab()
     {
         FolderPath home = FolderPath.From(@"C:\Users\me");
 
-        TabLaunch tab = scripts.Update(4242, home);
+        TabLaunch tab = scripts.Update(4242, home, Winget);
 
         tab.Title.ShouldBe("Update Vantage");
         tab.StartingDirectory.ShouldBe(home);
         string[] lines = tab.Script.Split('\n');
         lines[0].ShouldBe("Wait-Process -Id '4242' -ErrorAction SilentlyContinue");
-        lines[1].ShouldBe("& 'dotnet' 'tool' 'update' '-g' 'Source191.Vantage' '--source' 'https://api.nuget.org/v3/index.json'", customMessage: "the update must come from the feed the check consulted, whatever other sources the machine has");
+        lines[1].ShouldBe($"& '{Winget}' 'upgrade' '--id' 'Source191.Vantage' '--exact' '--source' 'winget'", customMessage: "the upgrade must come from the source the check consulted, whatever other sources the machine has");
         lines[2].ShouldBe($"if ($LASTEXITCODE -eq 0) {{ & '{Vantage}' }} else {{ Write-Host {PowerShellScript.Quote(Wording.UpdateFailedHint)} -ForegroundColor Yellow }}");
+        lines.Length.ShouldBe(3);
     }
 
     [Fact]
     public void QuoteTheVantagePathInTheUpdateTab()
     {
-        TabLaunch tab = new TabScripts(Claude, @"C:\Users\O'Brien\.dotnet\tools\vantage.exe").Update(4242, FolderPath.From(@"C:\Users\O'Brien"));
+        TabLaunch tab = new TabScripts(Claude, @"C:\Users\O'Brien\AppData\Local\Microsoft\WinGet\Links\vantage.exe").Update(4242, FolderPath.From(@"C:\Users\O'Brien"), Winget);
 
-        tab.Script.ShouldContain(@"& 'C:\Users\O''Brien\.dotnet\tools\vantage.exe'");
+        tab.Script.ShouldContain(@"& 'C:\Users\O''Brien\AppData\Local\Microsoft\WinGet\Links\vantage.exe'");
     }
 
+    [Fact]
+    public void WaitInstallWithWingetUninstallTheToolAndStartTheNewVantageInTheMoveTab()
+    {
+        FolderPath home = FolderPath.From(@"C:\Users\me");
+
+        TabLaunch tab = TabScripts.Migrate(4242, home, Winget, Dotnet, FolderPath.From(@"C:\Users\me\AppData\Local"));
+
+        tab.Title.ShouldBe("Move Vantage to winget");
+        tab.StartingDirectory.ShouldBe(home);
+        string[] lines = tab.Script.Split('\n');
+        lines[0].ShouldBe("Wait-Process -Id '4242' -ErrorAction SilentlyContinue");
+        lines[1].ShouldBe($"& '{Winget}' 'install' '--id' 'Source191.Vantage' '--exact' '--source' 'winget'");
+        lines[2].ShouldBe(
+            $@"if ($LASTEXITCODE -eq 0) {{ & '{Dotnet}' 'tool' 'uninstall' '-g' 'Source191.Vantage'; & 'C:\Users\me\AppData\Local\Microsoft\WinGet\Packages\Source191.Vantage_Microsoft.Winget.Source_8wekyb3d8bbwe\vantage.exe' }} else {{ Write-Host {PowerShellScript.Quote(Wording.MoveFailedHint)} -ForegroundColor Yellow }}",
+            customMessage: "the dotnet tool is uninstalled only after winget installed Vantage, and the new Vantage is started by its full path");
+        lines.Length.ShouldBe(3);
+    }
+
+    [Fact]
+    public void QuoteThePathsInTheMoveTab()
+    {
+        TabLaunch tab = TabScripts.Migrate(4242, FolderPath.From(@"C:\Users\O'Brien"), Winget, Dotnet, FolderPath.From(@"C:\Users\O'Brien\AppData\Local"));
+
+        tab.Script.ShouldContain(@"& 'C:\Users\O''Brien\AppData\Local\Microsoft\WinGet\Packages\Source191.Vantage_Microsoft.Winget.Source_8wekyb3d8bbwe\vantage.exe'");
+    }
     [Fact]
     public void QuoteUserTextSafely()
     {

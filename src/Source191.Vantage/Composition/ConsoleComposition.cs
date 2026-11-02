@@ -37,10 +37,10 @@ internal static class ConsoleComposition
         Task<ClaudeVersionReport> claudeVersion = launch.Claude.VersionAsync(versionTimeout.Token);
         using PullRequestCatalogue pullRequests = PullRequests(parts, launch.Git);
         ScreenClipboard clipboard = new();
-        using NuGetPackageVersions packageVersions = new(parts.Version, new HttpClientHandler());
+        using WingetPackageVersions packageVersions = new(parts.Version, new HttpClientHandler());
         string updateCheckOptOut = Environment.GetEnvironmentVariable(UpdateCheckOptOut.VariableName) ?? string.Empty;
         UpdateCheckSwitch updateSwitch = new(settings, updateCheckOptOut);
-        UpdateCheck updates = new(parts.Version, updateSwitch.IsOn, parts.Store, packageVersions, TimeProvider.System);
+        UpdateCheck updates = new(parts.Version, parts.Channel, updateSwitch.IsOn, parts.Store, packageVersions, TimeProvider.System);
         EffectDispatcher dispatcher = Dispatcher(parts, launch, settings, home, transcripts, folders, clipboard);
         ClaudeVersionReport claudeVersionReport = await claudeVersion;
         Started start = parts.RecordStart(claudeVersionReport);
@@ -52,7 +52,7 @@ internal static class ConsoleComposition
         ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
-        WhatsNewOnStart whatsNew = new(parts.Version, parts.Store, new PackagedReleaseNotes(AppContext.BaseDirectory), parts.Log);
+        WhatsNewOnStart whatsNew = new(parts.Version, parts.Store, new PackagedReleaseNotes(parts.OwnFolder), parts.Log);
         ScreenLoop loop = new(consoleScreen, ownTab, console, updates, whatsNew, parts.Log);
 
         return await loop.RunAsync(Environment.ProcessId, cancellationToken);
@@ -82,7 +82,9 @@ internal static class ConsoleComposition
             launch.Claude, launch.Git, parts.ProcessRegistry, transcripts, terminal, parts.Store,
             TimeProvider.System, clipboard, desktop, editors, folders, parts.CrashFile);
         TabScripts tabScripts = new(launch.Programs.Claude, parts.VantageExecutable);
-        VantageProcess vantage = new(Environment.ProcessId, home);
+        FolderPath localApplicationData = FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        VantageInstall install = new(parts.Channel, parts.Programs.Locate("winget"), parts.Programs.Locate("dotnet"), localApplicationData);
+        VantageProcess vantage = new(Environment.ProcessId, home, install);
 
         return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, vantage, parts.Log);
     }
@@ -110,7 +112,7 @@ internal static class ConsoleComposition
 
         Heartbeat heartbeat = new(TimeProvider.System, parts.Counts.Stalls, parts.Log);
 
-        return new ScreenContext(Wording.TabTitle, header.Rows, () => updates.Status is UpdateStatus.Available, updates.TakeAnnouncement, clipboard, parts.Log, heartbeat);
+        return new ScreenContext(Wording.TabTitle, header.Rows, () => updates.Offers, updates.TakeAnnouncement, clipboard, parts.Log, heartbeat);
     }
 
     private static ConsoleLoads Loads(

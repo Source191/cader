@@ -33,6 +33,30 @@ public sealed class UpdateVantageShould
     }
 
     [Fact]
+    public void OfferTheMoveWithNoNotesForTheRunningVersion()
+    {
+        UpdateStatus move = new UpdateStatus.MoveToWinget(ReleaseVersions.Version("0.21.0"), ReleaseVersions.Version("0.21.0"));
+        ReleaseNotes.TryParse(Changelog, out ReleaseNotes? notes).ShouldBeTrue();
+
+        UpdateDecision.Move offer = UpdateVantage.Decide(move, notes).ShouldBeOfType<UpdateDecision.Move>();
+
+        offer.Newest.ShouldBe(ReleaseVersions.Version("0.21.0"));
+        offer.Sections.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void OfferTheMoveWithTheNotesOfANewerRelease()
+    {
+        UpdateStatus move = new UpdateStatus.MoveToWinget(ReleaseVersions.Version("0.20.0"), ReleaseVersions.Version("0.21.0"));
+        ReleaseNotes.TryParse(Changelog, out ReleaseNotes? notes).ShouldBeTrue();
+
+        UpdateDecision.Move offer = UpdateVantage.Decide(move, notes).ShouldBeOfType<UpdateDecision.Move>();
+
+        offer.Current.ShouldBe(ReleaseVersions.Version("0.20.0"));
+        offer.Sections.Select(section => section.Version.ToString()).ShouldBe(["0.21.0"]);
+    }
+
+    [Fact]
     public void SayUpToDateOtherwise()
     {
         UpdateVantage.Decide(new UpdateStatus.UpToDate(), ReleaseNotes.None).ShouldBe(new UpdateDecision.Refuse(new StatusMessage.UpToDate()));

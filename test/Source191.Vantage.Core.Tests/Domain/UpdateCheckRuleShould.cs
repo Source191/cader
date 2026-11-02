@@ -55,18 +55,39 @@ public sealed class UpdateCheckRuleShould
     [Fact]
     public void OfferOnlyAHigherRelease()
     {
-        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.10.0")).ShouldBe(new UpdateStatus.Available(ReleaseVersions.Version("0.9.0"), ReleaseVersions.Version("0.10.0")));
-        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.9.0")).ShouldBe(new UpdateStatus.UpToDate());
-        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.8.0")).ShouldBe(new UpdateStatus.UpToDate());
-        UpdateCheckRule.Offer(Release, enabled: true, new NewestRelease.None()).ShouldBe(new UpdateStatus.UpToDate());
-        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("rubbish")).ShouldBe(new UpdateStatus.UpToDate());
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.10.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.Available(ReleaseVersions.Version("0.9.0"), ReleaseVersions.Version("0.10.0")));
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.9.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.UpToDate());
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.8.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.UpToDate());
+        UpdateCheckRule.Offer(Release, enabled: true, new NewestRelease.None(), InstallChannel.Winget).ShouldBe(new UpdateStatus.UpToDate());
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("rubbish"), InstallChannel.Winget).ShouldBe(new UpdateStatus.UpToDate());
     }
 
     [Fact]
     public void OfferNothingWhenTurnedOffOrForAPrerelease()
     {
-        UpdateCheckRule.Offer(Release, enabled: false, NewestRelease.Recorded("0.10.0")).ShouldBe(new UpdateStatus.Off());
-        UpdateCheckRule.Offer(new ToolVersion("0.9.0-local"), enabled: true, NewestRelease.Recorded("0.10.0")).ShouldBe(new UpdateStatus.Off());
-        UpdateCheckRule.Offer(new ToolVersion("unknown"), enabled: true, NewestRelease.Recorded("0.10.0")).ShouldBe(new UpdateStatus.Off());
+        UpdateCheckRule.Offer(Release, enabled: false, NewestRelease.Recorded("0.10.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.Off());
+        UpdateCheckRule.Offer(new ToolVersion("0.9.0-local"), enabled: true, NewestRelease.Recorded("0.10.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.Off());
+        UpdateCheckRule.Offer(new ToolVersion("unknown"), enabled: true, NewestRelease.Recorded("0.10.0"), InstallChannel.Winget).ShouldBe(new UpdateStatus.Off());
+    }
+
+    [Fact]
+    public void OfferTheMoveToADotnetToolOnceWingetHasItsVersion()
+    {
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.9.0"), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.MoveToWinget(ReleaseVersions.Version("0.9.0"), ReleaseVersions.Version("0.9.0")));
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.10.0"), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.MoveToWinget(ReleaseVersions.Version("0.9.0"), ReleaseVersions.Version("0.10.0")));
+    }
+
+    [Fact]
+    public void NotOfferTheMoveBeforeWingetHasTheVersion()
+    {
+        UpdateCheckRule.Offer(Release, enabled: true, NewestRelease.Recorded("0.8.0"), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.UpToDate());
+        UpdateCheckRule.Offer(Release, enabled: true, new NewestRelease.None(), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.UpToDate());
+    }
+
+    [Fact]
+    public void OfferNoMoveWhenTurnedOffOrForAPrerelease()
+    {
+        UpdateCheckRule.Offer(Release, enabled: false, NewestRelease.Recorded("0.10.0"), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.Off());
+        UpdateCheckRule.Offer(new ToolVersion("0.9.0-local"), enabled: true, NewestRelease.Recorded("0.10.0"), InstallChannel.DotnetTool).ShouldBe(new UpdateStatus.Off());
     }
 }

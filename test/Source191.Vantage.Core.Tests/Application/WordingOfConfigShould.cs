@@ -138,4 +138,12 @@ public sealed class WordingOfConfigShould
         Wording.PlaceCaption.ShouldBe("Where the wizard opened with n starts a session (↑↓ then Space)");
         Enum.GetValues<LaunchMode>().Select(Wording.Describe).ShouldBe(["Current branch", "New worktree"]);
     }
+
+    [Fact]
+    public void NameTheWingetCommunityRepositoryAsTheUpdateSource()
+    {
+        Wording.ConfigDescription(new ConfigRow.CheckForUpdates(On: true)).ShouldBe("Whether Vantage asks the winget community repository once a day for a newer release, which U then installs.");
+        Wording.Describe(SetupItem.LastUpdateCheck).ShouldBe("Vantage asks the winget community repository at most once a day; turn the check on or off with Check for updates.");
+        Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Never())).ShouldBe("When Vantage last asked the winget community repository for a newer release, and the newest it found.");
+    }
 }

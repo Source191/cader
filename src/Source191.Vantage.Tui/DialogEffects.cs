@@ -114,7 +114,10 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         switch (UpdateVantage.Decide(updates.Status, updates.Notes))
         {
             case UpdateDecision.Ask ask:
-                AskToUpdate(context, ask);
+                Ask(context, Wording.WhatsNewBeforeUpdateTitle(ask.Current, ask.Newest), Wording.WhatsNewBeforeUpdate(ask.Sections), Wording.UpdateNowButton, ask.Newest);
+                break;
+            case UpdateDecision.Move move:
+                Ask(context, Wording.WhatsNewBeforeMoveTitle(move.Current, move.Newest), Wording.WhatsNewBeforeMove(move.Sections), Wording.MoveNowButton, move.Newest);
                 break;
             case UpdateDecision.Refuse refuse:
                 context.ShowMessage(refuse.Message);
@@ -124,17 +127,24 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         }
     }
 
-    private static void AskToUpdate(IEffectContext context, UpdateDecision.Ask ask)
+    /// <summary>
+    /// Asks before the update or the move, then opens its tab; only a tab that opened makes the screen quit, so a missing
+    /// winget or dotnet leaves Vantage running with the reason on the status line.
+    /// </summary>
+    private static void Ask(IEffectContext context, string title, IReadOnlyList<string> lines, string go, ReleaseVersion newest)
     {
-        string title = Wording.WhatsNewBeforeUpdateTitle(ask.Current, ask.Newest);
-        if (!WhatsNewDialog.AskBeforeUpdate(context.App, context.Diagnostics, title, Wording.WhatsNewBeforeUpdate(ask.Sections), () => context.Dispatch(new OpenReleasePage(ask.Newest))))
+        if (!WhatsNewDialog.AskBeforeUpdate(context.App, context.Diagnostics, title, lines, go, () => context.Dispatch(new OpenReleasePage(newest))))
         {
             return;
         }
 
-        context.Dispatch(new StartUpdate(ask.Newest), outcome =>
+        context.Dispatch(new StartUpdate(newest), outcome =>
         {
-            context.Reduce(new UpdateTabOpened());
+            if (outcome is UpdateStartedOutcome or MoveToWingetStartedOutcome)
+            {
+                context.Reduce(new UpdateTabOpened());
+            }
+
             return new StatusMessage.Reported(outcome);
         });
     }

@@ -26,7 +26,7 @@ public sealed record Settings
 
     public WorktreeBase DefaultBase { get; }
 
-    /// <summary>Whether Vantage asks nuget.org, at most once a day, for a newer release of itself.</summary>
+    /// <summary>Whether Vantage asks the winget community repository, at most once a day, for a newer release of itself.</summary>
     public bool CheckForUpdates { get; }
 
     /// <summary>Where the wizard opened with n starts a new session: a new worktree, or the repository's current branch.</summary>

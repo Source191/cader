@@ -6,7 +6,7 @@ namespace Source191.Vantage.Domain;
 /// <summary>
 /// A <see href="https://semver.org/">semantic version</see>, <c>major.minor.patch[-prerelease]</c>, compared by
 /// <see href="https://semver.org/#spec-item-11">semantic version precedence</see>; build metadata after <c>+</c> is
-/// dropped. Text from outside Vantage (nuget.org's list, the update-check record) goes through
+/// dropped. Text from outside Vantage (the winget community repository's listing, the update-check record) goes through
 /// <see cref="TryParse"/>, which answers false for anything else.
 /// </summary>
 public sealed record ReleaseVersion : IComparable<ReleaseVersion>
