@@ -9,7 +9,7 @@ namespace Source191.Vantage.Tui;
 /// its reducer and, when it needs them, an input observer, a row tooltip and a detail pane (each defaults to none).
 /// The rest of a tab (lifetime, keys, routing effects, background work, spinners, redraw) is
 /// <see cref="TableBody{TState, TRow}"/>'s and written once, with the column sizing, tooltips and detail pane
-/// in <c>ColumnSizing</c>, <c>TableToolTips</c> and <c>DetailReader</c>.
+/// in <see cref="ColumnSizing{TRow}"/>, <see cref="TableToolTips{TRow}"/> and <see cref="DetailReader{TRow}"/>.
 /// </summary>
 internal interface IScreenDefinition<TState, TRow>
     where TState : IListViewState<TRow>
