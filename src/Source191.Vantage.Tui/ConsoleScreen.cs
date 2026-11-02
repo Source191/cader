@@ -380,7 +380,11 @@ public sealed class ConsoleScreen(
         /// <summary>Replaces a row's labels with one per part, in its tone, each after the last.</summary>
         private static void Fill(View row, IReadOnlyList<TextPart> parts)
         {
-            row.RemoveAll();
+            foreach (View removed in row.RemoveAll())
+            {
+                removed.Dispose();
+            }
+
             int x = 0;
             foreach (TextPart part in parts)
             {
@@ -402,17 +406,33 @@ public sealed class ConsoleScreen(
         /// </summary>
         private void StartRefreshing()
         {
-            Every(sessions.RefreshEvery, ListSessions);
-            Every(worktrees.RefreshEvery, () =>
+            Refresh(sessions, ListSessions);
+            Refresh(worktrees, () =>
             {
                 if (Active == worktrees)
                 {
                     ScanWorktrees();
                 }
             });
+            Refresh(config, ReadConfig);
             Every(Heartbeat.Interval, screen.context.Heartbeat.Beat);
             ListSessions();
             ScanWorktrees();
+        }
+
+        /// <summary>Adds the tab's refresh timer, or none for a tab that never refreshes on one.</summary>
+        private void Refresh(ITabBody body, Action tick)
+        {
+            switch (body.Refresh)
+            {
+                case TabRefresh.Every every:
+                    Every(every.Interval, tick);
+                    break;
+                case TabRefresh.Never:
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
         }
 
         private void Every(TimeSpan interval, Action tick)
@@ -573,7 +593,12 @@ public sealed class ConsoleScreen(
             }
 
             shownBar = keys;
-            bar.RemoveAll();
+            foreach (View removed in bar.RemoveAll())
+            {
+                app.ToolTips?.RemoveToolTip(removed);
+                removed.Dispose();
+            }
+
             AddBarRow(keys.First, 0);
             AddBarRow(keys.Second, 1);
         }

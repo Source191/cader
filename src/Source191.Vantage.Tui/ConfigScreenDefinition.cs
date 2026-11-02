@@ -1,5 +1,6 @@
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Views;
+using Source191.Vantage.Domain;
 using Terminal.Gui.Drawing;
 
 namespace Source191.Vantage.Tui;
@@ -7,13 +8,10 @@ namespace Source191.Vantage.Tui;
 /// <summary>The Config tab as the shared table screen shows it: a setting or a piece of setup per row, the setup grey under an orange Setup heading.</summary>
 internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefinition<ConfigViewState, ConfigRow>
 {
-    private const string Ellipsis = "…";
+    public ConsoleTab Tab => ConsoleTab.Config;
 
-    /// <summary>Never used to refresh: the tab reads the setup when it is shown and after each save.</summary>
-    public TimeSpan RefreshEvery => TimeSpan.FromMinutes(5);
-
-    /// <summary>The Config tab has no pane: a setting's row says all there is.</summary>
-    public TableDetail<ConfigRow> Detail => new TableDetail<ConfigRow>.None();
+    /// <summary>The tab reads the setup when it is shown and after each save, never on a timer.</summary>
+    public TabRefresh Refresh => new TabRefresh.Never();
 
     /// <summary>What the setting does or the setup is for, shown only as the row's tooltip.</summary>
     public string RowTip(ConfigRow row) => Wording.ConfigDescription(row);
@@ -28,7 +26,7 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
     public IReadOnlyList<TableColumn<ConfigRow>> Columns { get; } =
     [
         TableColumn<ConfigRow>.Plain(Wording.SettingColumn, (row, _, _) => Wording.ConfigSetting(row), new ColumnFit.Natural()),
-        TableColumn<ConfigRow>.Plain(Wording.ValueColumn, (row, now, width) => Middle(Wording.ConfigValue(row, now, clock.LocalTimeZone), width), new ColumnFit.Elastic()),
+        TableColumn<ConfigRow>.Plain(Wording.ValueColumn, (row, now, width) => TextFit.ElideMiddle(Wording.ConfigValue(row, now, clock.LocalTimeZone), width), new ColumnFit.Elastic()),
     ];
     public Color RowColour(ConfigRow row) => row switch
     {
@@ -37,8 +35,6 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
         _ => Palette.White,
     };
 
-    public string TabTitle(ConfigViewState state) => Wording.TabTitleFor(ConsoleTab.Config);
-
     public IReadOnlyList<TextPart> Counts(ConfigViewState state) => Wording.ConfigCounts(state.List.Rows);
 
     public KeyBar Bar(ConfigViewState state, bool updateKnown) => Wording.ConfigBar(state, updateKnown);
@@ -46,23 +42,4 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
     public ConfigViewState WithMessage(ConfigViewState state, StatusMessage message) => state with { Message = message };
 
     public ViewUpdate<ConfigViewState> Reduce(ConfigViewState state, ViewInput input) => ConfigView.Reduce(state, input);
-
-    public void OnInput(ConfigViewState before, ViewInput input)
-    {
-        // Nothing listens to the Config tab's inputs.
-    }
-
-    /// <summary>A path too long for the cell keeps its start and its end, so the drive and the file or folder name both show.</summary>
-    private static string Middle(string text, int width)
-    {
-        if (text.Length <= width || width <= Ellipsis.Length)
-        {
-            return text.Length <= width ? text : text[..Math.Max(width, 0)];
-        }
-
-        int start = (width - Ellipsis.Length) / 2;
-        int end = width - Ellipsis.Length - start;
-
-        return $"{text[..start]}{Ellipsis}{text[^end..]}";
-    }
 }

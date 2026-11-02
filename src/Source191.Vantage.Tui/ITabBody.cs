@@ -10,9 +10,7 @@ internal interface ITabBody
 {
     View View { get; }
 
-    TimeSpan RefreshEvery { get; }
-
-    string Title { get; }
+    TabRefresh Refresh { get; }
 
     IReadOnlyList<TextPart> Counts { get; }
 

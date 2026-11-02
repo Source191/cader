@@ -11,12 +11,11 @@ namespace Source191.Vantage.Tui;
 internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier, SessionActivity activity, string claudeExecutable, FolderLabels folders, IDetailSource<SessionRow> detail)
     : IScreenDefinition<SessionsViewState, SessionRow>
 {
+    public ConsoleTab Tab => ConsoleTab.Sessions;
 
-    public TimeSpan RefreshEvery => TimeSpan.FromSeconds(5);
+    public TabRefresh Refresh => new TabRefresh.Every(TimeSpan.FromSeconds(5));
 
     public TableDetail<SessionRow> Detail => new TableDetail<SessionRow>.Pane(detail);
-
-    public string RowTip(SessionRow row) => string.Empty;
 
 
     public string WaitingText => Wording.WaitingText(ConsoleTab.Sessions);
@@ -46,8 +45,6 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
         };
     }
     public Color RowColour(SessionRow row) => Palette.ForState(row.Session.State.Kind);
-
-    public string TabTitle(SessionsViewState state) => Wording.TabTitleFor(ConsoleTab.Sessions);
 
     public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.List.Rows, state.AutomatedRuns);
 
