@@ -47,7 +47,7 @@ internal static class ConsoleComposition
 
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
-        FolderLabels folderLabels = new(() => [.. settings.Value.RepositoryRoots, settings.Value.WorktreeRoot], home);
+        FolderLabels folderLabels = new(settings, home);
         ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests);
         ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);

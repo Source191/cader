@@ -24,7 +24,7 @@ public sealed class WorktreesScreenDefinitionShould
         FakeTimeProvider clock = new(Noon);
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(TimeProvider.System, []));
-        FolderLabels folders = new(() => [FolderPath.From(@"C:\Users\me\source\repos")], FolderPath.From(@"C:\Users\me"));
+        FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
         definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock));
     }
 

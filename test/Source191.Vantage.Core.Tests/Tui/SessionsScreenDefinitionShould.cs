@@ -25,7 +25,7 @@ public sealed class SessionsScreenDefinitionShould
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
         SessionActivity activity = new(clock);
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), activity, new DiagnosticLog(TimeProvider.System, []));
-        FolderLabels folders = new(() => [FolderPath.From(@"C:\Users\me\source\repos")], FolderPath.From(@"C:\Users\me"));
+        FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
         definition = new SessionsScreenDefinition(new StateTransitionNotifier(new StringWriter(terminal)), activity, @"C:\Users\me\.local\bin\claude.exe", folders, new SessionDetails(loader, clock));
     }
 
