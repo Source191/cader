@@ -50,7 +50,6 @@ public sealed class ConsoleScreen(
     private readonly ScreenContext context = context;
     private readonly string claudeExecutable = claudeExecutable;
     private readonly FolderLabels folders = folders;
-    private ConsoleTab? shown;
 
     public ConsoleExit Run(ConsoleState initial, WhatsNewAtStart opening)
     {
@@ -114,6 +113,7 @@ public sealed class ConsoleScreen(
         private readonly TableBody<ConfigViewState, ConfigRow> config;
         private readonly List<object> timers = [];
         private ConsoleTab active;
+        private ConsoleTab? shownTab;
         private ViewEffect leaving = new Quit();
         private bool binding;
         private KeyBar shownBar = new([], []);
@@ -260,9 +260,9 @@ public sealed class ConsoleScreen(
             binding = true;
             tabs.Value = BodyOf(tab).View;
             binding = false;
-            if (tab != screen.shown)
+            if (tab != shownTab)
             {
-                screen.shown = tab;
+                shownTab = tab;
                 screen.context.Diagnostics.Record(new ViewShown(tab switch
                 {
                     ConsoleTab.Sessions => ViewKind.Sessions,

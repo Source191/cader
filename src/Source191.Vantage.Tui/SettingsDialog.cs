@@ -161,14 +161,14 @@ internal static class SettingsDialog
         controls.WorktreeRoot.Accepting += (_, accepting) => accepting.Handled = true;
         controls.Executable.Accepting += (_, accepting) => accepting.Handled = true;
         controls.Arguments.Accepting += (_, accepting) => accepting.Handled = true;
-        dialog.KeyDown += (_, key) => key.Handled = (key == GuiKey.F5 && WizardControls.Handled(Save)) || (key == GuiKey.F3 && state.Browses != SettingsBrowse.No && WizardControls.Handled(Browse));
+        dialog.KeyDown += (_, key) => key.Handled = (key == GuiKey.F5 && DialogButtons.Handled(Save)) || (key == GuiKey.F3 && state.Browses != SettingsBrowse.No && DialogButtons.Handled(Browse));
         if (scope is SettingsScope.Roots or SettingsScope.WorktreeRoot or SettingsScope.Editor)
         {
             dialog.AddButton(browse);
         }
 
-        dialog.AddButton(WizardControls.Button(Wording.SaveButton, Save));
-        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new SettingsInput.Cancel())));
+        dialog.AddButton(DialogButtons.Button(Wording.SaveButton, Save));
+        dialog.AddButton(DialogButtons.Button(Wording.CancelWithEscButton, () => Apply(new SettingsInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
         if (scope is SettingsScope.Editor)
         {
