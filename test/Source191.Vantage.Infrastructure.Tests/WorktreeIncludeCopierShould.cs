@@ -1,3 +1,4 @@
+using Source191.Vantage.Domain;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Adapters.Processes;
 using Source191.Vantage.Ports;
@@ -28,7 +29,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
             worktreeInclude: "# local configuration\n\n*.local.json\nsecrets/key.txt\nnotes.txt\n",
             files: ["src/app.local.json", "src/app.json", "secrets/key.txt", "secrets/other.txt", "notes.txt"]);
 
-        IReadOnlyList<string> copied = await Copier.CopyAsync(Repository, Worktree, TestContext.Current.CancellationToken);
+        IReadOnlyList<string> copied = await Copier.CopyAsync(FolderPath.From(Repository), FolderPath.From(Worktree), TestContext.Current.CancellationToken);
 
         copied.Order().ShouldBe(["secrets/key.txt", "src/app.local.json"]);
         File.Exists(Path.Combine(Worktree, "src", "app.local.json")).ShouldBeTrue();
@@ -49,7 +50,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
             worktreeInclude: "*.local.json\n",
             files: ["Café.local.json", "my app.local.json", "it's.local.json"]);
 
-        IReadOnlyList<string> copied = await Copier.CopyAsync(Repository, Worktree, TestContext.Current.CancellationToken);
+        IReadOnlyList<string> copied = await Copier.CopyAsync(FolderPath.From(Repository), FolderPath.From(Worktree), TestContext.Current.CancellationToken);
 
         copied.Order(StringComparer.Ordinal).ShouldBe(["Café.local.json", "it's.local.json", "my app.local.json"]);
         File.Exists(Path.Combine(Worktree, "Café.local.json")).ShouldBeTrue();
@@ -62,7 +63,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
     {
         await CreateRepositoryAsync(gitignore: "*.local.json\n", worktreeInclude: null, files: ["src/app.local.json"]);
 
-        IReadOnlyList<string> copied = await Copier.CopyAsync(Repository, Worktree, TestContext.Current.CancellationToken);
+        IReadOnlyList<string> copied = await Copier.CopyAsync(FolderPath.From(Repository), FolderPath.From(Worktree), TestContext.Current.CancellationToken);
 
         copied.ShouldBeEmpty();
     }
@@ -79,7 +80,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
         IReadOnlyList<string> outsideBefore = FilesOutsideTheWorktree();
 
         IReadOnlyList<string> copied = await CopierOverListing("../outside.local.json", "sub/../../outside.local.json", "app.local.json")
-            .CopyAsync(Repository, Worktree, TestContext.Current.CancellationToken);
+            .CopyAsync(FolderPath.From(Repository), FolderPath.From(Worktree), TestContext.Current.CancellationToken);
 
         copied.ShouldBe(["app.local.json"]);
         FilesOutsideTheWorktree().ShouldBe(outsideBefore);
@@ -92,7 +93,7 @@ public sealed class WorktreeIncludeCopierShould : IDisposable
         IReadOnlyList<string> outsideBefore = FilesOutsideTheWorktree();
 
         IReadOnlyList<string> copied = await CopierOverListing("C:/Users/me/secrets.local.json", "//server/share/secrets.local.json", "/secrets.local.json", "app.local.json")
-            .CopyAsync(Repository, Worktree, TestContext.Current.CancellationToken);
+            .CopyAsync(FolderPath.From(Repository), FolderPath.From(Worktree), TestContext.Current.CancellationToken);
 
         copied.ShouldBe(["app.local.json"]);
         File.Exists(Path.Combine(Worktree, "app.local.json")).ShouldBeTrue();

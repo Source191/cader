@@ -52,7 +52,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
 
         await git.AddWorktreeAsync(repository.Value, worktree.Path.Value, worktree.Branch.Value, baseRef, cancellationToken);
         await created.RecordCreatedWorktreeAsync(new CreatedWorktree(worktree.Path, worktree.Branch, repository, clock.GetUtcNow()));
-        await copier.CopyAsync(repository.Value, worktree.Path.Value, cancellationToken);
+        await copier.CopyAsync(repository, worktree.Path, cancellationToken);
     }
 
     /// <summary>The new session as the supervisor lists it, which is where its full session id comes from.</summary>
