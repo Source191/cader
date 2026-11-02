@@ -2,6 +2,7 @@ using Source191.Vantage.Adapters.Claude;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Views;
+using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 using Source191.Vantage.TestDoubles;
 using static Source191.Vantage.Core.Tests.Application.Actions.SessionTestData;
@@ -12,7 +13,7 @@ public sealed class AdoptSessionHandlerShould
 {
     private readonly FakeProcessRunner processes = Processes();
     private readonly FakeProcessRegistry processTable = new FakeProcessRegistry().Running(4242, Noon);
-    private readonly FakeTranscripts transcripts = new FakeTranscripts().WithMessages("sess-9");
+    private readonly FakeTranscripts transcripts = new FakeTranscripts().WithMessages(SessionId.From("sess-9"));
 
     private AdoptSessionHandler Handler => new(new ClaudeCli(processes, Claude), processTable, transcripts);
 

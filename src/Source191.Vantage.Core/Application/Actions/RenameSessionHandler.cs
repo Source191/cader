@@ -17,7 +17,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
     {
         BackgroundSession session = effect.Session;
         SessionName newName = effect.NewName;
-        if (!transcripts.HasMessages(session.SessionId.Value))
+        if (!transcripts.HasMessages(session.SessionId))
         {
             return new RenameSessionOutcome.NoMessages(session.Name);
         }
@@ -25,7 +25,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
         TabRegistration? earlier = (await registrations.ReadTabsAsync()).FirstOrDefault(tab => tab.Owner == new TabOwner.ForSession(session.SessionId));
         try
         {
-            await claude.RemoveAsync(session.JobId.Value, cancellationToken);
+            await claude.RemoveAsync(session.JobId, cancellationToken);
         }
         catch (ClaudeCliException refusal)
         {
@@ -33,7 +33,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
         }
 
         bool tabClosed = await tabs.CloseAsync(session.SessionId) == TabClosure.Closed;
-        ResumeResult renamed = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, new ListedName.Named(newName), cancellationToken);
+        ResumeResult renamed = await claude.ResumeBackgroundAsync(session.SessionId, session.WorkingDirectory, new ListedName.Named(newName), cancellationToken);
         if (renamed is ResumeResult.Continued)
         {
             if (tabClosed)
@@ -45,7 +45,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
             return new RenameSessionOutcome.Renamed(session.Name, newName, TabMoved: tabClosed);
         }
 
-        ResumeResult restored = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, session.Name, cancellationToken);
+        ResumeResult restored = await claude.ResumeBackgroundAsync(session.SessionId, session.WorkingDirectory, session.Name, cancellationToken);
 
         return restored is ResumeResult.Continued
             ? new RenameSessionOutcome.Restored(session.Name, renamed.Message, tabClosed)

@@ -3,7 +3,7 @@ using Source191.Vantage.Ports;
 namespace Source191.Vantage.TestDoubles;
 
 /// <summary>An in-memory folder tree for the read models and worktree actions, keyed case-insensitively like Windows paths.</summary>
-public sealed class FakeFolders : IFolders
+public sealed class FakeFolders : IFolders, IFolderDeleter
 {
     private readonly HashSet<string> directories = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> files = new(StringComparer.OrdinalIgnoreCase);

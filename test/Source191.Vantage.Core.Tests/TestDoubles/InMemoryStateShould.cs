@@ -27,15 +27,15 @@ public sealed class InMemoryStateShould
     {
         foreach (int index in Enumerable.Range(1, 11))
         {
-            await state.RecordRecentRepositoryAsync($@"C:\repos\R{index}");
+            await state.RecordRecentRepositoryAsync(FolderPath.From($@"C:\repos\R{index}"));
         }
 
-        await state.RecordRecentRepositoryAsync(@"C:\repos\r2");
+        await state.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\r2"));
 
-        IReadOnlyList<string> recent = await state.ReadRecentRepositoriesAsync();
+        IReadOnlyList<FolderPath> recent = await state.ReadRecentRepositoriesAsync();
         recent.Count.ShouldBe(10);
-        recent[0].ShouldBe(@"C:\repos\r2");
-        recent.ShouldNotContain(@"C:\repos\R1");
+        recent[0].ShouldBe(FolderPath.From(@"C:\repos\r2"));
+        recent.ShouldNotContain(FolderPath.From(@"C:\repos\R1"));
     }
 
     [Fact]

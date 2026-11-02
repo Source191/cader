@@ -19,7 +19,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
         List<ResumeNote> notes = [];
         foreach (BackgroundSession session in effect.Sessions)
         {
-            if (!transcripts.HasMessages(session.SessionId.Value))
+            if (!transcripts.HasMessages(session.SessionId))
             {
                 notes.Add(new ResumeNote.NeverSentAMessage(session.Name));
                 continue;
@@ -27,7 +27,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
 
             try
             {
-                await claude.RemoveAsync(session.JobId.Value, cancellationToken);
+                await claude.RemoveAsync(session.JobId, cancellationToken);
             }
             catch (ClaudeCliException refusal)
             {
@@ -35,7 +35,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
                 continue;
             }
 
-            ResumeResult result = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, session.Name, cancellationToken);
+            ResumeResult result = await claude.ResumeBackgroundAsync(session.SessionId, session.WorkingDirectory, session.Name, cancellationToken);
             if (result is not ResumeResult.Continued)
             {
                 notes.Add(new ResumeNote.Failed(session.Name, result.Message, session.SessionId));

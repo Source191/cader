@@ -1,4 +1,5 @@
 using Microsoft.Extensions.FileSystemGlobbing;
+using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 namespace Source191.Vantage.Adapters.Git;
 
@@ -10,24 +11,24 @@ public sealed class WorktreeIncludeCopier(IGit git) : IWorktreeIncludeCopier
 {
     private const string IncludeFileName = ".worktreeinclude";
 
-    public async Task<IReadOnlyList<string>> CopyAsync(string repository, string worktree, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<string>> CopyAsync(FolderPath repository, FolderPath worktree, CancellationToken cancellationToken)
     {
-        string includeFile = Path.Combine(repository, IncludeFileName);
+        string includeFile = Path.Combine(repository.Value, IncludeFileName);
         if (!File.Exists(includeFile))
         {
             return [];
         }
 
         IReadOnlyList<string> patterns = await ReadPatternsAsync(includeFile, cancellationToken);
-        IReadOnlyList<string> ignored = await git.ListIgnoredFilesAsync(repository, cancellationToken);
+        IReadOnlyList<string> ignored = await git.ListIgnoredFilesAsync(repository.Value, cancellationToken);
         Matcher matcher = new();
         matcher.AddIncludePatterns(patterns.Select(ToGlob));
 
         List<string> copied = [];
         foreach (string relative in matcher.Match(ignored).Files.Select(match => match.Path))
         {
-            string source = Path.Combine(repository, relative.Replace('/', Path.DirectorySeparatorChar));
-            string target = Path.Combine(worktree, relative.Replace('/', Path.DirectorySeparatorChar));
+            string source = Path.Combine(repository.Value, relative.Replace('/', Path.DirectorySeparatorChar));
+            string target = Path.Combine(worktree.Value, relative.Replace('/', Path.DirectorySeparatorChar));
             if (Path.GetDirectoryName(target) is string folder)
             {
                 Directory.CreateDirectory(folder);

@@ -15,7 +15,7 @@ public sealed class TerminalEffects(IClaudeCli claude, ITerminalConsole console)
         console.ShowReturnHint(Wording.ReturnHint);
         try
         {
-            await claude.AttachAsync(attach.JobId.Value, cancellationToken);
+            await claude.AttachAsync(attach.JobId, cancellationToken);
         }
         finally
         {

@@ -14,9 +14,9 @@ public sealed class OpenReleasePageHandler(IDesktop desktop) : IEffectHandler<Op
         {
             await desktop.OpenAsync(ReleasePage.For(effect.Version).AbsoluteUri, cancellationToken);
         }
-        catch (InvalidOperationException failed)
+        catch (ProgramNotStartedException failed)
         {
-            return new OpenReleasePageOutcome.NotOpened(effect.Version.ToString(), failed.Message);
+            return new OpenReleasePageOutcome.NotOpened(effect.Version.ToString(), failed.Reason);
         }
 
         return new OpenReleasePageOutcome.Opened(effect.Version.ToString());

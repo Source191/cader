@@ -24,7 +24,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
             return new LaunchOutcome.Failed(failure.Message);
         }
 
-        StartResult start = await claude.StartBackgroundAsync(plan.Directory.Value, plan.Name, plan.OpeningPrompt, cancellationToken);
+        StartResult start = await claude.StartBackgroundAsync(plan.Directory, plan.Name, plan.OpeningPrompt, cancellationToken);
 
         return start switch
         {
@@ -37,7 +37,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
 
     private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, CancellationToken cancellationToken)
     {
-        await recent.RecordRecentRepositoryAsync(plan.Repository.Path.Value);
+        await recent.RecordRecentRepositoryAsync(plan.Repository.Path);
         BackgroundSession? listed = await ListedSessionAsync(jobId, cancellationToken);
 
         return listed is null ? new LaunchOutcome.NotListedYet(jobId) : new LaunchOutcome.Listed(jobId, listed);
@@ -52,7 +52,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
 
         await git.AddWorktreeAsync(repository.Value, worktree.Path.Value, worktree.Branch.Value, baseRef, cancellationToken);
         await created.RecordCreatedWorktreeAsync(new CreatedWorktree(worktree.Path, worktree.Branch, repository, clock.GetUtcNow()));
-        await copier.CopyAsync(repository.Value, worktree.Path.Value, cancellationToken);
+        await copier.CopyAsync(repository, worktree.Path, cancellationToken);
     }
 
     /// <summary>The new session as the supervisor lists it, which is where its full session id comes from.</summary>

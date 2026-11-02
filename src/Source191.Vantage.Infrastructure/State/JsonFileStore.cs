@@ -54,15 +54,15 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         return Task.CompletedTask;
     }
 
-    public async Task<IReadOnlyList<string>> ReadRecentRepositoriesAsync()
+    public async Task<IReadOnlyList<FolderPath>> ReadRecentRepositoriesAsync()
     {
         await ImportLegacyRecentAsync();
         IReadOnlyList<RecentRepository> recent = await ReadAllAsync<RecentRepository>(RecentFolder);
 
-        return [.. recent.OrderByDescending(entry => entry.UsedAt).Take(RecentLimit).Select(entry => entry.Path)];
+        return [.. recent.OrderByDescending(entry => entry.UsedAt).DistinctBy(entry => entry.Path.Key).Take(RecentLimit).Select(entry => entry.Path)];
     }
 
-    public async Task RecordRecentRepositoryAsync(string repository)
+    public async Task RecordRecentRepositoryAsync(FolderPath repository)
     {
         await ImportLegacyRecentAsync();
         await WriteJsonAsync(RecentFile(repository), new RecentRepository(repository, clock.GetUtcNow()));
@@ -122,7 +122,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         };
     }
 
-    private string RecentFile(string repository) => Path.Combine(RecentFolder, $"{FileKey(repository.ToUpperInvariant())}.json");
+    private string RecentFile(FolderPath repository) => Path.Combine(RecentFolder, $"{FileKey(repository.Key)}.json");
 
     /// <summary>The old single list, most recent first, becomes one file each with descending timestamps so the order survives.</summary>
     private async Task ImportLegacyRecentAsync()
@@ -134,7 +134,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         }
 
         DateTimeOffset now = clock.GetUtcNow();
-        foreach ((string repository, int index) in legacy.Select((repository, index) => (repository, index)))
+        foreach ((FolderPath repository, int index) in legacy.Parsed<FolderPath>().Select((repository, index) => (repository, index)))
         {
             await WriteJsonAsync(RecentFile(repository), new RecentRepository(repository, now.AddSeconds(-index)));
         }
@@ -147,7 +147,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     private async Task TrimRecentAsync()
     {
         IReadOnlyList<RecentRepository> recent = await ReadAllAsync<RecentRepository>(RecentFolder);
-        foreach (RecentRepository stale in recent.OrderByDescending(entry => entry.UsedAt).Skip(RecentLimit))
+        foreach (RecentRepository stale in recent.OrderByDescending(entry => entry.UsedAt).DistinctBy(entry => entry.Path.Key).Skip(RecentLimit))
         {
             TryDelete(RecentFile(stale.Path));
         }
@@ -260,7 +260,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         }
     }
 
-    private sealed record RecentRepository(string Path, DateTimeOffset UsedAt);
+    private sealed record RecentRepository(FolderPath Path, DateTimeOffset UsedAt);
 
     /// <summary>update-check.json as written, <c>{"checkedAt": ..., "newest": "0.10.0"}</c> or <c>"newest": null</c>, and <c>"notes"</c> (the newest release's notes as read) only when there are some, so without them it is the same file every earlier version wrote.</summary>
     private sealed record UpdateCheckFile(DateTimeOffset CheckedAt, string? Newest, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Notes = null);

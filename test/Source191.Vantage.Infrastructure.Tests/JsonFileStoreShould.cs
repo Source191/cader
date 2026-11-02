@@ -197,13 +197,46 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task KeepRecentRepositoriesMostRecentFirstWithoutDuplicates()
     {
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         clock.Advance(TimeSpan.FromSeconds(1));
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\B");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\B"));
         clock.Advance(TimeSpan.FromSeconds(1));
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\a");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\a"));
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([@"C:\repos\a", @"C:\repos\B"]);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\a"), FolderPath.From(@"C:\repos\B")]);
+    }
+
+    [Fact]
+    public async Task KeepOneEntryForEverySpellingOfAFolder()
+    {
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A\"));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await Store.RecordRecentRepositoryAsync(FolderPath.From("C:/repos/A"));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"c:\repos\a"));
+
+        Directory.EnumerateFiles(Path.Combine(folder, "recent")).Count().ShouldBe(1);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"c:\repos\a")]);
+    }
+
+    [Fact]
+    public async Task ReadDistinctFoldersNewestFirst()
+    {
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
+        await File.WriteAllTextAsync(Path.Combine(folder, "recent", "another-name.json"), """{ "path": "c:\\repos\\a", "usedAt": "2099-01-01T00:00:00+00:00" }""", TestContext.Current.CancellationToken);
+
+        IReadOnlyList<FolderPath> recent = await Store.ReadRecentRepositoriesAsync();
+
+        recent.ShouldBe([FolderPath.From(@"c:\repos\a")]);
+    }
+
+    [Fact]
+    public async Task SkipARecentFileHoldingARelativePath()
+    {
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
+        await File.WriteAllTextAsync(Path.Combine(folder, "recent", "relative.json"), """{ "path": "repos\\B", "usedAt": "2027-01-01T00:00:00+00:00" }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\A")]);
     }
 
     [Fact]
@@ -212,13 +245,13 @@ public sealed class JsonFileStoreShould : IDisposable
         foreach (int index in Enumerable.Range(1, 12))
         {
             clock.Advance(TimeSpan.FromSeconds(1));
-            await Store.RecordRecentRepositoryAsync($@"C:\repos\R{index}");
+            await Store.RecordRecentRepositoryAsync(FolderPath.From($@"C:\repos\R{index}"));
         }
 
-        IReadOnlyList<string> recent = await Store.ReadRecentRepositoriesAsync();
+        IReadOnlyList<FolderPath> recent = await Store.ReadRecentRepositoriesAsync();
 
         recent.Count.ShouldBe(10);
-        recent[0].ShouldBe(@"C:\repos\R12");
+        recent[0].ShouldBe(FolderPath.From(@"C:\repos\R12"));
         Directory.EnumerateFiles(Path.Combine(folder, "recent")).Count().ShouldBe(10, "the two oldest records are deleted");
     }
 
@@ -228,36 +261,36 @@ public sealed class JsonFileStoreShould : IDisposable
         JsonFileStore console = Store;
         JsonFileStore here = new(folder, new FakeTimeProvider(Noon.AddSeconds(1)));
 
-        await Task.WhenAll(console.RecordRecentRepositoryAsync(@"C:\repos\A"), here.RecordRecentRepositoryAsync(@"C:\repos\B"));
+        await Task.WhenAll(console.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A")), here.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\B")));
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([@"C:\repos\B", @"C:\repos\A"]);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\B"), FolderPath.From(@"C:\repos\A")]);
     }
 
     [Fact]
     public async Task SkipARecordAnotherProcessIsStillWritingInsteadOfFailingTheRead()
     {
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         string lockedFile = Path.Combine(folder, "recent", "being-written.json");
         await using FileStream exclusive = new(lockedFile, FileMode.Create, FileAccess.Write, FileShare.None);
 
-        IReadOnlyList<string> recent = await Store.ReadRecentRepositoriesAsync();
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\B");
+        IReadOnlyList<FolderPath> recent = await Store.ReadRecentRepositoriesAsync();
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\B"));
 
-        recent.ShouldBe([@"C:\repos\A"]);
+        recent.ShouldBe([FolderPath.From(@"C:\repos\A")]);
     }
 
     [Fact]
     public async Task WriteARecordWhileAnotherProcessHasItOpenForReading()
     {
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         string file = Directory.EnumerateFiles(Path.Combine(folder, "recent")).Single();
         await using FileStream reading = new(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         clock.Advance(TimeSpan.FromSeconds(1));
 
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\B");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\B"));
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([@"C:\repos\B", @"C:\repos\A"]);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\B"), FolderPath.From(@"C:\repos\A")]);
     }
 
     [Fact]
@@ -266,7 +299,7 @@ public sealed class JsonFileStoreShould : IDisposable
         await Store.WriteConfigAsync(SavedConfig);
         await Store.WriteConfigAsync(SavedConfig with { CheckForUpdates = false });
         await Store.WriteTabAsync(SessionTab);
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         await Store.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(Noon, new NewestRelease.None()));
         await Store.WriteLastRunAsync(ReleaseVersion.From("0.21.0"));
 
@@ -329,10 +362,10 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task TreatAHalfWrittenRecordAsAbsentUntilItIsFinished()
     {
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         await File.WriteAllTextAsync(Path.Combine(folder, "recent", "half.json"), """{ "path": "C:\\repos\\Half", "usedA""", TestContext.Current.CancellationToken);
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([@"C:\repos\A"]);
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\A")]);
     }
 
     [Fact]
@@ -341,8 +374,8 @@ public sealed class JsonFileStoreShould : IDisposable
         Directory.CreateDirectory(folder);
         await File.WriteAllTextAsync(Path.Combine(folder, "recent.json"), """["C:\\repos\\Newest", "C:\\repos\\Older"]""", TestContext.Current.CancellationToken);
 
-        IReadOnlyList<string> recent = await Store.ReadRecentRepositoriesAsync();
-        recent.ShouldBe([@"C:\repos\Newest", @"C:\repos\Older"]);
+        IReadOnlyList<FolderPath> recent = await Store.ReadRecentRepositoriesAsync();
+        recent.ShouldBe([FolderPath.From(@"C:\repos\Newest"), FolderPath.From(@"C:\repos\Older")]);
         File.Exists(Path.Combine(folder, "recent.json")).ShouldBeFalse();
     }
 
@@ -357,7 +390,7 @@ public sealed class JsonFileStoreShould : IDisposable
         byte[] descriptionBytes = await File.ReadAllBytesAsync(descriptionFile, TestContext.Current.CancellationToken);
         byte[] sessionsBytes = await File.ReadAllBytesAsync(sessionsFile, TestContext.Current.CancellationToken);
 
-        await Store.RecordRecentRepositoryAsync(@"C:\repos\A");
+        await Store.RecordRecentRepositoryAsync(FolderPath.From(@"C:\repos\A"));
         await Store.ReadRecentRepositoriesAsync();
         await Store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(@"C:\repos\A-fix"), BranchName.From("fix"), FolderPath.From(@"C:\repos\A"), Noon));
         await Store.ReadCreatedWorktreesAsync();

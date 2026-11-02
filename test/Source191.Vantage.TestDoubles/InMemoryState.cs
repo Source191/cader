@@ -12,7 +12,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     private const int RecentLimit = 10;
 
     private readonly Dictionary<Guid, TabRegistration> tabs = [];
-    private readonly List<string> recent = [];
+    private readonly List<FolderPath> recent = [];
     private readonly List<CreatedWorktree> created = [];
     private UpdateCheckRecord updateCheck = new UpdateCheckRecord.Never();
     private VantageConfig config = VantageConfig.Missing;
@@ -36,14 +36,14 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<string>> ReadRecentRepositoriesAsync()
+    public Task<IReadOnlyList<FolderPath>> ReadRecentRepositoriesAsync()
     {
-        return Task.FromResult<IReadOnlyList<string>>([.. recent]);
+        return Task.FromResult<IReadOnlyList<FolderPath>>([.. recent]);
     }
 
-    public Task RecordRecentRepositoryAsync(string repository)
+    public Task RecordRecentRepositoryAsync(FolderPath repository)
     {
-        recent.RemoveAll(path => string.Equals(path, repository, StringComparison.OrdinalIgnoreCase));
+        recent.RemoveAll(path => path.Equals(repository));
         recent.Insert(0, repository);
         if (recent.Count > RecentLimit)
         {

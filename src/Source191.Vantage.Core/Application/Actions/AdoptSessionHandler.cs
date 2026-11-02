@@ -18,7 +18,7 @@ public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry proc
     public async Task<Outcome> HandleAsync(AdoptSession effect, CancellationToken cancellationToken)
     {
         InteractiveSession session = effect.Session;
-        if (!transcripts.HasMessages(session.SessionId.Value))
+        if (!transcripts.HasMessages(session.SessionId))
         {
             return new AdoptSessionOutcome.NoMessages(session.Name);
         }
@@ -31,7 +31,7 @@ public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry proc
         // The tab's shell, found while claude is alive. When claude is the tab's root process, killing it leaves the tab open.
         TabShell shell = TerminalTab.ShellAbove(listed, processes);
         processes.Terminate(listed);
-        ResumeResult result = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, session.Name, cancellationToken);
+        ResumeResult result = await claude.ResumeBackgroundAsync(session.SessionId, session.WorkingDirectory, session.Name, cancellationToken);
 
         if (result is not ResumeResult.Continued)
         {

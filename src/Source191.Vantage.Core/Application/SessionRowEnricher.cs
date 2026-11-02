@@ -27,7 +27,7 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
         {
             Located located = await LocateAsync(session.WorkingDirectory, cancellationToken);
             LiveTab tab = liveTabs.TryGetValue(session.SessionId, out TabColour? colour) ? new LiveTab.Open(colour) : new LiveTab.None();
-            SessionRow row = new(session, located.Location, located.Head, tab, transcripts.HasMessages(session.SessionId.Value))
+            SessionRow row = new(session, located.Location, located.Head, tab, transcripts.HasMessages(session.SessionId))
             {
                 Memory = MemoryOf(session, processTable),
             };

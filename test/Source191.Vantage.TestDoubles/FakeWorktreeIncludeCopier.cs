@@ -1,3 +1,4 @@
+using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 
 namespace Source191.Vantage.TestDoubles;
@@ -27,9 +28,9 @@ public sealed class FakeWorktreeIncludeCopier : IWorktreeIncludeCopier
         return this;
     }
 
-    public Task<IReadOnlyList<string>> CopyAsync(string repository, string worktree, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<string>> CopyAsync(FolderPath repository, FolderPath worktree, CancellationToken cancellationToken)
     {
-        calls.Add((repository, worktree));
+        calls.Add((repository.Value, worktree.Value));
         onCopy();
 
         return failure is null ? Task.FromResult<IReadOnlyList<string>>([]) : Task.FromException<IReadOnlyList<string>>(failure);

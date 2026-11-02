@@ -19,7 +19,7 @@ public sealed class WizardViewShould
         .WithDirectory(Path.Combine(Billing, ".git"))
         .WithDirectory(Path.Combine(Templates, ".git"));
 
-    private WizardState Opened => WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [Templates], folders, TestSettings.For(Root), new WizardOrigin.Anywhere());
+    private WizardState Opened => WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [FolderPath.From(Templates)], folders, TestSettings.For(Root), new WizardOrigin.Anywhere());
 
     private WizardState InAgents => Reduce(Opened, new WizardInput.FilterChanged("agents"));
 

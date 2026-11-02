@@ -5,6 +5,7 @@ using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Reporting;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.Ports;
 using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Actions;
@@ -44,13 +45,22 @@ public sealed class OpenProblemReportHandlerShould
     public async Task LeaveTheCrashWhenTheBrowserFails()
     {
         crashFile.Write("2026-10-28T09:00:01.000Z failed Crash: InvalidOperationException\n");
-        desktop.OpenFailure = new InvalidOperationException("No application is associated with the address.");
+        desktop.OpenFailure = new ProgramNotStartedException("No application is associated with the address.");
         ProblemReport report = await Report();
 
         Outcome outcome = await new OpenProblemReportHandler(desktop, crashFile).HandleAsync(new OpenProblemReport(Title, report), CancellationToken.None);
 
         outcome.ShouldBe(new ProblemReportOutcome.NotOpened("No application is associated with the address."));
         crashFile.Removed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task LetAnUndeclaredFailureThrough()
+    {
+        desktop.OpenFailure = new InvalidOperationException("Not a failure IDesktop declares.");
+        ProblemReport report = await Report();
+
+        await Should.ThrowAsync<InvalidOperationException>(() => new OpenProblemReportHandler(desktop, crashFile).HandleAsync(new OpenProblemReport(Title, report), CancellationToken.None));
     }
 
     private Task<ProblemReport> Report()

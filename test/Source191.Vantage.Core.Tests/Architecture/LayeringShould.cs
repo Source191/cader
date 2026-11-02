@@ -62,6 +62,34 @@ public sealed class LayeringShould
     }
 
     [Fact]
+    public void HandTheFolderDeleterOnlyToWorktreeRemover()
+    {
+        Types everything = Types.InAssemblies([typeof(Session).Assembly, typeof(Source191.Vantage.Adapters.Files.Folders).Assembly, typeof(Source191.Vantage.Tui.ConsoleScreen).Assembly, typeof(Source191.Vantage.TestDoubles.FakeFolders).Assembly]);
+
+        IEnumerable<string> dependants = everything.That().HaveDependencyOn($"{Root}.Ports.IFolderDeleter")
+            .GetTypes()
+            .Select(type => type.FullName!)
+            .Order(StringComparer.Ordinal);
+
+        dependants.ShouldBe([$"{Root}.Adapters.Files.Folders", $"{Root}.Application.Actions.WorktreeRemover", $"{Root}.TestDoubles.FakeFolders"]);
+    }
+
+    /// <summary>
+    /// Boundary interfaces belong in Ports. Domain declares two: ITextValue (the three doors of a text value) and
+    /// IProcessRegistry (the process table the tab rules read; implemented in Adapters, faked in TestDoubles).
+    /// </summary>
+    [Fact]
+    public void DeclareNoDomainInterfaceButTheTwoNamed()
+    {
+        IEnumerable<string> interfaces = typeof(Session).Assembly.GetTypes()
+            .Where(type => type.IsInterface && type.Namespace == $"{Root}.Domain" && !type.IsNested)
+            .Select(type => type.Name)
+            .Order(StringComparer.Ordinal);
+
+        interfaces.ShouldBe(["IProcessRegistry", "ITextValue`1"]);
+    }
+
+    [Fact]
     public void KeepSystemCommandLineInsideCommandLine()
     {
         Vantage.That().ResideInNamespaceStartingWith(Root).And().DoNotHaveNameStartingWith("CommandLine")

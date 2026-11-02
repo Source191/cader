@@ -11,7 +11,7 @@ namespace Source191.Vantage.Application.Actions;
 /// last guard before a folder is deleted from disc is that it lies inside a repository root or the worktree root, read
 /// from the settings as they are now, whoever asked and whatever the decision said.
 /// </summary>
-public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees, IFolders folders, CurrentSettings settings)
+public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees, IFolderDeleter deleter, CurrentSettings settings)
 {
     public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdByVantage, CancellationToken cancellationToken)
     {
@@ -61,7 +61,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
         try
         {
-            folders.DeleteTree(row.Path.Value);
+            deleter.DeleteTree(row.Path.Value);
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
         {

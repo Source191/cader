@@ -1,3 +1,4 @@
+using Source191.Vantage.Domain;
 namespace Source191.Vantage.Ports;
 
 /// <summary>
@@ -6,5 +7,5 @@ namespace Source191.Vantage.Ports;
 /// </summary>
 public interface IWorktreeIncludeCopier
 {
-    Task<IReadOnlyList<string>> CopyAsync(string repository, string worktree, CancellationToken cancellationToken);
+    Task<IReadOnlyList<string>> CopyAsync(FolderPath repository, FolderPath worktree, CancellationToken cancellationToken);
 }

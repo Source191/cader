@@ -36,7 +36,7 @@ public sealed class RenameSessionHandlerShould
     public async Task RenameBySwappingTheJobForOneResumedUnderTheNewNameKeepingTheSessionId()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-124", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
 
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
@@ -60,7 +60,7 @@ public sealed class RenameSessionHandlerShould
     {
         processes.Answer(request => request.Arguments.Contains("fix-124"), new ProcessResult(1, string.Empty, "boom"));
         processes.Answer(request => request.Arguments.Contains("fix-123"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
 
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
@@ -73,7 +73,7 @@ public sealed class RenameSessionHandlerShould
     {
         processes.Answer(request => request.Arguments.Contains("fix-124"), new ProcessResult(1, string.Empty, "boom"));
         processes.Answer(request => request.Arguments.Contains("--resume") && !request.Arguments.Contains("-n"), new ProcessResult(0, "backgrounded · 81cdb0f9 · sess-1", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
         RenameSession rename = new(Job(Repository, DisplayState.Idle) with { Name = Listed.None() }, SessionName.From("fix-124"));
 
         await Handler.HandleAsync(rename, CancellationToken.None);
@@ -86,7 +86,7 @@ public sealed class RenameSessionHandlerShould
     public async Task MoveTheTab()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-124", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
         await LiveTabAsync(store, registry, shell: 4000, colour: TabPalette.Default[3]);
         List<string> order = [];
         registry.OnEndCleanly = shell => order.Add($"shell {shell} ended after {ClaudeCalls()}");
@@ -106,7 +106,7 @@ public sealed class RenameSessionHandlerShould
     {
         processes.Answer(request => request.Arguments.Contains("fix-124"), new ProcessResult(1, string.Empty, "boom"));
         processes.Answer(request => request.Arguments.Contains("fix-123"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
         await LiveTabAsync(store, registry, shell: 4000);
 
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
@@ -122,7 +122,7 @@ public sealed class RenameSessionHandlerShould
     public async Task ResumeNothingWhenTheJobCannotBeRemoved()
     {
         processes.Answer(request => request.Arguments.Contains("rm"), new ProcessResult(1, string.Empty, "Session 81cdb0f9 not found"));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
         await LiveTabAsync(store, registry, shell: 4000);
 
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);

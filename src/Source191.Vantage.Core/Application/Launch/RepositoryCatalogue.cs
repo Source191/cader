@@ -10,7 +10,7 @@ namespace Source191.Vantage.Application.Launch;
 /// </summary>
 public sealed class RepositoryCatalogue(IFolders folders, CurrentSettings settings)
 {
-    public IReadOnlyList<RepositoryChoice> Choices(IReadOnlyList<string> recent, string filter)
+    public IReadOnlyList<RepositoryChoice> Choices(IReadOnlyList<FolderPath> recent, string filter)
     {
         List<FolderPath> roots = [.. settings.Value.RepositoryRoots.Where(root => folders.DirectoryExists(root.Value))];
         List<RepositoryChoice> repositories = [.. Paths(roots
@@ -19,7 +19,7 @@ public sealed class RepositoryCatalogue(IFolders folders, CurrentSettings settin
             .Select(path => new RepositoryChoice(path.Name, path, IsRepository: true))
             .OrderBy(choice => choice.Name, StringComparer.OrdinalIgnoreCase)];
 
-        List<RepositoryChoice> recentFirst = [.. Paths(recent)
+        List<RepositoryChoice> recentFirst = [.. recent
             .Select(path => repositories.FirstOrDefault(choice => choice.Path == path))
             .OfType<RepositoryChoice>()];
         IEnumerable<RepositoryChoice> rest = repositories.Where(choice => !recentFirst.Contains(choice));

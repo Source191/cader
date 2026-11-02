@@ -9,16 +9,15 @@ namespace Source191.Vantage.Application.Actions;
 /// it lived in a worktree Vantage created, removes that worktree under the removal rules through the same remover as
 /// the worktrees view. Not a dispatcher handler: the screen confirms first and may ask about the branch afterwards.
 /// </summary>
-public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWorktrees createdWorktrees, SessionTabs tabs, IFolders folders, CurrentSettings settings)
+public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWorktrees createdWorktrees, SessionTabs tabs, IFolders folders, WorktreeRemover remover)
 {
     private readonly WorktreeInspector inspector = new(git);
-    private readonly WorktreeRemover remover = new(git, createdWorktrees, folders, settings);
 
     public async Task<DeleteSessionOutcome> DeleteAsync(BackgroundSession session, bool forced, CancellationToken cancellationToken)
     {
         try
         {
-            await claude.RemoveAsync(session.JobId.Value, cancellationToken);
+            await claude.RemoveAsync(session.JobId, cancellationToken);
         }
         catch (ClaudeCliException refusal)
         {

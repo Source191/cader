@@ -32,7 +32,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task SkipASessionWithNoTranscriptWhenResumingAndSaySo()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
         BackgroundSession withTranscript = Job(Repository, DisplayState.Failed);
         BackgroundSession stub = withTranscript with { SessionId = SessionId.From("sess-stub"), Name = Listed.As("repos-f6") };
 
@@ -49,7 +49,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task ResumeEachChosenSessionInItsOwnDirectory()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1").WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
         BackgroundSession first = Job(Repository, DisplayState.Failed);
         BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2") };
 
@@ -66,7 +66,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task RemoveEachJobBeforeResumingIt()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1").WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
         BackgroundSession first = Job(Repository, DisplayState.Failed);
         BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
@@ -81,7 +81,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task NameTheSessionIdWhenAResumeFailsAfterTheRemoval()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(1, string.Empty, "Workspace not trusted"));
-        transcripts.WithMessages("sess-1");
+        transcripts.WithMessages(SessionId.From("sess-1"));
 
         Outcome message = await Handler.HandleAsync(new ResumeSessions([Job(Repository, DisplayState.Failed)]), CancellationToken.None);
 
@@ -94,7 +94,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task ResumeEachSessionUnderItsListedNameOrUnnamed()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1").WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
         BackgroundSession named = Job(Repository, DisplayState.Failed);
         BackgroundSession blank = named with { SessionId = SessionId.From("sess-2"), Name = Listed.None() };
 
@@ -108,7 +108,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task OpenATabForEachSessionItResumes()
     {
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
-        transcripts.WithMessages("sess-1").WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
         BackgroundSession first = Job(Repository, DisplayState.Failed);
         BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
@@ -122,7 +122,7 @@ public sealed class ResumeSessionsHandlerShould
     public async Task OpenNoTabForASessionThatDidNotResume()
     {
         processes.Answer(request => request.Arguments.Contains("sess-2"), new ProcessResult(1, string.Empty, "Workspace not trusted"));
-        transcripts.WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-2"));
         BackgroundSession stub = Job(Repository, DisplayState.Stopped) with { SessionId = SessionId.From("sess-stub"), Name = Listed.As("repos-f6") };
         BackgroundSession refused = Job(Worktree, DisplayState.Failed) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
@@ -138,7 +138,7 @@ public sealed class ResumeSessionsHandlerShould
     {
         processes.Answer(request => request.Arguments.Contains("rm") && request.Arguments.Contains("81cdb0f9"), new ProcessResult(1, string.Empty, "Session 81cdb0f9 not found"));
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · c429a96e · fix-124", string.Empty));
-        transcripts.WithMessages("sess-1").WithMessages("sess-2");
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
         BackgroundSession first = Job(Repository, DisplayState.Failed);
         BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
