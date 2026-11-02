@@ -506,11 +506,6 @@ public sealed class WordingShould
         Wording.Describe(reason).ShouldNotBe(reason.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
 
-    [Fact]
-    public void SayNothingForAPlainRemoval()
-    {
-        Wording.Describe(new RemovalReason.None()).ShouldBeEmpty();
-    }
 
     [Fact]
     public void NameTheSessionUsingTheWorktree()
@@ -548,11 +543,6 @@ public sealed class WordingShould
         Wording.Describe(new RemovalReason.UnpushedCommits("fix-123", 2)).ShouldBe("branch fix-123 has 2 unpushed commits");
     }
 
-    [Fact]
-    public void CallALeftoverFolderByThatName()
-    {
-        Wording.Describe(new RemovalReason.LeftoverFolder()).ShouldBe("leftover folder");
-    }
 
     [Fact]
     public void SayAWorktreeOfARepositoryOutsideTheRootsIsNotRemoved()

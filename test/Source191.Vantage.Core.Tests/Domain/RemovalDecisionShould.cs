@@ -20,10 +20,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.RemoveWorktree);
-        decision.Forced.ShouldBeFalse();
-        decision.PruneRegistration.ShouldBeFalse();
-        decision.Reason.ShouldBe(new RemovalReason.None());
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Delete));
     }
 
     [Fact]
@@ -31,11 +28,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { UnpushedCommitCount = 2 }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.UnpushedCommits("fix-123", 2));
-        decision.Forced.ShouldBeFalse();
-        decision.PruneRegistration.ShouldBeFalse();
-        decision.Branch.ShouldBe(BranchAction.None);
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.UnpushedCommits("fix-123", 2), CanBeForced: true));
     }
 
     [Fact]
@@ -43,8 +36,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { DirtyFileCount = 5 }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.ChangesWouldBeLost(5));
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.ChangesWouldBeLost(5), CanBeForced: true));
     }
 
     [Fact]
@@ -52,8 +44,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { DirtyFileCount = 5, UnpushedCommitCount = 1 }, forced: true);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.RemoveWorktree);
-        decision.Forced.ShouldBeTrue();
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: true, BranchAction.Delete));
     }
 
     [Fact]
@@ -61,10 +52,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Locked }, forced: true);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.Locked());
-        decision.Forced.ShouldBeFalse();
-        decision.PruneRegistration.ShouldBeFalse();
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.Locked(), CanBeForced: false));
     }
 
     [Theory]
@@ -74,11 +62,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Elsewhere, DirtyFileCount = 3 }, forced);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.RepositoryOutsideRoots());
-        decision.CanBeForced.ShouldBeFalse();
-        decision.Forced.ShouldBeFalse();
-        decision.Branch.ShouldBe(BranchAction.None);
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.RepositoryOutsideRoots(), CanBeForced: false));
     }
 
     [Fact]
@@ -86,24 +70,16 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), Listed.As("remove-sonar")) }, forced: true);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LiveSession(Listed.As("remove-sonar")));
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.LiveSession(Listed.As("remove-sonar")), CanBeForced: false));
     }
 
-    [Fact]
-    public void DeleteTheBranchWhenVantageCreatedItAndItIsMerged()
-    {
-        RemovalDecision decision = RemovalDecision.For(Clean, forced: false);
-
-        decision.Branch.ShouldBe(BranchAction.Delete);
-    }
 
     [Fact]
     public void AskAboutTheBranchWhenVantageDidNotCreateIt()
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { BranchCreatedByVantage = false }, forced: false);
 
-        decision.Branch.ShouldBe(BranchAction.Ask);
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Ask));
     }
 
     [Fact]
@@ -111,7 +87,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { BranchMerged = false }, forced: false);
 
-        decision.Branch.ShouldBe(BranchAction.Ask);
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Ask));
     }
 
     [Theory]
@@ -121,11 +97,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = health }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.DeleteFolder);
-        decision.Branch.ShouldBe(BranchAction.None);
-        decision.PruneRegistration.ShouldBeFalse();
-        decision.Forced.ShouldBeFalse();
-        decision.Reason.ShouldBe(new RemovalReason.LeftoverFolder());
+        decision.ShouldBe(new RemovalDecision.DeleteFolder(Forced: false, Prune: false));
     }
 
     [Theory]
@@ -136,8 +108,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = health, LeftoverFileCount = 12 }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false));
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false), CanBeForced: true));
     }
 
     [Fact]
@@ -145,8 +116,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, LeftoverFileCount = WorktreeRemovalFacts.LeftoverFileLimit }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LeftoverFilesWouldBeLost(WorktreeRemovalFacts.LeftoverFileLimit, AtLeast: true));
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.LeftoverFilesWouldBeLost(WorktreeRemovalFacts.LeftoverFileLimit, AtLeast: true), CanBeForced: true));
     }
 
     [Fact]
@@ -154,8 +124,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, LeftoverFileCount = 12 }, forced: true);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.DeleteFolder);
-        decision.Forced.ShouldBeTrue();
+        decision.ShouldBe(new RemovalDecision.DeleteFolder(Forced: true, Prune: false));
     }
 
     [Fact]
@@ -163,20 +132,19 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), Listed.As("fix-service-tests")) }, forced: true);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LiveSession(Listed.As("fix-service-tests")));
+        decision.ShouldBe(new RemovalDecision.Refused(new RemovalReason.LiveSession(Listed.As("fix-service-tests")), CanBeForced: false));
     }
 
     [Fact]
     public void SayWhetherARefusalCanBeForced()
     {
-        RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Locked }, forced: false).CanBeForced.ShouldBeFalse();
-        RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), Listed.As("remove-sonar")) }, forced: false).CanBeForced.ShouldBeFalse();
-        RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), Listed.As("fix-service-tests")) }, forced: false).CanBeForced.ShouldBeFalse();
-        RemovalDecision.For(Clean with { DirtyFileCount = 5 }, forced: false).CanBeForced.ShouldBeTrue();
-        RemovalDecision.For(Clean with { UnpushedCommitCount = 2 }, forced: false).CanBeForced.ShouldBeTrue();
-        RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, LeftoverFileCount = 12 }, forced: false).CanBeForced.ShouldBeTrue();
-        RemovalDecision.For(Clean, forced: false).CanBeForced.ShouldBeFalse();
+        CanBeForced(Clean with { Health = WorktreeHealthKind.Locked }).ShouldBeFalse();
+        CanBeForced(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), Listed.As("remove-sonar")) }).ShouldBeFalse();
+        CanBeForced(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), Listed.As("fix-service-tests")) }).ShouldBeFalse();
+        CanBeForced(Clean with { DirtyFileCount = 5 }).ShouldBeTrue();
+        CanBeForced(Clean with { UnpushedCommitCount = 2 }).ShouldBeTrue();
+        CanBeForced(Clean with { Health = WorktreeHealthKind.Orphan, LeftoverFileCount = 12 }).ShouldBeTrue();
+        CanBeForced(Clean).ShouldBeFalse();
     }
 
     [Fact]
@@ -184,8 +152,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Broken }, forced: false);
 
-        decision.Outcome.ShouldBe(RemovalOutcome.DeleteFolder);
-        decision.PruneRegistration.ShouldBeTrue();
+        decision.ShouldBe(new RemovalDecision.DeleteFolder(Forced: false, Prune: true));
     }
 
     /// <summary>A worktree whose .git file is gone is broken with files in it: refused, but force-remove deletes and prunes.</summary>
@@ -194,10 +161,9 @@ public sealed class RemovalDecisionShould
     {
         WorktreeRemovalFacts gitFileGone = Clean with { Health = WorktreeHealthKind.Broken, LeftoverFileCount = 12 };
 
-        RemovalDecision.For(gitFileGone, forced: false).CanBeForced.ShouldBeTrue();
-        RemovalDecision forced = RemovalDecision.For(gitFileGone, forced: true);
-        forced.Outcome.ShouldBe(RemovalOutcome.DeleteFolder);
-        forced.Forced.ShouldBeTrue();
-        forced.PruneRegistration.ShouldBeTrue();
+        CanBeForced(gitFileGone).ShouldBeTrue();
+        RemovalDecision.For(gitFileGone, forced: true).ShouldBe(new RemovalDecision.DeleteFolder(Forced: true, Prune: true));
     }
+
+    private static bool CanBeForced(WorktreeRemovalFacts facts) => RemovalDecision.For(facts, forced: false) is RemovalDecision.Refused { CanBeForced: true };
 }

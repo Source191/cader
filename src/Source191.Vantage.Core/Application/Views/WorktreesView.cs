@@ -70,9 +70,9 @@ public static class WorktreesView
     private static RowDecision Remove(WorktreeRow row, bool forced)
     {
         RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
-        if (decision.Outcome == RemovalOutcome.Refused)
+        if (decision is RemovalDecision.Refused refused)
         {
-            return new RowDecision.Explain(new StatusMessage.NotRemoved(decision.Reason, OfferForce: !forced && decision.CanBeForced));
+            return new RowDecision.Explain(new StatusMessage.NotRemoved(refused.Reason, OfferForce: !forced && refused.CanBeForced));
         }
 
         // The folder name is what the dialog says it deletes, so that is the text to type; a branch name would be a second thing to look up.

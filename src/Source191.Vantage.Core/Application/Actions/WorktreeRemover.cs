@@ -15,15 +15,16 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 {
     public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdByVantage, CancellationToken cancellationToken)
     {
-        return decision.Outcome switch
+        return decision switch
         {
-            RemovalOutcome.Refused => new RemoveWorktreeOutcome.Refused(decision.Reason),
-            RemovalOutcome.DeleteFolder => await DeleteFolderAsync(row, decision, cancellationToken),
-            RemovalOutcome.RemoveWorktree => await RemoveThroughGitAsync(row, decision, createdByVantage, cancellationToken),
+            RemovalDecision.Refused refused => new RemoveWorktreeOutcome.Refused(refused.Reason),
+            RemovalDecision.DeleteFolder deleteFolder => await DeleteFolderAsync(row, deleteFolder, cancellationToken),
+            RemovalDecision.RemoveWorktree removeWorktree => await RemoveThroughGitAsync(row, removeWorktree, createdByVantage, cancellationToken),
+            _ => throw new UnreachableException(),
         };
     }
 
-    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision decision, bool createdByVantage, CancellationToken cancellationToken)
+    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdByVantage, CancellationToken cancellationToken)
     {
         try
         {
@@ -40,7 +41,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         {
             (BranchAction.Delete, Head.OnBranch merged) => await DeleteBranchAsync(row, merged.Branch, cancellationToken),
             (BranchAction.Ask, Head.OnBranch kept) => new RemoveWorktreeOutcome.BranchKept(row.FolderName, new BranchToConfirm(row.Repository, kept.Branch), createdByVantage),
-            (BranchAction.None, _) or (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName),
+            (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName),
             _ => throw new UnreachableException(),
         };
     }
@@ -52,7 +53,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         return new RemoveWorktreeOutcome.RemovedAndDeletedBranch(row.FolderName, branch);
     }
 
-    private async Task<RemoveWorktreeOutcome> DeleteFolderAsync(WorktreeRow row, RemovalDecision decision, CancellationToken cancellationToken)
+    private async Task<RemoveWorktreeOutcome> DeleteFolderAsync(WorktreeRow row, RemovalDecision.DeleteFolder decision, CancellationToken cancellationToken)
     {
         if (!InsideTheRoots(row.Path))
         {
@@ -68,7 +69,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
             return new RemoveWorktreeOutcome.InUse(row.FolderName);
         }
 
-        if (!decision.PruneRegistration || !row.OwnerExists)
+        if (!decision.Prune || !row.OwnerExists)
         {
             return new RemoveWorktreeOutcome.DeletedFolder(row.FolderName);
         }
