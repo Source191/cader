@@ -87,6 +87,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Internal
 
+- TableBody's column sizing, tooltips and detail reading each in a class of their own, one middle ellipsis in TextFit, IScreenDefinition slimmed to a Tab and a TabRefresh, and the key bar's removed labels disposed
 - Each view state holds its ListSelection directly; SelectionKey and the With copies are gone (#193)
 - Every dialog title and button, the waiting words, the STATE words and the wizard's preview are declared in Wording and pinned by a fact, and a source fact keeps sentences out of the rest of Application (#191)
 - Convention nets: a banned-symbols list for src, layering, reducer, handler, diagnostic-line, key-parity and source-text facts, and UnreachableException in the closed discards (#189)
