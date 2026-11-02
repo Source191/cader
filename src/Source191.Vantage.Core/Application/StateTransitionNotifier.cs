@@ -11,6 +11,7 @@ public sealed class StateTransitionNotifier(TextWriter terminal)
 {
     public void Observe(IReadOnlyList<SessionRow> previous, IReadOnlyList<SessionRow> current)
     {
+        ArgumentNullException.ThrowIfNull(previous);
         if (previous.Count == 0)
         {
             return;

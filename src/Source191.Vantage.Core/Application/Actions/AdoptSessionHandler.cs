@@ -17,6 +17,7 @@ public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry proc
 {
     public async Task<Outcome> HandleAsync(AdoptSession effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         Session.Interactive session = effect.Session;
         if (!transcripts.HasMessages(session.SessionId))
         {

@@ -12,6 +12,8 @@ public static class EditorCommand
 {
     public static ProcessRequest For(EditorChoice editor, string executable, FolderPath folder)
     {
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(folder);
         IReadOnlyList<string> arguments = editor.Preset == EditorPreset.Custom
             ? [.. editor.Arguments.Select(argument => argument.Replace(EditorChoice.FolderPlaceholder, folder.Value, StringComparison.Ordinal))]
             : [folder.Value];

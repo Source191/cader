@@ -19,6 +19,7 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
 
     public async Task<IReadOnlyList<SessionRow>> EnrichAsync(IReadOnlyList<Session> sessions, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(sessions);
         IReadOnlyDictionary<SessionId, TabColour> liveTabs = await LiveTabsAsync();
         IReadOnlyList<ProcessFacts> processTable = processes.Snapshot();
 
@@ -48,6 +49,7 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
     /// <summary>How many runs there are and their trees' memory together, measured as a session's memory is; a run whose process has gone adds nothing.</summary>
     public AutomatedRuns Measure(IReadOnlyList<AutomatedRun> runs)
     {
+        ArgumentNullException.ThrowIfNull(runs);
         IReadOnlyList<ProcessFacts> processTable = processes.Snapshot();
         MemorySize memory = runs
             .Select(run => ProcessTree.Under(run.ProcessId, processTable, processes.UsageOf) is ProcessTreeLookup.Found found ? found.Tree.Total : MemorySize.Zero)

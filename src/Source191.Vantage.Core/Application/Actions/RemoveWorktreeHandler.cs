@@ -17,6 +17,7 @@ public sealed class RemoveWorktreeHandler(IGit git, ICreatedWorktrees createdWor
 
     public async Task<RemoveWorktreeOutcome> RemoveAsync(WorktreeRow scanned, bool forced, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(scanned);
         WorktreeRow row = AsOnDisc(scanned);
         CreatedWorktree? created = (await createdWorktrees.ReadCreatedWorktreesAsync())
             .FirstOrDefault(candidate => candidate.Path == row.Path);

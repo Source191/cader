@@ -9,6 +9,7 @@ public sealed class CopyFolderPathHandler(IClipboard clipboard) : IEffectHandler
 {
     public Task<Outcome> HandleAsync(CopyFolderPath effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         string path = effect.Folder.Value;
         Outcome outcome = clipboard.TrySetText(path) ? new FolderPathCopied(path) : new ClipboardBusy();
 

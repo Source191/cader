@@ -9,6 +9,7 @@ public sealed class CopyProblemReportHandler(IClipboard clipboard) : IEffectHand
 {
     public Task<Outcome> HandleAsync(CopyProblemReport effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         Outcome outcome = clipboard.TrySetText($"{effect.Title.Value}\n\n{effect.Report.Text}") ? new ProblemReportOutcome.Copied() : new ClipboardBusy();
 
         return Task.FromResult(outcome);

@@ -16,6 +16,7 @@ public sealed class StartSessionHandler(LaunchService service, OpenTabHandler ta
 {
     public async Task<Outcome> HandleAsync(StartSession effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         LaunchOutcome outcome = await service.LaunchAsync(effect.Plan, cancellationToken);
 
         string name = effect.Plan.Name.Value;

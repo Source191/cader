@@ -10,6 +10,7 @@ public static class ConfigView
 {
     public static ViewUpdate<ConfigViewState> Reduce(ConfigViewState state, ViewInput input)
     {
+        ArgumentNullException.ThrowIfNull(state);
         return input switch
         {
             ConfigRowsLoaded loaded => Unchanged(state with { List = state.List.Load(loaded.Rows), Banner = new LoadBanner.None() }),

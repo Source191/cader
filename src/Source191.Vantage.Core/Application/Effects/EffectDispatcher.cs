@@ -25,6 +25,7 @@ public sealed class EffectDispatcher(DiagnosticLog log, TimeProvider clock)
 
     public async Task<Outcome> DispatchAsync(ViewEffect effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         if (!handlers.TryGetValue(effect.GetType(), out Func<ViewEffect, CancellationToken, Task<Outcome>>? handler))
         {
             throw new InvalidOperationException($"No handler is registered for {effect.GetType().Name}.");

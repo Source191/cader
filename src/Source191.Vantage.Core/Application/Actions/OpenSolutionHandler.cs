@@ -9,6 +9,7 @@ public sealed class OpenSolutionHandler(IDesktop desktop) : IEffectHandler<OpenS
 {
     public async Task<Outcome> HandleAsync(OpenSolution effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         try
         {
             await desktop.OpenAsync(effect.File, cancellationToken);

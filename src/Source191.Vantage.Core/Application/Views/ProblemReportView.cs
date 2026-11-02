@@ -10,14 +10,18 @@ namespace Source191.Vantage.Application.Views;
 /// </summary>
 public static class ProblemReportView
 {
-    public static ProblemReportUpdate Reduce(ProblemReportState state, ProblemReportInput input) => input switch
+    public static ProblemReportUpdate Reduce(ProblemReportState state, ProblemReportInput input)
     {
-        ProblemReportInput.TitleChanged changed => Changed(state with { TitleText = changed.Text, Problem = TooLong(changed.Text) }),
-        ProblemReportInput.Open => Settled(state, title => new ProblemReportEffect.Open(title)),
-        ProblemReportInput.Copy => Settled(state, title => new ProblemReportEffect.Copy(title)),
-        ProblemReportInput.Cancel => new ProblemReportUpdate(state, new ProblemReportEffect.Close()),
-        _ => Changed(state),
-    };
+        ArgumentNullException.ThrowIfNull(state);
+        return input switch
+        {
+            ProblemReportInput.TitleChanged changed => Changed(state with { TitleText = changed.Text, Problem = TooLong(changed.Text) }),
+            ProblemReportInput.Open => Settled(state, title => new ProblemReportEffect.Open(title)),
+            ProblemReportInput.Copy => Settled(state, title => new ProblemReportEffect.Copy(title)),
+            ProblemReportInput.Cancel => new ProblemReportUpdate(state, new ProblemReportEffect.Close()),
+            _ => Changed(state),
+        };
+    }
 
     private static ProblemReportUpdate Settled(ProblemReportState state, Func<ReportTitle, ProblemReportEffect> effect)
     {

@@ -15,6 +15,7 @@ public static class WizardView
 {
     public static WizardUpdate Reduce(WizardState state, WizardInput input)
     {
+        ArgumentNullException.ThrowIfNull(state);
         return input switch
         {
             WizardInput.FilterChanged changed => Changed(Filtered(state, changed.Text)),

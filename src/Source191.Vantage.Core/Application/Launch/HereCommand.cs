@@ -12,6 +12,7 @@ public static class HereCommand
     /// <summary>The plan for a name (the folder's unless one was typed) and an opening prompt (none when blank); the command line is parsed before this.</summary>
     public static LaunchPlanResult Plan(string directory, HereName name, string prompt, Func<string, bool> isRepository)
     {
+        ArgumentNullException.ThrowIfNull(isRepository);
         FolderPath path = FolderPath.From(directory);
         RepositoryChoice repository = new(path.Name, path, isRepository(directory));
         LaunchRequest request = new(repository, NameText(name, path), LaunchMode.CurrentBranch, WorktreeBase.RemoteDefault, prompt);

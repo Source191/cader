@@ -15,6 +15,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
 {
     public async Task<Outcome> HandleAsync(ResumeSessions effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         int continued = 0;
         List<ResumeNote> notes = [];
         foreach (Session.Background session in effect.Sessions)

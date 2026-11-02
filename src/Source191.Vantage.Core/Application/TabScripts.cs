@@ -19,27 +19,36 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
     /// process), clears what the profile printed, then attaches full screen. A detach, a stop or a removal ends the attach
     /// with 0 (measured with CLI 2.1.312), so the shell exits and Windows Terminal closes the tab; a failed attach keeps the prompt.
     /// </summary>
-    public TabLaunch Attach(Session.Background session, TabRegistration registration) => new(
-        Wording.Name(session.Name),
-        registration.Colour,
-        session.WorkingDirectory,
-        string.Join('\n',
-            $"{PowerShellScript.Invoke(vantageExecutable, ["claim-tab", registration.Id.ToString("N")])} $PID",
-            "Clear-Host",
-            PowerShellScript.Invoke(claudeExecutable, ["attach", session.JobId.Value]),
-            "if ($LASTEXITCODE -eq 0) { exit }"));
+    public TabLaunch Attach(Session.Background session, TabRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(registration);
+        return new(
+            Wording.Name(session.Name),
+            registration.Colour,
+            session.WorkingDirectory,
+            string.Join('\n',
+                $"{PowerShellScript.Invoke(vantageExecutable, ["claim-tab", registration.Id.ToString("N")])} $PID",
+                "Clear-Host",
+                PowerShellScript.Invoke(claudeExecutable, ["attach", session.JobId.Value]),
+                "if ($LASTEXITCODE -eq 0) { exit }"));
+    }
 
     /// <summary>
     /// A plain Claude tab in an untrusted folder, so the trust prompt can be accepted interactively. The folder name is
     /// user text, so the whole message is one quoted value, never script source.
     /// </summary>
-    public TabLaunch Trust(FolderPath directory) => new(
-        Wording.TrustTabTitle(directory.Name),
-        TrustColour,
-        directory,
-        string.Join('\n',
-            $"Write-Host {PowerShellScript.Quote(Wording.TrustTabMessage(directory.Name))} -ForegroundColor Cyan",
-            PowerShellScript.Invoke(claudeExecutable, [])));
+    public TabLaunch Trust(FolderPath directory)
+    {
+        ArgumentNullException.ThrowIfNull(directory);
+        return new(
+            Wording.TrustTabTitle(directory.Name),
+            TrustColour,
+            directory,
+            string.Join('\n',
+                $"Write-Host {PowerShellScript.Quote(Wording.TrustTabMessage(directory.Name))} -ForegroundColor Cyan",
+                PowerShellScript.Invoke(claudeExecutable, [])));
+    }
 
     /// <summary>
     /// The update tab: waits for the Vantage that opened it to exit (a running vantage.exe locks its files), updates the
@@ -56,5 +65,9 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
             $"if ($LASTEXITCODE -eq 0) {{ {PowerShellScript.Invoke(vantageExecutable, [])} }} else {{ Write-Host {PowerShellScript.Quote(Wording.UpdateFailedHint)} -ForegroundColor Yellow }}"));
 
     /// <summary>A plain PowerShell tab in a worktree.</summary>
-    public static TabLaunch Shell(FolderPath worktree) => new(worktree.Name, ShellColour, worktree, "Clear-Host");
+    public static TabLaunch Shell(FolderPath worktree)
+    {
+        ArgumentNullException.ThrowIfNull(worktree);
+        return new(worktree.Name, ShellColour, worktree, "Clear-Host");
+    }
 }

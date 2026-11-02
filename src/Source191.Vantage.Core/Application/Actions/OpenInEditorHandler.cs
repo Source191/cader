@@ -15,6 +15,7 @@ public sealed class OpenInEditorHandler(IEditorLocator locator, IDesktop desktop
 {
     public async Task<Outcome> HandleAsync(OpenFolderInEditor effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         FolderPath folder = effect.Folder;
         if (!folders.DirectoryExists(folder.Value))
         {

@@ -68,6 +68,7 @@ public static partial class Wording
     /// <summary>The table's title: "7 sessions, selected: fix-123", or "2 of 7 sessions match "templates", selected: templates-sync" while a filter is set.</summary>
     public static string Describe(TableTitle title)
     {
+        ArgumentNullException.ThrowIfNull(title);
         string selection = title.Selected is null ? string.Empty : $", selected: {title.Selected}";
 
         if (string.IsNullOrWhiteSpace(title.Filter))

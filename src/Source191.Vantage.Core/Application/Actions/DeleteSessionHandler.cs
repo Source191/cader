@@ -15,6 +15,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
 
     public async Task<DeleteSessionOutcome> DeleteAsync(Session.Background session, bool forced, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(session);
         try
         {
             await claude.RemoveAsync(session.JobId, cancellationToken);

@@ -31,6 +31,8 @@ public static class CommandLine
     /// </summary>
     public static async Task<int> InvokeAsync(RootCommand root, IReadOnlyList<string> arguments, TextWriter output, TextWriter error)
     {
+        ArgumentNullException.ThrowIfNull(root);
+        ArgumentNullException.ThrowIfNull(error);
         InvocationConfiguration configuration = new() { Output = output, Error = error, ProcessTerminationTimeout = null };
         ParseResult parsed = root.Parse(arguments);
         if (parsed.Errors.Count > 0 && OptionLikeName(parsed) is string token)

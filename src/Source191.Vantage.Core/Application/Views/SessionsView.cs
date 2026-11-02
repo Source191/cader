@@ -9,6 +9,7 @@ public static class SessionsView
 {
     public static ViewUpdate<SessionsViewState> Reduce(SessionsViewState state, ViewInput input)
     {
+        ArgumentNullException.ThrowIfNull(state);
         return input switch
         {
             RowsLoaded loaded => Unchanged(state with { List = state.List.Load(loaded.Rows), Banner = new LoadBanner.None(), AutomatedRuns = loaded.AutomatedRuns }),

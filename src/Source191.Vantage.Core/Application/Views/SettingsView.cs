@@ -12,6 +12,7 @@ public static class SettingsView
 {
     public static SettingsUpdate Reduce(SettingsState state, SettingsInput input)
     {
+        ArgumentNullException.ThrowIfNull(state);
         return input switch
         {
             SettingsInput.RootsChanged changed => Changed(state with { Text = state.Text with { Roots = changed.Text } }),

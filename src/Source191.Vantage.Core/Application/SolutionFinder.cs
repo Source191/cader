@@ -12,6 +12,7 @@ public sealed class SolutionFinder(IFolders folders)
 {
     public SolutionSearch Find(FolderPath folder, string repositoryName)
     {
+        ArgumentNullException.ThrowIfNull(folder);
         IReadOnlyList<string> found = SolutionsIn(folder);
         if (found.Count == 0)
         {

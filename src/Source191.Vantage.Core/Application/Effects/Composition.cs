@@ -12,6 +12,7 @@ public static class Composition
 {
     public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, VantageProcess vantage, DiagnosticLog log)
     {
+        ArgumentNullException.ThrowIfNull(ports);
         OpenTabHandler tabs = new(ports.Tabs, ports.Processes, ports.Terminal, ports.Clock, scripts);
         SessionTabs sessionTabs = new(ports.Tabs, ports.Processes);
 

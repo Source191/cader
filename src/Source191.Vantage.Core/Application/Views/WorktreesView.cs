@@ -9,6 +9,7 @@ public static class WorktreesView
 {
     public static ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input)
     {
+        ArgumentNullException.ThrowIfNull(state);
         return input switch
         {
             WorktreeRowsLoaded loaded => Unchanged(state with { List = state.List.Load(loaded.Rows), Banner = new LoadBanner.None() }),

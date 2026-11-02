@@ -16,6 +16,7 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
 
     public async Task<Outcome> HandleAsync(OpenTabForSession effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         return effect.Tab switch
         {
             LiveTab.Open => await SwitchToTabAsync(effect.Session, cancellationToken),
@@ -25,10 +26,18 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     }
 
     /// <summary>Opens a tab for a session, a listed row or one the wizard has just started, after forgetting any earlier tab registered for it, so that tab's colour is free again.</summary>
-    public Task<OpenTabOutcome> OpenAsync(Session.Background session, CancellationToken cancellationToken) => OpenAsync(session, colours.Choose, cancellationToken);
+    public Task<OpenTabOutcome> OpenAsync(Session.Background session, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        return OpenAsync(session, colours.Choose, cancellationToken);
+    }
 
     /// <summary>Opens a tab as above, in the preferred colour when no live tab uses it, such as a renamed session's old colour.</summary>
-    public Task<OpenTabOutcome> OpenAsync(Session.Background session, TabColour preferred, CancellationToken cancellationToken) => OpenAsync(session, inUse => colours.Choose(inUse, preferred), cancellationToken);
+    public Task<OpenTabOutcome> OpenAsync(Session.Background session, TabColour preferred, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        return OpenAsync(session, inUse => colours.Choose(inUse, preferred), cancellationToken);
+    }
 
     private async Task<OpenTabOutcome> OpenAsync(Session.Background session, Func<IReadOnlyList<TabColour>, ColourChoice> choose, CancellationToken cancellationToken)
     {

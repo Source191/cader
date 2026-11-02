@@ -10,10 +10,14 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class WorktreeInspector(IGit git)
 {
-    public async Task<WorktreeCounts> CountAsync(FolderPath worktree, CancellationToken cancellationToken) => new(
-        await git.CountChangedFilesAsync(worktree.Value, cancellationToken),
-        await git.CountUnpushedCommitsAsync(worktree.Value, cancellationToken),
-        await git.LastCommitAtAsync(worktree.Value, cancellationToken) is DateTimeOffset at ? new LastCommit.Made(at) : new LastCommit.Unknown());
+    public async Task<WorktreeCounts> CountAsync(FolderPath worktree, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(worktree);
+        return new(
+            await git.CountChangedFilesAsync(worktree.Value, cancellationToken),
+            await git.CountUnpushedCommitsAsync(worktree.Value, cancellationToken),
+            await git.LastCommitAtAsync(worktree.Value, cancellationToken) is DateTimeOffset at ? new LastCommit.Made(at) : new LastCommit.Unknown());
+    }
 
     /// <summary>
     /// Health as git's listing and the disc give it, the caller having read whether the folder exists: listed and fine
@@ -24,6 +28,7 @@ public sealed class WorktreeInspector(IGit git)
     /// </summary>
     public async Task<WorktreeHealth> HealthAsync(FolderPath repository, FolderPath worktree, bool folderExists, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(repository);
         IReadOnlyList<GitWorktreeEntry> entries = await git.ListWorktreesAsync(repository.Value, cancellationToken);
         GitWorktreeEntry? entry = entries.FirstOrDefault(candidate => FolderPath.TryParse(candidate.Path, out FolderPath? path) && path.Equals(worktree));
 
@@ -41,6 +46,8 @@ public sealed class WorktreeInspector(IGit git)
     /// <summary>What the branch is checked against (origin's default branch, or HEAD when the repository has none) and whether it is merged into it.</summary>
     public async Task<Detail.MergeState> MergeStateAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(branch);
         string into = await git.DefaultRemoteBranchAsync(repository.Value, cancellationToken) ?? "HEAD";
 
         return new Detail.MergeState(into, await git.IsMergedAsync(repository.Value, branch.Value, into, cancellationToken));

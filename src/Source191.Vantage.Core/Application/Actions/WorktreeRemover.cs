@@ -15,6 +15,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 {
     public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdByVantage, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(row);
         return decision switch
         {
             RemovalDecision.Refused refused => new RemoveWorktreeOutcome.Refused(refused.Reason),

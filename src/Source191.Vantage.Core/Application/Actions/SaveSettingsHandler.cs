@@ -8,6 +8,7 @@ public sealed class SaveSettingsHandler(CurrentSettings settings) : IEffectHandl
 {
     public async Task<Outcome> HandleAsync(SaveSettings effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         await settings.SaveAsync(effect.Settings);
 
         return new SaveSettingsOutcome();

@@ -16,6 +16,7 @@ public sealed class CloseEmptyTerminalsHandler(IProcessRegistry processes, ITran
 {
     public Task<Outcome> HandleAsync(CloseEmptyTerminals effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         List<ListedName> closed = [];
         List<ListedName> ended = [];
         List<SkippedSession> skipped = [];

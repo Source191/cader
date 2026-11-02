@@ -9,6 +9,7 @@ public sealed class OpenShellHandler(IWindowsTerminal terminal) : IEffectHandler
 {
     public async Task<Outcome> HandleAsync(OpenShellTab effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         WorktreeRow row = effect.Row;
         await terminal.OpenTabAsync(TabScripts.Shell(row.Path), cancellationToken);
 

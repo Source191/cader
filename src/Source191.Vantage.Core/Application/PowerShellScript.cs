@@ -19,6 +19,7 @@ public static class PowerShellScript
     /// <summary>The only way a value enters a tab's script: a single-quoted literal PowerShell reads back unchanged.</summary>
     public static string Quote(string text)
     {
+        ArgumentNullException.ThrowIfNull(text);
         StringBuilder quoted = new(text.Length + 2);
         quoted.Append('\'');
         foreach (char character in text)

@@ -11,6 +11,8 @@ public static class LaunchPlanBuilder
 {
     public static LaunchPlanResult Build(LaunchRequest request, FolderPath worktreeRoot, Func<string, bool> folderExists)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(folderExists);
         return SessionName.Validate(request.NameText) switch
         {
             SessionNameValidation.Valid valid => Build(request, valid.Name, worktreeRoot, folderExists),

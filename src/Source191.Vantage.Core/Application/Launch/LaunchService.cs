@@ -12,6 +12,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
 {
     public async Task<LaunchOutcome> LaunchAsync(LaunchPlan plan, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(plan);
         try
         {
             if (plan.Place is LaunchPlace.NewWorktree fresh)

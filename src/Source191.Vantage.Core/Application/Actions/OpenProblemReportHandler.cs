@@ -14,6 +14,7 @@ public sealed class OpenProblemReportHandler(IDesktop desktop, ICrashFile crashF
 {
     public async Task<Outcome> HandleAsync(OpenProblemReport effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         // The previewed text, unless this title escapes longer than the room it leaves.
         string fitted = effect.Report.Fitted;
         if (ProblemReportAddress.Length(effect.Title, fitted) > ProblemReport.AddressLimit)

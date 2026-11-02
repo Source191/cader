@@ -10,6 +10,7 @@ public static class LaunchPreview
 {
     public static string Describe(RepositoryChoice repository, string nameText, LaunchMode mode, FolderPath worktreeRoot)
     {
+        ArgumentNullException.ThrowIfNull(repository);
         if (mode == LaunchMode.CurrentBranch)
         {
             return Wording.PreviewCurrentBranch(repository.Name);

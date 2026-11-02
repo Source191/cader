@@ -12,6 +12,7 @@ public sealed class TerminalEffects(IClaudeCli claude, ITerminalConsole console)
     /// <summary>Attaches with the detach hint shown; the hint is erased however the attach ends, and a failure propagates.</summary>
     public async Task RunAsync(AttachToSession attach, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(attach);
         console.ShowReturnHint(Wording.ReturnHint);
         try
         {

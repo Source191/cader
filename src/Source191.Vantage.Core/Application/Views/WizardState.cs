@@ -26,6 +26,8 @@ public sealed record WizardState(
     /// <summary>The wizard as it opens, with the default place, the worktree root and the default base from the settings saved now. Fixed on a folder (n on a Worktrees row) the session starts there on its current branch: no repository list, no worktree choice.</summary>
     public static WizardState Open(RepositoryCatalogue catalogue, IReadOnlyList<FolderPath> recent, IFolders folders, Settings settings, WizardOrigin origin)
     {
+        ArgumentNullException.ThrowIfNull(catalogue);
+        ArgumentNullException.ThrowIfNull(settings);
         bool anywhere = origin is WizardOrigin.Anywhere;
         IReadOnlyList<RepositoryChoice> all = anywhere ? catalogue.Choices(recent, string.Empty) : [];
 

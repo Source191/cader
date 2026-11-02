@@ -30,6 +30,7 @@ public sealed class TerminalSetupRunner(
 
     public async Task<int> RunAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
         if (request.Remove && (request.Sound is SoundArgument.Given || request.SessionSound is SoundArgument.Given))
         {
             await ReportProblemAsync(new TerminalSetupProblem.RemoveWithSound());

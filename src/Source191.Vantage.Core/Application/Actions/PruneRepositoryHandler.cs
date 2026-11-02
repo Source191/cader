@@ -9,6 +9,7 @@ public sealed class PruneRepositoryHandler(IGit git) : IEffectHandler<PruneRepos
 {
     public async Task<Outcome> HandleAsync(PruneRepository effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         int pruned = await git.PruneWorktreesAsync(effect.Repository.Value, cancellationToken);
 
         return new PruneRepositoryOutcome(pruned, effect.Repository.Name);

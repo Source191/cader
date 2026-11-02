@@ -294,24 +294,37 @@ public static partial class Wording
     /// <summary>What the update tab says when dotnet tool update fails, under dotnet's own message.</summary>
     public static string UpdateFailedHint => "Vantage: the update failed. Quit every Vantage that is still open, then press U in Vantage again.";
 
-    public static string WizardTitle(WizardState wizard) => wizard.Origin switch
+    public static string WizardTitle(WizardState wizard)
     {
-        WizardOrigin.Anywhere => "New session",
-        WizardOrigin.Fixed pinned => $"New session in {pinned.Choice.Name}",
-        _ => throw new UnreachableException(),
-    };
+        ArgumentNullException.ThrowIfNull(wizard);
+        return wizard.Origin switch
+        {
+            WizardOrigin.Anywhere => "New session",
+            WizardOrigin.Fixed pinned => $"New session in {pinned.Choice.Name}",
+            _ => throw new UnreachableException(),
+        };
+    }
 
-    public static string WizardChosenCaption(WizardState wizard) => wizard.ShowsChooser ? "Repository" : "Directory";
-
-    public static string WizardChosen(WizardState wizard) => wizard.Chosen switch
+    public static string WizardChosenCaption(WizardState wizard)
     {
-        RepositoryPick.Picked picked => picked.Choice.Name,
-        RepositoryPick.None => "(none)",
-        _ => throw new UnreachableException(),
-    };
+        ArgumentNullException.ThrowIfNull(wizard);
+        return wizard.ShowsChooser ? "Repository" : "Directory";
+    }
+
+    public static string WizardChosen(WizardState wizard)
+    {
+        ArgumentNullException.ThrowIfNull(wizard);
+        return wizard.Chosen switch
+        {
+            RepositoryPick.Picked picked => picked.Choice.Name,
+            RepositoryPick.None => "(none)",
+            _ => throw new UnreachableException(),
+        };
+    }
 
     public static string WizardHint(WizardState wizard)
     {
+        ArgumentNullException.ThrowIfNull(wizard);
         const string Fields = "Enter or Tab next field   F5 start and open in tab   Esc cancel";
 
         return wizard.ShowsChooser ? $"Type to filter, ↑↓ to choose, Enter confirms the repository   {Fields}" : "Enter or F5 starts and opens in tab   Esc cancel";
@@ -352,6 +365,7 @@ public static partial class Wording
 
     public static string CloseEmptyQuestion(IReadOnlyList<ListedName> names)
     {
+        ArgumentNullException.ThrowIfNull(names);
         string listed = string.Join(", ", names.Select(Name));
         string what = names.Count == 1 ? $"Close the tab of {listed}?" : $"Close {names.Count} tabs: {listed}?";
 
@@ -393,6 +407,7 @@ public static partial class Wording
 
     public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles)
     {
+        ArgumentNullException.ThrowIfNull(profiles);
         return string.Join(Environment.NewLine,
             $"Two Windows Terminal profiles will be written to {fragmentPath}",
             "Your Windows Terminal settings file is not changed.",

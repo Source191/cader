@@ -12,6 +12,7 @@ public sealed class StartUpdateHandler(IWindowsTerminal terminal, TabScripts scr
 {
     public async Task<Outcome> HandleAsync(StartUpdate effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         await terminal.OpenTabAsync(scripts.Update(vantage.ProcessId, vantage.Home), cancellationToken);
 
         return new UpdateStartedOutcome(effect.Newest.ToString());

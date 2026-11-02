@@ -25,6 +25,7 @@ public sealed record ListSelection<TRow>(
     /// <summary>What the table's title says: how many rows show of how many, the filter if one is set, and the selected row's label.</summary>
     public TableTitle Title(string noun, Func<TRow, string> labelOf)
     {
+        ArgumentNullException.ThrowIfNull(labelOf);
         TRow? current = Selected;
 
         return new TableTitle(noun, Choosable.Count, Rows.Count(Policy.Selectable), Filter.Text, current is null ? null : labelOf(current));
@@ -77,6 +78,7 @@ public sealed record ListSelection<TRow>(
     /// <summary>A key typed while the filter is being edited: Enter keeps it, Escape clears it, the rest edit the text and keep a row selected.</summary>
     public ListSelection<TRow> EditFilter(Key key)
     {
+        ArgumentNullException.ThrowIfNull(key);
         return key.Name switch
         {
             KeyName.Enter => this with { FilterEditing = false },

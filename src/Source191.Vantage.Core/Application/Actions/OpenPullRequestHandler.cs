@@ -9,6 +9,7 @@ public sealed class OpenPullRequestHandler(IDesktop desktop) : IEffectHandler<Op
 {
     public async Task<Outcome> HandleAsync(OpenPullRequest effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         await desktop.OpenAsync(effect.PullRequest.Url.AbsoluteUri, cancellationToken);
 
         return new OpenPullRequestOutcome(effect.PullRequest.Host, effect.PullRequest.Number);

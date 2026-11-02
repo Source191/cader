@@ -15,6 +15,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
 {
     public async Task<Outcome> HandleAsync(RenameSession effect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(effect);
         Session.Background session = effect.Session;
         SessionName newName = effect.NewName;
         if (!transcripts.HasMessages(session.SessionId))
