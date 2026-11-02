@@ -25,12 +25,8 @@ internal sealed class WizardControls
 
     public WizardControls(WizardState state)
     {
-        Mode.Value = state.Mode switch
-        {
-            LaunchMode.CurrentBranch => 0,
-            LaunchMode.NewWorktree => 1,
-        };
-        BaseRef.Value = state.Base == WorktreeBase.Head ? 1 : 0;
+        Mode.Value = OptionSelectors.Index(state.Mode);
+        BaseRef.Value = OptionSelectors.Index(state.Base);
         Hint.Text = Wording.WizardHint(state);
         Fields = new Dictionary<WizardField, View>
         {
@@ -53,9 +49,9 @@ internal sealed class WizardControls
 
     public TextField Name { get; } = new() { X = LeftColumn, Y = 4, Width = ColumnWidth };
 
-    public OptionSelector Mode { get; } = new() { X = LeftColumn, Labels = ["Current branch", "New worktree"] };
+    public OptionSelector Mode { get; } = OptionSelectors.For<LaunchMode>(LeftColumn, 0, Wording.Describe);
 
-    public OptionSelector BaseRef { get; } = new() { X = LeftColumn, Labels = [.. Enum.GetValues<WorktreeBase>().Select(Wording.Describe)], Value = 0 };
+    public OptionSelector BaseRef { get; } = OptionSelectors.For<WorktreeBase>(LeftColumn, 0, Wording.Describe);
 
     public Label Preview { get; } = Text(LeftColumn, 6, Palette.Cyan, Dim.Fill(1));
 
