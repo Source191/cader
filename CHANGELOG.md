@@ -87,7 +87,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Internal
 
-- Every dialog title and button, the waiting words, the STATE words and the wizard's preview are declared in Wording and pinned by a fact, and a source fact keeps sentences out of the rest of Application (#PR)
+- Every dialog title and button, the waiting words, the STATE words and the wizard's preview are declared in Wording and pinned by a fact, and a source fact keeps sentences out of the rest of Application (#191)
 - Convention nets: a banned-symbols list for src, layering, reducer, handler, diagnostic-line, key-parity and source-text facts, and UnreachableException in the closed discards (#189)
 - Smoke test of the packed tool in CI, its script built from Wording (#75)
 - Prerelease versions are published as GitHub prereleases (#78)
