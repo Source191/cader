@@ -14,17 +14,14 @@ public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
     /// <summary>How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.</summary>
     public static readonly TimeSpan DefaultLimit = TimeSpan.FromSeconds(60);
 
-    public ProcessRunner()
-        : this(DefaultLimit)
-    {
-    }
-
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         using Process process = new();
         process.StartInfo = StartInfo(request, capture: true);
         process.Start();
 
+        // The reads ignore the caller's token on purpose: cancelling them would fault them while the child still runs.
+        // The wait below honours the token, kills the child, and the pipes then close so the reads end.
         Task<string> standardOutput = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
         Task<string> standardError = process.StandardError.ReadToEndAsync(CancellationToken.None);
         using CancellationTokenSource timeout = new(limit);

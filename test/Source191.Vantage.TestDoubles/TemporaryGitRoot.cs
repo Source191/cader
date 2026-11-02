@@ -9,7 +9,7 @@ namespace Source191.Vantage.TestDoubles;
 /// </summary>
 public sealed class TemporaryGitRoot : IDisposable
 {
-    private readonly ProcessRunner processes = new();
+    private readonly ProcessRunner processes = new(ProcessRunner.DefaultLimit);
 
     public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vantage-root-" + Guid.NewGuid().ToString("N"));
 

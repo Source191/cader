@@ -12,7 +12,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 [Trait("Category", "Integration")]
 public sealed class ProcessRunnerIntegrationShould
 {
-    private readonly ProcessRunner runner = new();
+    private readonly ProcessRunner runner = new(ProcessRunner.DefaultLimit);
 
     [Fact]
     public async Task CaptureStandardOutputAndTheExitCode()
