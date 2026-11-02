@@ -15,7 +15,7 @@
     .github\scripts\Assert-ChangelogUpdated.ps1 -Base main -Head HEAD
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '',
-    Justification = 'Workflow commands such as ::error:: go to the console, as in release.yml; Write-Output inside a function would become its return value.')]
+    Justification = 'Workflow commands such as ::error:: go to the console, as in check.yml; Write-Output inside a function would become its return value.')]
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $Base,

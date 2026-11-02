@@ -1,15 +1,16 @@
 name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
-  project against that build, checks whitespace formatting, and packs the dotnet tool. Shared by
-  check.yml and release.yml so the release never ships a build that the check did not see.
+  project against that build, checks whitespace formatting, and packs the dotnet tool. Run by
+  check.yml's check job, whose package on a release is the one the release job publishes, so the
+  release never ships a build that the check did not see.
 
 inputs:
   version-suffix:
     description: >-
       Prerelease suffix appended to the csproj Version when packing, e.g. ci.42. Empty packs the plain
-      version. Check runs pass one so every run's package is a distinct version: the dotnet tool cache
-      keeps the first package it sees for a version for ever.
+      version. Every run but a release passes one so its package is a distinct version: the dotnet tool
+      cache keeps the first package it sees for a version for ever.
     required: false
     default: ''
 

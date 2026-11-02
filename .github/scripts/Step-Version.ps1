@@ -19,7 +19,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# The same regex Assert-VersionBumped.ps1 and release.yml use.
+# The same regex Assert-VersionBumped.ps1 and check.yml use.
 $content = [System.IO.File]::ReadAllText((Resolve-Path $Csproj))
 $match = [regex]::Match($content, '<Version>\s*([^<]+?)\s*</Version>')
 if (-not $match.Success) {
