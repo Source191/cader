@@ -51,8 +51,6 @@ public static class GitWorktreeListing
                 case "prunable":
                     prunable = true;
                     break;
-                default:
-                    break;
             }
         }
 
