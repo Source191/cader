@@ -32,11 +32,7 @@ public sealed record SessionsViewState(
 
     public SessionRow? Selected => List.Selected;
 
-
     public TableTitle Title => List.Title("session", row => row.Session.Name);
-
-    /// <summary>The status message to show: the last message; <see cref="StatusMessage.Blank"/> shows no status line.</summary>
-    public StatusMessage Shown => Message;
 
     /// <summary>This state with the list component's fields taken from <paramref name="list"/>.</summary>
     public SessionsViewState With(ListSelection<SessionRow> list) => this with { Rows = list.Rows, SelectedSessionId = list.Selection, Filter = list.Filter, FilterEditing = list.FilterEditing, Loaded = list.Loaded };

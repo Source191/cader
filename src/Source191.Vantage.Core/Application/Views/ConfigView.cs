@@ -1,16 +1,15 @@
 using Source191.Vantage.Domain;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using static Source191.Vantage.Application.Views.ViewUpdate<Source191.Vantage.Application.Views.ConfigViewState>;
 
 namespace Source191.Vantage.Application.Views;
 
 /// <summary>The Config tab as a pure function of state and input, as <see cref="WorktreesView"/> is for its tab.</summary>
 public static class ConfigView
 {
-    public static ConfigViewUpdate Reduce(ConfigViewState state, ViewInput input)
+    public static ViewUpdate<ConfigViewState> Reduce(ConfigViewState state, ViewInput input)
     {
-        ArgumentNullException.ThrowIfNull(state);
-
         return input switch
         {
             ConfigRowsLoaded loaded => Unchanged(state.With(state.List.Load(loaded.Rows)) with { Banner = new LoadBanner.None() }),
@@ -38,7 +37,7 @@ public static class ConfigView
         return path is not null;
     }
 
-    private static ConfigViewUpdate Act(ConfigViewState state, Key key)
+    private static ViewUpdate<ConfigViewState> Act(ConfigViewState state, Key key)
     {
         return key switch
         {
@@ -51,17 +50,14 @@ public static class ConfigView
             { Name: KeyName.Character, Character: '/' } => Unchanged(state.With(state.List.StartFilter()) with { Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithPath(row, path => new CopyFolderPath(FolderPath.From(path)))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => new OpenFolderInEditor(FolderOf(row, path)))),
-            { Name: KeyName.Character, Character: 'q' } => Effect(state, new Quit()),
-            { Name: KeyName.Character, Character: '?' } => Effect(state, new ShowHelp()),
-            { Name: KeyName.Character, Character: 'U' } => Effect(state, new UpdateVantage()),
-            { Name: KeyName.Character, Character: '!' } => Effect(state, new ShowProblemReport()),
+            _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
         };
     }
 
     /// <summary>Either an effect to run or a status message explaining why nothing happens.</summary>
-    private static ConfigViewUpdate RowAction(ConfigViewState state, Func<ConfigRow, RowDecision> decide)
+    private static ViewUpdate<ConfigViewState> RowAction(ConfigViewState state, Func<ConfigRow, RowDecision> decide)
     {
         if (state.Selected is not ConfigRow row)
         {
@@ -90,8 +86,4 @@ public static class ConfigView
 
     /// <summary>A setup row's path is a file, so the folder holding it is the one to open; a root is a folder already.</summary>
     private static FolderPath FolderOf(ConfigRow row, string path) => row is ConfigRow.Setup && FolderPath.From(path).Parent is FolderPath parent ? parent : FolderPath.From(path);
-
-    private static ConfigViewUpdate Unchanged(ConfigViewState state) => new(state, []);
-
-    private static ConfigViewUpdate Effect(ConfigViewState state, ViewEffect effect) => new(state, [effect]);
 }

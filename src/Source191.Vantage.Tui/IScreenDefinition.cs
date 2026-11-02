@@ -38,7 +38,7 @@ internal interface IScreenDefinition<TState, TRow>
 
     TState WithMessage(TState state, StatusMessage message);
 
-    (TState State, IReadOnlyList<ViewEffect> Effects) Reduce(TState state, ViewInput input);
+    ViewUpdate<TState> Reduce(TState state, ViewInput input);
 
     /// <summary>Sees every input before the state is replaced, for the notifier.</summary>
     void OnInput(TState before, ViewInput input);

@@ -1,12 +1,13 @@
 using Source191.Vantage.Domain;
 using System.Diagnostics;
+using static Source191.Vantage.Application.Views.ViewUpdate<Source191.Vantage.Application.Views.WorktreesViewState>;
 
 namespace Source191.Vantage.Application.Views;
 
 /// <summary>The worktrees view as a pure function of state and input, mirroring <see cref="SessionsView"/>.</summary>
 public static class WorktreesView
 {
-    public static WorktreesViewUpdate Reduce(WorktreesViewState state, ViewInput input)
+    public static ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input)
     {
         return input switch
         {
@@ -23,7 +24,7 @@ public static class WorktreesView
         };
     }
 
-    private static WorktreesViewUpdate Act(WorktreesViewState state, Key key)
+    private static ViewUpdate<WorktreesViewState> Act(WorktreesViewState state, Key key)
     {
         return key switch
         {
@@ -43,17 +44,14 @@ public static class WorktreesView
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithFolder(row, new CopyFolderPath(row.Path))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithFolder(row, new OpenFolderInEditor(row.Path))),
             { Name: KeyName.Character, Character: 's' } => RowAction(state, row => WithFolder(row, new FindSolution(row.Path, row.RepositoryName))),
-            { Name: KeyName.Character, Character: 'q' } => Effect(state, new Quit()),
-            { Name: KeyName.Character, Character: '?' } => Effect(state, new ShowHelp()),
-            { Name: KeyName.Character, Character: 'U' } => Effect(state, new UpdateVantage()),
-            { Name: KeyName.Character, Character: '!' } => Effect(state, new ShowProblemReport()),
+            _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
         };
     }
 
     /// <summary>Either an effect to run or a status message explaining why nothing happens.</summary>
-    private static WorktreesViewUpdate RowAction(WorktreesViewState state, Func<WorktreeRow, RowDecision> decide)
+    private static ViewUpdate<WorktreesViewState> RowAction(WorktreesViewState state, Func<WorktreeRow, RowDecision> decide)
     {
         WorktreeRow? row = state.Selected;
         if (row is null)
@@ -84,7 +82,7 @@ public static class WorktreesView
     }
 
     /// <summary>The typed text must match exactly; anything else says what was typed so a near miss is obvious.</summary>
-    private static WorktreesViewUpdate Force(WorktreesViewState state, ForceConfirmed confirmed)
+    private static ViewUpdate<WorktreesViewState> Force(WorktreesViewState state, ForceConfirmed confirmed)
     {
         return confirmed.Typed switch
         {
@@ -95,7 +93,7 @@ public static class WorktreesView
         };
     }
 
-    private static WorktreesViewUpdate Forced(WorktreesViewState state, RemoveWorktree remove) => Effect(state with { Message = new StatusMessage.Working(remove) }, remove);
+    private static ViewUpdate<WorktreesViewState> Forced(WorktreesViewState state, RemoveWorktree remove) => Effect(state with { Message = new StatusMessage.Working(remove) }, remove);
 
     private static RowDecision PullRequestOf(WorktreeRow row) => row.PullRequest switch
     {
@@ -114,7 +112,7 @@ public static class WorktreesView
     /// <summary>A real worktree is one git still has: ok, locked, or elsewhere (registered with a repository outside the roots).</summary>
     private static RowDecision InRealWorktree(WorktreeRow row, ViewEffect effect)
     {
-        return row.Health.Kind is WorktreeHealthKind.Ok or WorktreeHealthKind.Locked or WorktreeHealthKind.Elsewhere && row.FolderExists
+        return (row.Health.Kind is WorktreeHealthKind.Ok or WorktreeHealthKind.Locked or WorktreeHealthKind.Elsewhere) && row.FolderExists
             ? new RowDecision.Act(effect)
             : new RowDecision.Explain(new StatusMessage.LeftoverFolder(row.FolderName));
     }
@@ -133,8 +131,4 @@ public static class WorktreesView
             ? new RowDecision.Act(new OpenWorktreeSession(running.Id, running.Name))
             : new RowDecision.Explain(new StatusMessage.NoSessionIn(row.FolderName));
     }
-
-    private static WorktreesViewUpdate Unchanged(WorktreesViewState state) => new(state, []);
-
-    private static WorktreesViewUpdate Effect(WorktreesViewState state, ViewEffect effect) => new(state, [effect]);
 }

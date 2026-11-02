@@ -79,7 +79,7 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState onClean = Press(Loaded, Key.Down, Key.Down);
 
-        WorktreesViewUpdate update = WorktreesView.Reduce(onClean, new KeyPressed(Key.Of('d')));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(onClean, new KeyPressed(Key.Of('d')));
 
         update.Effects.ShouldBe([new RemoveWorktree(Clean, Forced: false)]);
     }
@@ -89,7 +89,7 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState onDirty = Press(Loaded, Key.Down, Key.Down, Key.Down);
 
-        WorktreesViewUpdate update = WorktreesView.Reduce(onDirty, new KeyPressed(Key.Of('d')));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(onDirty, new KeyPressed(Key.Of('d')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.ChangesWouldBeLost(5), OfferForce: true));
@@ -100,7 +100,7 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState onDirty = Press(Loaded, Key.Down, Key.Down, Key.Down);
 
-        WorktreesViewUpdate update = WorktreesView.Reduce(onDirty, new KeyPressed(Key.Of('D')));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(onDirty, new KeyPressed(Key.Of('D')));
 
         update.Effects.ShouldBe([new ConfirmForceRemove(Dirty, ConfirmationText: "Northwind.Orders-fix-2")]);
     }
@@ -153,7 +153,7 @@ public sealed class WorktreesViewShould
         WorktreesViewState onGone = Press(Loaded, [.. Enumerable.Repeat(Key.Down, 6)]);
 
         WorktreesView.Reduce(Press(Loaded, Key.Down, Key.Down), new KeyPressed(Key.Of('P'))).Effects.ShouldBe([new PruneRepository(FolderPath.From(Repository))]);
-        WorktreesViewUpdate refused = WorktreesView.Reduce(onGone, new KeyPressed(Key.Of('P')));
+        ViewUpdate<WorktreesViewState> refused = WorktreesView.Reduce(onGone, new KeyPressed(Key.Of('P')));
         refused.Effects.ShouldBeEmpty();
         refused.State.Message.ShouldBe(new StatusMessage.NothingToPrune("Northwind.Retired"));
     }
@@ -178,7 +178,7 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState state = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Clean with { PullRequest = new PullRequestLookup.Missing(PullRequestGap.Looking) }]));
 
-        WorktreesViewUpdate update = WorktreesView.Reduce(state, new KeyPressed(Key.Of('p')));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(state, new KeyPressed(Key.Of('p')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoPullRequest("Northwind.Orders-fix-1", PullRequestGap.Looking, new LookupHost.NotRead()));
@@ -282,10 +282,10 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState onDirty = Loaded with { SelectedPath = new SelectionKey.Row(Dirty.Path.Key) };
 
-        WorktreesViewUpdate cancelled = WorktreesView.Reduce(onDirty, new ForceCancelled(Dirty));
-        WorktreesViewUpdate blank = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: string.Empty));
-        WorktreesViewUpdate wrong = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: "fix-9"));
-        WorktreesViewUpdate right = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: "fix-2"));
+        ViewUpdate<WorktreesViewState> cancelled = WorktreesView.Reduce(onDirty, new ForceCancelled(Dirty));
+        ViewUpdate<WorktreesViewState> blank = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: string.Empty));
+        ViewUpdate<WorktreesViewState> wrong = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: "fix-9"));
+        ViewUpdate<WorktreesViewState> right = WorktreesView.Reduce(onDirty, new ForceConfirmed(Dirty, "fix-2", Typed: "fix-2"));
 
         cancelled.State.Message.ShouldBe(new StatusMessage.ForceCancelled());
         blank.State.Message.ShouldBe(new StatusMessage.NothingTyped());
@@ -301,9 +301,9 @@ public sealed class WorktreesViewShould
         WorktreesViewState onLocked = Loaded with { SelectedPath = new SelectionKey.Row(Locked.Path.Key) };
         WorktreesViewState onClean = Loaded with { SelectedPath = new SelectionKey.Row(Clean.Path.Key) };
 
-        onLocked.Shown.ShouldBe(StatusMessage.None);
-        onClean.Shown.ShouldBe(StatusMessage.None);
-        (onLocked with { Message = new StatusMessage.Kept() }).Shown.ShouldBe(new StatusMessage.Kept());
+        onLocked.Message.ShouldBe(StatusMessage.None);
+        onClean.Message.ShouldBe(StatusMessage.None);
+        (onLocked with { Message = new StatusMessage.Kept() }).Message.ShouldBe(new StatusMessage.Kept());
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public sealed class WorktreesViewShould
         WorktreeRow vanished = Orphan with { FolderExists = false };
         WorktreesViewState state = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([vanished]));
 
-        WorktreesViewUpdate update = WorktreesView.Reduce(state, new KeyPressed(Key.Of(key)));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(state, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.LeftoverFolder("fix-service-tests"));
@@ -380,7 +380,7 @@ public sealed class WorktreesViewShould
     [InlineData('s')]
     public void SayNoWorktreeIsSelectedWhenAFolderKeyIsPressedOnAnEmptyTable(char key)
     {
-        WorktreesViewUpdate update = WorktreesView.Reduce(WorktreesViewState.Empty, new KeyPressed(Key.Of(key)));
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(WorktreesViewState.Empty, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoWorktreeSelected());

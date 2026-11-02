@@ -137,7 +137,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     public KeyBar Bar(bool updateKnown) => definition.Bar(State, updateKnown);
 
-    public StatusMessage Status => State.Shown;
+    public StatusMessage Status => State.Message;
 
     public bool Running => inFlight > 0;
 
@@ -349,9 +349,9 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     private void Apply(ViewInput input)
     {
         definition.OnInput(State, input);
-        (TState state, IReadOnlyList<ViewEffect> effects) = definition.Reduce(State, input);
-        State = state;
-        foreach (ViewEffect effect in effects)
+        ViewUpdate<TState> update = definition.Reduce(State, input);
+        State = update.State;
+        foreach (ViewEffect effect in update.Effects)
         {
             switch (effect)
             {

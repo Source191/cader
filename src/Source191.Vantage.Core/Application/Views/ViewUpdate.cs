@@ -1,4 +1,11 @@
 namespace Source191.Vantage.Application.Views;
 
-/// <summary>What the Sessions tab's reducer returns, despite the general name: its new state and the effects to run.</summary>
-public sealed record ViewUpdate(SessionsViewState State, IReadOnlyList<ViewEffect> Effects);
+/// <summary>What a tab's reducer returns: its new state and the effects to run.</summary>
+public sealed record ViewUpdate<TState>(TState State, IReadOnlyList<ViewEffect> Effects)
+{
+#pragma warning disable CA1000 // Each reducer imports its closed type with using static, so Unchanged and Effect read as they did.
+    public static ViewUpdate<TState> Unchanged(TState state) => new(state, []);
+
+    public static ViewUpdate<TState> Effect(TState state, ViewEffect effect) => new(state, [effect]);
+#pragma warning restore CA1000
+}

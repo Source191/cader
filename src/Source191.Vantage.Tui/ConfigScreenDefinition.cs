@@ -45,12 +45,7 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
 
     public ConfigViewState WithMessage(ConfigViewState state, StatusMessage message) => state with { Message = message };
 
-    public (ConfigViewState State, IReadOnlyList<ViewEffect> Effects) Reduce(ConfigViewState state, ViewInput input)
-    {
-        ConfigViewUpdate update = ConfigView.Reduce(state, input);
-
-        return (update.State, update.Effects);
-    }
+    public ViewUpdate<ConfigViewState> Reduce(ConfigViewState state, ViewInput input) => ConfigView.Reduce(state, input);
 
     public void OnInput(ConfigViewState before, ViewInput input)
     {

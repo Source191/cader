@@ -104,6 +104,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 - CLAUDE.md split into path-scoped rule files, and comments citing external APIs link to their documentation (#152)
 - README, CONTRIBUTING and CLAUDE.md corrected and trimmed before going public (#174)
 - System.CommandLine 2.0.14 (#108)
+- One ViewUpdate record and one RowAction for every tab reducer, and the console keys q, ?, U and ! answered once in SharedKeys (#192)
 
 ## 0.16.1 - 2026-10-27
 
