@@ -24,7 +24,7 @@ public abstract record SettingsScope(SettingsField Field)
             ConfigRow.OpenFolderWith => new Editor(),
             ConfigRow.DefaultBase => new Base(),
             ConfigRow.DefaultPlace => new Place(),
-            _ => throw new ArgumentException($"A {row?.GetType().Name} row has no dialog.", nameof(row)),
+            _ => throw new ArgumentException($"A {row.GetType().Name} row has no dialog.", nameof(row)),
         };
     }
 }

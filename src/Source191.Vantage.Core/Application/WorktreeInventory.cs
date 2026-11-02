@@ -20,6 +20,15 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     private const string GitDirPrefix = "gitdir:";
 
+    /// <summary>What a child of a repository root is: a repository, a worktree whose registration may be gone, an empty folder a tool left behind, or none of these.</summary>
+    private enum FolderKind
+    {
+        Repository,
+        Candidate,
+        EmptyLeftover,
+        Other,
+    }
+
     public async Task<IReadOnlyList<WorktreeRow>> ScanAsync(IReadOnlyList<Session> sessions, CancellationToken cancellationToken)
     {
         Settings snapshot = settings.Value;
@@ -32,18 +41,19 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         {
             foreach (FolderPath child in Paths(folders.Directories(root.Value)).OrderBy(child => child.Key, StringComparer.Ordinal))
             {
-                string gitPath = IOPath.Combine(child.Value, ".git");
-                if (folders.DirectoryExists(gitPath))
+                switch (Classify(child))
                 {
-                    repositories.Add(child);
-                }
-                else if (folders.FileExists(gitPath))
-                {
-                    candidates.Add(child);
-                }
-                else if (IsEmptyLeftover(child))
-                {
-                    rows.Add(Leftover(root, child, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false));
+                    case FolderKind.Repository:
+                        repositories.Add(child);
+                        break;
+                    case FolderKind.Candidate:
+                        candidates.Add(child);
+                        break;
+                    case FolderKind.EmptyLeftover:
+                        rows.Add(Leftover(root, child, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false));
+                        break;
+                    case FolderKind.Other:
+                        break;
                 }
             }
         }
@@ -62,6 +72,22 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         _ = pullRequests.RefreshStaleAsync(BranchesOf(rows));
 
         return [.. rows.Select(row => WithPullRequest(row with { Session = LiveSessionIn(row.Path, sessions) }))];
+    }
+
+    private FolderKind Classify(FolderPath child)
+    {
+        string gitPath = IOPath.Combine(child.Value, ".git");
+        if (folders.DirectoryExists(gitPath))
+        {
+            return FolderKind.Repository;
+        }
+
+        if (folders.FileExists(gitPath))
+        {
+            return FolderKind.Candidate;
+        }
+
+        return IsEmptyLeftover(child) ? FolderKind.EmptyLeftover : FolderKind.Other;
     }
 
     /// <summary>Each row's repository and branch, for the rows whose head is on one.</summary>

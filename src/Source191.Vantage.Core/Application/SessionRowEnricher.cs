@@ -1,6 +1,7 @@
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace Source191.Vantage.Application;
@@ -14,7 +15,7 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
     private static readonly TimeSpan CacheWindow = TimeSpan.FromSeconds(30);
 
     // Refreshes can overlap (the timer and the refresh after an action), so the cache must take concurrent writes.
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<FolderPath, (DateTimeOffset CachedAt, Located Located)> locations = new();
+    private readonly ConcurrentDictionary<FolderPath, (DateTimeOffset CachedAt, Located Located)> locations = new();
 
     public async Task<IReadOnlyList<SessionRow>> EnrichAsync(IReadOnlyList<Session> sessions, CancellationToken cancellationToken)
     {
@@ -32,7 +33,10 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
                 Memory = MemoryOf(session, processTable),
             };
             rows.Add(located.Location is SessionLocation.InRepository inRepository ? row with { PullRequest = pullRequests.Find(inRepository.Checkout, located.Head) } : row);
-            branches.AddRange(located is { Location: SessionLocation.InRepository { Checkout: FolderPath checkout }, Head: Head.OnBranch on } ? [(checkout, on.Branch)] : []);
+            if (located is { Location: SessionLocation.InRepository { Checkout: FolderPath checkout }, Head: Head.OnBranch on })
+            {
+                branches.Add((checkout, on.Branch));
+            }
         }
 
         // Never awaited: the rows show what the catalogue already holds, and a later refresh picks up what lands.
