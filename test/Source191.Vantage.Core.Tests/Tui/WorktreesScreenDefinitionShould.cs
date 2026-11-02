@@ -44,5 +44,47 @@ public sealed class WorktreesScreenDefinitionShould
         lastCommit.Cell(Row(new LastCommit.Unknown()), Noon, int.MaxValue).ShouldBe("-");
     }
 
+    [Fact]
+    public void ShowEveryColumnOfARow()
+    {
+        WorktreeRow row = Row(new LastCommit.Made(Noon.AddHours(-2))) with { Session = new WorktreeSession.Running(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), "invoice-pdf") };
+
+        definition.Columns.Select(column => column.Cell(row, Noon, int.MaxValue)).ShouldBe(
+        [
+            @"Northwind.Billing › ~\source\worktrees\Northwind.Billing-invoice-pdf",
+            Wording.HealthCell(WorktreeHealthKind.Ok),
+            "2h00m",
+            "invoice-pdf",
+        ]);
+    }
+
+    [Fact]
+    public void ShowNoSessionAsNothing()
+    {
+        definition.Columns.Single(column => column.Help == Wording.SessionColumn).Cell(Row(new LastCommit.Unknown()), Noon, int.MaxValue).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(WorktreeHealthKind.Ok)]
+    [InlineData(WorktreeHealthKind.Locked)]
+    [InlineData(WorktreeHealthKind.Empty)]
+    [InlineData(WorktreeHealthKind.Orphan)]
+    [InlineData(WorktreeHealthKind.Broken)]
+    [InlineData(WorktreeHealthKind.Elsewhere)]
+    public void ColourARowByItsHealth(WorktreeHealthKind kind)
+    {
+        WorktreeRow row = Row(new LastCommit.Unknown()) with { Health = new WorktreeHealth(kind, new HealthReason.None()) };
+
+        definition.RowColour(row).ShouldBe(kind switch
+        {
+            WorktreeHealthKind.Ok => Palette.White,
+            WorktreeHealthKind.Locked => Palette.Amber,
+            WorktreeHealthKind.Empty => Palette.Grey,
+            WorktreeHealthKind.Orphan => Palette.Red,
+            WorktreeHealthKind.Broken => Palette.Red,
+            WorktreeHealthKind.Elsewhere => Palette.Amber,
+        });
+    }
+
     private static WorktreeRow Row(LastCommit lastCommit) => new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 0, lastCommit, new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
 }
