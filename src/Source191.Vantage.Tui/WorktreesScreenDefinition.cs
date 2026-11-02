@@ -44,7 +44,7 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public IReadOnlyList<TextPart> Counts(WorktreesViewState state) => Wording.WorktreeCounts(state.List.Rows);
 
-    public KeyBar Bar(WorktreesViewState state, bool updateKnown) => Wording.WorktreesBar(state, updateKnown);
+    public KeyBar Bar(WorktreesViewState state, bool updateKnown) => Wording.WorktreesBar(updateKnown);
 
     public WorktreesViewState WithMessage(WorktreesViewState state, StatusMessage message) => state with { Message = message };
 
