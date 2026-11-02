@@ -30,6 +30,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
 
     public Task WriteTabAsync(TabRegistration registration)
     {
+        ArgumentNullException.ThrowIfNull(registration);
         lock (gate)
         {
             tabs[registration.Id] = registration;

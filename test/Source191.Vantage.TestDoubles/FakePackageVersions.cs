@@ -36,6 +36,7 @@ public sealed class FakePackageVersions(VersionListing answer) : IPackageVersion
 
     public Task<PackageNotes> NotesAsync(string packageId, ReleaseVersion version, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(version);
         NotesAskedFor.Add(version);
 
         return Task.FromResult<PackageNotes>(Notes.TryGetValue(version.ToString(), out string? text) ? new PackageNotes.Read(text) : new PackageNotes.NothingLearned());

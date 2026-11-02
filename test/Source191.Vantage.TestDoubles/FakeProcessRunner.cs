@@ -46,6 +46,7 @@ public sealed class FakeProcessRunner : IProcessRunner
 
     public FakeProcessRunner Answer(Func<ProcessRequest, bool> matches, ProcessResult result)
     {
+        ArgumentNullException.ThrowIfNull(matches);
         rules.Insert(0, new Rule(matches, new Queue<ProcessResult>([result])));
         return this;
     }
@@ -58,6 +59,7 @@ public sealed class FakeProcessRunner : IProcessRunner
     /// <summary>Answers matching requests with each result in turn, repeating the last one.</summary>
     public FakeProcessRunner AnswerInTurn(Func<ProcessRequest, bool> matches, params ProcessResult[] results)
     {
+        ArgumentNullException.ThrowIfNull(matches);
         rules.Insert(0, new Rule(matches, new Queue<ProcessResult>(results)));
         return this;
     }

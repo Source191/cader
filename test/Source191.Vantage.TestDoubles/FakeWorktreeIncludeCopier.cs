@@ -30,6 +30,8 @@ public sealed class FakeWorktreeIncludeCopier : IWorktreeIncludeCopier
 
     public Task<IReadOnlyList<string>> CopyAsync(FolderPath repository, FolderPath worktree, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(worktree);
         calls.Add((repository.Value, worktree.Value));
         onCopy();
 
