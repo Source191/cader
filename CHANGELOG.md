@@ -6,6 +6,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Added
 
+- Vantage installs with winget install Source191.Vantage as a self-contained program, with no .NET to install first; winget brings Windows Terminal, PowerShell 7 and git when they are missing, and every release carries the zip for a machine without winget (#206)
 - U opens a What's new dialog listing the changes in every release since the running one, with Update now, Release page and Later; a newly found release is announced once in the status line, and the first start after an update shows what changed, once (#180)
 - Sessions, Worktrees and Config are tabs of one screen, each title carrying its count with the state counts and glyphs beside it, and a two-line key bar at the bottom (#114)
 - A Config tab lists every setting and the setup Vantage reads (settings file, terminal profiles, Claude's bell, diagnostic log, last update check); Enter edits a setting in a small dialog and saves at once, and setup that needs attention says what to run (#117)
@@ -28,6 +29,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Changed
 
+- U upgrades Vantage with winget, and the daily update check asks the winget community repository, so a release is offered only once winget can install it; a Vantage installed as a dotnet tool says it is now installed with winget, and U moves it there, removing the dotnet tool once winget has installed it (#206)
 - The Worktrees table's LAST COMMIT column is right-aligned, as AGE is on the Sessions tab, so the durations line up (#190)
 - Removing a worktree on a detached head, or whose head git could not name, deletes no branch and asks about none; the folder's name no longer stands in for a branch (#186)
 - The update notice in the settings row is amber (#180)
@@ -69,6 +71,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Removed
 
+- Installing Vantage and its previews from nuget.org: previews are the zip on each GitHub prerelease, which tools\install-local.ps1 -FromArtifact extracts (#206)
 - The a key (native agent view); run claude agents in any shell instead (#95)
 - The w and , keys and the settings dialog, replaced by the Config tab (#117)
 - o on the Sessions tab, F6 in the wizard and starting a session without a tab (#128)

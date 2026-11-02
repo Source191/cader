@@ -28,9 +28,13 @@ Thank you for wanting to make Vantage better. This guide holds what you need to 
 
 ## Setting up
 
-Vantage builds and runs on Windows 11 only. Install what the README's [Prerequisites](README.md#prerequisites) list (Windows Terminal, PowerShell 7, the .NET 10 SDK, git and Claude Code), then:
+Vantage builds and runs on Windows 11 only. Install Claude Code as the README's [Prerequisites](README.md#prerequisites) say, and the tools a build needs that winget would otherwise bring with Vantage (skip a line for one you already have), then:
 
 ```powershell
+winget install --id Microsoft.WindowsTerminal --exact --source winget   # already part of Windows 11 22H2 and later
+winget install --id Microsoft.PowerShell --exact --source winget
+winget install --id Microsoft.DotNet.SDK.10 --exact --source winget
+winget install --id Git.Git --exact --source winget
 npm install -g @fission-ai/openspec   # the OpenSpec CLI
 dotnet tool install -g dotnet-stryker # mutation testing, optional
 git clone https://github.com/Source191/vantage.git
@@ -66,22 +70,22 @@ dotnet format --verify-no-changes
 
 ## Trying your build
 
-Pack and install the tool from your working copy:
+Build the self-contained program from your working copy, as winget would install it:
 
 ```powershell
 .\tools\install-local.ps1
 ```
 
-The script stops a running `vantage.exe`, packs the tool as `<Version>-local.<timestamp>` and installs or updates the global tool. The suffix matters: the tool cache keeps the first package it saw for a version, so two plain builds of one version would run the first. `-Clean` uninstalls first.
+The script publishes `<Version>-local.<timestamp>` (a prerelease, so it never offers an update) to `%LOCALAPPDATA%\Vantage\local`, replacing the last local build and stopping it first if it runs, and prints the full path of its `vantage.exe`. Run it by that path: nothing is added to the PATH, so `vantage` still runs your winget install, which the script never touches. Settings and state are shared with the installed Vantage, as they live beside it in `%LOCALAPPDATA%\Vantage`.
 
-To test the package a GitHub Actions run built, download the run's `Source191.Vantage-<version>-ci.<run number>` artefact and install from the folder:
+To try what a GitHub Actions run built, download the run's `vantage-<version>-ci.<run number>-win-x64` artefact (the zip a release would attach) and extract it to the same place:
 
 ```powershell
-gh run download <run id> --name Source191.Vantage-0.20.0-ci.42 --dir .\downloaded
+gh run download <run id> --name vantage-0.21.0-ci.42-win-x64 --dir .\downloaded
 .\tools\install-local.ps1 -FromArtifact .\downloaded
 ```
 
-Go back to the published tool with `dotnet tool update -g Source191.Vantage` (add `--prerelease` to stay on previews).
+A preview's GitHub prerelease carries the same zip, which `-FromArtifact` takes too. Remove a local build by deleting `%LOCALAPPDATA%\Vantage\local`.
 
 ## How the code is organised
 
@@ -145,7 +149,7 @@ Before asking for review, check that:
 
 ## Manual checks for tab and attach changes
 
-CI drives Vantage inside a pseudo-console, so rendering, keys and the attach through `vantage here` are covered; anything that goes out through `wt.exe` is not, because a runner has no desktop. Before merging a pull request that changes how Vantage opens, titles or colours tabs, or attaches to a session, install its package (`tools\install-local.ps1`) and check in a real Windows Terminal:
+CI drives Vantage inside a pseudo-console, so rendering, keys and the attach through `vantage here` are covered; anything that goes out through `wt.exe` is not, because a runner has no desktop. Before merging a pull request that changes how Vantage opens, titles or colours tabs, or attaches to a session, build it with `tools\install-local.ps1`, start it by the path the script prints and check in a real Windows Terminal:
 
 1. Enter on a session opens a coloured tab titled with the session name, and Enter again switches to that tab while it is open.
 2. `n`, choose a repository, name the session, leave `New worktree` chosen, F5: a new tab opens attached to the new session, its REPOSITORY cell reads the repository, and the Worktrees tab lists the new worktree.
@@ -161,7 +165,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 
 `.github\workflows\check.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
 
-- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, packs the tool as `<Version>-ci.<run number>` and uploads it as an artefact (see [Trying your build](#trying-your-build)), then installs that package and runs the smoke check against it.
+- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, packs the dotnet tool (kept for the release that moves its users to winget), publishes the self-contained winget build and zips it as `vantage_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `vantage.exe`.
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README, because `DocumentedMinimumShould` reads it.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
@@ -185,12 +189,12 @@ Releasing and publishing are the owner's; see [MAINTAINING.md](MAINTAINING.md).
 
 ## The changelog
 
-`CHANGELOG.md` is the one source of release notes: the package carries it as its release notes and inside the tool, Vantage's What's new dialog shows it before an update and once after one, and a stable GitHub Release starts with its section. It is written for the people who use Vantage, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)'s shape, which Vantage reads line by line:
+`CHANGELOG.md` is the one source of release notes: the zip carries it beside the program (and the nupkg as its release notes), Vantage reads a newer release's from the changelog at its tag, Vantage's What's new dialog shows it before an update and once after one, and a stable GitHub Release starts with its section. It is written for the people who use Vantage, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)'s shape, which Vantage reads line by line:
 
 - **Where:** every pull request that changes the packaged tool adds one line under `## Unreleased`, below one of the headings `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Security` or `### Internal`, in that order. `Assert-ChangelogUpdated.ps1` fails the pull request otherwise; a change outside the tool needs no line.
 - **How:** one line starting `- `, saying what a user will notice in words they would use, ending with the pull request's number, `(#171)`. Nothing else on the line is read as Markdown, so no links, bold or tables; control characters are dropped.
 - **Internal:** a refactor, a test, tooling or anything else nobody using Vantage can see goes under Internal, which Vantage never shows. Dependabot's pull requests get theirs from `check.yml`, which raises `Version` and runs `Add-InternalChangelogEntry.ps1` with the pull request's title.
-- **Size:** nuget.org keeps 35,000 characters of release notes, and the check fails at that size; the oldest sections then move to `docs\CHANGELOG-earlier.md`, which is not packed.
+- **Size:** while the nupkg is still packed for the move to winget, nuget.org keeps 35,000 characters of its release notes, and the check fails at that size; the oldest sections then move to `docs\CHANGELOG-earlier.md`, which is not shipped.
 
 ```powershell
 .github\scripts\Assert-ChangelogUpdated.ps1 -Base main -Head HEAD   # the check, locally

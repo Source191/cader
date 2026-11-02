@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Vantage is a terminal console for Claude Code sessions and git worktrees on Windows 11, packaged as the dotnet global tool `vantage`.
+  Vantage is a terminal console for Claude Code sessions and git worktrees on Windows 11, installed with winget as the self-contained program `vantage` (the dotnet tool is kept only for the release that moves its users to winget).
   Windows only: Windows Terminal (wt.exe, 1.25 or later), PowerShell 7, the Claude Code CLI 2.1.309 or later, git. No macOS or Linux support in this version.
   Sessions Vantage starts are background sessions under Claude Code's supervisor (claude --bg -n <name>). Vantage shells out to claude attach rather than hosting a session itself.
   Depend only on the documented CLI surface: claude agents --json [--all], claude --bg, claude attach, claude stop, claude rm, claude --bg --resume. Never parse transcript JSONL or the ~/.claude/sessions folder beyond checking that a transcript file exists. Resolve names to IDs before stop or rm, because those take only IDs.
