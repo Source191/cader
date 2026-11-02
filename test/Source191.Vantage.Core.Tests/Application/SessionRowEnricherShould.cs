@@ -150,7 +150,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     {
         Session withMessages = Session(@"C:\repos\Northwind.Orders");
         Session untouched = Session(@"C:\repos\Northwind.Orders") with { SessionId = SessionId.From("never-sent-anything") };
-        transcripts.WithMessages(withMessages.SessionId.Value);
+        transcripts.WithMessages(withMessages.SessionId);
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([withMessages, untouched], CancellationToken.None);
 

@@ -1,6 +1,7 @@
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Views;
+using Source191.Vantage.Domain;
 using Source191.Vantage.TestDoubles;
 using static Source191.Vantage.Core.Tests.Application.Actions.SessionTestData;
 
@@ -89,7 +90,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
     [Fact]
     public async Task SkipTerminalSessionsThatHaveMessagesByTheTimeItRuns()
     {
-        CloseEmptyTerminalsHandler handler = new(processTable, new FakeTranscripts().WithMessages("sess-9"));
+        CloseEmptyTerminalsHandler handler = new(processTable, new FakeTranscripts().WithMessages(SessionId.From("sess-9")));
 
         Outcome message = await handler.HandleAsync(new CloseEmptyTerminals([SessionTestData.Terminal("repos-31", 4242)]), CancellationToken.None);
 

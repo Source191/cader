@@ -19,7 +19,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
         List<ResumeNote> notes = [];
         foreach (BackgroundSession session in effect.Sessions)
         {
-            if (!transcripts.HasMessages(session.SessionId.Value))
+            if (!transcripts.HasMessages(session.SessionId))
             {
                 notes.Add(new ResumeNote.NeverSentAMessage(session.Name));
                 continue;

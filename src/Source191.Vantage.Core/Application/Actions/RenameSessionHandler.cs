@@ -17,7 +17,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
     {
         BackgroundSession session = effect.Session;
         SessionName newName = effect.NewName;
-        if (!transcripts.HasMessages(session.SessionId.Value))
+        if (!transcripts.HasMessages(session.SessionId))
         {
             return new RenameSessionOutcome.NoMessages(session.Name);
         }

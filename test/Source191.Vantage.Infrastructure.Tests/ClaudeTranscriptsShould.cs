@@ -1,4 +1,5 @@
 using Source191.Vantage.Adapters.Claude;
+using Source191.Vantage.Domain;
 
 namespace Source191.Vantage.Infrastructure.Tests;
 
@@ -14,8 +15,8 @@ public sealed class ClaudeTranscriptsShould : IDisposable
         File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), "{}\n");
         ClaudeTranscripts transcripts = new(home);
 
-        transcripts.HasMessages("5a4a7350-31ac-49b6-899f-c7d832d8ef63").ShouldBeTrue();
-        transcripts.HasMessages("00000000-0000-0000-0000-000000000000").ShouldBeFalse();
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeTrue();
+        transcripts.HasMessages(SessionId.From("00000000-0000-0000-0000-000000000000")).ShouldBeFalse();
     }
 
     [Fact]
@@ -23,7 +24,7 @@ public sealed class ClaudeTranscriptsShould : IDisposable
     {
         ClaudeTranscripts transcripts = new(home);
 
-        transcripts.HasMessages("5a4a7350-31ac-49b6-899f-c7d832d8ef63").ShouldBeFalse();
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeFalse();
     }
 
     public void Dispose()

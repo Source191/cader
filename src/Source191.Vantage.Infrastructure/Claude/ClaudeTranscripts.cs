@@ -1,3 +1,4 @@
+using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 namespace Source191.Vantage.Adapters.Claude;
 
@@ -9,7 +10,7 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
 {
     public static ClaudeTranscripts ForCurrentUser() => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude"));
 
-    public bool HasMessages(string sessionId)
+    public bool HasMessages(SessionId sessionId)
     {
         string projects = Path.Combine(claudeHome, "projects");
         if (!Directory.Exists(projects))
@@ -18,6 +19,6 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
         }
 
         return Directory.EnumerateDirectories(projects)
-            .Any(project => File.Exists(Path.Combine(project, $"{sessionId}.jsonl")));
+            .Any(project => File.Exists(Path.Combine(project, $"{sessionId.Value}.jsonl")));
     }
 }
