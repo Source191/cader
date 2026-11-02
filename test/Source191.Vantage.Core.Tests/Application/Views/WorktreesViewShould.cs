@@ -301,9 +301,9 @@ public sealed class WorktreesViewShould
         WorktreesViewState onLocked = Loaded with { SelectedPath = new SelectionKey.Row(Locked.Path.Key) };
         WorktreesViewState onClean = Loaded with { SelectedPath = new SelectionKey.Row(Clean.Path.Key) };
 
-        onLocked.Shown.ShouldBe(StatusMessage.None);
-        onClean.Shown.ShouldBe(StatusMessage.None);
-        (onLocked with { Message = new StatusMessage.Kept() }).Shown.ShouldBe(new StatusMessage.Kept());
+        onLocked.Message.ShouldBe(StatusMessage.None);
+        onClean.Message.ShouldBe(StatusMessage.None);
+        (onLocked with { Message = new StatusMessage.Kept() }).Message.ShouldBe(new StatusMessage.Kept());
     }
 
     [Fact]

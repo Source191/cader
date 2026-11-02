@@ -32,8 +32,5 @@ public sealed record WorktreesViewState(
     /// <summary>This state with the list component's fields taken from <paramref name="list"/>.</summary>
     public WorktreesViewState With(ListSelection<WorktreeRow> list) => this with { Rows = list.Rows, SelectedPath = list.Selection, Filter = list.Filter, FilterEditing = list.FilterEditing, Loaded = list.Loaded };
 
-    /// <summary>The last message only: the selected row's health is the detail pane's.</summary>
-    public StatusMessage Shown => Message;
-
     public TableTitle Title => List.Title("worktree", row => row.FolderName);
 }

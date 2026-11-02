@@ -137,7 +137,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     public KeyBar Bar(bool updateKnown) => definition.Bar(State, updateKnown);
 
-    public StatusMessage Status => State.Shown;
+    public StatusMessage Status => State.Message;
 
     public bool Running => inFlight > 0;
 

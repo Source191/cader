@@ -24,7 +24,7 @@ public sealed class ConfigViewShould
     {
         Loaded.Loaded.ShouldBeTrue();
         Loaded.Selected.ShouldBe(new ConfigRow.RepositoryRoot(0, FolderPath.From(Repos)));
-        Loaded.Shown.ShouldBe(StatusMessage.None);
+        Loaded.Message.ShouldBe(StatusMessage.None);
     }
 
     [Fact]
@@ -190,11 +190,10 @@ public sealed class ConfigViewShould
         ConfigViewState onWorktreeRoot = Press(Loaded, Key.Down, Key.Down);
         ConfigViewState advised = ConfigView.Reduce(At("setup:ClaudeBell"), new KeyPressed(Key.Enter)).State;
 
-        onWorktreeRoot.Shown.ShouldBe(StatusMessage.None);
-        advised.Shown.ShouldBe(advised.Message);
+        onWorktreeRoot.Message.ShouldBe(StatusMessage.None);
         ConfigViewState moved = Press(advised, Key.Down);
 
-        moved.Shown.ShouldBe(StatusMessage.None);
+        moved.Message.ShouldBe(StatusMessage.None);
     }
 
     [Fact]

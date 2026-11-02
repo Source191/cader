@@ -440,8 +440,8 @@ public sealed class SessionsViewShould
     [Fact]
     public void ShowNothingUntilThereIsAMessage()
     {
-        Loaded.Shown.ShouldBe(StatusMessage.None);
-        (Loaded with { Message = new StatusMessage.Kept() }).Shown.ShouldBe(new StatusMessage.Kept());
+        Loaded.Message.ShouldBe(StatusMessage.None);
+        (Loaded with { Message = new StatusMessage.Kept() }).Message.ShouldBe(new StatusMessage.Kept());
     }
 
     [Fact]

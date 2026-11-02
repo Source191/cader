@@ -9,8 +9,8 @@ public interface IListViewState<TRow>
 
     LoadBanner Banner { get; }
 
-    /// <summary>The status message to show: the last message; <see cref="StatusMessage.Blank"/> shows no status line.</summary>
-    StatusMessage Shown { get; }
+    /// <summary>The last message, which is the status line; <see cref="StatusMessage.None"/> shows no status line.</summary>
+    StatusMessage Message { get; }
 
     bool Loaded { get; }
 

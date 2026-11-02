@@ -25,9 +25,6 @@ public sealed record ConfigViewState(
 
     public ConfigRow? Selected => List.Selected;
 
-    /// <summary>The last message only: what the selected row is for is its tooltip.</summary>
-    public StatusMessage Shown => Message;
-
     public TableTitle Title => List.Title("row", Wording.ConfigSetting);
 
     /// <summary>A row's setting and its path when it has one; the heading has none, so any filter hides it.</summary>

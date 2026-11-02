@@ -112,7 +112,7 @@ public static class WorktreesView
     /// <summary>A real worktree is one git still has: ok, locked, or elsewhere (registered with a repository outside the roots).</summary>
     private static RowDecision InRealWorktree(WorktreeRow row, ViewEffect effect)
     {
-        return row.Health.Kind is WorktreeHealthKind.Ok or WorktreeHealthKind.Locked or WorktreeHealthKind.Elsewhere && row.FolderExists
+        return (row.Health.Kind is WorktreeHealthKind.Ok or WorktreeHealthKind.Locked or WorktreeHealthKind.Elsewhere) && row.FolderExists
             ? new RowDecision.Act(effect)
             : new RowDecision.Explain(new StatusMessage.LeftoverFolder(row.FolderName));
     }
