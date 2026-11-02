@@ -22,24 +22,14 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public string HelpText => Wording.WorktreesHelp;
 
-    public IReadOnlyList<ColumnHelp> Columns => Wording.WorktreesColumns;
-
-    public int? ElasticColumn => 0;
-
-    public string Cell(WorktreeRow row, int column, DateTimeOffset now, int width)
-    {
-        return column switch
-        {
-            // The branch and changes are the pane's, so the WORKTREE cell names the repository and the folder's slug only.
-            0 => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true).Fit(width),
-            1 => Wording.HealthCell(row.Health.Kind),
-            2 => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-",
-            _ => row.Session is WorktreeSession.Running running ? running.Name : string.Empty,
-        };
-    }
-
-    public CellPaint CellPaint(WorktreeRow row, int column) => new CellPaint.None();
-
+    public IReadOnlyList<TableColumn<WorktreeRow>> Columns { get; } =
+    [
+        // The branch and changes are the pane's, so the WORKTREE cell names the repository and the folder's slug only.
+        TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true).Fit(width), new ColumnFit.Elastic()),
+        TableColumn<WorktreeRow>.Plain(Wording.HealthColumn, (row, _, _) => Wording.HealthCell(row.Health.Kind), new ColumnFit.Natural()),
+        TableColumn<WorktreeRow>.Plain(Wording.LastCommitColumn, (row, now, _) => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-", new ColumnFit.RightAligned()),
+        TableColumn<WorktreeRow>.Plain(Wording.SessionColumn, (row, _, _) => row.Session is WorktreeSession.Running running ? running.Name : string.Empty, new ColumnFit.Natural()),
+    ];
     public Color RowColour(WorktreeRow row)
     {
         return row.Health.Kind switch

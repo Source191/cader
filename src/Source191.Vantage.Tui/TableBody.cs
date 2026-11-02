@@ -8,7 +8,6 @@ using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
-using Alignment = Terminal.Gui.ViewBase.Alignment;
 using GuiKey = Terminal.Gui.Input.Key;
 
 namespace Source191.Vantage.Tui;
@@ -23,7 +22,6 @@ namespace Source191.Vantage.Tui;
 internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDisposable
     where TState : IListViewState<TRow>
 {
-    private const int LongColumnCap = 28;
     private const int ElasticFloor = 20;
 
     /// <summary>The table's header: the overline, the names and the line under them.</summary>
@@ -40,6 +38,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     private readonly TableView table;
     private readonly WaitingIndicator waiting;
     private readonly string[] columnNames;
+    private readonly int elasticColumn;
     private readonly DetailPart detailPart;
     private readonly CancellationTokenSource lifetime = new();
     private readonly LoadSequence sequence = new();
@@ -72,7 +71,8 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         this.app = app;
         this.host = host;
         State = initial;
-        columnNames = [.. definition.Columns.Select(column => column.Name)];
+        columnNames = [.. definition.Columns.Select(column => column.Help.Name)];
+        elasticColumn = IndexOfElastic(definition.Columns);
         detailKey = askAgain;
 
         // The tab's title is the view's Title; it can take focus because Tabs shows whichever tab has it.
@@ -249,7 +249,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         IReadOnlyList<TRow> rows = State.List.Visible;
         selected = State.List.Selected;
         int elasticWidth = ElasticWidth(rows, now);
-        table.Table = new TableSource<TRow>(rows, columnNames, (row, column) => definition.Cell(row, column, now, column == definition.ElasticColumn ? elasticWidth : int.MaxValue));
+        table.Table = new TableSource<TRow>(rows, columnNames, (row, column) => definition.Columns[column].Cell(row, now, column == elasticColumn ? elasticWidth : int.MaxValue));
         table.ColumnOffset = columnOffset;
         View.Title = definition.TabTitle(State);
         if (rows.Count > 0)
@@ -433,7 +433,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         int x = table.Frame.X + (mouse.Position?.X ?? 0);
         if (over is PointerOver.Header header && header.Column < definition.Columns.Count)
         {
-            ColumnHelp help = definition.Columns[header.Column];
+            ColumnHelp help = definition.Columns[header.Column].Help;
             ShowToolTip(x, table.Frame.Y, HeaderRows, $"{help.Name}: {help.Meaning}");
             return;
         }
@@ -468,8 +468,8 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     }
 
     /// <summary>
-    /// Names are cut at 28 cells with an ellipsis, so one long value cannot push the other columns off
-    /// screen; rows keep the full values. Ages are right-aligned, and every column asks the definition for a cell's own paint.
+    /// Each column is styled from its own fit: a capped one is cut at its cells with an ellipsis, so one long value cannot push the other
+    /// columns off screen (rows keep the full values), and a right-aligned one ends flush right. Every column asks the definition for a cell's own paint.
     /// </summary>
     private void StyleColumns()
     {
@@ -477,35 +477,34 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         {
             ColumnStyle style = table.Style.GetOrCreateColumnStyle(column);
             style.ColorGetter = CellColour;
-            if (columnNames[column] == "NAME")
-            {
-                style.MaxWidth = LongColumnCap;
-                style.TruncationIndicator = "…";
-            }
-
-            if (columnNames[column] == "AGE")
-            {
-                style.Alignment = Alignment.End;
-            }
+            ColumnFits.Apply(style, definition.Columns[column].Fit);
         }
     }
 
+    /// <summary>The one column whose fit is elastic; every view has exactly one, which its definition's fact keeps.</summary>
+    private static int IndexOfElastic(IReadOnlyList<TableColumn<TRow>> columns)
+    {
+        for (int column = 0; column < columns.Count; column++)
+        {
+            if (columns[column].Fit is ColumnFit.Elastic)
+            {
+                return column;
+            }
+        }
+
+        throw new InvalidOperationException("A table view needs one elastic column.");
+    }
     /// <summary>
     /// The cells the elastic column may have: the table's content width minus the other columns' widest visible cells (capped as the
     /// styles cap them) and a separator per column, never below the floor. The elastic column's style is held to it, both ways.
     /// </summary>
     private int ElasticWidth(IReadOnlyList<TRow> rows, DateTimeOffset now)
     {
-        if (definition.ElasticColumn is not int elastic)
-        {
-            return int.MaxValue;
-        }
-
         int contentWidth = table.Viewport.Width > 0 ? table.Viewport.Width : app.Screen.Width - 2;
         int others = 0;
         for (int column = 0; column < columnNames.Length; column++)
         {
-            if (column != elastic)
+            if (column != elasticColumn)
             {
                 others += WidestCell(rows, column, now);
             }
@@ -513,7 +512,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
         // The table sizes a column to its content, so the minimum is what makes the elastic column take the spare width.
         int width = Math.Max(contentWidth - others - columnNames.Length - 1, ElasticFloor);
-        ColumnStyle style = table.Style.GetOrCreateColumnStyle(elastic);
+        ColumnStyle style = table.Style.GetOrCreateColumnStyle(elasticColumn);
         style.MaxWidth = width;
         style.MinWidth = width;
 
@@ -522,7 +521,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     private int WidestCell(IReadOnlyList<TRow> rows, int column, DateTimeOffset now)
     {
-        int widest = Math.Max(columnNames[column].Length, rows.Count == 0 ? 0 : rows.Max(row => definition.Cell(row, column, now, int.MaxValue).Length));
+        int widest = Math.Max(columnNames[column].Length, rows.Count == 0 ? 0 : rows.Max(row => definition.Columns[column].Cell(row, now, int.MaxValue).Length));
         ColumnStyle? style = table.Style.GetColumnStyleIfAny(column);
 
         return style?.MaxWidth is int cap ? Math.Min(widest, cap) : widest;
@@ -540,7 +539,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         bool onSelected = Equals(row, selected);
 
         // Null is Terminal.Gui's "the row's own scheme applies".
-        return definition.CellPaint(row, args.ColIdex) switch
+        return definition.Columns[args.ColIdex].Paint(row) switch
         {
             CellPaint.Fill fill when onSelected => Palette.SelectedRow(fill.Foreground),
             CellPaint.Fill fill => Palette.Plain(fill.Foreground),

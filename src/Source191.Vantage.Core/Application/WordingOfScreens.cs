@@ -181,23 +181,35 @@ public static partial class Wording
     /// <summary>A health's word, the one the HEALTH cell, the counts and the pane's Health line all use.</summary>
     private static string HealthWord(WorktreeHealthKind kind) => kind.ToString().ToLowerInvariant();
 
-    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } =
-    [
-        new("NAME", "the session name given at launch, or the folder name for an unnamed one"),
-        new("TAB", $"a block in the tab's colour, faded as the tab looks from Vantage's own tab,\nwhile a Vantage tab shows the session; {TerminalSwatch} grey for a plain claude in its own terminal"),
-        new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)"),
-        new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository"),
-        new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known"),
-        new("AGE", "time since the session started"),
-    ];
+    public static ColumnHelp NameColumn { get; } = new("NAME", "the session name given at launch, or the folder name for an unnamed one");
 
-    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } =
-    [
-        new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it"),
-        new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots); the pane gives the reason"),
-        new("LAST COMMIT", "time since the last commit"),
-        new("SESSION", "the session running in it, if any"),
-    ];
+    public static ColumnHelp TabColumn { get; } = new("TAB", $"a block in the tab's colour, faded as the tab looks from Vantage's own tab,\nwhile a Vantage tab shows the session; {TerminalSwatch} grey for a plain claude in its own terminal");
+
+    public static ColumnHelp StateColumn { get; } = new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
+
+    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository");
+
+    public static ColumnHelp PullRequestColumn { get; } = new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
+
+    public static ColumnHelp AgeColumn { get; } = new("AGE", "time since the session started");
+
+    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
+
+    public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots); the pane gives the reason");
+
+    public static ColumnHelp LastCommitColumn { get; } = new("LAST COMMIT", "time since the last commit");
+
+    public static ColumnHelp SettingColumn { get; } = new("SETTING", "a setting Vantage keeps in config.json, or, under the Setup heading, setup it reads but does not change");
+
+    public static ColumnHelp ValueColumn { get; } = new("VALUE", "its value; a setup row that needs attention says what to run");
+
+    public static ColumnHelp SessionColumn { get; } = new("SESSION", "the session running in it, if any");
+
+    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
+
+    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, LastCommitColumn, SessionColumn];
+
+    public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } = [SettingColumn, ValueColumn];
 
     /// <summary>The sessions pane's lines, for the help.</summary>
     public static IReadOnlyList<ColumnHelp> SessionsPane { get; } =
@@ -226,11 +238,7 @@ public static partial class Wording
         new("Unpushed", "the newest five unpushed commits, or the changed files when none, and how many more"),
     ];
 
-    public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } =
-    [
-        new("SETTING", "a setting Vantage keeps in config.json, or, under the Setup heading, setup it reads but does not change"),
-        new("VALUE", "its value; a setup row that needs attention says what to run"),
-    ];
+
 
     /// <summary>The sessions view's help: its keys and columns, then the Claude Code executable Vantage drives.</summary>
     public static string SessionsHelp(string claudeExecutable) => $"{Help(SessionsKeys, SessionsColumns, SessionsPane)}\n\nClaude Code: {claudeExecutable}";
