@@ -13,6 +13,7 @@ public static class CommandLine
 
     public static string Quote(string argument)
     {
+        ArgumentNullException.ThrowIfNull(argument);
         if (argument.Length > 0 && !argument.Any(c => char.IsWhiteSpace(c) || c == '"'))
         {
             return argument;

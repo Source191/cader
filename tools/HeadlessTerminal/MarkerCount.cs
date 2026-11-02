@@ -8,6 +8,7 @@ public static class MarkerCount
 {
     public static int Of(string plain, string marker)
     {
+        ArgumentNullException.ThrowIfNull(plain);
         int count = 0;
         int index = -1;
         while ((index = plain.IndexOf(marker, index + 1, StringComparison.Ordinal)) >= 0)
@@ -20,6 +21,7 @@ public static class MarkerCount
 
     public static string Around(string plain, string marker, int before = 100, int after = 700)
     {
+        ArgumentNullException.ThrowIfNull(plain);
         int first = plain.IndexOf(marker, StringComparison.Ordinal);
 
         return first < 0 ? string.Empty : plain[Math.Max(0, first - before)..Math.Min(plain.Length, first + after)];
@@ -27,6 +29,7 @@ public static class MarkerCount
 
     public static int PrintFile(string rawFile, string[] markers)
     {
+        ArgumentNullException.ThrowIfNull(markers);
         string plain = EscapeSequences.Strip(File.ReadAllText(rawFile, Encoding.UTF8));
         foreach (string marker in markers)
         {

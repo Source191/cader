@@ -11,6 +11,7 @@ public static class KeystrokeScript
 {
     public static IReadOnlyList<Keystroke> Parse(string script)
     {
+        ArgumentNullException.ThrowIfNull(script);
         List<Keystroke> steps = [];
         int at = 0;
         foreach (string step in script.Split(',', StringSplitOptions.RemoveEmptyEntries))

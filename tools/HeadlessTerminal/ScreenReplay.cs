@@ -22,6 +22,7 @@ public sealed class ScreenReplay(int columns, int rows)
 
     public static int EndFor(string capture, string marker)
     {
+        ArgumentNullException.ThrowIfNull(capture);
         int markerAt = capture.LastIndexOf(marker, StringComparison.Ordinal);
         if (markerAt < 0)
         {
@@ -35,6 +36,7 @@ public sealed class ScreenReplay(int columns, int rows)
 
     public ScreenReplay Replay(string capture, int end)
     {
+        ArgumentNullException.ThrowIfNull(capture);
         int i = 0;
         while (i < end)
         {
@@ -48,6 +50,7 @@ public sealed class ScreenReplay(int columns, int rows)
 
     public static int PrintFile(string rawFile, string marker, string[] size)
     {
+        ArgumentNullException.ThrowIfNull(size);
         string capture = File.ReadAllText(rawFile, Encoding.UTF8);
         int columns = size.Length > 0 ? int.Parse(size[0], CultureInfo.InvariantCulture) : 120;
         int rows = size.Length > 1 ? int.Parse(size[1], CultureInfo.InvariantCulture) : 40;

@@ -24,6 +24,7 @@ public static class SmokeScript
     /// <param name="worktreeFolder">The folder name of an idle linked worktree under a repository root, holding two solutions: force remove is refused with no dialog while a session uses it, and s asks only when there is more than one.</param>
     public static IReadOnlyList<SmokeStep> Build(string worktreeFolder)
     {
+        ArgumentNullException.ThrowIfNull(worktreeFolder);
         IReadOnlyList<KeyHelp> sessions = Wording.SessionsKeys;
         IReadOnlyList<KeyHelp> worktrees = Wording.WorktreesKeys;
         IReadOnlyList<KeyHelp> config = Wording.ConfigKeys;

@@ -14,6 +14,7 @@ public sealed class Driver(DriverOptions options)
 
     public async Task<int> RunAsync(string exe, IReadOnlyList<Keystroke> script, IReadOnlyList<string> arguments)
     {
+        ArgumentNullException.ThrowIfNull(script);
         using CapturedRun run = CapturedRun.Start(options, exe, arguments);
 
         foreach (Keystroke step in script)

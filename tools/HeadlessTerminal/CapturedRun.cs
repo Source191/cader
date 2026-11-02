@@ -35,7 +35,10 @@ public sealed class CapturedRun : IDisposable
     public bool HasExited => console.HasExited;
 
     public static CapturedRun Start(DriverOptions options, string exe, IReadOnlyList<string> arguments)
-        => new(PseudoConsole.Start(exe, arguments, Environment.CurrentDirectory, options.Columns, options.Rows, options.ChildEnvironment()), options);
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        return new(PseudoConsole.Start(exe, arguments, Environment.CurrentDirectory, options.Columns, options.Rows, options.ChildEnvironment()), options);
+    }
 
     public string Captured()
     {

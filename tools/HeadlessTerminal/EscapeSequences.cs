@@ -13,6 +13,7 @@ public static class EscapeSequences
 
     public static string Strip(string raw)
     {
+        ArgumentNullException.ThrowIfNull(raw);
         StringBuilder plain = new();
         int index = 0;
         while (index < raw.Length)

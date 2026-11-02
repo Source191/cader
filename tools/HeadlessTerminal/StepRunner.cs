@@ -15,6 +15,7 @@ public sealed class StepRunner(DriverOptions options, StepTimings timings, strin
 
     public async Task<int> RunAsync(string exe, IReadOnlyList<SmokeStep> steps, IReadOnlyList<string> arguments)
     {
+        ArgumentNullException.ThrowIfNull(steps);
         using CapturedRun run = CapturedRun.Start(options, exe, arguments);
         int position = 0;
         for (int index = 0; index < steps.Count; index++)
