@@ -733,6 +733,7 @@ public sealed class JsonFileStoreShould : IDisposable
 
         (await Store.ReadLastRunAsync()).ShouldBe(new LastRun.Never());
     }
+
     [Fact]
     public async Task ReadAMissingOrCorruptUpdateCheckAsNever()
     {

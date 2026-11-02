@@ -37,6 +37,7 @@ public sealed class OneTypePerFileShould
         return SourceFiles.Under(Folders)
             .Select(relativePath => new SourceFile(relativePath, TopLevelTypes(SourceFiles.Read(relativePath))));
     }
+
     private static List<TopLevelType> TopLevelTypes(string text)
     {
         CompilationUnitSyntax unit = SourceFiles.Parse(text).GetCompilationUnitRoot();

@@ -60,6 +60,7 @@ public sealed class WordingOfOutcomesShould
     {
         Wording.Working(new Source191.Vantage.Application.Views.OpenReleasePage(ReleaseVersions.Version("0.21.0"))).ShouldBe("Opening the 0.21.0 release page...");
     }
+
     [Fact]
     public void SayTheUpdateStarted()
     {
@@ -416,6 +417,7 @@ public sealed class WordingOfOutcomesShould
     {
         Wording.Describe(new OpenInEditorOutcome.FolderMissing("Northwind.Orders-fix-123")).ShouldBe("Northwind.Orders-fix-123 no longer exists, so nothing was opened.");
     }
+
     [Fact]
     public void SayASolutionWasOpened()
     {

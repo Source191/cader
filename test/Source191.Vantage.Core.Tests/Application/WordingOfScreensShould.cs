@@ -123,6 +123,7 @@ public sealed class WordingOfScreensShould
             new TextPart(" · ", TextTone.Grey), new TextPart("Claude ", TextTone.Orange), new TextPart("2.1.310", TextTone.Plain),
         ]);
     }
+
     [Theory]
     [InlineData("0.18.0", "2.1.310", true, false, "Vantage 0.18.0 (35 MB; 0.19.0 available, U to update) · Claude 2.1.310")]
     [InlineData("0.5.0-local", null, false, false, "Vantage 0.5.0-local (35 MB) · Claude unknown")]

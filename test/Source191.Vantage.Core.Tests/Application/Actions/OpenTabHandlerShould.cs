@@ -17,9 +17,9 @@ public sealed class OpenTabHandlerShould
     private readonly FakeWindowsTerminal terminal = new();
     private readonly FakeProcessRegistry registry = new();
 
-    private readonly InMemoryState Store = new();
+    private readonly InMemoryState store = new();
 
-    private OpenTabHandler Handler => new(Store, registry, terminal, new FakeTimeProvider(Fixtures.Noon), new TabScripts(Claude, Vantage));
+    private OpenTabHandler Handler => new(store, registry, terminal, new FakeTimeProvider(Fixtures.Noon), new TabScripts(Claude, Vantage));
 
     private static Session.Background Job() => new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), FolderPath.From(@"C:\repos\Northwind.Orders"), Fixtures.Noon, DisplayState.Working, new JobProcess.None());
 
@@ -48,7 +48,7 @@ public sealed class OpenTabHandlerShould
         tab.Title.ShouldBe("Refund retry policy");
         tab.StartingDirectory.Value.ShouldBe(@"C:\repos\Northwind.Orders");
         tab.Script.ShouldContain($"& '{Claude}' 'attach' '81cdb0f9'");
-        (await Store.ReadTabsAsync()).Single().Owner.ShouldBe(new TabOwner.ForSession(SessionId.From("sess-1")));
+        (await store.ReadTabsAsync()).Single().Owner.ShouldBe(new TabOwner.ForSession(SessionId.From("sess-1")));
         outcome.ShouldBeOfType<OpenTabOutcome.Opened>().Name.ShouldBe(Listed.As("Refund retry policy"));
     }
 
@@ -57,7 +57,7 @@ public sealed class OpenTabHandlerShould
     {
         await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.None()), CancellationToken.None);
 
-        TabRegistration pending = (await Store.ReadTabsAsync()).Single();
+        TabRegistration pending = (await store.ReadTabsAsync()).Single();
         pending.Owner.ShouldBe(new TabOwner.ForSession(SessionId.From("sess-1")));
         pending.Claim.ShouldBe(new TabClaim.Pending());
         pending.CreatedAt.ShouldBe(Fixtures.Noon);
@@ -67,7 +67,7 @@ public sealed class OpenTabHandlerShould
     [Fact]
     public async Task ChooseAColourNoLiveTabIsUsing()
     {
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("other")), TabPalette.Default[0], Fixtures.Noon.AddSeconds(-5)));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("other")), TabPalette.Default[0], Fixtures.Noon.AddSeconds(-5)));
 
         await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.None()), CancellationToken.None);
 
@@ -78,7 +78,7 @@ public sealed class OpenTabHandlerShould
     public async Task SkipTheColourOfTheVantageTabItself()
     {
         registry.Running(100, Fixtures.Noon);
-        await Store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Default[0], Fixtures.Noon).ClaimedBy(100, Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Default[0], Fixtures.Noon).ClaimedBy(100, Fixtures.Noon));
 
         await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.None()), CancellationToken.None);
 
@@ -88,7 +88,7 @@ public sealed class OpenTabHandlerShould
     [Fact]
     public async Task SwitchToTheLiveTabInsteadOfOpeningAnother()
     {
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon).ClaimedBy(4242, Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon).ClaimedBy(4242, Fixtures.Noon));
         registry.Running(4242, Fixtures.Noon).InTree(4242, "pwsh", 777).InTree(777, "WindowsTerminal", 1, Fixtures.Noon.AddHours(-1));
 
         Outcome outcome = await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.Open(TabPalette.Default[0])), CancellationToken.None);
@@ -103,7 +103,7 @@ public sealed class OpenTabHandlerShould
     {
         Session.Background unnamed = Job() with { Name = Listed.None() };
         await Handler.HandleAsync(new OpenTabForSession(unnamed, new LiveTab.None()), CancellationToken.None);
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon).ClaimedBy(4242, Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon).ClaimedBy(4242, Fixtures.Noon));
         registry.Running(4242, Fixtures.Noon).InTree(4242, "pwsh", 777).InTree(777, "WindowsTerminal", 1, Fixtures.Noon.AddHours(-1));
 
         await Handler.HandleAsync(new OpenTabForSession(unnamed, new LiveTab.Open(TabPalette.Default[0])), CancellationToken.None);
@@ -115,13 +115,13 @@ public sealed class OpenTabHandlerShould
     public async Task OpenANewTabWhenTheRegisteredShellHasGone()
     {
         TabRegistration stale = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon.AddMinutes(-10)).ClaimedBy(4242, Fixtures.Noon.AddMinutes(-9));
-        await Store.WriteTabAsync(stale);
+        await store.WriteTabAsync(stale);
 
         Outcome outcome = await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.Open(TabPalette.Default[0])), CancellationToken.None);
 
         terminal.Focused.ShouldBeEmpty();
         terminal.Opened.Single().Title.ShouldBe("Refund retry policy");
-        (await Store.ReadTabsAsync()).ShouldNotContain(registration => registration.Id == stale.Id);
+        (await store.ReadTabsAsync()).ShouldNotContain(registration => registration.Id == stale.Id);
         outcome.ShouldBeOfType<OpenTabOutcome.Opened>();
     }
 
@@ -130,11 +130,11 @@ public sealed class OpenTabHandlerShould
     {
         TabRegistration earlier = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon.AddMinutes(-10)).ClaimedBy(4242, Fixtures.Noon.AddMinutes(-9));
         registry.Running(4242, Fixtures.Noon.AddMinutes(-9));
-        await Store.WriteTabAsync(earlier);
+        await store.WriteTabAsync(earlier);
 
         await Handler.OpenAsync(Job(), CancellationToken.None);
 
-        TabRegistration only = (await Store.ReadTabsAsync()).ShouldHaveSingleItem();
+        TabRegistration only = (await store.ReadTabsAsync()).ShouldHaveSingleItem();
         only.Id.ShouldNotBe(earlier.Id);
         only.Colour.ShouldBe(TabPalette.Default[0], "the session's earlier tab no longer holds its colour");
     }
@@ -152,7 +152,7 @@ public sealed class OpenTabHandlerShould
     [Fact]
     public async Task SearchEveryWindowWhenTheTabShellHasNoKnownParent()
     {
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon));
 
         await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.Open(TabPalette.Default[0])), CancellationToken.None);
 
@@ -163,7 +163,7 @@ public sealed class OpenTabHandlerShould
     public async Task SayWhenTheLiveTabCannotBeFound()
     {
         terminal.FocusFinds = false;
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon));
 
         Outcome outcome = await Handler.HandleAsync(new OpenTabForSession(Job(), new LiveTab.Open(TabPalette.Default[0])), CancellationToken.None);
 
@@ -175,12 +175,12 @@ public sealed class OpenTabHandlerShould
     public async Task ClaimARegistrationWithTheTabProcess()
     {
         TabRegistration pending = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Fixtures.Noon);
-        await Store.WriteTabAsync(pending);
+        await store.WriteTabAsync(pending);
         registry.Running(4242, Fixtures.Noon.AddSeconds(2));
 
-        await new TabClaimer(Store, registry).ClaimAsync(pending.Id, processId: 4242);
+        await new TabClaimer(store, registry).ClaimAsync(pending.Id, processId: 4242);
 
-        TabRegistration claimed = (await Store.ReadTabsAsync()).Single();
+        TabRegistration claimed = (await store.ReadTabsAsync()).Single();
         claimed.Claim.ShouldBe(new TabClaim.Claimed(4242, Fixtures.Noon.AddSeconds(2)));
     }
 
@@ -191,7 +191,7 @@ public sealed class OpenTabHandlerShould
 
         await Should.ThrowAsync<TerminalException>(() => Handler.OpenAsync(Job(), CancellationToken.None));
 
-        (await Store.ReadTabsAsync()).Single().Claim.ShouldBe(new TabClaim.Pending());
+        (await store.ReadTabsAsync()).Single().Claim.ShouldBe(new TabClaim.Pending());
         terminal.Opened.ShouldBeEmpty();
     }
 }

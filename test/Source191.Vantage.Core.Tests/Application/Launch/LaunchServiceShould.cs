@@ -22,20 +22,20 @@ public sealed class LaunchServiceShould
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty))
         .Answer(request => request.FileName == "git" && request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty));
 
-    private readonly InMemoryState Store = new();
+    private readonly InMemoryState store = new();
 
     private LaunchService Service
     {
         get
         {
             GitCli git = new(processes, "git");
-            return new LaunchService(new ClaudeCli(processes, Claude), git, Store, Store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
+            return new LaunchService(new ClaudeCli(processes, Claude), git, store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
         }
     }
 
     private LaunchService ServiceWith(FakeWorktreeIncludeCopier copier)
     {
-        return new LaunchService(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), Store, Store, copier, new FakeTimeProvider(Fixtures.Noon));
+        return new LaunchService(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, store, copier, new FakeTimeProvider(Fixtures.Noon));
     }
 
     private static readonly PlannedWorktree FlakyTests = new(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"), BranchName.From("fix-flaky-tests"));
@@ -65,7 +65,7 @@ public sealed class LaunchServiceShould
     public async Task RecordTheWorktreeBeforeCopyingIncludes()
     {
         int recordedWhenCopying = -1;
-        FakeWorktreeIncludeCopier copier = new FakeWorktreeIncludeCopier().WhenCopying(() => recordedWhenCopying = Store.ReadCreatedWorktreesAsync().Result.Count);
+        FakeWorktreeIncludeCopier copier = new FakeWorktreeIncludeCopier().WhenCopying(() => recordedWhenCopying = store.ReadCreatedWorktreesAsync().Result.Count);
 
         await ServiceWith(copier).LaunchAsync(NewWorktree, CancellationToken.None);
 
@@ -82,13 +82,13 @@ public sealed class LaunchServiceShould
 
         outcome.ShouldBeOfType<LaunchOutcome.Failed>().Message.ShouldContain("The process cannot access the file");
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("--bg"));
-        (await Store.ReadCreatedWorktreesAsync()).Single().Path.ShouldBe(FlakyTests.Path);
+        (await store.ReadCreatedWorktreesAsync()).Single().Path.ShouldBe(FlakyTests.Path);
     }
 
     [Fact]
     public async Task ReportAFailedRecordAsAFailure()
     {
-        Store.FailNextCreatedWorktreeRecord(new UnauthorizedAccessException("Access to the path is denied"));
+        store.FailNextCreatedWorktreeRecord(new UnauthorizedAccessException("Access to the path is denied"));
 
         LaunchOutcome outcome = await ServiceWith(new FakeWorktreeIncludeCopier()).LaunchAsync(NewWorktree, CancellationToken.None);
 
@@ -105,7 +105,7 @@ public sealed class LaunchServiceShould
         add.WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\repos\Northwind.Orders"));
         add.Arguments.ShouldBe(["worktree", "add", @"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests", "-b", "fix-flaky-tests", "origin/main"]);
         processes.CapturedRequests.Single(request => request.Arguments.Contains("--bg")).WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"));
-        (await Store.ReadCreatedWorktreesAsync()).Single().Branch.ShouldBe(BranchName.From("fix-flaky-tests"));
+        (await store.ReadCreatedWorktreesAsync()).Single().Branch.ShouldBe(BranchName.From("fix-flaky-tests"));
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class LaunchServiceShould
     {
         await Service.LaunchAsync(NewWorktree, CancellationToken.None);
 
-        CreatedWorktree created = (await Store.ReadCreatedWorktreesAsync()).Single();
+        CreatedWorktree created = (await store.ReadCreatedWorktreesAsync()).Single();
         created.Path.ShouldBe(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"));
         created.Repository.ShouldBe(Repository.Path);
     }
@@ -135,7 +135,7 @@ public sealed class LaunchServiceShould
         await Service.LaunchAsync(NewWorktree with { Place = new LaunchPlace.ExistingWorktree(FlakyTests) }, CancellationToken.None);
 
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("add"));
-        (await Store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
+        (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class LaunchServiceShould
     {
         await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
 
-        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\Northwind.Orders")]);
+        (await store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\repos\Northwind.Orders")]);
     }
 
     [Fact]

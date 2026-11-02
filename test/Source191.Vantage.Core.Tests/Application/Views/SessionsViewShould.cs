@@ -587,6 +587,7 @@ public sealed class SessionsViewShould
         new OpenFolderInEditor(Waiting.Session.WorkingDirectory).ShouldNotBeAssignableTo<IDialogEffect>();
         new OpenSolution(@"C:\repos\Northwind.Shipping\Northwind.Shipping.sln").ShouldNotBeAssignableTo<IDialogEffect>();
     }
+
     [Fact]
     public void MarkEffectsThatLeaveTheScreenAndThoseThatAskFirst()
     {
@@ -624,6 +625,7 @@ public sealed class SessionsViewShould
 
         Reduce(shown, new MessageDismissed(older)).Message.ShouldBeSameAs(newer);
     }
+
     private static SessionsViewState Reduce(SessionsViewState state, ViewInput input)
     {
         return SessionsView.Reduce(state, input).State;

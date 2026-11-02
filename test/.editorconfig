@@ -2,3 +2,5 @@
 [*.cs]
 csharp_style_expression_bodied_methods = false:silent
 dotnet_diagnostic.IDE0022.severity = silent
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_diagnostic.IDE2000.severity = warning

@@ -132,6 +132,7 @@ public sealed class DiagnosticsPrivacyShould
 
         return version;
     }
+
     private async Task RunTheDailyFlowsAsync()
     {
         ClaudeCli claude = new(processes, Claude);

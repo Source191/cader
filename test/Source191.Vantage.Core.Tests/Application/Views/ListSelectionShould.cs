@@ -135,6 +135,7 @@ public sealed class ListSelectionShould
     {
         Alphabetical.EmptyList().Load([]).Title("fruit", row => row).ShouldBe(new TableTitle("fruit", Shown: 0, Total: 0, Filter: string.Empty, Selected: null));
     }
+
     [Fact]
     public void SelectAKeyAndClearAFilterThatHidesIt()
     {

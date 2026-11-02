@@ -414,6 +414,7 @@ public sealed class WorktreesViewShould
 
         Reduce(shown, new MessageDismissed(older)).Message.ShouldBeSameAs(newer);
     }
+
     private static WorktreesViewState Reduce(WorktreesViewState state, ViewInput input)
     {
         return WorktreesView.Reduce(state, input).State;

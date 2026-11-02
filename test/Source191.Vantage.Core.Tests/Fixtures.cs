@@ -21,6 +21,7 @@ internal static class Fixtures
 
         return constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
     }
+
     public static object Placeholder(Type type)
     {
         return type switch

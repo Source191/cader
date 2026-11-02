@@ -11,9 +11,9 @@ public sealed class OwnTabShould
 
     private readonly FakeProcessRegistry registry = new();
 
-    private readonly InMemoryState Store = new();
+    private readonly InMemoryState store = new();
 
-    private OwnTab Tab => new(Store, registry, new FakeTimeProvider(Fixtures.Noon));
+    private OwnTab Tab => new(store, registry, new FakeTimeProvider(Fixtures.Noon));
 
     [Fact]
     public async Task ColourItselfGreenWhenGreenIsFree()
@@ -23,7 +23,7 @@ public sealed class OwnTabShould
         OwnTabClaim claim = await Tab.ClaimAsync(processId: 100);
 
         claim.ShouldBe(new OwnTabClaim.Claimed(Green));
-        TabRegistration own = (await Store.ReadTabsAsync()).Single();
+        TabRegistration own = (await store.ReadTabsAsync()).Single();
         own.Owner.ShouldBe(TabOwner.Vantage);
         own.Colour.ShouldBe(Green);
         own.Claim.ShouldBe(new TabClaim.Claimed(100, Fixtures.Noon.AddSeconds(-3)));
@@ -33,7 +33,7 @@ public sealed class OwnTabShould
     public async Task TakeTheFirstFreeColourWhenGreenIsUsed()
     {
         registry.Running(100, Fixtures.Noon);
-        await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), Green, Fixtures.Noon));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), Green, Fixtures.Noon));
 
         OwnTabClaim claim = await Tab.ClaimAsync(processId: 100);
 
@@ -46,6 +46,6 @@ public sealed class OwnTabShould
         OwnTabClaim claim = await Tab.ClaimAsync(processId: 100);
 
         claim.ShouldBe(new OwnTabClaim.Unregistered());
-        (await Store.ReadTabsAsync()).ShouldBeEmpty();
+        (await store.ReadTabsAsync()).ShouldBeEmpty();
     }
 }

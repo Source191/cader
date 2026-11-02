@@ -473,6 +473,7 @@ public sealed class WordingShould
         Wording.ChooseSolutionTitle.ShouldBe("Open solution");
         Wording.ChooseSolutionQuestion("Northwind.Orders-fix-123").ShouldBe("Northwind.Orders-fix-123 holds more than one solution. Which one?");
     }
+
     [Fact]
     public void NameTheSessionBeingStarted()
     {
