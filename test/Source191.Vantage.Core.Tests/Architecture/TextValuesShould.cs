@@ -31,6 +31,7 @@ public sealed class TextValuesShould
     [MemberData(nameof(TextValues))]
     public void ImplementTheInterface(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         type.GetInterfaces().ShouldContain(typeof(ITextValue<>).MakeGenericType(type));
     }
 
@@ -48,6 +49,7 @@ public sealed class TextValuesShould
     [MemberData(nameof(TextValues))]
     public void HaveNoOtherFactory(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         type.GetMembers(AnyStatic).Select(member => member.Name).Where(OtherFactoryNames.Contains).ShouldBeEmpty();
     }
 
@@ -55,6 +57,7 @@ public sealed class TextValuesShould
     [MemberData(nameof(TextValues))]
     public void HaveNoStaticMemberThatAnswersNull(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         NullabilityInfoContext context = new();
         IEnumerable<string> methods = type.GetMethods(AnyStatic).Where(method => method.ReturnType == type && context.Create(method.ReturnParameter).ReadState == NullabilityState.Nullable).Select(method => method.Name);
         IEnumerable<string> properties = type.GetProperties(AnyStatic).Where(property => property.PropertyType == type && context.Create(property).ReadState == NullabilityState.Nullable).Select(property => property.Name);

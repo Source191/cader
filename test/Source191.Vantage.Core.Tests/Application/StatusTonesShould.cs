@@ -107,6 +107,7 @@ public sealed class StatusTonesShould
     [MemberData(nameof(OutcomeCases))]
     public void ChooseAToneForEveryOutcomeCase(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         OutcomeTones.ShouldContainKey(type, $"{type.Name} has no tone in this test's table: choose one, and an arm in Wording.ToneOf");
     }
 
@@ -212,6 +213,7 @@ public sealed class StatusTonesShould
     [MemberData(nameof(StatusMessageCases))]
     public void ChooseAToneForEveryStatusMessageCase(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         StatusMessageTones.ShouldContainKey(type, $"{type.Name} has no tone in this test's table: choose one, and an arm in Wording.ToneOf");
     }
 

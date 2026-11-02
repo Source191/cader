@@ -171,6 +171,7 @@ public sealed class DiagnosticLineShould
     [MemberData(nameof(EventTypes))]
     public void RenderEveryEvent(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
         object?[] arguments = [.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))];
         DiagnosticEvent diagnostic = (DiagnosticEvent)constructor.Invoke(arguments);

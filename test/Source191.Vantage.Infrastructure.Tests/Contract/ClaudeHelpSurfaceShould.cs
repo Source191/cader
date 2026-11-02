@@ -19,6 +19,7 @@ public sealed class ClaudeHelpSurfaceShould
     [InlineData("claude-agents-help.txt", "agents --help")]
     public async Task MatchTheSnapshot(string snapshot, string arguments)
     {
+        ArgumentNullException.ThrowIfNull(arguments);
         string executable = ClaudeContract.Executable();
 
         ProcessResult help = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(new ProcessRequest(executable, arguments.Split(' '), WorkingFolder.Inherit), TestContext.Current.CancellationToken);

@@ -175,6 +175,7 @@ public sealed class SessionsViewShould
     [InlineData("b")]
     public void SayNoSessionIsSelectedOnARowKeyOnAnEmptyTable(string key)
     {
+        ArgumentNullException.ThrowIfNull(key);
         Key pressed = key == "Enter" ? Key.Enter : Key.Of(key[0]);
 
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(pressed));

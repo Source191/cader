@@ -14,6 +14,7 @@ public static class HelpSurface
 
     public static IReadOnlyList<string> Extract(string help)
     {
+        ArgumentNullException.ThrowIfNull(help);
         return [.. Entries(help.Split('\n'))
             .SelectMany(Names)
             .Distinct()

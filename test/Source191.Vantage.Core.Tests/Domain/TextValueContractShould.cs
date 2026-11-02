@@ -15,15 +15,27 @@ public sealed class TextValueContractShould
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void RefuseWithArgumentExceptionTheTextTryParseRefuses(ContractCase contract) => Should.NotThrow(contract.RefusedTextThrows);
+    public void RefuseWithArgumentExceptionTheTextTryParseRefuses(ContractCase contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        Should.NotThrow(contract.RefusedTextThrows);
+    }
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void GiveTheValueTryParseGives(ContractCase contract) => Should.NotThrow(contract.AcceptedTextEqualsParsed);
+    public void GiveTheValueTryParseGives(ContractCase contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        Should.NotThrow(contract.AcceptedTextEqualsParsed);
+    }
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void KeepTheTextGiven(ContractCase contract) => Should.NotThrow(contract.ValueIsTheTextGiven);
+    public void KeepTheTextGiven(ContractCase contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        Should.NotThrow(contract.ValueIsTheTextGiven);
+    }
 
     public sealed record ContractCase(string Name, Action RefusedTextThrows, Action AcceptedTextEqualsParsed, Action ValueIsTheTextGiven)
     {

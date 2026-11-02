@@ -77,6 +77,7 @@ public sealed class WhereLabelShould
     [MemberData(nameof(LabelsToFit))]
     public void NeverAnswerMoreThanTheWidth(WhereLabel label)
     {
+        ArgumentNullException.ThrowIfNull(label);
         for (int width = 0; width <= 4; width++)
         {
             label.Fit(width).Length.ShouldBeLessThanOrEqualTo(width);

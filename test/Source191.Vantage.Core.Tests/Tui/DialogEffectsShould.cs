@@ -16,6 +16,7 @@ public sealed class DialogEffectsShould
     [MemberData(nameof(DialogEffectTypes))]
     public void HaveAFlowForEveryDialogEffect(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         DialogEffects.Handles(type).ShouldBeTrue($"{type.Name} is an IDialogEffect with no flow in DialogEffects");
     }
 

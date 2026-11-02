@@ -63,6 +63,7 @@ public sealed class ReleaseVersionShould
     [InlineData("0.4.10-ci.12")]
     public void KnowAPrerelease(string text)
     {
+        ArgumentNullException.ThrowIfNull(text);
         ReleaseVersion prerelease = ReleaseVersions.Version(text);
 
         prerelease.IsPrerelease.ShouldBeTrue();

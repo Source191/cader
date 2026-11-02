@@ -32,6 +32,7 @@ public sealed class DiagnosticEventsShould
     [MemberData(nameof(EventTypes))]
     public void HoldOnlyValuesVantageDefines(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         IEnumerable<Type> members = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(property => property.Name != "EqualityContract")
             .Select(property => Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType);
@@ -43,6 +44,7 @@ public sealed class DiagnosticEventsShould
     [MemberData(nameof(EventTypes))]
     public void HaveNoTextField(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         type.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
             .Where(field => field.FieldType == typeof(string) || field.FieldType == typeof(object))
             .ShouldBeEmpty();
@@ -52,6 +54,7 @@ public sealed class DiagnosticEventsShould
     [MemberData(nameof(VettedValueTypes))]
     public void ExposeNoDoorThatTakesText(Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         IEnumerable<MethodBase> doors = type.GetConstructors().Cast<MethodBase>().Concat(type.GetMethods(BindingFlags.Public | BindingFlags.Static));
 
         doors.Where(door => door.GetParameters().Any(parameter => parameter.ParameterType == typeof(string))).ShouldBeEmpty();
