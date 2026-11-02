@@ -38,7 +38,7 @@ How the console is laid out and refreshed. The rules every view follows (reducer
 
 ## Status line
 
-- The status line is the console's, not a tab's: `ConsoleScreen` draws it under the settings row from the shown tab's `ITabBody.Status` and `Running`, with rows only while `State.Shown` has words or an action runs (`StatusLayout.Lines` wraps it onto at most three, and the tab strip, counts and table title move down by that many).
+- The status line is the console's, not a tab's: `ConsoleScreen` draws it under the settings row from the shown tab's `ITabBody.Status` and `Running`, with rows only while `State.Message` has words or an action runs (`StatusLayout.Lines` wraps it onto at most three, and the tab strip, counts and table title move down by that many).
 - Its mark and colours come from `Wording.ToneOf` (a `StatusTone` per status message and outcome case, each chosen in `StatusTonesShould`), `StatusMark` and `StatusWordsTone`; the mark shares its cell with the spinner and hides while it spins, or it blanks it.
 - The line starts at the settings row's indent (after the icon), and a blue ✕ after the last word (`StatusLayout.Closes`) and a success's ten seconds (`StatusLayout.ClearsBySelf` and `SuccessShownFor`) both reduce `MessageDismissed` in the tab that showed the message, which clears it only while it is still that same `StatusMessage` instance.
 - A newly found release is the one message no reducer raises: `UpdateCheck.TakeAnnouncement` (`ScreenContext.TakeAnnouncement`) answers `StatusMessage.NewerReleaseFound` once, and `FrameChanged` hands it to the shown tab's `ITabBody.ShowMessage` before drawing the line, so it shows on the first redraw after the check.
