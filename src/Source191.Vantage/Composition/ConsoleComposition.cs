@@ -122,7 +122,7 @@ internal static class ConsoleComposition
         PullRequestCatalogue pullRequests)
     {
         SessionRowEnricher enricher = new(launch.Git, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
-        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests);
+        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
         SetupFactsReader setup = new(parts.TerminalFragment, ClaudeSettings.ForCurrentUser(), parts.Store, parts.Store.ConfigFile, parts.LogSetting);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.

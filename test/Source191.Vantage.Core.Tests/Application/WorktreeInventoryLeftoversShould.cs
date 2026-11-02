@@ -22,7 +22,9 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 
     private readonly PullRequestCatalogue catalogue = new(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), TimeProvider.System, new RefreshCounts(TimeProvider.System, new DiagnosticLog(TimeProvider.System, [])));
 
-    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue);
+    private readonly DiagnosticLog log = new(TimeProvider.System, []);
+
+    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, log);
 
     [Fact]
     public async Task AskGitThreeThingsPerRegisteredWorktreeAndNothingAboutMergeState()
@@ -37,6 +39,24 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 
         processes.CapturedRequests.Where(request => request.WorkingDirectory == new WorkingFolder.At(worktree)).Select(request => request.Arguments[0]).ShouldBe(["status", "rev-list", "log"]);
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("merge-base") || request.Arguments.Contains("symbolic-ref"));
+    }
+
+    [Fact]
+    public async Task RecordAnUnreadableRepositoryOnceAndStillAnswerTheOtherRows()
+    {
+        string orphan = Path.Combine(Repository, ".claude", "worktrees", "fix-service-tests");
+        folders.WithFile(Path.Combine(orphan, "Program.cs"));
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+
+        WorktreeInventory inventory = Inventory;
+
+        await inventory.ScanAsync([], CancellationToken.None);
+        IReadOnlyList<WorktreeRow> second = await inventory.ScanAsync([], CancellationToken.None);
+
+        second.Single().Health.Kind.ShouldBe(WorktreeHealthKind.Orphan);
+        Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+        failed.Site.ShouldBe(FailureSite.Load);
+        failed.What.ShouldBe(CodeName.For(typeof(WorktreeInventory)));
     }
 
     [Fact]
@@ -147,7 +167,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     {
         string sibling = Path.Combine(Root, "Northwind.Orders-republish");
         folders.WithFile(Path.Combine(sibling, ".git"), "gitdir: C:/Users/me/source/repos/Northwind.Orders/.git/worktrees/republish\n");
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, log);
 
         (await inventory.ScanAsync([], CancellationToken.None)).Select(row => row.Path.Value).ShouldBe([sibling]);
     }
@@ -159,7 +179,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         string sibling = Path.Combine(Work, "Northwind.Ledger-republish");
         folders.WithFile(Path.Combine(sibling, ".git"), "gitdir: D:/work/Northwind.Ledger/.git/worktrees/republish\n");
         CurrentSettings settings = TestSettings.Current(Root);
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, settings, catalogue);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, settings, catalogue, log);
 
         await settings.SaveAsync(TestSettings.For(Root, Work));
 

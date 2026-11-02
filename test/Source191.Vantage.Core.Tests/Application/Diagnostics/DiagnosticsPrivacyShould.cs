@@ -202,7 +202,7 @@ public sealed class DiagnosticsPrivacyShould
     {
         FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git", "objects")).WithDirectory(Worktree);
         using PullRequestCatalogue pullRequests = new(git, new FakePullRequests(), clock, refreshes);
-        WorktreeInventory inventory = new(git, folders, TestSettings.Current(@"C:\Users\me\source\repos"), pullRequests);
+        WorktreeInventory inventory = new(git, folders, TestSettings.Current(@"C:\Users\me\source\repos"), pullRequests, log);
         children.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, $"worktree {Repository}\nHEAD a\nbranch refs/heads/main\n\nworktree {Worktree}\nHEAD b\nbranch refs/heads/{Branch}\n", string.Empty));
         children.OnRun = _ => clock.Advance(TimeSpan.FromSeconds(4));
         try

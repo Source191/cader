@@ -1,3 +1,4 @@
+using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
@@ -11,9 +12,11 @@ namespace Source191.Vantage.Application;
 /// leftovers git has forgotten (orphans under .claude\worktrees, folders under a root or the worktree root whose registration is gone, empty folders
 /// that worktree tools leave behind). Read-only: nothing here prunes, deletes or touches git state.
 /// </summary>
-public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests)
+public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests, DiagnosticLog log)
 {
     private readonly WorktreeInspector inspector = new(git);
+    private readonly OncePerFolder unreadableRepositories = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
+    private readonly OncePerFolder unreadableWorktrees = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
 
     private const string GitDirPrefix = "gitdir:";
 
@@ -98,16 +101,8 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, HashSet<FolderPath> registered, CancellationToken cancellationToken)
     {
-        IReadOnlyList<GitWorktreeEntry> entries;
-        try
-        {
-            entries = await git.ListWorktreesAsync(repository.Value, cancellationToken);
-        }
-        catch (GitException)
-        {
-            // One unusable folder must not blank the whole view.
-            return [];
-        }
+        // One unusable folder must not blank the whole view.
+        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
 
         List<WorktreeRow> rows = [];
         foreach (GitWorktreeEntry entry in entries.Where(entry => !entry.IsMain))
@@ -132,28 +127,30 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     private async Task<WorktreeRow> InspectedAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, WorktreeHealth health, CancellationToken cancellationToken)
     {
-        try
-        {
-            WorktreeCounts counts = await inspector.CountAsync(path, cancellationToken);
+        return await unreadableWorktrees.RunAsync(
+            path,
+            async () =>
+            {
+                WorktreeCounts counts = await inspector.CountAsync(path, cancellationToken);
 
-            return new WorktreeRow(
-                repository,
-                path,
-                entry.Head,
-                health,
-                counts.DirtyFiles,
-                counts.UnpushedCommits,
-                counts.LastCommitAt,
-                new WorktreeSession.None(),
-                LeftoverFileCount: 0,
-                OwnerExists: true,
-                FolderExists: true);
-        }
-        catch (GitException)
-        {
-            return new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
-        }
+                return new WorktreeRow(
+                    repository,
+                    path,
+                    entry.Head,
+                    health,
+                    counts.DirtyFiles,
+                    counts.UnpushedCommits,
+                    counts.LastCommitAt,
+                    new WorktreeSession.None(),
+                    LeftoverFileCount: 0,
+                    OwnerExists: true,
+                    FolderExists: true);
+            },
+            IsGitFailure,
+            _ => new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true));
     }
+
+    private static bool IsGitFailure(Exception exception) => exception is GitException;
 
     private IEnumerable<WorktreeRow> OrphanRows(FolderPath repository, HashSet<FolderPath> registered)
     {
