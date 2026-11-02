@@ -54,7 +54,11 @@ public sealed class FakeProcessRegistry : IProcessRegistry
         ArgumentNullException.ThrowIfNull(process);
 
         Terminated.Add(process.Id);
-        running.Remove(process.Id);
+        foreach (int id in DescendantsOf(process.Id).Append(process.Id))
+        {
+            running.Remove(id);
+            tree.Remove(id);
+        }
     }
 
     public ProcessParent? ParentOf(int processId)
@@ -83,7 +87,27 @@ public sealed class FakeProcessRegistry : IProcessRegistry
     {
         Snapshots++;
 
-        return [.. tree.Select(entry => new ProcessFacts(entry.Key, entry.Value.ParentId, entry.Value.Name))];
+        IEnumerable<ProcessFacts> declared = tree.Select(entry => new ProcessFacts(entry.Key, entry.Value.ParentId, entry.Value.Name));
+        IEnumerable<ProcessFacts> runningOnly = running.Keys.Where(id => !tree.ContainsKey(id)).Select(id => new ProcessFacts(id, 0, string.Empty));
+
+        return [.. declared, .. runningOnly];
+    }
+
+    private List<int> DescendantsOf(int processId)
+    {
+        List<int> found = [];
+        Queue<int> pending = new([processId]);
+        while (pending.TryDequeue(out int parent))
+        {
+            IEnumerable<int> children = tree.Where(entry => entry.Value.ParentId == parent && entry.Key != parent).Select(entry => entry.Key);
+            foreach (int child in children.Where(child => !found.Contains(child)))
+            {
+                found.Add(child);
+                pending.Enqueue(child);
+            }
+        }
+
+        return found;
     }
 
     public ProcessUsage? UsageOf(int processId)

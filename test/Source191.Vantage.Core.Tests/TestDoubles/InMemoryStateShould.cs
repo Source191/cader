@@ -62,4 +62,23 @@ public sealed class InMemoryStateShould
 
         (await state.ReadConfigAsync()).DefaultBase.ShouldBe(WorktreeBase.Head);
     }
+
+    [Fact]
+    public async Task SurviveTabsWrittenAndRemovedFromManyThreads()
+    {
+        TabRegistration[] registrations = [.. Enumerable.Range(1, 400).Select(index => TabRegistration.Pending(new TabOwner.ForSession(SessionId.From($"session-{index}")), TabPalette.Default[0], Noon))];
+
+        await Parallel.ForEachAsync(registrations, TestContext.Current.CancellationToken, async (registration, _) =>
+        {
+            await state.WriteTabAsync(registration);
+            await state.ReadTabsAsync();
+            if (registration.Id.GetHashCode() % 2 == 0)
+            {
+                await state.RemoveTabAsync(registration.Id);
+            }
+        });
+
+        IReadOnlyList<TabRegistration> remaining = await state.ReadTabsAsync();
+        remaining.Count.ShouldBe(registrations.Count(registration => registration.Id.GetHashCode() % 2 != 0));
+    }
 }

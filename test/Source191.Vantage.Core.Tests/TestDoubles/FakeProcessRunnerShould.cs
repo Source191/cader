@@ -32,4 +32,16 @@ public sealed class FakeProcessRunnerShould
         thrown.Message.ShouldBe("no such program");
         runner.CapturedRequests.Single().ShouldBe(Listing);
     }
+
+    [Fact]
+    public async Task CopyTheInteractiveRequests()
+    {
+        FakeProcessRunner runner = new();
+        IReadOnlyList<ProcessRequest> before = runner.InteractiveRequests;
+
+        await runner.RunInteractiveAsync(Listing, CancellationToken.None);
+
+        before.ShouldBeEmpty();
+        runner.InteractiveRequests.Single().ShouldBe(Listing);
+    }
 }

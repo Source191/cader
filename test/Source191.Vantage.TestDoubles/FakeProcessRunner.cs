@@ -25,7 +25,16 @@ public sealed class FakeProcessRunner : IProcessRunner
         }
     }
 
-    public IReadOnlyList<ProcessRequest> InteractiveRequests => interactive;
+    public IReadOnlyList<ProcessRequest> InteractiveRequests
+    {
+        get
+        {
+            lock (gate)
+            {
+                return [.. interactive];
+            }
+        }
+    }
 
     public int InteractiveExitCode { get; set; }
 
@@ -78,7 +87,11 @@ public sealed class FakeProcessRunner : IProcessRunner
 
     public Task<int> RunInteractiveAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
-        interactive.Add(request);
+        lock (gate)
+        {
+            interactive.Add(request);
+        }
+
         OnInteractive(request);
         return Task.FromResult(InteractiveExitCode);
     }
