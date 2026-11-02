@@ -1,6 +1,5 @@
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -25,49 +24,20 @@ public sealed class GitHubPullRequests(IProcessRunner processes, ProgramLocation
         _ => throw new UnreachableException(),
     };
 
-    private async Task<PullRequestListing> ListAsync(string executable, RemoteRepository.GitHub repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
+    private Task<PullRequestListing> ListAsync(string executable, RemoteRepository.GitHub repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
     {
         ProcessRequest request = new(executable, ["pr", "list", "--repo", $"{repository.Owner}/{repository.Name}", "--head", branch.Value, "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,createdAt"], new WorkingFolder.At(checkout.Value));
-        ProcessResult result;
-        try
-        {
-            result = await processes.RunAsync(request, cancellationToken);
-        }
-        catch (Win32Exception)
-        {
-            return new PullRequestListing.Unavailable(PullRequestGap.CliMissing);
-        }
 
-        return result switch
-        {
-            { ExitCode: 0 } => Parse(result.StandardOutput),
-            { ExitCode: NotSignedInExitCode } => new PullRequestListing.Unavailable(PullRequestGap.NotSignedIn),
-            _ when result.StandardError.Contains("gh auth login", StringComparison.Ordinal) => new PullRequestListing.Unavailable(PullRequestGap.NotSignedIn),
-            _ => new PullRequestListing.Unavailable(PullRequestGap.Failed),
-        };
+        return CliListing.RunAsync(processes, request, Read, cancellationToken);
     }
 
-    private static PullRequestListing Parse(string json)
+    private static PullRequestListing Read(ProcessResult result) => result switch
     {
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(json);
-            List<BranchPullRequest> rows = [];
-            foreach (JsonElement item in document.RootElement.EnumerateArray())
-            {
-                if (Row(item) is BranchPullRequest row)
-                {
-                    rows.Add(row);
-                }
-            }
-
-            return new PullRequestListing.Listed(rows);
-        }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException or KeyNotFoundException)
-        {
-            return new PullRequestListing.Unavailable(PullRequestGap.Failed);
-        }
-    }
+        { ExitCode: 0 } => PullRequestListingJson.Rows(result.StandardOutput, Row),
+        { ExitCode: NotSignedInExitCode } => new PullRequestListing.Unavailable(PullRequestGap.NotSignedIn),
+        _ when result.StandardError.Contains("gh auth login", StringComparison.Ordinal) => new PullRequestListing.Unavailable(PullRequestGap.NotSignedIn),
+        _ => new PullRequestListing.Unavailable(PullRequestGap.Failed),
+    };
 
     /// <summary>A row whose link is not https is left out: the link is handed to the shell to open, so only a web page is accepted.</summary>
     private static BranchPullRequest? Row(JsonElement item)

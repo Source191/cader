@@ -1,6 +1,5 @@
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -34,17 +33,7 @@ public sealed class AzureDevOpsPullRequests(IProcessRunner processes, ProgramLoc
         }
 
         ProcessRequest request = new(executable, ["repos", "pr", "list", "--org", $"https://dev.azure.com/{repository.Organisation}", "--project", repository.Project, "--repository", repository.Name, "--source-branch", branch.Value, "--status", "all", "--top", "20", "--output", "json"], new WorkingFolder.At(checkout.Value));
-        ProcessResult result;
-        try
-        {
-            result = await processes.RunAsync(request, cancellationToken);
-        }
-        catch (Win32Exception)
-        {
-            return new PullRequestListing.Unavailable(PullRequestGap.CliMissing);
-        }
-
-        return result.ExitCode == 0 ? Parse(result.StandardOutput, repository) : new PullRequestListing.Unavailable(Gap(result.StandardError));
+        return await CliListing.RunAsync(processes, request, result => result.ExitCode == 0 ? PullRequestListingJson.Rows(result.StandardOutput, item => Row(item, repository)) : new PullRequestListing.Unavailable(Gap(result.StandardError)), cancellationToken);
     }
 
     private static PullRequestGap Gap(string words) => words switch
@@ -53,28 +42,6 @@ public sealed class AzureDevOpsPullRequests(IProcessRunner processes, ProgramLoc
         _ when words.Contains("azure-devops", StringComparison.Ordinal) || words.Contains("'repos' is misspelled", StringComparison.Ordinal) => PullRequestGap.CliMissing,
         _ => PullRequestGap.Failed,
     };
-
-    private static PullRequestListing Parse(string json, RemoteRepository.AzureDevOps repository)
-    {
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(json);
-            List<BranchPullRequest> rows = [];
-            foreach (JsonElement item in document.RootElement.EnumerateArray())
-            {
-                if (Row(item, repository) is BranchPullRequest row)
-                {
-                    rows.Add(row);
-                }
-            }
-
-            return new PullRequestListing.Listed(rows);
-        }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException or KeyNotFoundException)
-        {
-            return new PullRequestListing.Unavailable(PullRequestGap.Failed);
-        }
-    }
 
     /// <summary>The page is built from the remote's organisation, project and repository: az's listing carries no web URL.</summary>
     private static BranchPullRequest? Row(JsonElement item, RemoteRepository.AzureDevOps repository)
