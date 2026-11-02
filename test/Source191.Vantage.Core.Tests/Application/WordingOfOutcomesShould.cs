@@ -23,9 +23,7 @@ public sealed class WordingOfOutcomesShould
     [MemberData(nameof(OutcomeCases))]
     public void HaveWordsForEveryOutcomeCase(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        object[] arguments = [.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))];
-        Outcome outcome = (Outcome)constructor.Invoke(arguments);
+        Outcome outcome = (Outcome)Fixtures.Build(type);
 
         Wording.Describe(outcome).ShouldNotBe(outcome.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -35,8 +33,7 @@ public sealed class WordingOfOutcomesShould
     [MemberData(nameof(OutcomeCases))]
     public void NeverOfferTheCommaKey(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        Outcome outcome = (Outcome)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        Outcome outcome = (Outcome)Fixtures.Build(type);
 
         string words = Wording.Describe(outcome);
 
@@ -529,32 +526,6 @@ public sealed class WordingOfOutcomesShould
         Wording.Describe(new ProblemReportOutcome.Copied()).ShouldBe("Copied the problem report to the clipboard.");
         Wording.Describe(new ProblemReportOutcome.NotOpened("No application is associated with the address."))
             .ShouldBe("Could not open the browser: No application is associated with the address. Press ! and choose Copy text instead.");
-    }
-
-    private static object Placeholder(Type type)
-    {
-        return type switch
-        {
-            _ when type == typeof(string) => "fix-123",
-            _ when type == typeof(ListedName) => Listed.As("fix-123"),
-            _ when type == typeof(SessionName) => SessionName.From("fix-124"),
-            _ when type == typeof(RemovalReason) => new RemovalReason.Locked(),
-            _ when type == typeof(int) => 2,
-            _ when type == typeof(bool) => true,
-            _ when type == typeof(BranchToConfirm) => Branch,
-            _ when type == typeof(EditorChoice) => EditorChoice.VsCode,
-            _ when type == typeof(FolderPath) => FolderPath.From(@"C:\repos\Northwind.Orders"),
-            _ when type == typeof(JobId) => JobId.From("81cdb0f9"),
-            _ when type == typeof(SessionId) => SessionId.From("sess-1"),
-            _ when type == typeof(BranchName) => BranchName.From("fix-123"),
-            _ when type == typeof(OpenTabOutcome) => new OpenTabOutcome.SwitchedTo(Listed.As("fix-123")),
-            _ when type == typeof(RemoveWorktreeOutcome) => new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"),
-            _ when type == typeof(IReadOnlyList<ListedName>) => new List<ListedName> { Listed.As("fix-123") },
-            _ when type == typeof(IReadOnlyList<SkippedSession>) => new List<SkippedSession>(),
-            _ when type == typeof(IReadOnlyList<ResumeNote>) => new List<ResumeNote>(),
-            _ when type == typeof(PullRequestHost) => PullRequestHost.AzureDevOps,
-            _ => throw new InvalidOperationException($"An outcome field of type {type.Name} needs a placeholder."),
-        };
     }
 
     [Fact]
