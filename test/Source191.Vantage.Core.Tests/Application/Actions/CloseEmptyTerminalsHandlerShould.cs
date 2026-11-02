@@ -3,19 +3,18 @@ using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.TestDoubles;
-using static Source191.Vantage.Core.Tests.Application.Actions.SessionTestData;
 
 namespace Source191.Vantage.Core.Tests.Application.Actions;
 
 public sealed class CloseEmptyTerminalsHandlerShould
 {
-    private readonly FakeProcessRegistry processTable = new FakeProcessRegistry().Running(4242, Noon);
+    private readonly FakeProcessRegistry processTable = new FakeProcessRegistry().Running(4242, Fixtures.Noon);
 
     [Fact]
     public async Task LeaveAnotherTabsShellWhenTheParentIdIsReused()
     {
         // The launching shell exited; its id now belongs to a pwsh that started later, the root of another tab.
-        processTable.InTree(1, "WindowsTerminal", 0, Noon.AddHours(-1)).InTree(4000, "pwsh", 1, Noon.AddMinutes(5)).InTree(4242, "claude", 4000);
+        processTable.InTree(1, "WindowsTerminal", 0, Fixtures.Noon.AddHours(-1)).InTree(4000, "pwsh", 1, Fixtures.Noon.AddMinutes(5)).InTree(4242, "claude", 4000);
         CloseEmptyTerminalsHandler handler = new(processTable, new FakeTranscripts());
 
         await handler.HandleAsync(new CloseEmptyTerminals([SessionTestData.Terminal("repos-f6", 4242)]), CancellationToken.None);
@@ -28,7 +27,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
     public async Task CloseTheTabOfATerminalSessionWithNoMessagesByEndingClaudeThenItsShellCleanly()
     {
         // WindowsTerminal (1) owns the tab's pwsh (4000), which started claude (4242); ending the shell with exit code 0 closes the tab.
-        processTable.InTree(1, "WindowsTerminal", 0, Noon.AddHours(-1)).InTree(4000, "pwsh", 1, Noon.AddMinutes(-1)).InTree(4242, "claude", 4000);
+        processTable.InTree(1, "WindowsTerminal", 0, Fixtures.Noon.AddHours(-1)).InTree(4000, "pwsh", 1, Fixtures.Noon.AddMinutes(-1)).InTree(4242, "claude", 4000);
         CloseEmptyTerminalsHandler handler = new(processTable, new FakeTranscripts());
 
         Outcome message = await handler.HandleAsync(new CloseEmptyTerminals([SessionTestData.Terminal("repos-f6", 4242)]), CancellationToken.None);
@@ -44,7 +43,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
     [Fact]
     public async Task CloseTheTabOfAClaudeThatWindowsTerminalStartedDirectlyByEndingItCleanly()
     {
-        processTable.InTree(1, "WindowsTerminal", 0, Noon.AddHours(-1)).InTree(4242, "claude", 1);
+        processTable.InTree(1, "WindowsTerminal", 0, Fixtures.Noon.AddHours(-1)).InTree(4242, "claude", 1);
         CloseEmptyTerminalsHandler handler = new(processTable, new FakeTranscripts());
 
         Outcome message = await handler.HandleAsync(new CloseEmptyTerminals([SessionTestData.Terminal("repos-f6", 4242)]), CancellationToken.None);
@@ -74,7 +73,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
     public async Task LeaveASessionWhoseProcessIdNowBelongsToAnotherProcess()
     {
         // The listed process id was reused: the process behind it started ten minutes after the session did.
-        FakeProcessRegistry reused = new FakeProcessRegistry().Running(4242, Noon.AddMinutes(10)).InTree(1, "WindowsTerminal", 0).InTree(4000, "pwsh", 1).InTree(4242, "claude", 4000);
+        FakeProcessRegistry reused = new FakeProcessRegistry().Running(4242, Fixtures.Noon.AddMinutes(10)).InTree(1, "WindowsTerminal", 0).InTree(4000, "pwsh", 1).InTree(4242, "claude", 4000);
         CloseEmptyTerminalsHandler handler = new(reused, new FakeTranscripts());
 
         Outcome message = await handler.HandleAsync(new CloseEmptyTerminals([SessionTestData.Terminal("repos-f6", 4242)]), CancellationToken.None);

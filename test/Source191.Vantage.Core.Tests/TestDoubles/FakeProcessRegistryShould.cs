@@ -5,17 +5,15 @@ namespace Source191.Vantage.Core.Tests.TestDoubles;
 
 public sealed class FakeProcessRegistryShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     [Fact]
     public void EndTheTreeUnderATerminatedProcess()
     {
         FakeProcessRegistry registry = new FakeProcessRegistry()
-            .InTree(100, "pwsh", 1, Noon)
-            .InTree(101, "claude", 100, Noon)
-            .InTree(102, "node", 101, Noon);
+            .InTree(100, "pwsh", 1, Fixtures.Noon)
+            .InTree(101, "claude", 100, Fixtures.Noon)
+            .InTree(102, "node", 101, Fixtures.Noon);
 
-        ConfirmedProcess.TryConfirmClaim(100, Noon, Noon, out ConfirmedProcess? process).ShouldBeTrue();
+        ConfirmedProcess.TryConfirmClaim(100, Fixtures.Noon, Fixtures.Noon, out ConfirmedProcess? process).ShouldBeTrue();
         registry.Terminate(process);
 
         registry.Terminated.ShouldBe([100]);
@@ -27,7 +25,7 @@ public sealed class FakeProcessRegistryShould
     [Fact]
     public void ListARunningProcessNotInTheTree()
     {
-        FakeProcessRegistry registry = new FakeProcessRegistry().Running(4242, Noon);
+        FakeProcessRegistry registry = new FakeProcessRegistry().Running(4242, Fixtures.Noon);
 
         ProcessFacts facts = registry.Snapshot().Single();
 

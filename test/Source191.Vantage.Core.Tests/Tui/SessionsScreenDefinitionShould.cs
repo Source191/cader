@@ -13,10 +13,9 @@ namespace Source191.Vantage.Core.Tests.Tui;
 
 public sealed class SessionsScreenDefinitionShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
     private static readonly FolderPath Folder = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf");
 
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly System.Text.StringBuilder terminal = new();
     private readonly SessionsScreenDefinition definition;
 
@@ -50,14 +49,14 @@ public sealed class SessionsScreenDefinitionShould
         TableColumn<SessionRow> age = definition.Columns.Single(column => column.Help == Wording.AgeColumn);
 
         age.Fit.ShouldBe(new ColumnFit.RightAligned());
-        age.Cell(Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Noon.AddMinutes(-5), DisplayState.Idle, new JobProcess.None()), new LiveTab.None()), Noon, int.MaxValue).ShouldBe("5m");
+        age.Cell(Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon.AddMinutes(-5), DisplayState.Idle, new JobProcess.None()), new LiveTab.None()), Fixtures.Noon, int.MaxValue).ShouldBe("5m");
     }
 
     [Fact]
     public void PaintOnlyTheTabCell()
     {
-        SessionRow open = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Noon, DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));
-        SessionRow plain = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Noon, DisplayState.Idle, ProcessId: 4242), new LiveTab.None());
+        SessionRow open = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));
+        SessionRow plain = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Fixtures.Noon, DisplayState.Idle, ProcessId: 4242), new LiveTab.None());
 
         definition.Columns.Where(column => column.Help != Wording.TabColumn).Select(column => column.Paint(open)).ShouldAllBe(paint => paint is CellPaint.None);
         definition.Columns.Single(column => column.Help == Wording.TabColumn).Paint(open).ShouldBeOfType<CellPaint.Fill>();
@@ -67,9 +66,9 @@ public sealed class SessionsScreenDefinitionShould
     [Fact]
     public void ShowEveryColumnOfARow()
     {
-        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Noon.AddHours(-3), DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));
+        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon.AddHours(-3), DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));
 
-        definition.Columns.Select(column => column.Cell(row, Noon, int.MaxValue)).ShouldBe(
+        definition.Columns.Select(column => column.Cell(row, Fixtures.Noon, int.MaxValue)).ShouldBe(
         [
             "fix-123",
             Wording.TabBlock,
@@ -83,9 +82,9 @@ public sealed class SessionsScreenDefinitionShould
     [Fact]
     public void ShowAPlainClaudeWithItsHollowBlock()
     {
-        SessionRow row = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Noon, DisplayState.Working, ProcessId: 4242), new LiveTab.None());
+        SessionRow row = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Fixtures.Noon, DisplayState.Working, ProcessId: 4242), new LiveTab.None());
 
-        definition.Columns.Single(column => column.Help == Wording.TabColumn).Cell(row, Noon, int.MaxValue).ShouldBe(Wording.TerminalSwatch);
+        definition.Columns.Single(column => column.Help == Wording.TabColumn).Cell(row, Fixtures.Noon, int.MaxValue).ShouldBe(Wording.TerminalSwatch);
     }
 
     [Theory]
@@ -99,7 +98,7 @@ public sealed class SessionsScreenDefinitionShould
     public void ColourARowByItsState(DisplayStateKind kind)
     {
         DisplayState state = KnownState(kind);
-        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Noon, state, new JobProcess.None()), new LiveTab.None());
+        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, state, new JobProcess.None()), new LiveTab.None());
 
         definition.RowColour(row).ShouldBe(Palette.ForState(kind));
     }
@@ -107,7 +106,7 @@ public sealed class SessionsScreenDefinitionShould
     [Fact]
     public void TellTheNotifierWhenALoadedRowStartsWaiting()
     {
-        Session.Background idle = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Noon, DisplayState.Idle, new JobProcess.None());
+        Session.Background idle = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Idle, new JobProcess.None());
         Session.Background waiting = idle with { State = DisplayState.NeedsInput };
         SessionsViewState before = SessionsViewState.Empty with { List = SessionsViewState.Empty.List.Load([Row(idle, new LiveTab.None())]) };
 

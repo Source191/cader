@@ -24,8 +24,6 @@ public sealed class ConsoleLoadsShould : IDisposable
          {"pid":300,"cwd":"C:\\Users\\me\\source\\repos\\Northwind.Orders","kind":"interactive","startedAt":2,"sessionId":"0fe9bf3e-2222","name":"tmp-9d"}]
         """;
 
-    private static readonly DateTimeOffset Noon = new(2026, 11, 1, 12, 0, 0, TimeSpan.Zero);
-
     private readonly FakeProcessRunner claudeRuns = new FakeProcessRunner()
         .Answer(request => request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty));
 
@@ -37,7 +35,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git", "objects")).WithDirectory(Worktree);
     private readonly FakeProcessRegistry registry = new();
     private readonly InMemoryState store = new();
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly CurrentSettings settings = TestSettings.Current(Root);
     private readonly PullRequestCatalogue catalogue;
     private readonly DiagnosticLog log;
@@ -53,7 +51,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     [Fact]
     public async Task RefreshTheSessionsWithTheirAutomatedRuns()
     {
-        registry.InTree(300, "claude", 1).Using(300, Noon.AddSeconds(-20), MemorySize.FromMegabytes(216));
+        registry.InTree(300, "claude", 1).Using(300, Fixtures.Noon.AddSeconds(-20), MemorySize.FromMegabytes(216));
 
         ViewInput loaded = await Loads().LoadSessionsAsync(TestContext.Current.CancellationToken);
 

@@ -21,8 +21,6 @@ public sealed class StartSessionHandlerShould
     private const string Started = "Starting background service…\nbackgrounded · 81cdb0f9 · Fix flaky tests (idle — send a prompt to start)\n";
     private const string Listing = """[{"pid":1,"id":"81cdb0f9","cwd":"C:\\repos\\Northwind.Orders","kind":"background","startedAt":1,"sessionId":"sess-1","name":"Fix flaky tests","status":"idle","state":"blocked"}]""";
 
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
         .AnswerAll(new ProcessResult(0, string.Empty, string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty))
@@ -39,7 +37,7 @@ public sealed class StartSessionHandlerShould
         {
             InMemoryState store = new();
             GitCli git = new(processes, "git");
-            FakeTimeProvider clock = new(Noon);
+            FakeTimeProvider clock = new(Fixtures.Noon);
             LaunchService service = new(new ClaudeCli(processes, Claude), git, store, store, new WorktreeIncludeCopier(git), clock);
             OpenTabHandler tabs = new(store, new FakeProcessRegistry(), terminal, clock, new TabScripts(Claude, Vantage));
 

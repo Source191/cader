@@ -12,8 +12,6 @@ internal static class SessionTestData
     public const string Repository = @"C:\repos\Northwind.Orders";
     public const string Worktree = @"C:\repos\Northwind.Orders-fix-123";
 
-    public static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     /// <summary>Every git question answered as for a clean, merged worktree of Northwind.Orders.</summary>
     public static FakeProcessRunner Processes()
     {
@@ -29,7 +27,7 @@ internal static class SessionTestData
     /// <summary>A live Vantage tab for the <see cref="Job"/> session (sess-1), its shell running as the given process.</summary>
     public static async Task<TabRegistration> LiveTabAsync(InMemoryState store, FakeProcessRegistry registry, int shell, TabColour? colour = null)
     {
-        DateTimeOffset started = Noon.AddMinutes(-5);
+        DateTimeOffset started = Fixtures.Noon.AddMinutes(-5);
         TabRegistration tab = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), colour ?? TabPalette.Default[0], started).ClaimedBy(shell, started);
         registry.Running(shell, started);
         await store.WriteTabAsync(tab);
@@ -40,13 +38,13 @@ internal static class SessionTestData
     /// <summary>A plain claude session in some tab, session id sess-9.</summary>
     public static Session.Interactive Terminal(string name, int processId, DisplayState? state = null)
     {
-        return new Session.Interactive(SessionId.From("sess-9"), Listed.Of(name), FolderPath.From(Repository), Noon, state ?? DisplayState.Idle, processId);
+        return new Session.Interactive(SessionId.From("sess-9"), Listed.Of(name), FolderPath.From(Repository), Fixtures.Noon, state ?? DisplayState.Idle, processId);
     }
 
     /// <summary>A supervised session named fix-123, job 81cdb0f9, session id sess-1.</summary>
     public static Session.Background Job(string directory, DisplayState? state = null)
     {
-        return new Session.Background(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("fix-123"), FolderPath.From(directory), Noon, state ?? DisplayState.Working, new JobProcess.None());
+        return new Session.Background(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("fix-123"), FolderPath.From(directory), Fixtures.Noon, state ?? DisplayState.Working, new JobProcess.None());
     }
 
     /// <summary>The <see cref="Terminal"/> session as a row on main.</summary>

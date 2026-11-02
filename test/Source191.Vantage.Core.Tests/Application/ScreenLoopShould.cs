@@ -12,19 +12,18 @@ namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class ScreenLoopShould : IDisposable
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
     private static readonly ToolVersion Running = new("0.9.0");
     private const string Changelog = "## 0.9.0\n### Added\n- A key that opens the Northwind order (#171)\n";
 
-    private readonly FakeProcessRegistry registry = new FakeProcessRegistry().Running(100, Noon);
+    private readonly FakeProcessRegistry registry = new FakeProcessRegistry().Running(100, Fixtures.Noon);
     private readonly FakeTerminalConsole console = new();
-    private readonly DiagnosticLog log = new(new FakeTimeProvider(Noon), []);
+    private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
     private readonly StringWriter terminal = new();
 
     private ScreenLoop Loop(ScriptedConsoleScreen screen, UpdateCheck? updates = null, WhatsNewOnStart? whatsNew = null)
     {
-        OwnTab ownTab = new(new InMemoryState(), registry, new FakeTimeProvider(Noon));
-        UpdateCheck checkTurnedOff = new(Running, () => false, new InMemoryState(), new FakePackageVersions([]), new FakeTimeProvider(Noon));
+        OwnTab ownTab = new(new InMemoryState(), registry, new FakeTimeProvider(Fixtures.Noon));
+        UpdateCheck checkTurnedOff = new(Running, () => false, new InMemoryState(), new FakePackageVersions([]), new FakeTimeProvider(Fixtures.Noon));
         WhatsNewOnStart firstEverStart = new(Running, new InMemoryState(), new FakePackagedReleaseNotes(Changelog), log);
 
         return new ScreenLoop(screen, ownTab, console, updates ?? checkTurnedOff, whatsNew ?? firstEverStart, log);
@@ -74,9 +73,9 @@ public sealed class ScreenLoopShould : IDisposable
     public async Task StartTheUpdateCheckWhenTheConsoleOpens()
     {
         InMemoryState records = new();
-        await records.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(Noon.AddHours(-1), new NewestRelease.Found(ReleaseVersions.Version("0.10.0"))));
+        await records.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(Fixtures.Noon.AddHours(-1), new NewestRelease.Found(ReleaseVersions.Version("0.10.0"))));
         FakePackageVersions packages = new(["0.10.0"]);
-        UpdateCheck updates = new(Running, () => true, records, packages, new FakeTimeProvider(Noon));
+        UpdateCheck updates = new(Running, () => true, records, packages, new FakeTimeProvider(Fixtures.Noon));
         ScreenLoop loop = Loop(new ScriptedConsoleScreen(state => new ConsoleExit(state, new Quit())), updates);
 
         await loop.RunAsync(processId: 100, CancellationToken.None);
@@ -89,7 +88,7 @@ public sealed class ScreenLoopShould : IDisposable
     [Fact]
     public async Task LogAFailedUpdateCheckAndKeepRunning()
     {
-        UpdateCheck updates = new(Running, () => true, new UnwritableRecords(Noon.AddDays(-1)), new FakePackageVersions(["0.9.0"]), new FakeTimeProvider(Noon));
+        UpdateCheck updates = new(Running, () => true, new UnwritableRecords(Fixtures.Noon.AddDays(-1)), new FakePackageVersions(["0.9.0"]), new FakeTimeProvider(Fixtures.Noon));
         ScreenLoop loop = Loop(new ScriptedConsoleScreen(state => new ConsoleExit(state, new Quit())), updates);
 
         int exitCode = await loop.RunAsync(processId: 100, CancellationToken.None);
@@ -105,7 +104,7 @@ public sealed class ScreenLoopShould : IDisposable
     [Fact]
     public async Task LogNothingWhenTheUpdateCheckIsCancelled()
     {
-        UpdateCheck updates = new(Running, () => true, new UnwritableRecords(Noon.AddDays(-1)), new FakePackageVersions(["0.9.0"]), new FakeTimeProvider(Noon));
+        UpdateCheck updates = new(Running, () => true, new UnwritableRecords(Fixtures.Noon.AddDays(-1)), new FakePackageVersions(["0.9.0"]), new FakeTimeProvider(Fixtures.Noon));
         ScreenLoop loop = Loop(new ScriptedConsoleScreen(state => new ConsoleExit(state, new Quit())), updates);
 
         await loop.RunAsync(processId: 100, new CancellationToken(canceled: true));

@@ -8,9 +8,7 @@ namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class SessionActivityShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
-
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     [Theory]
     [MemberData(nameof(Prompted))]
@@ -22,7 +20,7 @@ public sealed class SessionActivityShould
         clock.Advance(TimeSpan.FromMinutes(3));
         activity.Observe([row], [WithState(row, DisplayState.Working)]);
 
-        activity.LastPromptedAt(row.Session.SessionId).ShouldBe(new LastPrompt.Seen(Noon.AddMinutes(3)));
+        activity.LastPromptedAt(row.Session.SessionId).ShouldBe(new LastPrompt.Seen(Fixtures.Noon.AddMinutes(3)));
     }
 
     public static TheoryData<DisplayState> Prompted => new(DisplayState.NeedsInput, DisplayState.Idle);
@@ -67,7 +65,7 @@ public sealed class SessionActivityShould
         activity.Observe([working], [waiting]);
         activity.Observe([waiting], [working]);
 
-        activity.LastPromptedAt(waiting.Session.SessionId).ShouldBe(new LastPrompt.Seen(Noon.AddMinutes(10)));
+        activity.LastPromptedAt(waiting.Session.SessionId).ShouldBe(new LastPrompt.Seen(Fixtures.Noon.AddMinutes(10)));
     }
 
     private static SessionRow WithState(SessionRow row, DisplayState state) => row with { Session = row.Session with { State = state } };
@@ -77,8 +75,8 @@ public sealed class SessionActivityShould
         SessionId id = SessionId.From(Guid.NewGuid().ToString());
         FolderPath directory = FolderPath.From(@"C:\repos\Northwind.Orders");
         Session session = interactive
-            ? new Session.Interactive(id, Listed.As("fix-123"), directory, Noon, state, ProcessId: 4242)
-            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As("fix-123"), directory, Noon, state, new JobProcess.None());
+            ? new Session.Interactive(id, Listed.As("fix-123"), directory, Fixtures.Noon, state, ProcessId: 4242)
+            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As("fix-123"), directory, Fixtures.Noon, state, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", directory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }

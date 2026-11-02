@@ -11,6 +11,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 [SupportedOSPlatform("windows")]
 public sealed class JsonFileStoreShould : IDisposable
 {
+    // The same noon as Core.Tests' Fixtures.Noon, which this project cannot reach.
     private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     private static readonly Guid SessionTabId = Guid.Parse("0b8d2a1c-9e3f-4b5a-8c7d-6e5f4a3b2c1d");

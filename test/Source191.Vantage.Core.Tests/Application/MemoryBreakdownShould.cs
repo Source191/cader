@@ -6,16 +6,14 @@ namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class MemoryBreakdownShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
-
     /// <summary>The session-listing spec's fix-123: Claude Code, an MCP server, a build shell and a second server, each a short chain.</summary>
     private static readonly FakeProcessRegistry Processes = new FakeProcessRegistry()
-        .InTree(100, "claude", 1).Using(100, Noon, MemorySize.FromMegabytes(296))
-        .InTree(200, "cmd", 100).Using(200, Noon.AddSeconds(1), MemorySize.FromMegabytes(8), "@azure-devops/mcp")
-        .InTree(201, "node", 200).Using(201, Noon.AddSeconds(2), MemorySize.FromMegabytes(92))
-        .InTree(300, "uvx", 100).Using(300, Noon.AddSeconds(1), MemorySize.FromMegabytes(30), "mcp-grafana")
-        .InTree(400, "cmd", 100).Using(400, Noon.AddSeconds(3), MemorySize.FromMegabytes(8), "pwsh")
-        .InTree(401, "pwsh", 400).Using(401, Noon.AddSeconds(4), MemorySize.FromMegabytes(70));
+        .InTree(100, "claude", 1).Using(100, Fixtures.Noon, MemorySize.FromMegabytes(296))
+        .InTree(200, "cmd", 100).Using(200, Fixtures.Noon.AddSeconds(1), MemorySize.FromMegabytes(8), "@azure-devops/mcp")
+        .InTree(201, "node", 200).Using(201, Fixtures.Noon.AddSeconds(2), MemorySize.FromMegabytes(92))
+        .InTree(300, "uvx", 100).Using(300, Fixtures.Noon.AddSeconds(1), MemorySize.FromMegabytes(30), "mcp-grafana")
+        .InTree(400, "cmd", 100).Using(400, Fixtures.Noon.AddSeconds(3), MemorySize.FromMegabytes(8), "pwsh")
+        .InTree(401, "pwsh", 400).Using(401, Fixtures.Noon.AddSeconds(4), MemorySize.FromMegabytes(70));
 
     [Fact]
     public void ListClaudeCodeThenEachProgramLargestFirstThenTheTotal()
@@ -40,7 +38,7 @@ public sealed class MemoryBreakdownShould
     public void LabelAProgramThatRefusedToBeMeasuredByItsNameAlone()
     {
         FakeProcessRegistry processes = new FakeProcessRegistry()
-            .InTree(100, "claude", 1).Using(100, Noon, MemorySize.FromMegabytes(296))
+            .InTree(100, "claude", 1).Using(100, Fixtures.Noon, MemorySize.FromMegabytes(296))
             .InTree(200, "gk-alpha", 100);
         ProcessTree tree = ProcessTree.Under(100, processes.Snapshot(), processes.UsageOf).ShouldBeOfType<ProcessTreeLookup.Found>().Tree;
 

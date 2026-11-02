@@ -32,7 +32,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task DeleteASessionAndRemoveItsCleanVantageWorktreeAndMergedBranch()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
@@ -47,7 +47,7 @@ public sealed class DeleteSessionHandlerShould
     {
         FakeFolders worktreeOnly = new FakeFolders().WithDirectory(Worktree);
         DeleteSessionHandler handler = new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry), worktreeOnly, Remover(worktreeOnly));
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
 
         DeleteSessionOutcome outcome = await handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
@@ -60,7 +60,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task KeepTheWorktreeWhenGitFailsToInspectIt()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments.Contains("list"), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
@@ -75,7 +75,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task KeepAVantageWorktreeThatStillHasChanges()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("status"), new ProcessResult(0, " M a.cs\n", string.Empty));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
@@ -87,7 +87,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task AskAboutTheBranchWhenItIsNotMerged()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("merge-base"), new ProcessResult(1, string.Empty, string.Empty));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
@@ -100,7 +100,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task CloseTheTabBeforeTouchingTheWorktree()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         await LiveTabAsync(store, registry, shell: 4000);
         List<string> order = [];
         registry.OnEndCleanly = shell => order.Add($"shell {shell} ended after {processes.CapturedRequests.Count(request => request.FileName == "git")} git calls");
@@ -114,7 +114,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task DeleteABrokenWorktreesFolderAndPrune()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments.Contains("list"), new ProcessResult(0, "worktree C:/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n", string.Empty));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
@@ -128,7 +128,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task ReportAWorktreeStillInUse()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
 
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
@@ -142,7 +142,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task KeepAWorktreeWhoseGitFileIsGoneWhileItHoldsFiles()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments.Contains("list"), new ProcessResult(0, FixListedPrunable, string.Empty));
         foreach (int number in Enumerable.Range(1, 12))
         {
@@ -160,7 +160,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task KeepAWorktreeGitListsUnderAnotherSpelling()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments.Contains("list"), new ProcessResult(0, "worktree C:/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree D:/real/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
         folders.WithFile(Path.Combine(Worktree, "uncommitted.cs"));
 
@@ -175,7 +175,7 @@ public sealed class DeleteSessionHandlerShould
     [Fact]
     public async Task ReportADeleteClaudeRefusedAndTouchNothing()
     {
-        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         await LiveTabAsync(store, registry, shell: 4000);
         processes.Answer(request => request.Arguments.Contains("rm"), new ProcessResult(1, string.Empty, "Session 81cdb0f9 not found"));
 

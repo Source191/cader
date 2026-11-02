@@ -22,7 +22,7 @@ public sealed class ResumeSessionsHandlerShould
     {
         get
         {
-            OpenTabHandler openTab = new(store, new FakeProcessRegistry(), terminal, new FakeTimeProvider(Noon), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\vantage.exe"));
+            OpenTabHandler openTab = new(store, new FakeProcessRegistry(), terminal, new FakeTimeProvider(Fixtures.Noon), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\vantage.exe"));
 
             return new(new ClaudeCli(processes, Claude), transcripts, openTab);
         }

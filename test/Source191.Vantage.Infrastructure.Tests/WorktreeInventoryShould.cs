@@ -14,6 +14,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 [Trait("Category", "Integration")]
 public sealed class WorktreeInventoryShould : IDisposable
 {
+    // The same noon as Core.Tests' Fixtures.Noon, which this project cannot reach.
     private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     private readonly TemporaryGitRoot root = new();

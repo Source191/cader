@@ -13,7 +13,6 @@ namespace Source191.Vantage.Core.Tests.Tui;
 
 public sealed class WorktreesScreenDefinitionShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
     private static readonly FolderPath Repository = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing");
     private static readonly FolderPath Worktree = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf");
 
@@ -21,7 +20,7 @@ public sealed class WorktreesScreenDefinitionShould
 
     public WorktreesScreenDefinitionShould()
     {
-        FakeTimeProvider clock = new(Noon);
+        FakeTimeProvider clock = new(Fixtures.Noon);
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(TimeProvider.System, []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
@@ -41,16 +40,16 @@ public sealed class WorktreesScreenDefinitionShould
         TableColumn<WorktreeRow> lastCommit = definition.Columns.Single(column => column.Help == Wording.LastCommitColumn);
 
         lastCommit.Fit.ShouldBe(new ColumnFit.RightAligned());
-        lastCommit.Cell(Row(new LastCommit.Made(Noon.AddMinutes(-5))), Noon, int.MaxValue).ShouldBe("5m");
-        lastCommit.Cell(Row(new LastCommit.Unknown()), Noon, int.MaxValue).ShouldBe("-");
+        lastCommit.Cell(Row(new LastCommit.Made(Fixtures.Noon.AddMinutes(-5))), Fixtures.Noon, int.MaxValue).ShouldBe("5m");
+        lastCommit.Cell(Row(new LastCommit.Unknown()), Fixtures.Noon, int.MaxValue).ShouldBe("-");
     }
 
     [Fact]
     public void ShowEveryColumnOfARow()
     {
-        WorktreeRow row = Row(new LastCommit.Made(Noon.AddHours(-2))) with { Session = new WorktreeSession.Running(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), Listed.As("invoice-pdf")) };
+        WorktreeRow row = Row(new LastCommit.Made(Fixtures.Noon.AddHours(-2))) with { Session = new WorktreeSession.Running(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), Listed.As("invoice-pdf")) };
 
-        definition.Columns.Select(column => column.Cell(row, Noon, int.MaxValue)).ShouldBe(
+        definition.Columns.Select(column => column.Cell(row, Fixtures.Noon, int.MaxValue)).ShouldBe(
         [
             @"Northwind.Billing › ~\source\worktrees\Northwind.Billing-invoice-pdf",
             Wording.HealthCell(WorktreeHealthKind.Ok),
@@ -62,7 +61,7 @@ public sealed class WorktreesScreenDefinitionShould
     [Fact]
     public void ShowNoSessionAsNothing()
     {
-        definition.Columns.Single(column => column.Help == Wording.SessionColumn).Cell(Row(new LastCommit.Unknown()), Noon, int.MaxValue).ShouldBeEmpty();
+        definition.Columns.Single(column => column.Help == Wording.SessionColumn).Cell(Row(new LastCommit.Unknown()), Fixtures.Noon, int.MaxValue).ShouldBeEmpty();
     }
 
     [Theory]

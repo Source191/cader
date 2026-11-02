@@ -13,8 +13,6 @@ internal static class WorktreeTestData
     public const string Repository = @"C:\Users\me\source\repos\Northwind.Orders";
     public const string Worktree = @"C:\Users\me\source\repos\Northwind.Orders-fix-123";
 
-    public static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     /// <summary>Every git question answered as for a merged branch with origin/main as the remote default.</summary>
     public static FakeProcessRunner Processes()
     {
@@ -32,6 +30,6 @@ internal static class WorktreeTestData
     /// <summary>A row on branch fix-123 with no session running in it, unless the head or session say otherwise.</summary>
     public static WorktreeRow Row(WorktreeHealthKind health, string path = Worktree, Head? head = null, bool ownerExists = true, WorktreeSession? session = null)
     {
-        return new WorktreeRow(FolderPath.From(Repository), FolderPath.From(path), head ?? new Head.OnBranch(BranchName.From("fix-123")), new WorktreeHealth(health, new HealthReason.None()), 0, 0, new LastCommit.Made(Noon), session ?? new WorktreeSession.None(), 0, ownerExists, FolderExists: true);
+        return new WorktreeRow(FolderPath.From(Repository), FolderPath.From(path), head ?? new Head.OnBranch(BranchName.From("fix-123")), new WorktreeHealth(health, new HealthReason.None()), 0, 0, new LastCommit.Made(Fixtures.Noon), session ?? new WorktreeSession.None(), 0, ownerExists, FolderExists: true);
     }
 }

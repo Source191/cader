@@ -7,8 +7,6 @@ namespace Source191.Vantage.Core.Tests.Application.Views;
 
 public sealed class SessionsViewShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     private static readonly SessionRow Working = Row("remove-sonar", DisplayState.Working, "Northwind.Templates", jobId: "aaaa1111");
     private static readonly Session.Background WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
     private static readonly SessionRow Waiting = Row(WaitingJob);
@@ -510,7 +508,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void OpenTheSelectedRowsPullRequest()
     {
-        PullRequest active = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Shipping/pullrequest/4521"), PullRequestState.Active, Noon);
+        PullRequest active = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Shipping/pullrequest/4521"), PullRequestState.Active, Fixtures.Noon);
         SessionsViewState state = Reduce(SessionsViewState.Empty, new RowsLoaded([Waiting with { PullRequest = new PullRequestLookup.Found(active) }]));
 
         SessionsView.Reduce(state, new KeyPressed(Key.Of('p'))).Effects.ShouldBe([new OpenPullRequest(active)]);
@@ -647,11 +645,11 @@ public sealed class SessionsViewShould
 
     private static Session.Background Job(string name, DisplayState state, string repository, string jobId)
     {
-        return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, new JobProcess.None());
+        return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Fixtures.Noon, state, new JobProcess.None());
     }
 
     private static Session.Interactive Terminal(string name, DisplayState state, string repository)
     {
-        return new Session.Interactive(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, ProcessId: 4242);
+        return new Session.Interactive(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Fixtures.Noon, state, ProcessId: 4242);
     }
 }

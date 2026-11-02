@@ -12,7 +12,6 @@ namespace Source191.Vantage.Core.Tests.Application.Detail;
 
 public sealed class DetailLoaderShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
     private static readonly FolderPath Worktree = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf");
     private static readonly FolderPath Repository = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing");
 
@@ -20,7 +19,7 @@ public sealed class DetailLoaderShould
         .AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
 
     private readonly InMemoryState state = new();
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     private readonly DiagnosticLog log;
 
@@ -58,7 +57,7 @@ public sealed class DetailLoaderShould
 
         SessionDetail detail = await Loader(activity).SessionAsync(working, CancellationToken.None);
 
-        detail.LastPromptedAt.ShouldBe(new LastPrompt.Seen(Noon.AddMinutes(3)));
+        detail.LastPromptedAt.ShouldBe(new LastPrompt.Seen(Fixtures.Noon.AddMinutes(3)));
     }
 
     [Fact]
@@ -155,13 +154,13 @@ public sealed class DetailLoaderShould
 
     private static SessionRow Row(JobProcess process)
     {
-        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Noon, DisplayState.Working, process);
+        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Fixtures.Noon, DisplayState.Working, process);
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Billing", Repository), new Head.OnBranch(BranchName.From("invoice-pdf")), new LiveTab.None(), HasTranscript: true);
     }
 
     private static WorktreeRow WorktreeRowOf(int unpushed, int dirty) =>
-        new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), dirty, unpushed, new LastCommit.Made(Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
+        new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), dirty, unpushed, new LastCommit.Made(Fixtures.Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
 
     /// <summary>Records compare lists by reference, so a known list is compared by its items.</summary>
     private sealed class ListOfStringsComparer : IEqualityComparer<DetailFact<IReadOnlyList<string>>>

@@ -14,8 +14,6 @@ public sealed class HereCommandRunnerShould : IDisposable
     private const string Directory = @"C:\Users\me\source\repos\Northwind.Orders";
     private const string Started = "Starting background service…\nbackgrounded · 81cdb0f9 · Northwind.Orders (idle — send a prompt to start)\n";
 
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
         .AnswerAll(new ProcessResult(0, "[]", string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty));
@@ -31,7 +29,7 @@ public sealed class HereCommandRunnerShould : IDisposable
             ClaudeCli claude = new(processes, Claude);
             GitCli git = new(processes, "git");
             InMemoryState state = new();
-            LaunchService launches = new(claude, git, state, state, new WorktreeIncludeCopier(git), new FakeTimeProvider(Noon));
+            LaunchService launches = new(claude, git, state, state, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
 
             return new HereCommandRunner(folders, launches, new TerminalEffects(claude, console), console, output, error);
         }

@@ -17,7 +17,7 @@ namespace Source191.Vantage.Core.Tests.Application.Effects;
 public sealed class EffectDispatcherShould
 {
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly DiagnosticLog log;
 
     public EffectDispatcherShould()
