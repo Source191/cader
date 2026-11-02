@@ -53,6 +53,7 @@ public sealed class ConsoleScreen(
 
     public ConsoleExit Run(ConsoleState initial, WhatsNewAtStart opening)
     {
+        ArgumentNullException.ThrowIfNull(initial);
         using IApplication app = Terminal.Gui.App.Application.Create().Init();
         // Windows Terminal renders 24-bit colour; without this the driver falls back to 16 colours and the palette shifts
         // (https://learn.microsoft.com/windows/console/console-virtual-terminal-sequences).
