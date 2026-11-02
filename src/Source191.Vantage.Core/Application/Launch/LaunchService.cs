@@ -38,7 +38,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
     private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, CancellationToken cancellationToken)
     {
         await recent.RecordRecentRepositoryAsync(plan.Repository.Path);
-        BackgroundSession? listed = await ListedSessionAsync(jobId, cancellationToken);
+        Session.Background? listed = await ListedSessionAsync(jobId, cancellationToken);
 
         return listed is null ? new LaunchOutcome.NotListedYet(jobId) : new LaunchOutcome.Listed(jobId, listed);
     }
@@ -56,10 +56,10 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
     }
 
     /// <summary>The new session as the supervisor lists it, which is where its full session id comes from.</summary>
-    private async Task<BackgroundSession?> ListedSessionAsync(JobId jobId, CancellationToken cancellationToken)
+    private async Task<Session.Background?> ListedSessionAsync(JobId jobId, CancellationToken cancellationToken)
     {
         SessionListing listing = await claude.ListSessionsAsync(cancellationToken);
 
-        return listing.Sessions.OfType<BackgroundSession>().FirstOrDefault(session => session.JobId == jobId);
+        return listing.Sessions.OfType<Session.Background>().FirstOrDefault(session => session.JobId == jobId);
     }
 }

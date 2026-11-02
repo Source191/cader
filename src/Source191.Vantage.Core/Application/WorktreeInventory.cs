@@ -248,7 +248,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private static WorktreeSession LiveSessionIn(FolderPath worktree, IReadOnlyList<Session> sessions)
     {
         return sessions
-            .Where(session => session is InteractiveSession or BackgroundSession { Process: JobProcess.Running })
+            .Where(session => session is Session.Interactive or Session.Background { Process: JobProcess.Running })
             .Where(session => session.WorkingDirectory.IsUnder(worktree))
             .Select(WorktreeSession (session) => new WorktreeSession.Running(session.SessionId, session.Name))
             .DefaultIfEmpty(new WorktreeSession.None())

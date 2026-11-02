@@ -52,9 +52,9 @@ public sealed class SessionsShould
         ordered.Select(session => session.Name).ShouldBe([Listed.As("newer"), Listed.As("older")]);
     }
 
-    private static BackgroundSession Session(string name, DisplayState state, DateTimeOffset startedAt)
+    private static Session.Background Session(string name, DisplayState state, DateTimeOffset startedAt)
     {
-        return new BackgroundSession(
+        return new Session.Background(
             SessionId: SessionId.From(Guid.NewGuid().ToString()),
             JobId: JobId.From("81cdb0f9"),
             Name: Listed.As(name),

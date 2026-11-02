@@ -160,7 +160,7 @@ public sealed class DiagnosticsPrivacyShould
 
     private async Task OpenATabAsync(ClaudeCli claude, GitCli git, SessionListing listing)
     {
-        BackgroundSession session = listing.Sessions.OfType<BackgroundSession>().Single();
+        Session.Background session = listing.Sessions.OfType<Session.Background>().Single();
 
         Outcome outcome = await Dispatcher(claude, git).DispatchAsync(new OpenTabForSession(session, new LiveTab.None()), CancellationToken.None);
 

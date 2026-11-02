@@ -90,13 +90,13 @@ public static partial class Wording
         (IReadOnlyList<string> Keys, IReadOnlyList<BarWord> Words) forRow = state.Selected switch
         {
             null => ([], []),
-            { Session: BackgroundSession { Process: JobProcess.Running } } => (["enter", "x", "d", "r", "m"], []),
-            { Session: BackgroundSession } => (["enter", "d", "r"], []),
-            { Session: InteractiveSession, HasTranscript: false } => (["b", "d", "m"], [CloseTab]),
+            { Session: Session.Background { Process: JobProcess.Running } } => (["enter", "x", "d", "r", "m"], []),
+            { Session: Session.Background } => (["enter", "d", "r"], []),
+            { Session: Session.Interactive, HasTranscript: false } => (["b", "d", "m"], [CloseTab]),
             _ => (["b", "m"], []),
         };
         bool stoppedListed = state.List.Rows.Any(row => row.Session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed);
-        bool emptyTerminalListed = state.List.Rows.Any(row => row is { Session: InteractiveSession, HasTranscript: false });
+        bool emptyTerminalListed = state.List.Rows.Any(row => row is { Session: Session.Interactive, HasTranscript: false });
         IReadOnlyList<string> first =
         [
             .. forRow.Keys,

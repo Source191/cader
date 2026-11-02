@@ -82,8 +82,8 @@ public sealed class WorktreeInventoryShould : IDisposable
         SessionId id = SessionId.From(Guid.NewGuid().ToString());
 
         return processId is int running
-            ? new InteractiveSession(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
-            : new BackgroundSession(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
+            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
+            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
     }
 
     public void Dispose()

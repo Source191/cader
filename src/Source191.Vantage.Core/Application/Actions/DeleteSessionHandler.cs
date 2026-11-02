@@ -13,7 +13,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
 {
     private readonly WorktreeInspector inspector = new(git);
 
-    public async Task<DeleteSessionOutcome> DeleteAsync(BackgroundSession session, bool forced, CancellationToken cancellationToken)
+    public async Task<DeleteSessionOutcome> DeleteAsync(Session.Background session, bool forced, CancellationToken cancellationToken)
     {
         try
         {
@@ -29,7 +29,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         return await RemoveWorktreeAsync(session, forced, tabClosed, cancellationToken);
     }
 
-    private async Task<DeleteSessionOutcome> RemoveWorktreeAsync(BackgroundSession session, bool forced, bool tabClosed, CancellationToken cancellationToken)
+    private async Task<DeleteSessionOutcome> RemoveWorktreeAsync(Session.Background session, bool forced, bool tabClosed, CancellationToken cancellationToken)
     {
         ListedName name = session.Name;
         CreatedWorktree? created = (await createdWorktrees.ReadCreatedWorktreesAsync())

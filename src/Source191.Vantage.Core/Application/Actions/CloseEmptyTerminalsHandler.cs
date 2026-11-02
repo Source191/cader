@@ -20,7 +20,7 @@ public sealed class CloseEmptyTerminalsHandler(IProcessRegistry processes, ITran
         List<ListedName> ended = [];
         List<SkippedSession> skipped = [];
         List<ListedName> gone = [];
-        foreach (InteractiveSession session in effect.Sessions)
+        foreach (Session.Interactive session in effect.Sessions)
         {
             if (transcripts.HasMessages(session.SessionId))
             {

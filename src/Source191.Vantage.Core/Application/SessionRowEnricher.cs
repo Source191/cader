@@ -57,9 +57,9 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
     {
         return session switch
         {
-            BackgroundSession { Process: JobProcess.Running running } => MemoryUnder(running.Id, processTable),
-            BackgroundSession => new SessionMemory.NothingToMeasure(),
-            InteractiveSession interactive => MemoryUnder(interactive.ProcessId, processTable),
+            Session.Background { Process: JobProcess.Running running } => MemoryUnder(running.Id, processTable),
+            Session.Background => new SessionMemory.NothingToMeasure(),
+            Session.Interactive interactive => MemoryUnder(interactive.ProcessId, processTable),
             _ => throw new UnreachableException(),
         };
     }

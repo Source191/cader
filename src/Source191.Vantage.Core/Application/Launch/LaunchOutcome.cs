@@ -9,7 +9,7 @@ public abstract record LaunchOutcome
     public abstract record Started(JobId JobId) : LaunchOutcome;
 
     /// <summary>The supervisor listed the new job by the time the start returned.</summary>
-    public sealed record Listed(JobId JobId, BackgroundSession Session) : Started(JobId);
+    public sealed record Listed(JobId JobId, Session.Background Session) : Started(JobId);
 
     /// <summary>The supervisor had not listed the new job by the time the start returned.</summary>
     public sealed record NotListedYet(JobId JobId) : Started(JobId);

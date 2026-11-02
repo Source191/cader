@@ -15,7 +15,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
 {
     public async Task<Outcome> HandleAsync(RenameSession effect, CancellationToken cancellationToken)
     {
-        BackgroundSession session = effect.Session;
+        Session.Background session = effect.Session;
         SessionName newName = effect.NewName;
         if (!transcripts.HasMessages(session.SessionId))
         {
@@ -38,7 +38,7 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
         {
             if (tabClosed)
             {
-                BackgroundSession renamedSession = session with { Name = new ListedName.Named(newName) };
+                Session.Background renamedSession = session with { Name = new ListedName.Named(newName) };
                 await (earlier is null ? openTab.OpenAsync(renamedSession, cancellationToken) : openTab.OpenAsync(renamedSession, earlier.Colour, cancellationToken));
             }
 

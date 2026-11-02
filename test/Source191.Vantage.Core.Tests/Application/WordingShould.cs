@@ -22,8 +22,8 @@ public sealed class WordingShould
 {
     private const string FixedFolder = @"C:\Users\me\source\repos\Northwind.Orders-fix-123";
 
-    private static readonly BackgroundSession Job = Sessions.Job(Sessions.Repository);
-    private static readonly InteractiveSession Terminal = Sessions.Terminal("fix-123", 4242);
+    private static readonly Session.Background Job = Sessions.Job(Sessions.Repository);
+    private static readonly Session.Interactive Terminal = Sessions.Terminal("fix-123", 4242);
     private static readonly WorktreeRow Worktree = Worktrees.Row(WorktreeHealthKind.Ok);
 
     public static TheoryData<Type> StatusMessageCases => [.. typeof(StatusMessage).GetNestedTypes().Where(type => type.IsAssignableTo(typeof(StatusMessage)))];

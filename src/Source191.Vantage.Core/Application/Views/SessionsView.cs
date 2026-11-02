@@ -61,10 +61,10 @@ public static class SessionsView
 
         return row.Session switch
         {
-            not BackgroundSession => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
+            not Session.Background => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
             // Attaching to a session with no process resumes it from its transcript; a session never sent a message has none.
-            BackgroundSession { Process: JobProcess.None } when !row.HasTranscript => new RowDecision.Explain(new StatusMessage.NeverSentAMessage(row.Session.Name)),
-            BackgroundSession session => new RowDecision.Act(new OpenTabForSession(session, row.Tab)),
+            Session.Background { Process: JobProcess.None } when !row.HasTranscript => new RowDecision.Explain(new StatusMessage.NeverSentAMessage(row.Session.Name)),
+            Session.Background session => new RowDecision.Act(new OpenTabForSession(session, row.Tab)),
         };
     }
 
@@ -90,9 +90,9 @@ public static class SessionsView
     /// </summary>
     private static ViewUpdate<SessionsViewState> ResumeAll(SessionsViewState state)
     {
-        BackgroundSession[] sessions = [.. state.VisibleRows
+        Session.Background[] sessions = [.. state.VisibleRows
             .Select(row => row.Session)
-            .OfType<BackgroundSession>()
+            .OfType<Session.Background>()
             .Where(session => session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed)];
 
         return sessions.Length == 0
@@ -101,12 +101,12 @@ public static class SessionsView
     }
 
     /// <summary>A key that acts on a supervised job; a terminal session gets the status message that says why it cannot.</summary>
-    private static RowDecision OnJob(SessionRow row, Func<BackgroundSession, ViewEffect> effect)
+    private static RowDecision OnJob(SessionRow row, Func<Session.Background, ViewEffect> effect)
     {
         return row.Session switch
         {
-            BackgroundSession job => new RowDecision.Act(effect(job)),
-            InteractiveSession => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
+            Session.Background job => new RowDecision.Act(effect(job)),
+            Session.Interactive => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
             _ => throw new UnreachableException(),
         };
     }
@@ -114,7 +114,7 @@ public static class SessionsView
     /// <summary>A terminal session never sent a message is closed; any other is deleted as a job, or refused when it is a terminal with a conversation.</summary>
     private static RowDecision Delete(SessionRow row)
     {
-        return row is { Session: InteractiveSession terminal, HasTranscript: false }
+        return row is { Session: Session.Interactive terminal, HasTranscript: false }
             ? new RowDecision.Act(new CloseEmptyTerminals([terminal]))
             : OnJob(row, job => new DeleteSession(job));
     }
@@ -135,16 +135,16 @@ public static class SessionsView
     {
         return row.Session switch
         {
-            BackgroundSession { Process: JobProcess.Running running } session => new RowDecision.Act(new ShowMemory(session, running.Id)),
-            InteractiveSession session => new RowDecision.Act(new ShowMemory(session, session.ProcessId)),
-            BackgroundSession => new RowDecision.Explain(new StatusMessage.NothingToMeasure(row.Session.Name)),
+            Session.Background { Process: JobProcess.Running running } session => new RowDecision.Act(new ShowMemory(session, running.Id)),
+            Session.Interactive session => new RowDecision.Act(new ShowMemory(session, session.ProcessId)),
+            Session.Background => new RowDecision.Explain(new StatusMessage.NothingToMeasure(row.Session.Name)),
             _ => throw new UnreachableException(),
         };
     }
     /// <summary>Every plain claude session that was never sent a message, in one go; the TUI confirms before closing.</summary>
     private static ViewUpdate<SessionsViewState> CloseEmpty(SessionsViewState state)
     {
-        IReadOnlyList<InteractiveSession> empty = [.. state.List.Rows.Where(row => !row.HasTranscript).Select(row => row.Session).OfType<InteractiveSession>()];
+        IReadOnlyList<Session.Interactive> empty = [.. state.List.Rows.Where(row => !row.HasTranscript).Select(row => row.Session).OfType<Session.Interactive>()];
 
         return empty.Count == 0
             ? Unchanged(state with { Message = new StatusMessage.NoEmptyTerminals() })
@@ -154,7 +154,7 @@ public static class SessionsView
     /// <summary>Renaming restarts the session under the new name, so it waits until nothing is in flight.</summary>
     private static RowDecision Rename(SessionRow row)
     {
-        if (row.Session is not BackgroundSession session)
+        if (row.Session is not Session.Background session)
         {
             return new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript));
         }
@@ -187,9 +187,9 @@ public static class SessionsView
     {
         return row.Session switch
         {
-            BackgroundSession => new RowDecision.Explain(new StatusMessage.AlreadyUnderVantage(row.Session.Name)),
-            InteractiveSession { State.Kind: DisplayStateKind.Working } => new RowDecision.Explain(new StatusMessage.WorkingSoAdoptWaits(row.Session.Name)),
-            InteractiveSession terminal => new RowDecision.Act(new AdoptSession(terminal)),
+            Session.Background => new RowDecision.Explain(new StatusMessage.AlreadyUnderVantage(row.Session.Name)),
+            Session.Interactive { State.Kind: DisplayStateKind.Working } => new RowDecision.Explain(new StatusMessage.WorkingSoAdoptWaits(row.Session.Name)),
+            Session.Interactive terminal => new RowDecision.Act(new AdoptSession(terminal)),
             _ => throw new UnreachableException(),
         };
     }

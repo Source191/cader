@@ -19,7 +19,7 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
     /// process), clears what the profile printed, then attaches full screen. A detach, a stop or a removal ends the attach
     /// with 0 (measured with CLI 2.1.312), so the shell exits and Windows Terminal closes the tab; a failed attach keeps the prompt.
     /// </summary>
-    public TabLaunch Attach(BackgroundSession session, TabRegistration registration) => new(
+    public TabLaunch Attach(Session.Background session, TabRegistration registration) => new(
         Wording.Name(session.Name),
         registration.Colour,
         session.WorkingDirectory,

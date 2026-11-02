@@ -114,7 +114,7 @@ public static partial class Wording
 
     private static string TabLine(SessionRow row) => row switch
     {
-        { Session: InteractiveSession } => "its own terminal",
+        { Session: Session.Interactive } => "its own terminal",
         { Tab: LiveTab.Open open } => $"open, {open.Colour.Name.ToLowerInvariant()}",
         _ => "none",
     };
