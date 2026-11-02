@@ -219,7 +219,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     [Fact]
     public async Task NotOfferTheTerminalBellWhenItIsAlreadyOn()
     {
-        FakeClaudeSettings alreadyOn = new(new NotificationChannelState.Configured("terminal_bell"));
+        FakeClaudeSettings alreadyOn = new(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
         TerminalSetupRunner runner = new(folders, fragment, alreadyOn, Vantage, Media, new StringReader("y\n"), output, error);
 
         await runner.RunAsync(Defaults, CancellationToken.None);
@@ -320,7 +320,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         fragment.Written.Count.ShouldBe(1);
         fragment.Removals.ShouldBe(0);
         settings.Enabled.ShouldBe(1);
-        settings.State.ShouldBe(new NotificationChannelState.Configured("terminal_bell"));
+        settings.State.ShouldBe(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
     }
 
     public void Dispose()

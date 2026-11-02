@@ -152,11 +152,11 @@ internal static class SettingsDialog
         controls.WhenFocused(field => Apply(new SettingsInput.FieldFocused(field)));
         controls.Roots.ContentsChanged += (_, _) => Apply(new SettingsInput.RootsChanged(controls.Roots.Text));
         controls.WorktreeRoot.TextChanging += (_, changing) => Apply(new SettingsInput.WorktreeRootChanged(changing.Result ?? string.Empty));
-        controls.Editor.ValueChanged += (_, _) => Apply(new SettingsInput.PresetChanged((EditorPreset)(controls.Editor.Value ?? 0)));
+        controls.Editor.ValueChanged += (_, _) => Apply(new SettingsInput.PresetChanged(OptionSelectors.At<EditorPreset>(controls.Editor.Value)));
         controls.Executable.TextChanging += (_, changing) => Apply(new SettingsInput.ExecutableChanged(changing.Result ?? string.Empty));
         controls.Arguments.TextChanging += (_, changing) => Apply(new SettingsInput.ArgumentsChanged(changing.Result ?? string.Empty));
-        controls.BaseRef.ValueChanged += (_, _) => Apply(new SettingsInput.BaseChanged(controls.BaseRef.Value == 1 ? WorktreeBase.Head : WorktreeBase.RemoteDefault));
-        controls.Place.ValueChanged += (_, _) => Apply(new SettingsInput.PlaceChanged((LaunchMode)(controls.Place.Value ?? 0)));
+        controls.BaseRef.ValueChanged += (_, _) => Apply(new SettingsInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
+        controls.Place.ValueChanged += (_, _) => Apply(new SettingsInput.PlaceChanged(OptionSelectors.At<LaunchMode>(controls.Place.Value)));
         // Enter in a one-line field does nothing by itself: only Save (F5) saves.
         controls.WorktreeRoot.Accepting += (_, accepting) => accepting.Handled = true;
         controls.Executable.Accepting += (_, accepting) => accepting.Handled = true;
@@ -167,8 +167,8 @@ internal static class SettingsDialog
             dialog.AddButton(browse);
         }
 
-        dialog.AddButton(WizardControls.Button("_Save (F5)", Save));
-        dialog.AddButton(WizardControls.Button("_Cancel (Esc)", () => Apply(new SettingsInput.Cancel())));
+        dialog.AddButton(WizardControls.Button(Wording.SaveButton, Save));
+        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new SettingsInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
         if (scope is SettingsScope.Editor)
         {

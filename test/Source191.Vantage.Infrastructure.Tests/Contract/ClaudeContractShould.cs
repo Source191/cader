@@ -51,7 +51,7 @@ public sealed class ClaudeContractShould
 
             BackgroundSession background = session.ShouldBeOfType<BackgroundSession>();
             background.JobId.Value.ShouldBe(jobId);
-            background.State.Kind.ShouldNotBe(DisplayStateKind.Unknown, $"the CLI reported a status or state Vantage does not know: {background.State.Label}");
+            background.State.Kind.ShouldNotBe(DisplayStateKind.Unknown, $"the CLI reported a status or state Vantage does not know: {background.State}");
         }
         finally
         {

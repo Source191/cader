@@ -22,11 +22,11 @@ internal sealed class SettingsControls
         SettingsText text = state.Text;
         Roots.Text = text.Roots;
         WorktreeRoot.Text = text.WorktreeRoot;
-        Editor.Value = (int)text.Preset;
+        Editor.Value = OptionSelectors.Index(text.Preset);
         Executable.Text = text.Executable;
         Arguments.Text = text.Arguments;
-        BaseRef.Value = text.Base == WorktreeBase.Head ? 1 : 0;
-        Place.Value = (int)text.Place;
+        BaseRef.Value = OptionSelectors.Index(text.Base);
+        Place.Value = OptionSelectors.Index(text.Place);
         Custom = [Caption(RightColumn, 1, "Executable (full path, not a .cmd or .bat)"), Executable, Caption(RightColumn, 4, $"Arguments ({EditorChoice.FolderPlaceholder} is the folder)"), Arguments];
         (IReadOnlyDictionary<SettingsField, View> Fields, View[] All, int Height) layout = state.Scope switch
         {
@@ -62,15 +62,15 @@ internal sealed class SettingsControls
 
     public TextField WorktreeRoot { get; } = new() { X = LeftColumn, Y = 1, Width = Dim.Fill(2) };
 
-    public OptionSelector Editor { get; } = new() { X = LeftColumn, Y = 1, Labels = [.. Enum.GetValues<EditorPreset>().Select(Wording.Describe)], Value = 0 };
+    public OptionSelector Editor { get; } = OptionSelectors.For<EditorPreset>(LeftColumn, 1, Wording.Describe);
 
     public TextField Executable { get; } = new() { X = RightColumn, Y = 2, Width = 40 };
 
     public TextField Arguments { get; } = new() { X = RightColumn, Y = 5, Width = 40 };
 
-    public OptionSelector BaseRef { get; } = new() { X = LeftColumn, Y = 1, Labels = [.. Enum.GetValues<WorktreeBase>().Select(Wording.Describe)], Value = 0 };
+    public OptionSelector BaseRef { get; } = OptionSelectors.For<WorktreeBase>(LeftColumn, 1, Wording.Describe);
 
-    public OptionSelector Place { get; } = new() { X = LeftColumn, Y = 1, Labels = [.. Enum.GetValues<LaunchMode>().Select(Wording.Describe)], Value = 0 };
+    public OptionSelector Place { get; } = OptionSelectors.For<LaunchMode>(LeftColumn, 1, Wording.Describe);
 
     public Label Problem { get; } = Text(LeftColumn, Palette.Red, Dim.Fill(1));
 

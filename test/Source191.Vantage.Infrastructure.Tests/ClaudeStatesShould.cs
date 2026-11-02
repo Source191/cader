@@ -60,7 +60,7 @@ public sealed class ClaudeStatesShould
         DisplayState state = ClaudeStates.From(processId: 100, status: null, state: "blocked");
 
         state.Kind.ShouldBe(DisplayStateKind.Working);
-        state.Label.ShouldBe("starting");
+        state.ShouldBe(new DisplayState.Starting());
     }
 
     [Fact]
@@ -69,6 +69,6 @@ public sealed class ClaudeStatesShould
         DisplayState state = ClaudeStates.From(processId: 100, status: "paused", state: "dreaming");
 
         state.Kind.ShouldBe(DisplayStateKind.Unknown);
-        state.Label.ShouldBe("paused/dreaming");
+        state.ShouldBe(new DisplayState.Unknown("paused/dreaming"));
     }
 }

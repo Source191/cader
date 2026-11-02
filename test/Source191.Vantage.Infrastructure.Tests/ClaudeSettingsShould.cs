@@ -46,7 +46,7 @@ public sealed class ClaudeSettingsShould : IDisposable
     {
         await GivenAsync("{ \"preferredNotifChannel\": \"terminal_bell\" }");
 
-        (await settings.ReadNotificationChannelAsync(CancellationToken.None)).ShouldBe(new NotificationChannelState.Configured("terminal_bell"));
+        (await settings.ReadNotificationChannelAsync(CancellationToken.None)).ShouldBe(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
     }
 
     [Theory]

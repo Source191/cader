@@ -28,7 +28,7 @@ internal static class HelpDialog
         body.SetScheme(Palette.Plain(Palette.Amber));
         dialog.Add(body);
 
-        Button close = new() { Text = "_Close" };
+        Button close = new() { Text = $"_{Wording.CloseButton}" };
         close.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;

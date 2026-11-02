@@ -90,8 +90,8 @@ internal static class LaunchWizardDialog
         controls.Filter.TextChanging += (_, changing) => Apply(new WizardInput.FilterChanged(changing.Result ?? string.Empty));
         controls.Repositories.ValueChanged += (_, _) => Apply(new WizardInput.ChoiceSelected(controls.Repositories.SelectedItem ?? -1));
         controls.Name.TextChanging += (_, changing) => Apply(new WizardInput.NameChanged(changing.Result ?? string.Empty));
-        controls.Mode.ValueChanged += (_, _) => Apply(new WizardInput.ModeChanged(controls.Mode.Value == 1 ? LaunchMode.NewWorktree : LaunchMode.CurrentBranch));
-        controls.BaseRef.ValueChanged += (_, _) => Apply(new WizardInput.BaseChanged(controls.BaseRef.Value == 1 ? WorktreeBase.Head : WorktreeBase.RemoteDefault));
+        controls.Mode.ValueChanged += (_, _) => Apply(new WizardInput.ModeChanged(OptionSelectors.At<LaunchMode>(controls.Mode.Value)));
+        controls.BaseRef.ValueChanged += (_, _) => Apply(new WizardInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
         controls.Prompt.ContentsChanged += (_, _) => Apply(new WizardInput.PromptChanged(controls.Prompt.Text));
         // Arrow and page keys typed in the filter drive the list; a letter or Backspace typed in the list is typing in the filter.
         controls.Filter.KeyDown += (_, key) => key.Handled = controls.ListDelta(key) is int delta && WizardControls.Handled(() => Apply(new WizardInput.ListMoved(delta)));
@@ -112,8 +112,8 @@ internal static class LaunchWizardDialog
         dialog.Accepting += (_, accepting) => accepting.Handled = true;
         dialog.KeyDown += (_, key) => key.Handled = key == GuiKey.F5 && WizardControls.Handled(Start);
         // No default button: Enter never starts anything by itself. F5 and the Start button do, and both open the session's tab.
-        dialog.AddButton(WizardControls.Button("_Start (F5)", Start));
-        dialog.AddButton(WizardControls.Button("_Cancel (Esc)", () => Apply(new WizardInput.Cancel())));
+        dialog.AddButton(WizardControls.Button(Wording.StartButton, Start));
+        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new WizardInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
 
         app.Run(dialog);

@@ -20,7 +20,6 @@ public sealed class TerminalSetupRunner(
 {
     private const string VantageDefaultSound = "Windows Notify Messaging.wav";
     private const string SessionDefaultSound = "Windows Proximity Notification.wav";
-    private const string TerminalBell = "terminal_bell";
 
     private enum Step
     {
@@ -149,7 +148,7 @@ public sealed class TerminalSetupRunner(
         NotificationChannelState state = await claudeSettings.ReadNotificationChannelAsync(cancellationToken);
         switch (state)
         {
-            case NotificationChannelState.Configured { Value: TerminalBell }:
+            case NotificationChannelState.Configured { Value: NotificationChannelState.TerminalBell }:
                 await output.WriteLineAsync(Wording.ClaudeBellAlreadyOn);
                 return Step.Skipped;
             case NotificationChannelState.Unreadable unreadable:

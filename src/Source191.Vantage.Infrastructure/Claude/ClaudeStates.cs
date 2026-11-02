@@ -13,12 +13,12 @@ public static class ClaudeStates
     {
         (null, _, "failed") => DisplayState.Failed,
         (null, _, _) => DisplayState.Stopped,
-        (_, null, _) => DisplayState.Starting,
+        (_, null, _) => new DisplayState.Starting(),
         (_, "busy", "working" or null) => DisplayState.Working,
         (_, "waiting", _) => DisplayState.NeedsInput,
         (_, "idle", "blocked") => DisplayState.NeedsInput,
         (_, "idle", "done") => DisplayState.Completed,
         (_, "idle", "working" or null) => DisplayState.Idle,
-        _ => DisplayState.Unknown($"{status}/{state}"),
+        _ => new DisplayState.Unknown($"{status}/{state}"),
     };
 }

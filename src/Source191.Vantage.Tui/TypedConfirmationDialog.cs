@@ -17,7 +17,7 @@ namespace Source191.Vantage.Tui;
 /// </summary>
 internal static class TypedConfirmationDialog
 {
-    public static TypedAnswer Show(IApplication app, DiagnosticLog log, DialogName name, string title, string message, string expected, string expectedKind)
+    public static TypedAnswer Show(IApplication app, DiagnosticLog log, DialogName name, string title, string message, string expected)
     {
         TypedAnswer confirmed = new TypedAnswer.Cancelled();
         using Dialog dialog = new() { Title = title, Width = 76, Height = 15 };
@@ -62,7 +62,7 @@ internal static class TypedConfirmationDialog
             }
 
             problem.Text = typed.Length == 0
-                ? Wording.NothingTypedYet(expectedKind, expected)
+                ? Wording.NothingTypedYet(expected)
                 : Wording.NotTheSame(typed);
         };
         dialog.KeyDown += (_, key) =>
@@ -75,14 +75,14 @@ internal static class TypedConfirmationDialog
                     : Wording.ClipboardUnavailable;
             }
         };
-        Button copy = new() { Text = "Cop_y name (F2)" };
+        Button copy = new() { Text = Wording.CopyNameButton };
         copy.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;
             dialog.NewKeyDownEvent(GuiKey.F2);
             input.SetFocus();
         };
-        Button cancel = new() { Text = "_Cancel (Esc)" };
+        Button cancel = new() { Text = Wording.CancelWithEscButton };
         cancel.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;

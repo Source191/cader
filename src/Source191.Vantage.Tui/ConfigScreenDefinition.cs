@@ -19,9 +19,9 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
     public string RowTip(ConfigRow row) => Wording.ConfigDescription(row);
 
 
-    public string WaitingText => "Reading the settings";
+    public string WaitingText => Wording.WaitingText(ConsoleTab.Config);
 
-    public string LoadFailurePrefix => "reading failed";
+    public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Config);
 
     public string HelpText => Wording.ConfigHelp;
 

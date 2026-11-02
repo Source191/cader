@@ -140,7 +140,7 @@ public sealed class ClaudeAgentsListingShould
 
         SessionListing listing = ClaudeAgentsListing.Parse(json);
 
-        listing.Sessions.Single().ShouldBeOfType<BackgroundSession>().State.ShouldBe(DisplayState.Starting);
+        listing.Sessions.Single().ShouldBeOfType<BackgroundSession>().State.ShouldBe(new DisplayState.Starting());
         listing.AutomatedRuns.ShouldBeEmpty();
     }
 

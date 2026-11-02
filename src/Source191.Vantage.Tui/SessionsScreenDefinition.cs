@@ -11,8 +11,6 @@ namespace Source191.Vantage.Tui;
 internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier, SessionActivity activity, string claudeExecutable, FolderLabels folders, IDetailSource<SessionRow> detail)
     : IScreenDefinition<SessionsViewState, SessionRow>
 {
-    /// <summary>The block a Vantage tab's colour is drawn with: two cells, leaving the column's third as space before the state.</summary>
-    private const string TabBlock = "██";
 
     public TimeSpan RefreshEvery => TimeSpan.FromSeconds(5);
 
@@ -21,9 +19,9 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     public string RowTip(SessionRow row) => string.Empty;
 
 
-    public string WaitingText => "Listing sessions";
+    public string WaitingText => Wording.WaitingText(ConsoleTab.Sessions);
 
-    public string LoadFailurePrefix => "listing failed";
+    public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Sessions);
 
     public string HelpText => Wording.SessionsHelp(claudeExecutable);
 
@@ -31,7 +29,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     [
         TableColumn<SessionRow>.Plain(Wording.NameColumn, (row, _, _) => row.Session.Name, new ColumnFit.Capped(28)),
         new(Wording.TabColumn, (row, _, _) => Swatch(row), new ColumnFit.Natural(), TabPaint),
-        TableColumn<SessionRow>.Plain(Wording.StateColumn, (row, _, _) => $"{Wording.StateGlyph(row.Session.State.Kind)} {row.Session.State.Label}", new ColumnFit.Natural()),
+        TableColumn<SessionRow>.Plain(Wording.StateColumn, (row, _, _) => $"{Wording.StateGlyph(row.Session.State.Kind)} {Wording.StateWord(row.Session.State)}", new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.RepositoryColumn, (row, _, width) => Repository(row, folders).Fit(width), new ColumnFit.Elastic()),
         TableColumn<SessionRow>.Plain(Wording.PullRequestColumn, (row, _, _) => Wording.PullRequestCell(row.PullRequest), new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.AgeColumn, (row, now, _) => Durations.Age(now - row.Session.StartedAt), new ColumnFit.RightAligned()),
@@ -87,7 +85,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
         return row switch
         {
             { Session: InteractiveSession } => Wording.TerminalSwatch,
-            { Tab: LiveTab.Open } => TabBlock,
+            { Tab: LiveTab.Open } => Wording.TabBlock,
             _ => string.Empty,
         };
     }

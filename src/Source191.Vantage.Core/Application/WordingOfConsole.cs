@@ -13,7 +13,7 @@ public static partial class Wording
     private static readonly string[] SecondBarRowForConfig = ["c", "f", "/", "?", "!", "q"];
     private static readonly string[] FirstBarRowForWorktrees = ["d", "D", "P", "n", "o", "enter"];
 
-    private static readonly TextPart Dot = new(" · ", TextTone.Grey);
+    public static readonly TextPart Dot = new(" · ", TextTone.Grey);
 
     /// <summary>The console's settings row, labels orange and values white, an available update in amber: Vantage and Claude; the roots are on the Config tab.</summary>
     public static IReadOnlyList<TextPart> SettingsRow(ToolVersion vantage, ClaudeCodeVersion claude, UpdateStatus update, MemorySize vantageMemory) =>
@@ -26,7 +26,7 @@ public static partial class Wording
         int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading));
         int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp });
 
-        return [new TextPart(Counted(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];
+        return [new TextPart(Count(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];
     }
 
     /// <summary>The Config tab's key bar: edit, then Update when a release is known; the folder and view keys below.</summary>
@@ -121,12 +121,12 @@ public static partial class Wording
     private static string CountedState(DisplayStateKind kind, List<SessionRow> rows) => kind switch
     {
         DisplayStateKind.NeedsInput => rows.Count == 1 ? "needs input" : "need input",
-        DisplayStateKind.Working => DisplayState.Working.Label,
-        DisplayStateKind.Idle => rows[0].Session.State.Label,
-        DisplayStateKind.Completed => rows[0].Session.State.Label,
-        DisplayStateKind.Failed => rows[0].Session.State.Label,
-        DisplayStateKind.Stopped => rows[0].Session.State.Label,
-        DisplayStateKind.Unknown => rows[0].Session.State.Label,
+        DisplayStateKind.Working => StateWord(DisplayState.Working),
+        DisplayStateKind.Idle => StateWord(rows[0].Session.State),
+        DisplayStateKind.Completed => StateWord(rows[0].Session.State),
+        DisplayStateKind.Failed => StateWord(rows[0].Session.State),
+        DisplayStateKind.Stopped => StateWord(rows[0].Session.State),
+        DisplayStateKind.Unknown => StateWord(rows[0].Session.State),
     };
 
     private static TextTone ToneOf(DisplayStateKind kind) => kind switch
@@ -159,7 +159,7 @@ public static partial class Wording
         {
             KeyHelp help = keys.First(candidate => candidate.Key == key);
             KeyBarItem item = words.FirstOrDefault(word => word.Key == key) is BarWord word
-                ? new(help.HelpKey, word.Word, x, word.Tip)
+                ? new(help.HelpKey, word.Word, x, word.Tip, help.Press)
                 : OwnItem(help, x);
             items.Add(item);
             x = item.End + BarGap;
@@ -169,7 +169,7 @@ public static partial class Wording
     }
 
     /// <summary>A key's item in its own words: its hint, or its help line for a key the bar has no hint for.</summary>
-    private static KeyBarItem OwnItem(KeyHelp help, int x) => new(help.HelpKey, help.OnBar ? help.Hint : help.Line, x, help.Tip);
+    private static KeyBarItem OwnItem(KeyHelp help, int x) => new(help.HelpKey, help.OnBar ? help.Hint : help.Line, x, help.Tip, help.Press);
 
     private const string TerminalTabTip = "Close this terminal session's tab; it was never sent a message, so nothing is lost.";
 

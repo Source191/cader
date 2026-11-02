@@ -2,26 +2,35 @@ using Source191.Vantage.Domain;
 
 namespace Source191.Vantage.Core.Tests.Domain;
 
-/// <summary>The six named display states and Unknown, and their labels; mapping the CLI's words to them is <c>ClaudeStatesShould</c>'s.</summary>
+/// <summary>The six known display states, the starting state and Unknown, by kind; their words are <c>WordingOfScreensShould</c>'s and mapping the CLI's words to them is <c>ClaudeStatesShould</c>'s.</summary>
 public sealed class DisplayStateShould
 {
     [Fact]
-    public void LabelEachStateInPlainLowerCaseWordsForTheStateColumn()
+    public void GiveEachKnownStateItsKind()
     {
-        DisplayState.Working.Label.ShouldBe("working");
-        DisplayState.NeedsInput.Label.ShouldBe("needs input");
-        DisplayState.Idle.Label.ShouldBe("idle");
-        DisplayState.Completed.Label.ShouldBe("completed");
-        DisplayState.Failed.Label.ShouldBe("failed");
-        DisplayState.Stopped.Label.ShouldBe("stopped");
+        DisplayState.Working.Kind.ShouldBe(DisplayStateKind.Working);
+        DisplayState.NeedsInput.Kind.ShouldBe(DisplayStateKind.NeedsInput);
+        DisplayState.Idle.Kind.ShouldBe(DisplayStateKind.Idle);
+        DisplayState.Completed.Kind.ShouldBe(DisplayStateKind.Completed);
+        DisplayState.Failed.Kind.ShouldBe(DisplayStateKind.Failed);
+        DisplayState.Stopped.Kind.ShouldBe(DisplayStateKind.Stopped);
     }
 
     [Fact]
-    public void KeepTheRawWordsOfAnUnknownCombinationAsItsLabel()
+    public void KeepOnlyTheRawWordsOfAnUnknownCombination()
     {
-        DisplayState state = DisplayState.Unknown("paused/dreaming");
+        DisplayState.Unknown state = new("paused/dreaming");
 
         state.Kind.ShouldBe(DisplayStateKind.Unknown);
-        state.Label.ShouldBe("paused/dreaming");
+        state.RawWords.ShouldBe("paused/dreaming");
+    }
+
+    [Fact]
+    public void DistinguishStartingFromWorkingWhileSharingItsKind()
+    {
+        DisplayState starting = new DisplayState.Starting();
+
+        starting.Kind.ShouldBe(DisplayStateKind.Working);
+        starting.ShouldNotBe(DisplayState.Working);
     }
 }

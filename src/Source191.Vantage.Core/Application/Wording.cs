@@ -36,8 +36,25 @@ public static partial class Wording
 
     public static string ForceRemoveWarning => "This deletes the folder below and everything in it that is not committed and pushed.\nTo confirm, give its name:";
 
-    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box; expectedKind names what must be typed.</summary>
-    public static string NothingTypedYet(string expectedKind, string expected) => $"Nothing typed yet; the {expectedKind} is {expected}.";
+    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the force-remove dialog asks for the worktree's folder name.</summary>
+    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the folder name is {expected}.";
+
+    /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
+    public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
+
+    public static string PreviewNeedsRepository => "A worktree needs a repository; this folder is not one.";
+
+    /// <summary>The wizard's preview for a worktree whose name has not yielded a folder yet.</summary>
+    public static string PreviewBeforeAName(string repositoryName, FolderPath worktreeRoot) => $"The name becomes the worktree folder {repositoryName}-<name> under {worktreeRoot} and its branch.";
+
+    public static string PreviewWorktree(string folderName, FolderPath worktreeRoot, BranchName branch) => $"Worktree {folderName} under {worktreeRoot}, on branch {branch}.";
+
+    /// <summary>The title of the tab that lets a person accept Claude Code's trust prompt for a folder.</summary>
+    public static string TrustTabTitle(string folderName) => $"Trust {folderName}";
+
+    public static string TrustTabMessage(string folderName) => $"Vantage: accept the trust prompt for {folderName}, then exit Claude and press n in Vantage to retry.";
+
+    public static string UpdateTabTitle => "Update Vantage";
 
     public static string NotTheSame(string typed) => $"Not the same: you typed {typed}.";
 
@@ -54,6 +71,39 @@ public static partial class Wording
     public static string ProblemReportPreviewCaption => "Diagnostics the page will be filled in with";
 
     /// <summary>The problem report dialog's buttons, in order: open (the default), copy, cancel.</summary>
+    /// <summary>Whether a moment falls on the same local date as now in the zone.</summary>
+    private static bool IsToday(DateTimeOffset at, DateTimeOffset now, TimeZoneInfo zone) => TimeZoneInfo.ConvertTime(at, zone).Date == TimeZoneInfo.ConvertTime(now, zone).Date;
+
+    public static string KeysTitle => "Keys";
+
+    public static string DeleteBranchTitle => "Delete branch";
+
+    /// <summary>The delete-branch question's buttons, confirm first; the dialog marks each one's hotkey.</summary>
+    public static IReadOnlyList<string> DeleteBranchButtons { get; } = ["Delete branch", "Keep"];
+
+    public static string RenameTitle => "Rename session";
+
+    public static string CloseEmptyTitle => "Close empty terminal sessions";
+
+    public static IReadOnlyList<string> CloseEmptyButtons { get; } = ["Close", "Keep"];
+
+    public static string ForceRemoveTitle => "Force remove";
+
+    public static string DeleteSessionTitle => "Delete session";
+
+    public static IReadOnlyList<string> DeleteButtons { get; } = ["Delete", "Cancel"];
+
+    /// <summary>A dialog's Cancel button with its hotkey marked; Esc is not named because the dialog has no key bar.</summary>
+    public static string CancelButton => "_Cancel";
+
+    public static string CancelWithEscButton => "_Cancel (Esc)";
+
+    public static string CopyNameButton => "Cop_y name (F2)";
+
+    public static string StartButton => "_Start (F5)";
+
+    public static string SaveButton => "_Save (F5)";
+
     public static IReadOnlyList<string> ProblemReportButtons { get; } = ["Open in browser", "Copy text", "Cancel"];
 
     /// <summary>The title of a report whose title box was left blank.</summary>
@@ -353,15 +403,15 @@ public static partial class Wording
     public static string ClaudeBellPlan(string settingsPath, string? replacing)
     {
         string change = replacing is null
-            ? "This sets \"preferredNotifChannel\": \"terminal_bell\""
-            : $"This replaces \"preferredNotifChannel\": \"{replacing}\" with \"terminal_bell\"";
+            ? $"This sets \"preferredNotifChannel\": \"{NotificationChannelState.TerminalBell}\""
+            : $"This replaces \"preferredNotifChannel\": \"{replacing}\" with \"{NotificationChannelState.TerminalBell}\"";
 
         return string.Join(Environment.NewLine,
             "Claude Code can ring the terminal bell when a session finishes or needs permission.",
             $"{change} in {settingsPath} and keeps every other setting.");
     }
 
-    public static string ClaudeBellEnabled(string settingsPath) => $"Set preferredNotifChannel to terminal_bell in {settingsPath}. It applies to sessions started from now on.";
+    public static string ClaudeBellEnabled(string settingsPath) => $"Set preferredNotifChannel to {NotificationChannelState.TerminalBell} in {settingsPath}. It applies to sessions started from now on.";
 
     public static string ClaudeSettingsUnreadable(string settingsPath, string reason) => $"Could not read {settingsPath} ({reason}), so it was left alone.";
 

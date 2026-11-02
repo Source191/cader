@@ -39,7 +39,7 @@ internal static class ChooseSolutionDialog
         };
         dialog.Add(text, list);
 
-        Button cancel = new() { Text = "_Cancel" };
+        Button cancel = new() { Text = Wording.CancelButton };
         cancel.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;

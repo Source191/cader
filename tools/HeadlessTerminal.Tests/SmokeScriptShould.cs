@@ -128,9 +128,9 @@ public sealed class SmokeScriptShould
     [Fact]
     public void TranslateTheNamedKeysToWhatATerminalSends()
     {
-        SmokeScript.KeyFor([new KeyHelp("esc", "Back", "back", Tip: "Go back.")], "Back").ShouldBe(Escape);
-        SmokeScript.KeyFor([new KeyHelp("enter", "Go", "go", Tip: "Go there.")], "Go").ShouldBe("\r");
-        SmokeScript.KeyFor([new KeyHelp(",", "Settings", "settings", Tip: "Edit the settings.")], "Settings").ShouldBe(",");
+        SmokeScript.KeyFor([new KeyHelp(Source191.Vantage.Application.Views.Key.Escape, "Back", "back", Tip: "Go back.")], "Back").ShouldBe(Escape);
+        SmokeScript.KeyFor([new KeyHelp(Source191.Vantage.Application.Views.Key.Enter, "Go", "go", Tip: "Go there.")], "Go").ShouldBe("\r");
+        SmokeScript.KeyFor([new KeyHelp(Source191.Vantage.Application.Views.Key.Of(','), "Settings", "settings", Tip: "Edit the settings.")], "Settings").ShouldBe(",");
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class SmokeScriptShould
     [Fact]
     public void TakeTheFirstKeyWithAHint()
     {
-        SmokeScript.KeyFor([new KeyHelp("w", "Sessions", "back", Tip: "Go back."), new KeyHelp("esc", "Sessions", "back", Tip: "Go back.")], "Sessions").ShouldBe("w");
+        SmokeScript.KeyFor([new KeyHelp(Source191.Vantage.Application.Views.Key.Of('w'), "Sessions", "back", Tip: "Go back."), new KeyHelp(Source191.Vantage.Application.Views.Key.Escape, "Sessions", "back", Tip: "Go back.")], "Sessions").ShouldBe("w");
     }
 
     [Fact]

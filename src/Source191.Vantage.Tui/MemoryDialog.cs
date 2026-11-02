@@ -32,7 +32,7 @@ internal static class MemoryDialog
             dialog.Add(line);
         }
 
-        Button close = new() { Text = "_Close", IsDefault = true };
+        Button close = new() { Text = $"_{Wording.CloseButton}", IsDefault = true };
         close.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;
