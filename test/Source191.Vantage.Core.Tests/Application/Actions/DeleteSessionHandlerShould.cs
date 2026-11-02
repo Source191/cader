@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Claude;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Application.Actions;
@@ -16,7 +15,7 @@ public sealed class DeleteSessionHandlerShould
     private readonly FakeProcessRegistry registry = new();
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Repository).WithDirectory(Worktree);
 
-    private DeleteSessionHandler Handler => new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry, new FakeTimeProvider(Noon)), folders, TestSettings.Current(@"C:\repos"));
+    private DeleteSessionHandler Handler => new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry), folders, TestSettings.Current(@"C:\repos"));
 
     [Fact]
     public async Task DeleteASessionOutsideAVantageWorktreeWithoutTouchingGit()
@@ -45,7 +44,7 @@ public sealed class DeleteSessionHandlerShould
     public async Task KeepTheWorktreeWhenItsRepositoryHasGone()
     {
         FakeFolders worktreeOnly = new FakeFolders().WithDirectory(Worktree);
-        DeleteSessionHandler handler = new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry, new FakeTimeProvider(Noon)), worktreeOnly, TestSettings.Current(@"C:\repos"));
+        DeleteSessionHandler handler = new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry), worktreeOnly, TestSettings.Current(@"C:\repos"));
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Noon));
 
         DeleteSessionOutcome outcome = await handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);

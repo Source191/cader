@@ -1,5 +1,6 @@
 using Source191.Vantage.Adapters.Processes;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 using System.Diagnostics;
 
 namespace Source191.Vantage.Infrastructure.Tests;
@@ -25,6 +26,33 @@ public sealed class ProcessRegistryIntegrationShould
     public void ReportNothingForAProtectedProcessInsteadOfThrowing()
     {
         Should.NotThrow(() => registry.StartTimeOf(4));
+        Should.NotThrow(() => registry.ParentOf(4));
+        Should.NotThrow(() => registry.UsageOf(4));
+    }
+
+    /// <summary>Every read opens its own handle, so a refresh with a claimed tab per session stays cheap.</summary>
+    [Fact]
+    public void ReadTwoHundredStartTimesWithinASecond()
+    {
+        Stopwatch clock = Stopwatch.StartNew();
+        for (int round = 0; round < 200; round++)
+        {
+            registry.StartTimeOf(Environment.ProcessId).ShouldNotBeNull();
+        }
+
+        clock.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ReadTwoHundredParentsWithinASecond()
+    {
+        Stopwatch clock = Stopwatch.StartNew();
+        for (int round = 0; round < 200; round++)
+        {
+            registry.ParentOf(Environment.ProcessId).ShouldNotBeNull();
+        }
+
+        clock.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -86,7 +114,7 @@ public sealed class ProcessRegistryIntegrationShould
             usage.StartedAt.ShouldBeInRange(before, DateTimeOffset.UtcNow.AddMinutes(1));
             usage.StartedAt.Offset.ShouldBe(TimeSpan.Zero);
             usage.PrivateMemory.Bytes.ShouldBeGreaterThan(0);
-            usage.CommandLine.ShouldContain("ping -n 30 127.0.0.1");
+            usage.Label.ShouldBe("ping");
         }
         finally
         {
@@ -122,7 +150,7 @@ public sealed class ProcessRegistryIntegrationShould
     {
         using Process child = StartSleeper();
 
-        registry.EndCleanly(child.Id);
+        registry.EndCleanly(Confirmed(child));
 
         child.WaitForExit(TimeSpan.FromSeconds(5)).ShouldBeTrue();
         child.ExitCode.ShouldBe(0);
@@ -134,14 +162,16 @@ public sealed class ProcessRegistryIntegrationShould
         ProcessStartInfo start = new("cmd.exe", ["/c", "cmd /c exit 0 & ping -n 30 127.0.0.1 > nul"]) { UseShellExecute = false, CreateNoWindow = true };
         using Process parent = Process.Start(start) ?? throw new InvalidOperationException("cmd did not start");
 
-        Should.NotThrow(() => registry.Terminate(parent.Id));
+        Should.NotThrow(() => registry.Terminate(Confirmed(parent)));
 
         parent.WaitForExit(TimeSpan.FromSeconds(5)).ShouldBeTrue();
     }
 
+    private static ConfirmedProcess Confirmed(Process process) => TestProcesses.Confirmed(process.Id, new DateTimeOffset(process.StartTime.ToUniversalTime()));
+
     private static Process StartSleeper()
     {
-        ProcessStartInfo start = new("cmd.exe", ["/c", "ping -n 30 127.0.0.1 > nul"]) { UseShellExecute = false, CreateNoWindow = true };
+        ProcessStartInfo start = new("cmd.exe", ["/c", "ping.exe -n 30 127.0.0.1 > nul"]) { UseShellExecute = false, CreateNoWindow = true };
 
         return Process.Start(start) ?? throw new InvalidOperationException("cmd did not start");
     }

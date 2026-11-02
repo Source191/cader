@@ -11,24 +11,25 @@ public static class TerminalTab
 {
     private const int MaxDepth = 8;
 
-    public static TabShell ShellAbove(int processId, IProcessRegistry processes) => Walk(processId, processes) switch
+    public static TabShell ShellAbove(ConfirmedProcess process, IProcessRegistry processes) => Walk(process, processes) switch
     {
-        (int shell, _) when shell == processId => new TabShell.TheProcess(),
-        (int shell, _) => new TabShell.Above(shell),
+        (ConfirmedProcess shell, _) when shell.Id == process.Id => new TabShell.TheProcess(),
+        (ConfirmedProcess shell, _) => new TabShell.Above(shell),
         null => new TabShell.None(),
     };
 
-    public static int? TerminalOf(int processId, IProcessRegistry processes) => Walk(processId, processes)?.Terminal;
+    public static int? TerminalOf(ConfirmedProcess process, IProcessRegistry processes) => Walk(process, processes)?.Terminal;
 
-    private static (int Shell, int Terminal)? Walk(int processId, IProcessRegistry processes)
+    private static (ConfirmedProcess Shell, int Terminal)? Walk(ConfirmedProcess process, IProcessRegistry processes)
     {
-        int current = processId;
-        DateTimeOffset? currentStarted = processes.StartTimeOf(processId);
+        ArgumentNullException.ThrowIfNull(process);
+        ArgumentNullException.ThrowIfNull(processes);
+
+        ConfirmedProcess current = process;
         for (int depth = 0; depth < MaxDepth; depth++)
         {
-            ProcessParent? parent = processes.ParentOf(current);
-            DateTimeOffset? parentStarted = parent is null ? null : processes.StartTimeOf(parent.ProcessId);
-            if (parent is null || !StartedNoLaterThan(parentStarted, currentStarted))
+            ProcessParent? parent = processes.ParentOf(current.Id);
+            if (parent is null || !ConfirmedProcess.TryConfirmParent(parent.ProcessId, processes.StartTimeOf(parent.ProcessId), current, out ConfirmedProcess? confirmed))
             {
                 return null;
             }
@@ -38,12 +39,9 @@ public static class TerminalTab
                 return (current, parent.ProcessId);
             }
 
-            current = parent.ProcessId;
-            currentStarted = parentStarted;
+            current = confirmed;
         }
 
         return null;
     }
-
-    private static bool StartedNoLaterThan(DateTimeOffset? parent, DateTimeOffset? child) => parent is DateTimeOffset parentStart && child is DateTimeOffset childStart && parentStart <= childStart;
 }

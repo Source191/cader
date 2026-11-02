@@ -26,7 +26,7 @@ public sealed class RenameSessionHandlerShould
             FakeTimeProvider clock = new(Noon);
             OpenTabHandler openTab = new(store, registry, terminal, clock, new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\vantage.exe"));
 
-            return new(new ClaudeCli(processes, Claude), transcripts, store, new SessionTabs(store, registry, clock), openTab);
+            return new(new ClaudeCli(processes, Claude), transcripts, store, new SessionTabs(store, registry), openTab);
         }
     }
 

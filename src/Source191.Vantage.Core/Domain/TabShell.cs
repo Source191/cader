@@ -4,7 +4,7 @@ namespace Source191.Vantage.Domain;
 public abstract record TabShell
 {
     /// <summary>A shell sits between the process and Windows Terminal; ending it cleanly closes the tab.</summary>
-    public sealed record Above(int ProcessId) : TabShell;
+    public sealed record Above(ConfirmedProcess Shell) : TabShell;
 
     /// <summary>Windows Terminal started the process directly, so ending it cleanly closes the tab.</summary>
     public sealed record TheProcess : TabShell;

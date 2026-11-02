@@ -16,7 +16,7 @@ paths:
   - "**/RemoveWorktreeHandler*.cs"
   - "**/DeleteSessionHandler*.cs"
   - "**/SessionId*.cs"
-  - "**/ProcessIdentity*.cs"
+  - "**/ConfirmedProcess*.cs"
   - "**/ProgramLabel*.cs"
   - "**/PathFolders*.cs"
   - "**/ProgramLocat*.cs"
@@ -48,9 +48,9 @@ The detail behind the security and privacy invariants in `CLAUDE.md`.
 
 ## Processes and identities
 
-- A listed process id is ended only while `Domain\ProcessIdentity.StillTheSession` holds (the process started no later than the session's listed start, plus five seconds), as `TabRegistration.IsLive` already checks for tabs; close-empty lists such sessions in `Gone` and adopt answers `ProcessGone`.
-- A process's command line carries secrets, so `ProgramLabel` reduces one to a package or executable name and nothing else is kept, logged or shown.
-- A `SessionId` is ASCII letters, digits and hyphens with a letter or digit first, so no id from the listing can be read as an option or hold a path separator; `TerminalTab` walks up only through parents that started no later than their child, so a reused parent id never names another tab's shell.
+- A process is ended only as a `Domain\ConfirmedProcess`, which `IProcessRegistry.Terminate` and `EndCleanly` require and only three doors make: `TryConfirm` for a listed id (the process started no later than the session's listed start, plus five seconds; close-empty lists the others in `Gone` and adopt answers `ProcessGone`), `TryConfirmClaim` for a tab's shell (the recorded start exactly, as `TabRegistration.TryConfirmShell` and `IsLive` check) and `TryConfirmParent` for a step of the walk up to Windows Terminal (a parent started no later than its confirmed child).
+- A process's command line carries secrets, so `ProcessRegistry.UsageOf` reduces one with `ProgramLabel` to a package or executable name and answers only that `ProcessUsage.Label`; the command line never leaves the method, so nothing else can keep, log or show it.
+- A `SessionId` is ASCII letters, digits and hyphens with a letter or digit first, so no id from the listing can be read as an option or hold a path separator; `TerminalTab` walks up from a `ConfirmedProcess` only through parents `ConfirmedProcess.TryConfirmParent` accepts (started no later than their child), so a reused parent id never names another tab's shell.
 
 ## Deleting folders
 

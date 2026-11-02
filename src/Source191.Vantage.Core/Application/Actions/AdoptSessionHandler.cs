@@ -11,7 +11,7 @@ namespace Source191.Vantage.Application.Actions;
 /// read afterwards) and ended cleanly once the resume continued, so the old tab closes; a failed resume keeps the shell
 /// at its prompt in the session's folder. A session that has never been sent a message has no transcript, so there is
 /// nothing to resume and its process is left alone; so is a process that is no longer the session's
-/// (<see cref="ProcessIdentity"/>), because ending it would end something else.
+/// (<see cref="ConfirmedProcess"/>), because ending it would end something else.
 /// </summary>
 public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry processes, ITranscripts transcripts) : IEffectHandler<AdoptSession>
 {
@@ -23,14 +23,14 @@ public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry proc
             return new AdoptSessionOutcome.NoMessages(session.Name);
         }
 
-        if (!ProcessIdentity.StillTheSession(processes.StartTimeOf(session.ProcessId), session.StartedAt))
+        if (!ConfirmedProcess.TryConfirm(session.ProcessId, processes.StartTimeOf(session.ProcessId), session.StartedAt, out ConfirmedProcess? listed))
         {
             return new AdoptSessionOutcome.ProcessGone(session.Name);
         }
 
         // The tab's shell, found while claude is alive. When claude is the tab's root process, killing it leaves the tab open.
-        TabShell shell = TerminalTab.ShellAbove(session.ProcessId, processes);
-        processes.Terminate(session.ProcessId);
+        TabShell shell = TerminalTab.ShellAbove(listed, processes);
+        processes.Terminate(listed);
         ResumeResult result = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, session.Name, cancellationToken);
 
         if (result is not ResumeResult.Continued)
@@ -43,7 +43,7 @@ public sealed class AdoptSessionHandler(IClaudeCli claude, IProcessRegistry proc
             return new AdoptSessionOutcome.Moved(session.Name, TabClosed: false);
         }
 
-        processes.EndCleanly(above.ProcessId);
+        processes.EndCleanly(above.Shell);
 
         return new AdoptSessionOutcome.Moved(session.Name, TabClosed: true);
     }

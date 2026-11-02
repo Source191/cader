@@ -31,9 +31,9 @@ public sealed class FakeProcessRegistry : IProcessRegistry
     }
 
     /// <summary>Declares what a process uses; one declared in the tree but not here reads as refusing the query.</summary>
-    public FakeProcessRegistry Using(int processId, DateTimeOffset startedAt, MemorySize privateMemory, string commandLine = "")
+    public FakeProcessRegistry Using(int processId, DateTimeOffset startedAt, MemorySize privateMemory, string label = "")
     {
-        usage[processId] = new ProcessUsage(startedAt, privateMemory, commandLine);
+        usage[processId] = new ProcessUsage(startedAt, privateMemory, label);
         return this;
     }
 
@@ -49,10 +49,12 @@ public sealed class FakeProcessRegistry : IProcessRegistry
         return running.TryGetValue(processId, out DateTimeOffset startedAt) ? startedAt : null;
     }
 
-    public void Terminate(int processId)
+    public void Terminate(ConfirmedProcess process)
     {
-        Terminated.Add(processId);
-        running.Remove(processId);
+        ArgumentNullException.ThrowIfNull(process);
+
+        Terminated.Add(process.Id);
+        running.Remove(process.Id);
     }
 
     public ProcessParent? ParentOf(int processId)
@@ -68,11 +70,13 @@ public sealed class FakeProcessRegistry : IProcessRegistry
     /// <summary>Called as each process is ended cleanly, so a test can put it in order with other fakes' records.</summary>
     public Action<int> OnEndCleanly { get; set; } = _ => { };
 
-    public void EndCleanly(int processId)
+    public void EndCleanly(ConfirmedProcess process)
     {
-        EndedCleanly.Add(processId);
-        OnEndCleanly(processId);
-        running.Remove(processId);
+        ArgumentNullException.ThrowIfNull(process);
+
+        EndedCleanly.Add(process.Id);
+        OnEndCleanly(process.Id);
+        running.Remove(process.Id);
     }
 
     public IReadOnlyList<ProcessFacts> Snapshot()

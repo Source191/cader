@@ -16,18 +16,19 @@ public sealed record MemoryBreakdown(ListedName SessionName, MemorySize ClaudeCo
         IReadOnlyList<MemoryShare> programs =
         [
             .. tree.Children
-                .Select(child => new MemoryShare(ProgramLabel.From(child.Process.Name, CommandLineOf(child.Usage)), child.Total))
+                .Select(child => new MemoryShare(LabelOf(child), child.Total))
                 .OrderByDescending(share => share.Memory),
         ];
 
         return new MemoryBreakdown(sessionName, tree.Own, programs, tree.Total, tree.Count);
     }
 
-    /// <summary>The command line a program is labelled from; empty for one that refused to be measured, so it is labelled by its name alone.</summary>
-    private static string CommandLineOf(ProcessMeasure measure) => measure switch
+    /// <summary>The label the adapter made from a measured program's command line; a program that refused to be measured, or whose label is empty, is labelled by its name alone.</summary>
+    private static string LabelOf(ProcessTree child) => child.Usage switch
     {
-        ProcessMeasure.Measured measured => measured.Usage.CommandLine,
-        ProcessMeasure.Unmeasured => string.Empty,
+        ProcessMeasure.Measured { Usage.Label.Length: > 0 } measured => measured.Usage.Label,
+        ProcessMeasure.Measured => ProgramLabel.From(child.Process.Name, string.Empty),
+        ProcessMeasure.Unmeasured => ProgramLabel.From(child.Process.Name, string.Empty),
         _ => throw new UnreachableException(),
     };
 }

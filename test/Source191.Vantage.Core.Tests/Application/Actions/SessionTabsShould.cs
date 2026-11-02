@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Domain;
 using Source191.Vantage.TestDoubles;
@@ -13,7 +12,7 @@ public sealed class SessionTabsShould
     private readonly InMemoryState store = new();
     private readonly FakeProcessRegistry processes = new FakeProcessRegistry().Running(4000, Noon.AddMinutes(-5)).Running(4100, Noon.AddMinutes(-2));
 
-    private SessionTabs Tabs => new(store, processes, new FakeTimeProvider(Noon));
+    private SessionTabs Tabs => new(store, processes);
 
     [Fact]
     public async Task EndEveryLiveShellAndForgetTheRegistrations()

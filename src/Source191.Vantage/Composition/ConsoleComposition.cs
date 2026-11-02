@@ -91,7 +91,7 @@ internal static class ConsoleComposition
         SharedParts parts, LaunchParts launch, CurrentSettings settings, Folders folders, UpdateCheck updates, Started start)
     {
         ProblemReports reports = new(parts.Log, parts.Counts.Processes, parts.CrashFile, start, settings, TimeProvider.System);
-        SessionTabs sessionTabs = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
+        SessionTabs sessionTabs = new(parts.Store, parts.ProcessRegistry);
         DeleteSessionHandler deleteSession = new(launch.Claude, launch.Git, parts.Store, sessionTabs, folders, settings);
         RemoveWorktreeHandler removeWorktree = new(launch.Git, parts.Store, folders, settings);
         RepositoryCatalogue repositories = new(folders, settings);
