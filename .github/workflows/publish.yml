@@ -4,7 +4,9 @@ name: publish
 # already attached to a GitHub Release to nuget.org, so what is published is exactly what was
 # built, tested and released from main. It never builds. nuget.org versions cannot be replaced
 # (only unlisted), which is why this is not part of release.yml: that publishes a GitHub Release on
-# every merge that raises Version, before anyone has tried the package by hand.
+# every merge that raises Version, before anyone has tried the package by hand. Vantage is now installed with winget, so
+# this is kept for one run: the release that moves dotnet tool users to winget (MAINTAINING.md, Moving nuget.org users
+# to winget). A later change removes it with the nupkg.
 #
 # No API key is stored. NuGet/login exchanges this run's GitHub identity for a short-lived key
 # through a Trusted Publishing policy on nuget.org (owner Source191, repository vantage, workflow

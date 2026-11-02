@@ -1,8 +1,9 @@
 name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
-  project against that build, checks whitespace formatting, and packs the dotnet tool. Shared by
-  check.yml and release.yml so the release never ships a build that the check did not see.
+  project against that build, checks whitespace formatting, packs the dotnet tool (kept only for the
+  release that moves nuget.org users to winget), and publishes and zips the self-contained winget
+  build. Shared by check.yml and release.yml so the release never ships a build that the check did not see.
 
 inputs:
   version-suffix:
@@ -20,6 +21,9 @@ outputs:
   package:
     description: Path of the single .nupkg written to artifacts/packages.
     value: ${{ steps.meta.outputs.package }}
+  zip:
+    description: Path of the winget build's zip, vantage_<version>_win-x64.zip, written to artifacts/winget.
+    value: ${{ steps.zip.outputs.zip }}
 
 runs:
   using: composite
@@ -86,3 +90,26 @@ runs:
         "version=$version" >> $env:GITHUB_OUTPUT
         "package=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
         Write-Host "Packed $($packages[0].Name) (version $version)"
+
+    # The self-contained single-file build winget installs (src\Source191.Vantage\README.md, The winget build). It builds
+    # the tool again for win-x64, so warnings are still errors; the assembly keeps the csproj Version, as the nupkg's does.
+    - name: Publish the winget build
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        if (Test-Path artifacts\publish) { Remove-Item -Recurse -Force artifacts\publish }
+        dotnet publish src\Source191.Vantage -p:PublishProfile=win-x64
+        exit $LASTEXITCODE
+
+    # Named with the packed version, so a check run's zip (-ci.<run>) never looks like a release's.
+    - name: Zip the winget build
+      id: zip
+      shell: pwsh
+      env:
+        VERSION: ${{ steps.meta.outputs.version }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $zip = Join-Path (Get-Location) "artifacts\winget\vantage_$($env:VERSION)_win-x64.zip"
+        .github/scripts/Compress-WingetBuild.ps1 -PublishFolder artifacts\publish -Destination $zip
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        "zip=$zip" >> $env:GITHUB_OUTPUT

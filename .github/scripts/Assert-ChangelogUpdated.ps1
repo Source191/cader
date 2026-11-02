@@ -7,8 +7,8 @@
 .DESCRIPTION
     Compares two commits, as Assert-VersionBumped.ps1 does: check.yml passes the two parents of a pull request's merge
     ref, so Base is the tip of the base branch and Head is what that branch would become. Run it locally with any two
-    refs, for example -Base main -Head HEAD. The changelog is packed as the package's release notes, which nuget.org
-    limits to 35,000 characters (https://learn.microsoft.com/nuget/reference/nuspec#releasenotes). Exit code 0 means
+    refs, for example -Base main -Head HEAD. While the nupkg is still packed (for the release that moves dotnet tool users to winget), the changelog is its release notes, which nuget.org
+    limits to 35,000 characters (https://learn.microsoft.com/nuget/reference/nuspec#releasenotes); the limit goes with the nupkg. Exit code 0 means
     the changelog is as it should be; 1 means an entry, a version's section or a shorter changelog is needed.
 
 .EXAMPLE
@@ -60,7 +60,7 @@ $failures = [System.Collections.Generic.List[string]]::new()
 $text = Read-Changelog $Head
 
 if ($null -ne $text -and $text.TrimEnd().Length -ge $limit) {
-    $failures.Add("$changelog is $($text.TrimEnd().Length) characters; nuget.org keeps at most $limit as release notes. Move the oldest sections to docs\CHANGELOG-earlier.md.")
+    $failures.Add("$changelog is $($text.TrimEnd().Length) characters; nuget.org keeps at most $limit as release notes, which matters only while the nupkg is still packed for the move to winget. Move the oldest sections to docs\CHANGELOG-earlier.md.")
 }
 
 $changed = Get-ChangedToolPath $Base $Head
