@@ -87,6 +87,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Internal
 
+- Every process read opens one limited handle, a process is ended only as a ConfirmedProcess its three checks mint, and a command line never leaves ProcessRegistry.UsageOf (#N)
 - A session's listed name is a typed value, named or unnamed, decided once as the listing is parsed, and the Claude CLI port has one resume method (#195)
 - TableBody's column sizing, tooltips and detail reading each in a class of their own, one middle ellipsis in TextFit, IScreenDefinition slimmed to a Tab and a TabRefresh, and the key bar's removed labels disposed (#194)
 - Each view state holds its ListSelection directly; SelectionKey and the With copies are gone (#193)
