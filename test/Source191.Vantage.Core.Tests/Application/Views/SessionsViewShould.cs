@@ -120,7 +120,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
         committed.List.FilterEditing.ShouldBeFalse();
-        committed.VisibleRows.Count.ShouldBe(2);
+        committed.VisibleRows.Count.ShouldBe(3);
 
         SessionsViewState cleared = Press(committed, Key.Escape);
         cleared.VisibleRows.Count.ShouldBe(4);
