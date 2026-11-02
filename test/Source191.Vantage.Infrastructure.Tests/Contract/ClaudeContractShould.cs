@@ -69,12 +69,7 @@ public sealed class ClaudeContractShould
         string jobId = await StartAsync(cli, name);
         try
         {
-            await ListedAsync(cli, name);
-            ProcessResult listing = await runner.RunAsync(new ProcessRequest(executable, ["agents", "--json", "--all"], WorkingFolder.Inherit), Cancellation);
-            using JsonDocument rows = JsonDocument.Parse(listing.StandardOutput);
-
-            JsonElement row = rows.RootElement.EnumerateArray().Single(element => element.TryGetProperty("name", out JsonElement value) && value.GetString() == name.Value);
-            string[] present = [.. row.EnumerateObject().Select(property => property.Name)];
+            string[] present = await FieldsOfSettledRowAsync(executable, name);
 
             FieldsVantageReads.Except(present).ShouldBeEmpty($"the row has [{string.Join(", ", present)}]");
         }
@@ -243,6 +238,31 @@ public sealed class ClaudeContractShould
     {
         StartResult started = await cli.StartBackgroundAsync(RepositoryFolder.Root(), name, new OpeningPrompt.None(), Cancellation);
         return started.ShouldBeOfType<StartResult.Started>(started.Message).JobId.Value;
+    }
+
+    /// <summary>
+    /// The field names of the started job's row once it has them all, or of its last row at the deadline. A job is listed
+    /// first without a pid or status (seen 2026-11-02, CLI 2.1.316, on a runner) and gains them as the supervisor starts it.
+    /// </summary>
+    private async Task<string[]> FieldsOfSettledRowAsync(string executable, SessionName name)
+    {
+        DateTimeOffset deadline = TimeProvider.System.GetUtcNow() + ListingDeadline;
+        string[] present = [];
+        while (TimeProvider.System.GetUtcNow() < deadline)
+        {
+            ProcessResult listing = await runner.RunAsync(new ProcessRequest(executable, ["agents", "--json", "--all"], WorkingFolder.Inherit), Cancellation);
+            using JsonDocument rows = JsonDocument.Parse(listing.StandardOutput);
+            JsonElement? row = rows.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(element => element!.Value.TryGetProperty("name", out JsonElement value) && value.GetString() == name.Value);
+            present = row is JsonElement found ? [.. found.EnumerateObject().Select(property => property.Name)] : [];
+            if (!FieldsVantageReads.Except(present).Any())
+            {
+                return present;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1), Cancellation);
+        }
+
+        return present;
     }
 
     /// <summary>The started session as the listing shows it; the supervisor can take a few seconds to list a new job.</summary>
