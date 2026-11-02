@@ -8,6 +8,26 @@ public sealed class WordingOfKeysAndColumnsShould
     private static readonly string[] TabKeys = ["← ", "→ ", "< ", "> "];
 
     [Fact]
+    public void NameEachColumnOnce()
+    {
+        ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AgeColumn];
+        ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.LastCommitColumn, Wording.SessionColumn];
+        ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
+
+        AreTheSameInstances(Wording.SessionsColumns, sessions);
+        AreTheSameInstances(Wording.WorktreesColumns, worktrees);
+        AreTheSameInstances(Wording.ConfigColumns, config);
+    }
+
+    private static void AreTheSameInstances(IReadOnlyList<ColumnHelp> listed, ColumnHelp[] named)
+    {
+        listed.Count.ShouldBe(named.Length);
+        for (int index = 0; index < named.Length; index++)
+        {
+            listed[index].ShouldBeSameAs(named[index]);
+        }
+    }
+    [Fact]
     public void ListEveryKeyOnceWithItsHintAndLine()
     {
         Wording.SessionsKeys.Select(key => $"{key.Key} {key.Hint}").ShouldBe(
