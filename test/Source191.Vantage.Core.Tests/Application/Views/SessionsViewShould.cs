@@ -155,38 +155,31 @@ public sealed class SessionsViewShould
         update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
     }
 
-    [Fact]
-    public void RefuseToStopOrRenameAnInteractiveRow()
+    [Theory]
+    [InlineData('x')]
+    [InlineData('r')]
+    public void RefuseToStopOrRenameAnInteractiveRow(char key)
     {
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
         onInteractive.Selected.ShouldBe(Interactive);
 
-        foreach (char key in new[] { 'x', 'r' })
-        {
-            ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
+        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
 
-            update.Effects.ShouldBeEmpty();
-            update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
-        }
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
     }
 
     [Theory]
-    [InlineData('x')]
-    [InlineData('d')]
-    [InlineData('r')]
-    [InlineData('b')]
-    public void SayNoSessionIsSelectedOnAnEmptyTable(char key)
+    [InlineData("Enter")]
+    [InlineData("x")]
+    [InlineData("d")]
+    [InlineData("r")]
+    [InlineData("b")]
+    public void SayNoSessionIsSelectedOnARowKeyOnAnEmptyTable(string key)
     {
-        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Of(key)));
+        Key pressed = key == "Enter" ? Key.Enter : Key.Of(key[0]);
 
-        update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
-    }
-
-    [Fact]
-    public void SayNoSessionIsSelectedOnEnterOnAnEmptyTable()
-    {
-        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Enter));
+        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(pressed));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
