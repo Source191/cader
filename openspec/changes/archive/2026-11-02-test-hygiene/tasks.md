@@ -48,7 +48,7 @@ Each task is one red-green-refactor cycle or smaller, with a commit per step; th
 
 ## 8. Whole-solution check
 
-- [ ] 8.1 `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate test-hygiene --strict` all pass; `grep -rn "Task.Delay" test --include=*.cs` shows only `ClaudeContractShould` and `DesktopShould.WaitForAsync`. Record the totals here.
+- [x] 8.1 `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate test-hygiene --strict` all pass; `grep -rn "Task.Delay" test --include=*.cs` shows only `ClaudeContractShould` and `DesktopShould.WaitForAsync`. Totals (2 Nov 2026): build 0 warnings, 0 errors; 2868 tests, 0 failed, 2859 passed, 9 skipped (contract tests); `dotnet format --verify-no-changes` clean; `openspec validate --all --strict` 20 passed; `Task.Delay` only in `ClaudeContractShould` and `DesktopShould`.
 
 ## Workflow follow-up
 
