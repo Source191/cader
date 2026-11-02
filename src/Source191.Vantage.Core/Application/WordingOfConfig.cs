@@ -170,7 +170,7 @@ public static partial class Wording
     {
         DateTimeOffset at = TimeZoneInfo.ConvertTime(when, zone);
 
-        return at.Date == TimeZoneInfo.ConvertTime(now, zone).Date
+        return IsToday(at, now, zone)
             ? at.ToString("HH:mm 'today'", CultureInfo.InvariantCulture)
             : at.ToString("d MMMM yyyy HH:mm", CultureInfo.InvariantCulture);
     }

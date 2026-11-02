@@ -26,7 +26,7 @@ public static partial class Wording
         int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading));
         int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp });
 
-        return [new TextPart(Counted(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];
+        return [new TextPart(Count(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];
     }
 
     /// <summary>The Config tab's key bar: edit, then Update when a release is known; the folder and view keys below.</summary>

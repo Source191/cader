@@ -188,6 +188,6 @@ public static partial class Wording
     {
         DateTimeOffset local = TimeZoneInfo.ConvertTime(at, zone);
 
-        return local.Date == TimeZoneInfo.ConvertTime(now, zone).Date ? local.ToString("HH:mm", CultureInfo.InvariantCulture) : local.ToString("d MMM HH:mm", CultureInfo.InvariantCulture);
+        return IsToday(local, now, zone) ? local.ToString("HH:mm", CultureInfo.InvariantCulture) : local.ToString("d MMM HH:mm", CultureInfo.InvariantCulture);
     }
 }

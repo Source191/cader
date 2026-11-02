@@ -325,17 +325,7 @@ public static partial class Wording
 
     private static string Count(int number, string noun) => number == 1 ? $"1 {noun}" : $"{number} {noun}s";
 
-    private static string EditorName(EditorChoice editor)
-    {
-        return editor.Preset switch
-        {
-            EditorPreset.VsCode => "VS Code",
-            EditorPreset.VisualStudio => "Visual Studio",
-            EditorPreset.Rider => "Rider",
-            EditorPreset.Explorer => "Explorer",
-            EditorPreset.Custom => Path.GetFileNameWithoutExtension(editor.Executable),
-        };
-    }
+    private static string EditorName(EditorChoice editor) => editor.Preset == EditorPreset.Custom ? Path.GetFileNameWithoutExtension(editor.Executable) : Describe(editor.Preset);
 
     /// <summary>How a delete sentence opens: the session deleted, and its tab closed when there was one.</summary>
     private static string Gone(DeleteSessionOutcome outcome, string name) => outcome.TabClosed ? $"Deleted {name} and closed its tab" : $"Deleted {name}";

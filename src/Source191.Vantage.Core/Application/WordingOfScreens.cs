@@ -72,15 +72,14 @@ public static partial class Wording
 
         if (string.IsNullOrWhiteSpace(title.Filter))
         {
-            return $"{Counted(title.Shown, title.Noun)}{selection}";
+            return $"{Count(title.Shown, title.Noun)}{selection}";
         }
 
         string verb = title.Total == 1 ? "matches" : "match";
 
-        return $"{title.Shown} of {Counted(title.Total, title.Noun)} {verb} \"{title.Filter}\"{selection}";
+        return $"{title.Shown} of {Count(title.Total, title.Noun)} {verb} \"{title.Filter}\"{selection}";
     }
 
-    private static string Counted(int count, string noun) => count == 1 ? $"{count} {noun}" : $"{count} {noun}s";
 
     /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>
     private static readonly KeyHelp[] TabKeyHelp =

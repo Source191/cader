@@ -71,6 +71,9 @@ public static partial class Wording
     public static string ProblemReportPreviewCaption => "Diagnostics the page will be filled in with";
 
     /// <summary>The problem report dialog's buttons, in order: open (the default), copy, cancel.</summary>
+    /// <summary>Whether a moment falls on the same local date as now in the zone.</summary>
+    private static bool IsToday(DateTimeOffset at, DateTimeOffset now, TimeZoneInfo zone) => TimeZoneInfo.ConvertTime(at, zone).Date == TimeZoneInfo.ConvertTime(now, zone).Date;
+
     public static string KeysTitle => "Keys";
 
     public static string DeleteBranchTitle => "Delete branch";
