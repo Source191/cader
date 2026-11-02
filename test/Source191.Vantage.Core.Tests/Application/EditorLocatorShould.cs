@@ -147,7 +147,6 @@ public sealed class EditorLocatorShould
         (await Locate(folders, EditorPreset.Rider)).ShouldBe(new ProgramLocation.Found(@"C:\Users\me\AppData\Local\JetBrains\Toolbox\apps\Rider\ch-0\253.100\bin\rider64.exe"));
     }
 
-
     [Fact]
     public async Task AnswerExplorerFromTheWindowsFolder()
     {

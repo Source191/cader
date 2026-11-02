@@ -6,7 +6,6 @@ public sealed class EditorChoiceShould
 {
     private static readonly Func<string, bool> Installed = path => path == @"C:\Tools\subl.exe";
 
-
     [Fact]
     public void OfferVisualStudioInPlaceOfCursor()
     {

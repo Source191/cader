@@ -387,7 +387,6 @@ public sealed class WorktreesViewShould
         update.State.Message.ShouldBe(new StatusMessage.NoWorktreeSelected());
     }
 
-
     private static WorktreesViewState At(WorktreeRow row) => At(Loaded, row);
 
     private static WorktreesViewState At(WorktreesViewState state, WorktreeRow row) => state with { List = state.List.Select(row.Path.Key) };

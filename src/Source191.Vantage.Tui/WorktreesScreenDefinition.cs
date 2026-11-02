@@ -15,7 +15,6 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public TableDetail<WorktreeRow> Detail => new TableDetail<WorktreeRow>.Pane(detail);
 
-
     public string WaitingText => Wording.WaitingText(ConsoleTab.Worktrees);
 
     public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Worktrees);

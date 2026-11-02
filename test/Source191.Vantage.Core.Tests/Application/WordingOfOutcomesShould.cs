@@ -91,7 +91,6 @@ public sealed class WordingOfOutcomesShould
         Wording.Describe(new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: true)).ShouldBe("Stopped fix-123 and closed its tab.");
     }
 
-
     [Fact]
     public void SayThereIsNothingToMoveWithoutMessages()
     {
@@ -440,7 +439,6 @@ public sealed class WordingOfOutcomesShould
     }
     // Tabs and starting.
 
-
     [Fact]
     public void NameTheColourOfTheNewTab()
     {
@@ -466,7 +464,6 @@ public sealed class WordingOfOutcomesShould
         Wording.Describe(new OpenTabOutcome.NotFound(Listed.As("Refund retry policy")))
             .ShouldBe("Refund retry policy is open in another tab, but Vantage could not find it. Is it in another window?");
     }
-
 
     [Fact]
     public void SayASessionStartedAndWhereItsTabOpened()

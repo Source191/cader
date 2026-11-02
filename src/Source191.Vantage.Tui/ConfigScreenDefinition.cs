@@ -16,7 +16,6 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
     /// <summary>What the setting does or the setup is for, shown only as the row's tooltip.</summary>
     public string RowTip(ConfigRow row) => Wording.ConfigDescription(row);
 
-
     public string WaitingText => Wording.WaitingText(ConsoleTab.Config);
 
     public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Config);

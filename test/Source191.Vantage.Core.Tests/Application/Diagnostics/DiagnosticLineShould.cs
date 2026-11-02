@@ -63,7 +63,6 @@ public sealed class DiagnosticLineShould
         Body(ran).ShouldBe("effect StopSession -> StopSessionOutcome in 412 ms");
     }
 
-
     [Fact]
     public void RenderAFailureWithWhatFailed()
     {

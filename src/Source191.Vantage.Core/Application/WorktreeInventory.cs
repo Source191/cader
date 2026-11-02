@@ -234,7 +234,6 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     /// <summary>Whether the registration a folder's .git file points at still exists; never names an owner.</summary>
     private GitPointer TargetOf(FolderPath folder) => TryGitDirOf(folder, out FolderPath? gitDir) && folders.DirectoryExists(gitDir.Value) ? new GitPointer.TargetExists() : new GitPointer.TargetGone();
 
-
     private bool IsEmptyLeftover(FolderPath folder)
     {
         bool leftoverName = folder.Name.EndsWith(".worktrees", StringComparison.OrdinalIgnoreCase);

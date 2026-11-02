@@ -33,7 +33,6 @@ internal interface IScreenDefinition<TState, TRow>
 
     Color RowColour(TRow row);
 
-
     /// <summary>The counts beside the tab's title.</summary>
     IReadOnlyList<TextPart> Counts(TState state);
 

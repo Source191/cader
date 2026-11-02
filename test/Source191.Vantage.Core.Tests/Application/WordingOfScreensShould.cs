@@ -178,7 +178,6 @@ public sealed class WordingOfScreensShould
         Wording.Describe(new TableTitle("session", Shown: 1, Total: 1, Filter: "fix", Selected: "fix-123")).ShouldBe("1 of 1 session matches \"fix\", selected: fix-123");
     }
 
-
     [Fact]
     public void CountSessionsByStateNeedsInputFirst()
     {
@@ -234,7 +233,6 @@ public sealed class WordingOfScreensShould
         ]);
         Wording.WorktreeCounts([WorktreeIn(WorktreeHealthKind.Ok, 0)]).ShouldBe([new TextPart("1 ok", TextTone.Plain)]);
     }
-
 
     private static WorktreeRow WorktreeIn(WorktreeHealthKind health, int index, int dirty = 0, int unpushed = 0)
     {

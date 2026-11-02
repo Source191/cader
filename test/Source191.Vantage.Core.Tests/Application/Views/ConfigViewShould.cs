@@ -118,7 +118,6 @@ public sealed class ConfigViewShould
         update.State.Message.ShouldBe(new StatusMessage.NoPathHere());
     }
 
-
     [Fact]
     public void ChooseATabWithTheTabKeys()
     {

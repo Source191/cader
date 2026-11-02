@@ -28,7 +28,6 @@ public sealed class SessionNameShould
         SessionName.Validate("Fix #123: flaky tests!").ShouldBeOfType<SessionNameValidation.Valid>().Name.Value.ShouldBe("Fix #123: flaky tests!");
     }
 
-
     [Theory]
     [InlineData(null)]
     [InlineData("   ")]
