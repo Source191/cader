@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Application;
+using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Detail;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
@@ -22,7 +23,7 @@ public sealed class WorktreesScreenDefinitionShould
     {
         FakeTimeProvider clock = new(Noon);
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
-        DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock));
+        DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(TimeProvider.System, []));
         FolderLabels folders = new(() => [FolderPath.From(@"C:\Users\me\source\repos")], FolderPath.From(@"C:\Users\me"));
         definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock));
     }

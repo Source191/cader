@@ -2,6 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Detail;
+using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
@@ -21,7 +22,14 @@ public sealed class DetailLoaderShould
     private readonly InMemoryState state = new();
     private readonly FakeTimeProvider clock = new(Noon);
 
-    private DetailLoader Loader(SessionActivity? activity = null) => new(new GitCli(processes, "git"), state, activity ?? new SessionActivity(clock));
+    private readonly DiagnosticLog log;
+
+    public DetailLoaderShould()
+    {
+        log = new DiagnosticLog(clock, []);
+    }
+
+    private DetailLoader Loader(SessionActivity? activity = null) => new(new GitCli(processes, "git"), state, activity ?? new SessionActivity(clock), log);
 
     [Fact]
     public async Task FillASessionsDetail()
@@ -64,6 +72,23 @@ public sealed class DetailLoaderShould
 
         detail.Counts.ShouldBeOfType<DetailFact<WorktreeCounts>.Unavailable>();
         detail.Row.ShouldBe(row);
+    }
+
+    [Fact]
+    public async Task RecordAFailedReadOnceAndAnswerUnavailable()
+    {
+        processes.Answer(request => request.Arguments.Contains("status"), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+        SessionRow row = Row(process: new JobProcess.Running(4242));
+        DetailLoader loader = Loader();
+
+        SessionDetail first = await loader.SessionAsync(row, CancellationToken.None);
+        SessionDetail second = await loader.SessionAsync(row, CancellationToken.None);
+
+        first.Counts.ShouldBeOfType<DetailFact<WorktreeCounts>.Unavailable>();
+        second.Counts.ShouldBeOfType<DetailFact<WorktreeCounts>.Unavailable>();
+        Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+        failed.Site.ShouldBe(FailureSite.Load);
+        failed.What.ShouldBe(CodeName.For(typeof(DetailLoader)));
     }
 
     [Fact]

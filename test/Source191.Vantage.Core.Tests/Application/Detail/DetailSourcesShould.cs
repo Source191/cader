@@ -2,6 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Detail;
+using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
@@ -81,5 +82,5 @@ public sealed class DetailSourcesShould
 
     private DetailLoader Loader() => Loader(new InMemoryState(), clock);
 
-    private DetailLoader Loader(InMemoryState state, TimeProvider time) => new(new GitCli(processes, "git"), state, new SessionActivity(time));
+    private DetailLoader Loader(InMemoryState state, TimeProvider time) => new(new GitCli(processes, "git"), state, new SessionActivity(time), new DiagnosticLog(time, []));
 }

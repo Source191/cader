@@ -142,7 +142,7 @@ internal static class ConsoleComposition
     {
         StateTransitionNotifier notifier = new(Console.Out);
         SessionActivity activity = new(TimeProvider.System);
-        DetailLoader details = new(launch.Git, parts.Store, activity);
+        DetailLoader details = new(launch.Git, parts.Store, activity, parts.Log);
         RunningLoads listings = new();
         RunningLoads scans = new();
         Func<CancellationToken, Task<ViewInput>> scanWorktrees = scans.Track<ViewInput>(loads.ScanWorktreesAsync);
