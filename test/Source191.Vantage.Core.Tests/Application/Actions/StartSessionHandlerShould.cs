@@ -104,4 +104,15 @@ public sealed class StartSessionHandlerShould
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("worktree"));
         outcome.ShouldBeOfType<StartSessionOutcome.StartedAndOpened>().Name.ShouldBe("Fix flaky tests");
     }
+
+    [Fact]
+    public async Task PropagateARefusedTrustTab()
+    {
+        processes.Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(1, string.Empty, "Workspace not trusted. Run `claude` once and accept the trust prompt, then retry."));
+        terminal.FailTheOpenWith = new TerminalException("wt refused");
+
+        await Should.ThrowAsync<TerminalException>(() => Handler.HandleAsync(new StartSession(Plan), CancellationToken.None));
+
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("--bg"));
+    }
 }

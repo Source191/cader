@@ -185,4 +185,15 @@ public sealed class OpenTabHandlerShould
         TabRegistration claimed = (await Store.ReadTabsAsync()).Single();
         claimed.Claim.ShouldBe(new TabClaim.Claimed(4242, Noon.AddSeconds(2)));
     }
+
+    [Fact]
+    public async Task LeaveThePendingRegistrationWhenTheTerminalRefusesTheTab()
+    {
+        terminal.FailTheOpenWith = new TerminalException("wt refused");
+
+        await Should.ThrowAsync<TerminalException>(() => Handler.OpenAsync(Job(), CancellationToken.None));
+
+        (await Store.ReadTabsAsync()).Single().Claim.ShouldBe(new TabClaim.Pending());
+        terminal.Opened.ShouldBeEmpty();
+    }
 }
