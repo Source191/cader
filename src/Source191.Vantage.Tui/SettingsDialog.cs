@@ -167,8 +167,8 @@ internal static class SettingsDialog
             dialog.AddButton(browse);
         }
 
-        dialog.AddButton(WizardControls.Button("_Save (F5)", Save));
-        dialog.AddButton(WizardControls.Button("_Cancel (Esc)", () => Apply(new SettingsInput.Cancel())));
+        dialog.AddButton(WizardControls.Button(Wording.SaveButton, Save));
+        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new SettingsInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
         if (scope is SettingsScope.Editor)
         {

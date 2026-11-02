@@ -20,7 +20,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
     /// <summary>One flow per dialog effect, keyed by the effect's type; <see cref="Handles"/> lets <c>DialogEffectsShould</c> check the set is complete.</summary>
     private static readonly FrozenDictionary<Type, Action<DialogEffects, IEffectContext, ViewEffect>> Flows = new Dictionary<Type, Action<DialogEffects, IEffectContext, ViewEffect>>
     {
-        [typeof(ShowHelp)] = (_, context, _) => HelpDialog.Show(context.App, context.Diagnostics, "Keys", context.HelpText),
+        [typeof(ShowHelp)] = (_, context, _) => HelpDialog.Show(context.App, context.Diagnostics, Wording.KeysTitle, context.HelpText),
         [typeof(OpenLaunchWizard)] = (self, context, _) => self.StartSession(context, new WizardOrigin.Anywhere()),
         [typeof(StartSessionIn)] = (self, context, effect) => self.StartSession(context, WizardOrigin.In(((StartSessionIn)effect).Row.Path)),
         [typeof(AskForNewName)] = (_, context, effect) => Rename(context, ((AskForNewName)effect).Session),
@@ -52,7 +52,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
     /// <summary>Back on the UI thread after a removal: ask about the branch it left, and delete it on a yes.</summary>
     private static StatusMessage AskAboutBranch(IEffectContext context, Outcome removal, BranchToConfirm branch, bool createdByVantage)
     {
-        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteBranch, "Delete branch", Wording.DeleteBranchQuestion(branch.Branch.Value, createdByVantage), "Delete branch", "Keep"))
+        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteBranch, Wording.DeleteBranchTitle, Wording.DeleteBranchQuestion(branch.Branch.Value, createdByVantage), [.. Wording.DeleteBranchButtons]))
         {
             return new StatusMessage.BranchKept(removal);
         }
@@ -65,7 +65,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
 
     private static void Rename(IEffectContext context, BackgroundSession session)
     {
-        ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, "Rename session", Wording.RenamePrompt(session.Name), session.Name) switch
+        ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, Wording.RenameTitle, Wording.RenamePrompt(session.Name), session.Name) switch
         {
             TypedAnswer.Typed typed => new RenameConfirmed(session, typed.Text),
             TypedAnswer.Cancelled => new RenameCancelled(session),
@@ -77,7 +77,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
     private static void ConfirmCloseEmpty(IEffectContext context, CloseEmptyTerminals close)
     {
         string question = Wording.CloseEmptyQuestion([.. close.Sessions.Select(session => session.Name)]);
-        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.CloseEmpty, "Close empty terminal sessions", question, "Close", "Keep"))
+        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.CloseEmpty, Wording.CloseEmptyTitle, question, [.. Wording.CloseEmptyButtons]))
         {
             context.ShowMessage(new StatusMessage.Kept());
             return;
@@ -92,7 +92,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
             context.App,
             context.Diagnostics,
             DialogName.ForceRemove,
-            "Force remove",
+            Wording.ForceRemoveTitle,
             Wording.ForceRemoveWarning,
             confirm.ConfirmationText);
         ViewInput answered = answer switch
@@ -171,7 +171,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
     private void ConfirmDelete(IEffectContext context, DeleteSession deletion)
     {
         BackgroundSession session = deletion.Session;
-        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteSession, "Delete session", Wording.DeleteSessionQuestion(session.Name), "Delete", "Cancel"))
+        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteSession, Wording.DeleteSessionTitle, Wording.DeleteSessionQuestion(session.Name), [.. Wording.DeleteButtons]))
         {
             return;
         }

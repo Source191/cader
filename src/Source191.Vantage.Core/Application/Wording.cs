@@ -71,6 +71,36 @@ public static partial class Wording
     public static string ProblemReportPreviewCaption => "Diagnostics the page will be filled in with";
 
     /// <summary>The problem report dialog's buttons, in order: open (the default), copy, cancel.</summary>
+    public static string KeysTitle => "Keys";
+
+    public static string DeleteBranchTitle => "Delete branch";
+
+    /// <summary>The delete-branch question's buttons, confirm first; the dialog marks each one's hotkey.</summary>
+    public static IReadOnlyList<string> DeleteBranchButtons { get; } = ["Delete branch", "Keep"];
+
+    public static string RenameTitle => "Rename session";
+
+    public static string CloseEmptyTitle => "Close empty terminal sessions";
+
+    public static IReadOnlyList<string> CloseEmptyButtons { get; } = ["Close", "Keep"];
+
+    public static string ForceRemoveTitle => "Force remove";
+
+    public static string DeleteSessionTitle => "Delete session";
+
+    public static IReadOnlyList<string> DeleteButtons { get; } = ["Delete", "Cancel"];
+
+    /// <summary>A dialog's Cancel button with its hotkey marked; Esc is not named because the dialog has no key bar.</summary>
+    public static string CancelButton => "_Cancel";
+
+    public static string CancelWithEscButton => "_Cancel (Esc)";
+
+    public static string CopyNameButton => "Cop_y name (F2)";
+
+    public static string StartButton => "_Start (F5)";
+
+    public static string SaveButton => "_Save (F5)";
+
     public static IReadOnlyList<string> ProblemReportButtons { get; } = ["Open in browser", "Copy text", "Cancel"];
 
     /// <summary>The title of a report whose title box was left blank.</summary>

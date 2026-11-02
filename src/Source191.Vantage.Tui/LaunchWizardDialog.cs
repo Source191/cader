@@ -112,8 +112,8 @@ internal static class LaunchWizardDialog
         dialog.Accepting += (_, accepting) => accepting.Handled = true;
         dialog.KeyDown += (_, key) => key.Handled = key == GuiKey.F5 && WizardControls.Handled(Start);
         // No default button: Enter never starts anything by itself. F5 and the Start button do, and both open the session's tab.
-        dialog.AddButton(WizardControls.Button("_Start (F5)", Start));
-        dialog.AddButton(WizardControls.Button("_Cancel (Esc)", () => Apply(new WizardInput.Cancel())));
+        dialog.AddButton(WizardControls.Button(Wording.StartButton, Start));
+        dialog.AddButton(WizardControls.Button(Wording.CancelWithEscButton, () => Apply(new WizardInput.Cancel())));
         dialog.Initialized += (_, _) => Push();
 
         app.Run(dialog);

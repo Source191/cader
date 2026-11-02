@@ -34,7 +34,7 @@ internal static class NameDialog
             answer = new TypedAnswer.Typed(input.Text);
             app.RequestStop(dialog);
         };
-        Button cancel = new() { Text = "_Cancel (Esc)" };
+        Button cancel = new() { Text = Wording.CancelWithEscButton };
         cancel.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;

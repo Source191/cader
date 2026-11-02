@@ -1056,4 +1056,23 @@ public sealed class WordingShould
         Wording.TrustTabMessage("Bob's tools").ShouldBe("Vantage: accept the trust prompt for Bob's tools, then exit Claude and press n in Vantage to retry.");
         Wording.UpdateTabTitle.ShouldBe("Update Vantage");
     }
+
+    [Fact]
+    public void NameEveryDialogAndItsButtons()
+    {
+        Wording.KeysTitle.ShouldBe("Keys");
+        Wording.DeleteBranchTitle.ShouldBe("Delete branch");
+        Wording.DeleteBranchButtons.ShouldBe(["Delete branch", "Keep"]);
+        Wording.RenameTitle.ShouldBe("Rename session");
+        Wording.CloseEmptyTitle.ShouldBe("Close empty terminal sessions");
+        Wording.CloseEmptyButtons.ShouldBe(["Close", "Keep"]);
+        Wording.ForceRemoveTitle.ShouldBe("Force remove");
+        Wording.DeleteSessionTitle.ShouldBe("Delete session");
+        Wording.DeleteButtons.ShouldBe(["Delete", "Cancel"]);
+        Wording.CancelButton.ShouldBe("_Cancel");
+        Wording.CancelWithEscButton.ShouldBe("_Cancel (Esc)");
+        Wording.CopyNameButton.ShouldBe("Cop_y name (F2)");
+        Wording.StartButton.ShouldBe("_Start (F5)");
+        Wording.SaveButton.ShouldBe("_Save (F5)");
+    }
 }

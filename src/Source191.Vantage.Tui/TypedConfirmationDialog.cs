@@ -75,14 +75,14 @@ internal static class TypedConfirmationDialog
                     : Wording.ClipboardUnavailable;
             }
         };
-        Button copy = new() { Text = "Cop_y name (F2)" };
+        Button copy = new() { Text = Wording.CopyNameButton };
         copy.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;
             dialog.NewKeyDownEvent(GuiKey.F2);
             input.SetFocus();
         };
-        Button cancel = new() { Text = "_Cancel (Esc)" };
+        Button cancel = new() { Text = Wording.CancelWithEscButton };
         cancel.Accepting += (_, accepting) =>
         {
             accepting.Handled = true;
