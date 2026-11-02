@@ -28,6 +28,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Changed
 
+- The Worktrees table's LAST COMMIT column is right-aligned, as AGE is on the Sessions tab, so the durations line up (#PR)
 - Removing a worktree on a detached head, or whose head git could not name, deletes no branch and asks about none; the folder's name no longer stands in for a branch (#186)
 - The update notice in the settings row is amber (#180)
 - The header is one grey settings row with Vantage's version and memory and Claude Code's version; the repository roots and worktree root moved to the Config tab, so every table gains rows (#117)

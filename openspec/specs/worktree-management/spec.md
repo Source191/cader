@@ -268,7 +268,7 @@ For a row with health elsewhere, the remove and force-remove keys SHALL refuse, 
 - **THEN** nothing is deleted and the status line says the repository is not under the roots, without offering force-remove
 
 ### Requirement: One WORKTREE column names the worktree
-The worktrees table SHALL show the repository and the folder in one WORKTREE column, as the repository, › and the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label), elastic in width and elided in the middle of the repository name when too long, followed by HEALTH, LAST COMMIT and SESSION.
+The worktrees table SHALL show the repository and the folder in one WORKTREE column, as the repository, › and the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label), elastic in width and elided in the middle of the repository name when too long, followed by HEALTH, LAST COMMIT and SESSION. LAST COMMIT SHALL be right-aligned, as AGE is on the Sessions tab, so its durations line up on their last character.
 
 #### Scenario: A worktree Vantage made
 - **WHEN** Northwind.Billing has the worktree C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf on branch invoice-pdf
@@ -289,6 +289,10 @@ The worktrees table SHALL show the repository and the folder in one WORKTREE col
 #### Scenario: The help names the column
 - **WHEN** the help is shown on the worktrees view
 - **THEN** it lists WORKTREE with its meaning, and the header shows the same words on hover
+
+#### Scenario: Last commits line up at the right
+- **WHEN** Northwind.Billing-invoice-pdf last committed five minutes ago, Northwind.Orders-fix-123 three days and four hours ago, and an empty leftover folder has no commit
+- **THEN** the LAST COMMIT cells 5m, 3d4h and - each end at the column's right edge, and the WORKTREE cells start at its left edge
 
 ### Requirement: A worktree of a repository outside the roots is elsewhere
 A folder directly under a root or under the worktree root whose .git file points at a folder that exists, and that no repository under the roots lists, SHALL be shown with health elsewhere, and its row SHALL name the repository the pointer leads to: the one holding the registration, a bare repository included, or the git directory itself when the pointer names no registration. A relative pointer SHALL be read from the .git file's own folder.
