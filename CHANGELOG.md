@@ -87,6 +87,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Internal
 
+- RemovalDecision, WorktreeObservation, Session and RemoteRepository are closed hierarchies with their cases nested, held by an Architecture fact for Domain and Ports (#198)
 - Ports take Domain values where one exists, a folder is deleted only through IFolderDeleter held by WorktreeRemover, and IDesktop.OpenAsync names what it throws, each guarded by a fact (#197)
 - Every process read opens one limited handle, a process is ended only as a ConfirmedProcess its three checks mint, and a command line never leaves ProcessRegistry.UsageOf (#196)
 - A session's listed name is a typed value, named or unnamed, decided once as the listing is parsed, and the Claude CLI port has one resume method (#195)

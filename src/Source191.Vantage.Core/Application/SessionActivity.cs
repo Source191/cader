@@ -19,7 +19,7 @@ public sealed class SessionActivity(TimeProvider clock)
         ArgumentNullException.ThrowIfNull(current);
         Dictionary<SessionId, DisplayStateKind> before = previous.ToDictionary(row => row.Session.SessionId, row => row.Session.State.Kind);
         DateTimeOffset now = clock.GetUtcNow();
-        foreach (SessionRow row in current.Where(row => row.Session is BackgroundSession { State.Kind: DisplayStateKind.Working } && WasWaiting(before, row.Session.SessionId)))
+        foreach (SessionRow row in current.Where(row => row.Session is Session.Background { State.Kind: DisplayStateKind.Working } && WasWaiting(before, row.Session.SessionId)))
         {
             prompted[row.Session.SessionId] = now;
         }

@@ -17,7 +17,7 @@ public sealed class ResumeSessionsHandler(IClaudeCli claude, ITranscripts transc
     {
         int continued = 0;
         List<ResumeNote> notes = [];
-        foreach (BackgroundSession session in effect.Sessions)
+        foreach (Session.Background session in effect.Sessions)
         {
             if (!transcripts.HasMessages(session.SessionId))
             {

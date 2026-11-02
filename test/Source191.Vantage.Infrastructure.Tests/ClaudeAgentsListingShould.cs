@@ -61,8 +61,8 @@ public sealed class ClaudeAgentsListingShould
     [Fact]
     public void MapBackgroundRowsAndInteractiveRows()
     {
-        InteractiveSession interactive = Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<InteractiveSession>();
-        BackgroundSession background = Sessions.Single(session => session.Name == Listed.As("spike-commit-check")).ShouldBeOfType<BackgroundSession>();
+        Session.Interactive interactive = Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<Session.Interactive>();
+        Session.Background background = Sessions.Single(session => session.Name == Listed.As("spike-commit-check")).ShouldBeOfType<Session.Background>();
 
         interactive.ProcessId.ShouldBe(51432);
         interactive.SessionId.Value.ShouldBe("82db48ec-63de-49db-9831-b8147075dc3a");
@@ -71,7 +71,7 @@ public sealed class ClaudeAgentsListingShould
         background.JobId.ShouldBe(JobId.From("1a4d2d86"));
         background.Process.ShouldBe(new JobProcess.Running(57456));
         background.State.ShouldBe(DisplayState.Completed);
-        Sessions.Single(session => session.Name == Listed.As("spike-permission")).ShouldBeOfType<BackgroundSession>().Process.ShouldBe(new JobProcess.None(), "a stopped job has no process");
+        Sessions.Single(session => session.Name == Listed.As("spike-permission")).ShouldBeOfType<Session.Background>().Process.ShouldBe(new JobProcess.None(), "a stopped job has no process");
     }
 
     /// <summary>
@@ -92,8 +92,8 @@ public sealed class ClaudeAgentsListingShould
         IReadOnlyList<Session> sessions = ClaudeAgentsListing.Parse(json).Sessions;
 
         sessions.Select(session => session.Name).ShouldBe([Listed.As("no-job"), Listed.As("interactive-ended")]);
-        sessions[0].ShouldBeOfType<BackgroundSession>().JobId.ShouldBe(JobId.From("fa82d736"));
-        sessions[1].ShouldBeOfType<BackgroundSession>().JobId.ShouldBe(JobId.From("b2db48ec"), "an interactive row without a process cannot be its own terminal");
+        sessions[0].ShouldBeOfType<Session.Background>().JobId.ShouldBe(JobId.From("fa82d736"));
+        sessions[1].ShouldBeOfType<Session.Background>().JobId.ShouldBe(JobId.From("b2db48ec"), "an interactive row without a process cannot be its own terminal");
         sessions.ShouldAllBe(session => session.State == DisplayState.Stopped);
     }
 
@@ -126,7 +126,7 @@ public sealed class ClaudeAgentsListingShould
     {
         SessionListing listing = ClaudeAgentsListing.Parse(Capture);
 
-        listing.Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<InteractiveSession>();
+        listing.Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<Session.Interactive>();
         listing.AutomatedRuns.ShouldBeEmpty();
     }
 
@@ -141,7 +141,7 @@ public sealed class ClaudeAgentsListingShould
 
         SessionListing listing = ClaudeAgentsListing.Parse(json);
 
-        listing.Sessions.Single().ShouldBeOfType<BackgroundSession>().State.ShouldBe(new DisplayState.Starting());
+        listing.Sessions.Single().ShouldBeOfType<Session.Background>().State.ShouldBe(new DisplayState.Starting());
         listing.AutomatedRuns.ShouldBeEmpty();
     }
 

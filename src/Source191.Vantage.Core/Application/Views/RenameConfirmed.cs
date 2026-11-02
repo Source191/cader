@@ -2,4 +2,4 @@ using Source191.Vantage.Domain;
 
 namespace Source191.Vantage.Application.Views;
 
-public sealed record RenameConfirmed(BackgroundSession Session, string Name) : ViewInput;
+public sealed record RenameConfirmed(Session.Background Session, string Name) : ViewInput;

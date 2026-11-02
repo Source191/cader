@@ -8,8 +8,8 @@ public sealed class PullRequestHosts(GitHubPullRequests gitHub, AzureDevOpsPullR
 {
     public Task<PullRequestListing> ListAsync(RemoteRepository repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken) => repository switch
     {
-        GitHubRepository github => gitHub.ListAsync(github, checkout, branch, cancellationToken),
-        AzureDevOpsRepository azure => azureDevOps.ListAsync(azure, checkout, branch, cancellationToken),
+        RemoteRepository.GitHub github => gitHub.ListAsync(github, checkout, branch, cancellationToken),
+        RemoteRepository.AzureDevOps azure => azureDevOps.ListAsync(azure, checkout, branch, cancellationToken),
         _ => Task.FromResult<PullRequestListing>(new PullRequestListing.Unavailable(PullRequestGap.UnknownHost)),
     };
 }

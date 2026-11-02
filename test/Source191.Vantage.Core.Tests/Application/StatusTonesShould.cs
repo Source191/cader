@@ -136,10 +136,10 @@ public sealed class StatusTonesShould
     [Fact]
     public void MarkADeleteByWhatHappenedToItsWorktree()
     {
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive"))))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"), TabClosed: false)).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"), TabClosed: false)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false), TabClosed: false)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive"))), TabClosed: false)).ShouldBe(StatusTone.Notice);
         Wording.ToneOf(new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive")))).ShouldBe(StatusTone.Notice);
     }
 
@@ -234,7 +234,7 @@ public sealed class StatusTonesShould
     public void MarkAKeptBranchWithItsRemovalsTone()
     {
         Wording.ToneOf(new StatusMessage.BranchKept(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedByVantage: true))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new StatusMessage.BranchKept(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StatusMessage.BranchKept(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123", TabClosed: false))).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]

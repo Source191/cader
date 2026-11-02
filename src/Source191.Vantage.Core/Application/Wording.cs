@@ -157,13 +157,11 @@ public static partial class Wording
     {
         return reason switch
         {
-            RemovalReason.None => string.Empty,
             RemovalReason.LiveSession live => $"session {Name(live.Name)} is using it",
             RemovalReason.Locked => "the worktree is locked",
             RemovalReason.LeftoverFilesWouldBeLost leftover => $"{(leftover.AtLeast ? "at least " : string.Empty)}{leftover.Count} files that git no longer tracks would be lost",
             RemovalReason.ChangesWouldBeLost changes => $"{changes.Count} changed or untracked files would be lost",
             RemovalReason.UnpushedCommits unpushed => $"branch {unpushed.Branch} has {unpushed.Count} unpushed commits",
-            RemovalReason.LeftoverFolder => "leftover folder",
             RemovalReason.RepositoryOutsideRoots => "its repository is not under the roots; add that root in settings or remove the worktree with git there",
             RemovalReason.RepositoryGone gone => $"its repository {gone.Repository} no longer exists; remove it from the Worktrees tab",
             RemovalReason.GitFailed failed => $"git could not inspect it: {failed.Message}; check it on the Worktrees tab",

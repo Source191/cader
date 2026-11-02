@@ -4,24 +4,22 @@ using Source191.Vantage.Domain;
 namespace Source191.Vantage.Application.Actions;
 
 /// <summary>What deleting a session did, and in one case the unmerged branch the user is asked about. TabClosed when a Vantage tab showing it was closed.</summary>
-public abstract record DeleteSessionOutcome : Outcome
+public abstract record DeleteSessionOutcome(bool TabClosed) : Outcome
 {
-    public bool TabClosed { get; init; }
-
-    public sealed record Deleted(ListedName Name) : DeleteSessionOutcome;
+    public sealed record Deleted(ListedName Name, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
     /// <summary>Claude refused to remove the job: the session is still listed, its tab is open and its worktree untouched.</summary>
-    public sealed record NotDeleted(ListedName Name, string Failure) : DeleteSessionOutcome;
+    public sealed record NotDeleted(ListedName Name, string Failure, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record KeptWorktree(ListedName Name, RemovalReason Reason) : DeleteSessionOutcome;
+    public sealed record KeptWorktree(ListedName Name, RemovalReason Reason, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch) : DeleteSessionOutcome;
+    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch) : DeleteSessionOutcome;
+    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
     /// <summary>The worktree was a leftover: its folder deleted, and its registration pruned when stale.</summary>
-    public sealed record RemovedWorktree(ListedName Name, RemoveWorktreeOutcome Worktree) : DeleteSessionOutcome;
+    public sealed record RemovedWorktree(ListedName Name, RemoveWorktreeOutcome Worktree, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
     /// <summary>The session is deleted; its worktree folder could not be, because a tab or program still has it open.</summary>
-    public sealed record WorktreeInUse(ListedName Name, string FolderName) : DeleteSessionOutcome;
+    public sealed record WorktreeInUse(ListedName Name, string FolderName, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 }

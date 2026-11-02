@@ -25,12 +25,12 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     }
 
     /// <summary>Opens a tab for a session, a listed row or one the wizard has just started, after forgetting any earlier tab registered for it, so that tab's colour is free again.</summary>
-    public Task<OpenTabOutcome> OpenAsync(BackgroundSession session, CancellationToken cancellationToken) => OpenAsync(session, colours.Choose, cancellationToken);
+    public Task<OpenTabOutcome> OpenAsync(Session.Background session, CancellationToken cancellationToken) => OpenAsync(session, colours.Choose, cancellationToken);
 
     /// <summary>Opens a tab as above, in the preferred colour when no live tab uses it, such as a renamed session's old colour.</summary>
-    public Task<OpenTabOutcome> OpenAsync(BackgroundSession session, TabColour preferred, CancellationToken cancellationToken) => OpenAsync(session, inUse => colours.Choose(inUse, preferred), cancellationToken);
+    public Task<OpenTabOutcome> OpenAsync(Session.Background session, TabColour preferred, CancellationToken cancellationToken) => OpenAsync(session, inUse => colours.Choose(inUse, preferred), cancellationToken);
 
-    private async Task<OpenTabOutcome> OpenAsync(BackgroundSession session, Func<IReadOnlyList<TabColour>, ColourChoice> choose, CancellationToken cancellationToken)
+    private async Task<OpenTabOutcome> OpenAsync(Session.Background session, Func<IReadOnlyList<TabColour>, ColourChoice> choose, CancellationToken cancellationToken)
     {
         DateTimeOffset now = clock.GetUtcNow();
         foreach (TabRegistration earlier in (await tabs.ReadTabsAsync()).Where(tab => tab.Owner == new TabOwner.ForSession(session.SessionId)))
@@ -53,7 +53,7 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     /// The row says a tab is open: when its registration is live now, select it in the Windows Terminal window that owns
     /// its shell (every window while it is still being claimed); otherwise forget it and open a new tab.
     /// </summary>
-    private async Task<OpenTabOutcome> SwitchToTabAsync(BackgroundSession session, CancellationToken cancellationToken)
+    private async Task<OpenTabOutcome> SwitchToTabAsync(Session.Background session, CancellationToken cancellationToken)
     {
         TabRegistration? registration = (await tabs.ReadTabsAsync()).FirstOrDefault(tab => tab.Owner == new TabOwner.ForSession(session.SessionId));
         if (registration is null || !registration.IsLive(clock.GetUtcNow(), processes))

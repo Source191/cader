@@ -69,7 +69,7 @@ public sealed class ConsoleViewShould
     {
         RowDecision decision = ConsoleView.OpenSession(Loaded, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
-        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)Second.Session, Second.Tab)));
+        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((Session.Background)Second.Session, Second.Tab)));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class ConsoleViewShould
 
         RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
-        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)withTab.Session, withTab.Tab)));
+        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((Session.Background)withTab.Session, withTab.Tab)));
     }
 
     [Fact]
@@ -91,13 +91,13 @@ public sealed class ConsoleViewShould
 
         RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-3"), Listed.As("fix-tests")));
 
-        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)twin.Session, twin.Tab)));
+        decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((Session.Background)twin.Session, twin.Tab)));
     }
 
     [Fact]
     public void SayAWorktreesTerminalSessionRunsInItsOwnTerminal()
     {
-        InteractiveSession terminal = new(SessionId.From("sess-4"), Listed.As("repos-94"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 200);
+        Session.Interactive terminal = new(SessionId.From("sess-4"), Listed.As("repos-94"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 200);
         SessionRow row = new(terminal, new SessionLocation.InRepository("Northwind.Orders", terminal.WorkingDirectory), new Head.Unknown(), new LiveTab.None(), HasTranscript: true);
         ConsoleState state = Loaded with { Sessions = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([First, row])).State };
 
@@ -149,7 +149,7 @@ public sealed class ConsoleViewShould
 
     private static SessionRow Row(string sessionId, string name)
     {
-        BackgroundSession session = new(SessionId.From(sessionId), JobId.From(sessionId == "sess-1" ? "81cdb0f9" : "92ddc1a0"), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, new JobProcess.None());
+        Session.Background session = new(SessionId.From(sessionId), JobId.From(sessionId == "sess-1" ? "81cdb0f9" : "92ddc1a0"), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }

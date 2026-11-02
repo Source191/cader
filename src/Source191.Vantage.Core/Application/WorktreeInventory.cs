@@ -40,7 +40,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
                 }
                 else if (IsEmptyLeftover(child))
                 {
-                    rows.Add(Leftover(root, child, new WorktreeObservation(false, true, new WorktreeLock.Unlocked(), false, new GitPointer.NoGitFile(), EmptyLeftoverFolder: true, Prunable: false), ownerExists: false));
+                    rows.Add(Leftover(root, child, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false));
                 }
             }
         }
@@ -121,7 +121,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             // The disc decides whether the folder exists; git's prunable says only that its .git file is gone, and such a
             // folder may still hold work, so it is counted like any leftover.
             bool folderExists = folders.DirectoryExists(path.Value);
-            WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation(true, folderExists, entry.Lock, false, new GitPointer.NoGitFile(), false, entry.IsPrunable));
+            WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable));
             rows.Add(folderExists && !entry.IsPrunable
                 ? await InspectedAsync(repository, path, entry, health, cancellationToken)
                 : new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), CountLeftoverFiles(path), OwnerExists: true, FolderExists: folderExists));
@@ -172,7 +172,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
             string gitFile = IOPath.Combine(folder.Value, ".git");
             GitPointer pointer = folders.FileExists(gitFile) ? TargetOf(folder) : new GitPointer.NoGitFile();
-            WorktreeObservation observation = new(false, true, new WorktreeLock.Unlocked(), UnderClaudeWorktrees: true, pointer, false, Prunable: false);
+            WorktreeObservation observation = new WorktreeObservation.Unregistered(pointer, UnderClaudeWorktrees: true, EmptyLeftover: false);
             yield return Leftover(repository, folder, observation, ownerExists: true);
         }
     }
@@ -188,14 +188,14 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         if (TryGitDirOf(folder, out FolderPath? gitDir) && folders.DirectoryExists(gitDir.Value))
         {
             FolderPath repository = RepositoryOf(gitDir);
-            WorktreeObservation elsewhere = new(false, true, new WorktreeLock.Unlocked(), false, new GitPointer.RegisteredElsewhere(repository), false, Prunable: false);
+            WorktreeObservation elsewhere = new WorktreeObservation.Unregistered(new GitPointer.RegisteredElsewhere(repository), UnderClaudeWorktrees: false, EmptyLeftover: false);
 
             return Leftover(repository, folder, elsewhere, ownerExists: true);
         }
 
         FolderPath owner = gitDir is not null && IsRegistration(gitDir) ? RepositoryOf(gitDir) : folder.Parent ?? folder;
         bool ownerExists = folders.DirectoryExists(IOPath.Combine(owner.Value, ".git"));
-        WorktreeObservation observation = new(false, true, new WorktreeLock.Unlocked(), false, new GitPointer.TargetGone(), false, Prunable: false);
+        WorktreeObservation observation = new WorktreeObservation.Unregistered(new GitPointer.TargetGone(), UnderClaudeWorktrees: false, EmptyLeftover: false);
 
         return Leftover(owner, folder, observation, ownerExists);
     }
@@ -248,7 +248,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private static WorktreeSession LiveSessionIn(FolderPath worktree, IReadOnlyList<Session> sessions)
     {
         return sessions
-            .Where(session => session is InteractiveSession or BackgroundSession { Process: JobProcess.Running })
+            .Where(session => session is Session.Interactive or Session.Background { Process: JobProcess.Running })
             .Where(session => session.WorkingDirectory.IsUnder(worktree))
             .Select(WorktreeSession (session) => new WorktreeSession.Running(session.SessionId, session.Name))
             .DefaultIfEmpty(new WorktreeSession.None())

@@ -10,20 +10,36 @@ namespace Source191.Vantage.Domain;
 /// </summary>
 public abstract partial record RemoteRepository
 {
+    private RemoteRepository()
+    {
+    }
+
+    /// <summary>A repository on github.com.</summary>
+    public sealed record GitHub(string Owner, string Name) : RemoteRepository
+    {
+        public override PullRequestHost Host => PullRequestHost.GitHub;
+    }
+
+    /// <summary>A repository in Azure DevOps.</summary>
+    public sealed record AzureDevOps(string Organisation, string Project, string Name) : RemoteRepository
+    {
+        public override PullRequestHost Host => PullRequestHost.AzureDevOps;
+    }
+
     /// <summary>The host whose CLI lists this repository's pull requests.</summary>
     public abstract PullRequestHost Host { get; }
 
     public static bool TryParse(string? url, [MaybeNullWhen(false)] out RemoteRepository repository)
     {
         string text = url?.Trim() ?? string.Empty;
-        Match gitHub = GitHub().Match(text);
+        Match gitHub = GitHubUrl().Match(text);
         if (gitHub.Success)
         {
-            repository = new GitHubRepository(gitHub.Groups["owner"].Value, gitHub.Groups["name"].Value);
+            repository = new RemoteRepository.GitHub(gitHub.Groups["owner"].Value, gitHub.Groups["name"].Value);
             return true;
         }
 
-        if (AzureDevOps().Match(text) is { Success: true } azure && Azure(azure, out AzureDevOpsRepository? found))
+        if (AzureDevOpsUrl().Match(text) is { Success: true } azure && Azure(azure, out RemoteRepository.AzureDevOps? found))
         {
             repository = found;
             return true;
@@ -33,7 +49,7 @@ public abstract partial record RemoteRepository
         return false;
     }
 
-    private static bool Azure(Match match, [MaybeNullWhen(false)] out AzureDevOpsRepository repository)
+    private static bool Azure(Match match, [MaybeNullWhen(false)] out RemoteRepository.AzureDevOps repository)
     {
         string organisation = Uri.UnescapeDataString(match.Groups["org"].Value);
         string project = Uri.UnescapeDataString(match.Groups["project"].Value);
@@ -43,7 +59,7 @@ public abstract partial record RemoteRepository
 
         if (parts.All(BatchFileArgument.IsSafe))
         {
-            repository = new AzureDevOpsRepository(organisation, project, name);
+            repository = new RemoteRepository.AzureDevOps(organisation, project, name);
             return true;
         }
 
@@ -52,11 +68,11 @@ public abstract partial record RemoteRepository
     }
 
     [GeneratedRegex(@"^(?:https://(?:[^@/\s]+@)?github\.com/|git@github\.com:|ssh://git@github\.com/)(?<owner>[^/\s]+)/(?<name>[^/\s]+?)(?:\.git)?/?$", RegexOptions.IgnoreCase)]
-    private static partial Regex GitHub();
+    private static partial Regex GitHubUrl();
 
     [GeneratedRegex(@"^(?:https://(?:[^@/\s]+@)?dev\.azure\.com/(?<org>[^/\s]+)/(?<project>[^/\s]+)/_git/(?<name>[^/\s]+?)" +
         @"|https://(?:[^@/\s]+@)?(?<org>[^./\s]+)\.visualstudio\.com/(?:DefaultCollection/)?(?<project>[^/\s]+)/_git/(?<name>[^/\s]+?)" +
         @"|git@ssh\.dev\.azure\.com:v3/(?<org>[^/\s]+)/(?<project>[^/\s]+)/(?<name>[^/\s]+?)" +
         @"|[^@/\s]+@vs-ssh\.visualstudio\.com:v3/(?<org>[^/\s]+)/(?<project>[^/\s]+)/(?<name>[^/\s]+?))/?$", RegexOptions.IgnoreCase)]
-    private static partial Regex AzureDevOps();
+    private static partial Regex AzureDevOpsUrl();
 }

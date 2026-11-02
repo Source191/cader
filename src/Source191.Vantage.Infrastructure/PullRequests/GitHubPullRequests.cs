@@ -18,14 +18,14 @@ public sealed class GitHubPullRequests(IProcessRunner processes, ProgramLocation
 {
     private const int NotSignedInExitCode = 4;
 
-    public Task<PullRequestListing> ListAsync(GitHubRepository repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken) => gh switch
+    public Task<PullRequestListing> ListAsync(RemoteRepository.GitHub repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken) => gh switch
     {
         ProgramLocation.Found found => ListAsync(found.Path, repository, checkout, branch, cancellationToken),
         ProgramLocation.Missing => Task.FromResult<PullRequestListing>(new PullRequestListing.Unavailable(PullRequestGap.CliMissing)),
         _ => throw new UnreachableException(),
     };
 
-    private async Task<PullRequestListing> ListAsync(string executable, GitHubRepository repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
+    private async Task<PullRequestListing> ListAsync(string executable, RemoteRepository.GitHub repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
     {
         ProcessRequest request = new(executable, ["pr", "list", "--repo", $"{repository.Owner}/{repository.Name}", "--head", branch.Value, "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,createdAt"], new WorkingFolder.At(checkout.Value));
         ProcessResult result;

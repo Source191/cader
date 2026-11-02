@@ -23,7 +23,7 @@ public sealed class OpenTabHandlerShould
 
     private OpenTabHandler Handler => new(Store, registry, terminal, new FakeTimeProvider(Noon), new TabScripts(Claude, Vantage));
 
-    private static BackgroundSession Job() => new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), FolderPath.From(@"C:\repos\Northwind.Orders"), Noon, DisplayState.Working, new JobProcess.None());
+    private static Session.Background Job() => new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), FolderPath.From(@"C:\repos\Northwind.Orders"), Noon, DisplayState.Working, new JobProcess.None());
 
     [Fact]
     public async Task OpenATabTitledWithTheSessionNameThatClaimsItselfThenAttaches()
@@ -103,7 +103,7 @@ public sealed class OpenTabHandlerShould
     [Fact]
     public async Task SearchForTheTitleTheTabWasOpenedWith()
     {
-        BackgroundSession unnamed = Job() with { Name = Listed.None() };
+        Session.Background unnamed = Job() with { Name = Listed.None() };
         await Handler.HandleAsync(new OpenTabForSession(unnamed, new LiveTab.None()), CancellationToken.None);
         await Store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("sess-1")), TabPalette.Default[0], Noon).ClaimedBy(4242, Noon));
         registry.Running(4242, Noon).InTree(4242, "pwsh", 777).InTree(777, "WindowsTerminal", 1, Noon.AddHours(-1));

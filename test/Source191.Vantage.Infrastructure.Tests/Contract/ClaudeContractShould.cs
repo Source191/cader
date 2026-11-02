@@ -50,7 +50,7 @@ public sealed class ClaudeContractShould
         {
             Session session = await ListedAsync(cli, name);
 
-            BackgroundSession background = session.ShouldBeOfType<BackgroundSession>();
+            Session.Background background = session.ShouldBeOfType<Session.Background>();
             background.JobId.Value.ShouldBe(jobId);
             background.State.Kind.ShouldNotBe(DisplayStateKind.Unknown, $"the CLI reported a status or state Vantage does not know: {background.State}");
         }
@@ -152,7 +152,7 @@ public sealed class ClaudeContractShould
         {
             SessionListing listing = await ListedRunAsync(cli, print.Id);
 
-            listing.Sessions.OfType<InteractiveSession>().Select(session => session.ProcessId).ShouldNotContain(print.Id, "the run is listed as a session too");
+            listing.Sessions.OfType<Session.Interactive>().Select(session => session.ProcessId).ShouldNotContain(print.Id, "the run is listed as a session too");
             print.StandardInput.Close();
             await print.WaitForExitAsync(Cancellation).WaitAsync(ExitDeadline, Cancellation);
             print.ExitCode.ShouldBe(1, "claude -p with no prompt and no input should fail before calling the model");

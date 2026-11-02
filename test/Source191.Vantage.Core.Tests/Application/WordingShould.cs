@@ -22,8 +22,8 @@ public sealed class WordingShould
 {
     private const string FixedFolder = @"C:\Users\me\source\repos\Northwind.Orders-fix-123";
 
-    private static readonly BackgroundSession Job = Sessions.Job(Sessions.Repository);
-    private static readonly InteractiveSession Terminal = Sessions.Terminal("fix-123", 4242);
+    private static readonly Session.Background Job = Sessions.Job(Sessions.Repository);
+    private static readonly Session.Interactive Terminal = Sessions.Terminal("fix-123", 4242);
     private static readonly WorktreeRow Worktree = Worktrees.Row(WorktreeHealthKind.Ok);
 
     public static TheoryData<Type> StatusMessageCases => [.. typeof(StatusMessage).GetNestedTypes().Where(type => type.IsAssignableTo(typeof(StatusMessage)))];
@@ -344,14 +344,14 @@ public sealed class WordingShould
     [Fact]
     public void SayTheBranchWasKeptAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")))))
+        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false)))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch kept.");
     }
 
     [Fact]
     public void SayTheBranchWasDeletedAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123"))), new DeleteBranchOutcome()))
+        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false), new DeleteBranchOutcome()))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch deleted.");
     }
 
@@ -506,11 +506,6 @@ public sealed class WordingShould
         Wording.Describe(reason).ShouldNotBe(reason.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
 
-    [Fact]
-    public void SayNothingForAPlainRemoval()
-    {
-        Wording.Describe(new RemovalReason.None()).ShouldBeEmpty();
-    }
 
     [Fact]
     public void NameTheSessionUsingTheWorktree()
@@ -548,11 +543,6 @@ public sealed class WordingShould
         Wording.Describe(new RemovalReason.UnpushedCommits("fix-123", 2)).ShouldBe("branch fix-123 has 2 unpushed commits");
     }
 
-    [Fact]
-    public void CallALeftoverFolderByThatName()
-    {
-        Wording.Describe(new RemovalReason.LeftoverFolder()).ShouldBe("leftover folder");
-    }
 
     [Fact]
     public void SayAWorktreeOfARepositoryOutsideTheRootsIsNotRemoved()

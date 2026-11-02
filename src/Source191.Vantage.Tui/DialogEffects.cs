@@ -63,7 +63,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         return new StatusMessage.Working(deleteBranch);
     }
 
-    private static void Rename(IEffectContext context, BackgroundSession session)
+    private static void Rename(IEffectContext context, Session.Background session)
     {
         ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, Wording.RenameTitle, Wording.RenamePrompt(session.Name), Wording.Name(session.Name)) switch
         {
@@ -170,7 +170,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
 
     private void ConfirmDelete(IEffectContext context, DeleteSession deletion)
     {
-        BackgroundSession session = deletion.Session;
+        Session.Background session = deletion.Session;
         if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteSession, Wording.DeleteSessionTitle, Wording.DeleteSessionQuestion(session.Name), [.. Wording.DeleteButtons]))
         {
             return;

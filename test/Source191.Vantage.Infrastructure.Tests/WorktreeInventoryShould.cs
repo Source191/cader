@@ -39,7 +39,7 @@ public sealed class WorktreeInventoryShould : IDisposable
         string repository = await root.CreateRepositoryAsync("Northwind.Orders");
         await root.AddSiblingWorktreeAsync(repository, "fix-1");
         PullRequest open = new(PullRequestHost.GitHub, 7, new Uri("https://github.com/northwind/Northwind.Orders/pull/7"), PullRequestState.Open, Noon);
-        hosts.Answer(new GitHubRepository("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix-1"), open)]));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix-1"), open)]));
 
         WorktreeRow first = (await Inventory.ScanAsync([], TestContext.Current.CancellationToken)).Single();
         await catalogue.RefreshStaleAsync([(FolderPath.From(repository), BranchName.From("fix-1"))]);
@@ -82,8 +82,8 @@ public sealed class WorktreeInventoryShould : IDisposable
         SessionId id = SessionId.From(Guid.NewGuid().ToString());
 
         return processId is int running
-            ? new InteractiveSession(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
-            : new BackgroundSession(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
+            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
+            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
     }
 
     public void Dispose()

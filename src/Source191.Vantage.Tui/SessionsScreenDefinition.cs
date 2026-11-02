@@ -39,7 +39,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     {
         return row switch
         {
-            { Session: InteractiveSession } => new CellPaint.Text(Palette.Grey),
+            { Session: Session.Interactive } => new CellPaint.Text(Palette.Grey),
             { Tab: LiveTab.Open { Colour: TabColour colour } } when Color.TryParse(TabShade.Unselected(colour), out Color? parsed) => new CellPaint.Fill(parsed.Value),
             _ => new CellPaint.None(),
         };
@@ -76,7 +76,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     {
         return row switch
         {
-            { Session: InteractiveSession } => Wording.TerminalSwatch,
+            { Session: Session.Interactive } => Wording.TerminalSwatch,
             { Tab: LiveTab.Open } => Wording.TabBlock,
             _ => string.Empty,
         };

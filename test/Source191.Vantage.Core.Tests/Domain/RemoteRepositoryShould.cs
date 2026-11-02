@@ -16,7 +16,7 @@ public sealed class RemoteRepositoryShould
     public void ParseGitHubHttpsAndSshRemotes(string url)
     {
         RemoteRepository.TryParse(url, out RemoteRepository? repository).ShouldBeTrue();
-        repository.ShouldBe(new GitHubRepository("northwind", "Northwind.Orders"));
+        repository.ShouldBe(new RemoteRepository.GitHub("northwind", "Northwind.Orders"));
     }
 
     [Theory]
@@ -29,7 +29,7 @@ public sealed class RemoteRepositoryShould
     public void ParseAzureDevOpsRemotes(string url)
     {
         RemoteRepository.TryParse(url, out RemoteRepository? repository).ShouldBeTrue();
-        repository.ShouldBe(new AzureDevOpsRepository("northwind", "Trading", "Northwind.Orders"));
+        repository.ShouldBe(new RemoteRepository.AzureDevOps("northwind", "Trading", "Northwind.Orders"));
     }
 
     [Theory]
@@ -38,14 +38,14 @@ public sealed class RemoteRepositoryShould
     public void DecodeEscapedProjectNames(string url)
     {
         RemoteRepository.TryParse(url, out RemoteRepository? repository).ShouldBeTrue();
-        repository.ShouldBe(new AzureDevOpsRepository("northwind", "Northwind Trading", "Northwind.Orders"));
+        repository.ShouldBe(new RemoteRepository.AzureDevOps("northwind", "Northwind Trading", "Northwind.Orders"));
     }
 
     [Fact]
     public void NameItsHost()
     {
-        new GitHubRepository("northwind", "Northwind.Orders").Host.ShouldBe(PullRequestHost.GitHub);
-        new AzureDevOpsRepository("northwind", "Trading", "Northwind.Orders").Host.ShouldBe(PullRequestHost.AzureDevOps);
+        new RemoteRepository.GitHub("northwind", "Northwind.Orders").Host.ShouldBe(PullRequestHost.GitHub);
+        new RemoteRepository.AzureDevOps("northwind", "Trading", "Northwind.Orders").Host.ShouldBe(PullRequestHost.AzureDevOps);
     }
 
     [Theory]

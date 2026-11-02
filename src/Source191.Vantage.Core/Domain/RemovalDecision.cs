@@ -1,38 +1,40 @@
 namespace Source191.Vantage.Domain;
 
 /// <summary>
-/// What removing a worktree should do. CanBeForced says, for a refusal, whether force-remove would go ahead: true when
-/// only work would be lost, false for a lock, a live session or a repository outside the roots, so the view never has
-/// to read the reason to find out.
+/// What removing a worktree should do: refuse, remove it through git, or delete a leftover folder. Each case holds
+/// only what applies to it.
 /// </summary>
-public sealed record RemovalDecision(
-    RemovalOutcome Outcome,
-    bool Forced,
-    BranchAction Branch,
-    bool PruneRegistration,
-    RemovalReason Reason,
-    bool CanBeForced)
+public abstract record RemovalDecision
 {
+    /// <summary>
+    /// Nothing is removed. CanBeForced says whether force-remove would go ahead: true when only work would be lost,
+    /// false for a lock, a live session or a repository outside the roots, so the view never has to read the reason
+    /// to find out.
+    /// </summary>
+    public sealed record Refused(RemovalReason Reason, bool CanBeForced) : RemovalDecision;
+
+    /// <summary>The worktree goes through git, then its branch is dealt with as Branch says.</summary>
+    public sealed record RemoveWorktree(bool Forced, BranchAction Branch) : RemovalDecision;
+
+    /// <summary>Only the folder is deleted, because git no longer has the worktree; Prune also clears its registration.</summary>
+    public sealed record DeleteFolder(bool Forced, bool Prune) : RemovalDecision;
+
     public static RemovalDecision For(WorktreeRemovalFacts facts, bool forced)
     {
         return facts switch
         {
-            { Session: WorktreeSession.Running running } => Refused(new RemovalReason.LiveSession(running.Name), canBeForced: false),
-            { Health: WorktreeHealthKind.Locked } => Refused(new RemovalReason.Locked(), canBeForced: false),
-            { Health: WorktreeHealthKind.Elsewhere } => Refused(new RemovalReason.RepositoryOutsideRoots(), canBeForced: false),
-            { Health: WorktreeHealthKind.Orphan or WorktreeHealthKind.Broken or WorktreeHealthKind.Empty, LeftoverFileCount: > 0 } when !forced => Refused(new RemovalReason.LeftoverFilesWouldBeLost(facts.LeftoverFileCount, AtLeast: facts.LeftoverFileCount >= WorktreeRemovalFacts.LeftoverFileLimit), canBeForced: true),
-            { Health: WorktreeHealthKind.Empty } => DeleteFolder(forced, prune: false),
-            { Health: WorktreeHealthKind.Broken } => DeleteFolder(forced, prune: true),
-            { Health: WorktreeHealthKind.Orphan } => DeleteFolder(forced, prune: false),
-            { DirtyFileCount: > 0 } when !forced => Refused(new RemovalReason.ChangesWouldBeLost(facts.DirtyFileCount), canBeForced: true),
-            { UnpushedCommitCount: > 0 } when !forced => Refused(new RemovalReason.UnpushedCommits(facts.Branch, facts.UnpushedCommitCount), canBeForced: true),
-            _ => new(RemovalOutcome.RemoveWorktree, forced, BranchActionFor(facts), PruneRegistration: false, new RemovalReason.None(), CanBeForced: false),
+            { Session: WorktreeSession.Running running } => new Refused(new RemovalReason.LiveSession(running.Name), CanBeForced: false),
+            { Health: WorktreeHealthKind.Locked } => new Refused(new RemovalReason.Locked(), CanBeForced: false),
+            { Health: WorktreeHealthKind.Elsewhere } => new Refused(new RemovalReason.RepositoryOutsideRoots(), CanBeForced: false),
+            { Health: WorktreeHealthKind.Orphan or WorktreeHealthKind.Broken or WorktreeHealthKind.Empty, LeftoverFileCount: > 0 } when !forced => new Refused(new RemovalReason.LeftoverFilesWouldBeLost(facts.LeftoverFileCount, AtLeast: facts.LeftoverFileCount >= WorktreeRemovalFacts.LeftoverFileLimit), CanBeForced: true),
+            { Health: WorktreeHealthKind.Empty } => new DeleteFolder(forced, Prune: false),
+            { Health: WorktreeHealthKind.Broken } => new DeleteFolder(forced, Prune: true),
+            { Health: WorktreeHealthKind.Orphan } => new DeleteFolder(forced, Prune: false),
+            { DirtyFileCount: > 0 } when !forced => new Refused(new RemovalReason.ChangesWouldBeLost(facts.DirtyFileCount), CanBeForced: true),
+            { UnpushedCommitCount: > 0 } when !forced => new Refused(new RemovalReason.UnpushedCommits(facts.Branch, facts.UnpushedCommitCount), CanBeForced: true),
+            _ => new RemoveWorktree(forced, BranchActionFor(facts)),
         };
     }
-
-    private static RemovalDecision DeleteFolder(bool forced, bool prune) => new(RemovalOutcome.DeleteFolder, forced, BranchAction.None, PruneRegistration: prune, new RemovalReason.LeftoverFolder(), CanBeForced: false);
-
-    private static RemovalDecision Refused(RemovalReason reason, bool canBeForced) => new(RemovalOutcome.Refused, Forced: false, BranchAction.None, PruneRegistration: false, reason, canBeForced);
 
     private static BranchAction BranchActionFor(WorktreeRemovalFacts facts) => facts is { BranchCreatedByVantage: true, BranchMerged: true } ? BranchAction.Delete : BranchAction.Ask;
 }

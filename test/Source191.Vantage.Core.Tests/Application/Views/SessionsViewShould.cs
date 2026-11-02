@@ -10,10 +10,10 @@ public sealed class SessionsViewShould
     private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     private static readonly SessionRow Working = Row("remove-sonar", DisplayState.Working, "Northwind.Templates", jobId: "aaaa1111");
-    private static readonly BackgroundSession WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
+    private static readonly Session.Background WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
     private static readonly SessionRow Waiting = Row(WaitingJob);
     private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Source191.Vantage", jobId: "cccc3333");
-    private static readonly InteractiveSession InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "repos");
+    private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "repos");
     private static readonly SessionRow Interactive = Row(InteractiveTerminal);
 
     private static readonly SessionsViewState Loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, Waiting])).State;
@@ -220,7 +220,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void RefuseToOpenAStoppedSessionThatWasNeverSentAMessageBecauseNothingCanResume()
     {
-        BackgroundSession stubJob = Job("repos-f6", DisplayState.Failed, "repos", "5a4a7350");
+        Session.Background stubJob = Job("repos-f6", DisplayState.Failed, "repos", "5a4a7350");
         SessionRow stub = Row(stubJob) with { HasTranscript = false };
         SessionsViewState withStub = Reduce(Loaded, new RowsLoaded([stub]));
 
@@ -239,7 +239,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void OfferToCloseATerminalSessionThatHasNoMessagesAndCloseItOnX()
     {
-        InteractiveSession untouchedTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
+        Session.Interactive untouchedTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
         SessionRow untouched = Row(untouchedTerminal) with { HasTranscript = false };
         SessionsViewState onUntouched = Reduce(SessionsViewState.Empty, new RowsLoaded([untouched]));
 
@@ -254,9 +254,9 @@ public sealed class SessionsViewShould
     [Fact]
     public void CloseEveryTerminalSessionWithNoMessagesOnCAndSayWhenThereAreNone()
     {
-        InteractiveSession firstTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
+        Session.Interactive firstTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
         SessionRow first = Row(firstTerminal) with { HasTranscript = false };
-        InteractiveSession secondTerminal = Terminal("repos-f7", DisplayState.Idle, "repos");
+        Session.Interactive secondTerminal = Terminal("repos-f7", DisplayState.Idle, "repos");
         SessionRow second = Row(secondTerminal) with { HasTranscript = false };
         SessionRow withMessages = Row("repos-31", DisplayState.Idle, "repos", jobId: null, interactive: true);
         SessionsViewState mixed = Reduce(SessionsViewState.Empty, new RowsLoaded([withMessages, first, Waiting, second]));
@@ -373,7 +373,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void ShowTheMemoryOfARunningSessionOnM()
     {
-        BackgroundSession running = WaitingJob with { Process = new JobProcess.Running(5151) };
+        Session.Background running = WaitingJob with { Process = new JobProcess.Running(5151) };
         SessionsViewState state = Reduce(SessionsViewState.Empty, new RowsLoaded([Row(running)]));
 
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(state, new KeyPressed(Key.Of('m')));
@@ -477,7 +477,7 @@ public sealed class SessionsViewShould
     {
         SessionRow failed = Row("broken-build", DisplayState.Failed, "Northwind.Billing", jobId: "dddd4444");
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, failed])).State;
-        List<BackgroundSession> expected = [.. loaded.VisibleRows.Where(row => row == Stopped || row == failed).Select(row => (BackgroundSession)row.Session)];
+        List<Session.Background> expected = [.. loaded.VisibleRows.Where(row => row == Stopped || row == failed).Select(row => (Session.Background)row.Session)];
 
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(loaded, new KeyPressed(Key.Of('R')));
 
@@ -494,7 +494,7 @@ public sealed class SessionsViewShould
 
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(filtered, new KeyPressed(Key.Of('R')));
 
-        update.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(BackgroundSession)Stopped.Session]);
+        update.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(Session.Background)Stopped.Session]);
     }
 
     [Fact]
@@ -647,13 +647,13 @@ public sealed class SessionsViewShould
         return new SessionRow(session, new SessionLocation.InRepository(session.WorkingDirectory.Name, session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }
 
-    private static BackgroundSession Job(string name, DisplayState state, string repository, string jobId)
+    private static Session.Background Job(string name, DisplayState state, string repository, string jobId)
     {
-        return new BackgroundSession(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, new JobProcess.None());
+        return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, new JobProcess.None());
     }
 
-    private static InteractiveSession Terminal(string name, DisplayState state, string repository)
+    private static Session.Interactive Terminal(string name, DisplayState state, string repository)
     {
-        return new InteractiveSession(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, ProcessId: 4242);
+        return new Session.Interactive(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, ProcessId: 4242);
     }
 }

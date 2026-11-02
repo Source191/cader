@@ -10,7 +10,10 @@ public abstract record GitPointer
 
     public sealed record TargetGone : GitPointer;
 
-    /// <summary>The registration exists, with no owning repository Vantage can name.</summary>
+    /// <summary>
+    /// The registration exists, with no owning repository Vantage can name. Built only for a folder under
+    /// .claude\worktrees, where it is the honest reading of the .git file and never changes the health.
+    /// </summary>
     public sealed record TargetExists : GitPointer;
 
     /// <summary>
