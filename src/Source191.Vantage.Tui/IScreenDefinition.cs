@@ -5,14 +5,20 @@ using Terminal.Gui.Drawing;
 namespace Source191.Vantage.Tui;
 
 /// <summary>
-/// What one table view adds to the shared screen: its layout text, its columns and colours, and its reducer.
-/// Everything else (lifetime, refresh, keys, routing effects, background work, spinners, redraw) is
-/// <see cref="TableBody{TState, TRow}"/>'s and written once.
+/// What one table view adds to the shared screen: which tab it is, how it refreshes, its layout text, its columns and colours,
+/// its reducer and, when it needs them, an input observer, a row tooltip and a detail pane (each defaults to none).
+/// The rest of a tab (lifetime, keys, routing effects, background work, spinners, redraw) is
+/// <see cref="TableBody{TState, TRow}"/>'s and written once, with the column sizing, tooltips and detail pane
+/// in <c>ColumnSizing</c>, <c>TableToolTips</c> and <c>DetailReader</c>.
 /// </summary>
 internal interface IScreenDefinition<TState, TRow>
     where TState : IListViewState<TRow>
 {
-    TimeSpan RefreshEvery { get; }
+    /// <summary>Which tab this is; its title is the tab's, set once.</summary>
+    ConsoleTab Tab { get; }
+
+    /// <summary>How the tab is kept fresh on a timer.</summary>
+    TabRefresh Refresh { get; }
 
     /// <summary>Shown with a spinner over the empty table until the first load arrives.</summary>
     string WaitingText { get; }
@@ -27,8 +33,6 @@ internal interface IScreenDefinition<TState, TRow>
 
     Color RowColour(TRow row);
 
-    /// <summary>The tab's title, such as "Sessions (6)".</summary>
-    string TabTitle(TState state);
 
     /// <summary>The counts beside the tab's title.</summary>
     IReadOnlyList<TextPart> Counts(TState state);
@@ -41,11 +45,13 @@ internal interface IScreenDefinition<TState, TRow>
     ViewUpdate<TState> Reduce(TState state, ViewInput input);
 
     /// <summary>Sees every input before the state is replaced, for the notifier.</summary>
-    void OnInput(TState before, ViewInput input);
+    void OnInput(TState before, ViewInput input)
+    {
+    }
 
     /// <summary>What a row is, shown as a tooltip while the pointer rests on it, or empty text for a view whose rows need none.</summary>
-    string RowTip(TRow row);
+    string RowTip(TRow row) => string.Empty;
 
     /// <summary>Whether the tab has a pane under its table and how it reads the selected row; asked once, when the tab is built.</summary>
-    TableDetail<TRow> Detail { get; }
+    TableDetail<TRow> Detail => new TableDetail<TRow>.None();
 }

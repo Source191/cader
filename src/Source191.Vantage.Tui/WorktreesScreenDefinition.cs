@@ -9,11 +9,11 @@ namespace Source191.Vantage.Tui;
 /// <summary>The worktrees view as the shared table screen shows it: its layout, columns, colours and the effects its keys raise.</summary>
 internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSource<WorktreeRow> detail) : IScreenDefinition<WorktreesViewState, WorktreeRow>
 {
-    public TimeSpan RefreshEvery => TimeSpan.FromSeconds(15);
+    public ConsoleTab Tab => ConsoleTab.Worktrees;
+
+    public TabRefresh Refresh => new TabRefresh.Every(TimeSpan.FromSeconds(15));
 
     public TableDetail<WorktreeRow> Detail => new TableDetail<WorktreeRow>.Pane(detail);
-
-    public string RowTip(WorktreeRow row) => string.Empty;
 
 
     public string WaitingText => Wording.WaitingText(ConsoleTab.Worktrees);
@@ -43,18 +43,10 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
         };
     }
 
-    public string TabTitle(WorktreesViewState state) => Wording.TabTitleFor(ConsoleTab.Worktrees);
-
     public IReadOnlyList<TextPart> Counts(WorktreesViewState state) => Wording.WorktreeCounts(state.List.Rows);
 
     public KeyBar Bar(WorktreesViewState state, bool updateKnown) => Wording.WorktreesBar(state, updateKnown);
 
     public WorktreesViewState WithMessage(WorktreesViewState state, StatusMessage message) => state with { Message = message };
 
-    public ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input) => WorktreesView.Reduce(state, input);
-
-    public void OnInput(WorktreesViewState before, ViewInput input)
-    {
-        // Nothing listens to the worktrees view's inputs.
-    }
-}
+    public ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input) => WorktreesView.Reduce(state, input);}

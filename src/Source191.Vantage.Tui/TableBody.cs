@@ -76,7 +76,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         detailKey = askAgain;
 
         // The tab's title is the view's Title; it can take focus because Tabs shows whichever tab has it.
-        View = new View { Title = definition.TabTitle(initial), Width = Dim.Fill(), Height = Dim.Fill(), CanFocus = true };
+        View = new View { Title = Wording.TabTitleFor(definition.Tab), Width = Dim.Fill(), Height = Dim.Fill(), CanFocus = true };
         View.SetScheme(Palette.Plain(Palette.White));
 
         table = new TableView
@@ -116,9 +116,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     public TState State { get; private set; }
 
-    public TimeSpan RefreshEvery => definition.RefreshEvery;
-
-    public string Title => definition.TabTitle(State);
+    public TabRefresh Refresh => definition.Refresh;
 
     public IReadOnlyList<TextPart> Counts => definition.Counts(State);
 
@@ -251,7 +249,6 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         int elasticWidth = ElasticWidth(rows, now);
         table.Table = new TableSource<TRow>(rows, columnNames, (row, column) => definition.Columns[column].Cell(row, now, column == elasticColumn ? elasticWidth : int.MaxValue));
         table.ColumnOffset = columnOffset;
-        View.Title = definition.TabTitle(State);
         if (rows.Count > 0)
         {
             int index = selected is null ? 0 : Math.Max(rows.ToList().IndexOf(selected), 0);
