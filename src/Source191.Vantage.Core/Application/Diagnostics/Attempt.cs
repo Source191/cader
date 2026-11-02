@@ -8,17 +8,21 @@ namespace Source191.Vantage.Application.Diagnostics;
 /// </summary>
 public static class Attempt
 {
-    public static async Task<T> RunAsync<T>(DiagnosticLog log, FailureSite site, CodeName what, Func<Task<T>> action, Func<Exception, T> onFailure)
+    public static Task<T> RunAsync<T>(DiagnosticLog log, FailureSite site, CodeName what, Func<Task<T>> action, Func<Exception, T> onFailure) => RunAsync(log, site, what, action, _ => true, onFailure);
+
+    /// <summary>As above, for the failures handles accepts; any other exception propagates unrecorded, as a cancellation should.</summary>
+    public static async Task<T> RunAsync<T>(DiagnosticLog log, FailureSite site, CodeName what, Func<Task<T>> action, Func<Exception, bool> handles, Func<Exception, T> onFailure)
     {
         ArgumentNullException.ThrowIfNull(log);
         ArgumentNullException.ThrowIfNull(what);
         ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(handles);
         ArgumentNullException.ThrowIfNull(onFailure);
         try
         {
             return await action();
         }
-        catch (Exception exception)
+        catch (Exception exception) when (handles(exception))
         {
             log.Record(new Failed(site, what, ExceptionSummary.From(exception)));
 

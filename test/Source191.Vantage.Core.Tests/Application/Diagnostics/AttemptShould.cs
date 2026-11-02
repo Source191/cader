@@ -33,6 +33,24 @@ public sealed class AttemptShould
     }
 
     [Fact]
+    public async Task RecordOnlyTheFailuresTheFilterHandles()
+    {
+        string handled = await Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new GitException("x"), exception => exception is GitException, _ => "blank");
+
+        handled.ShouldBe("blank");
+        log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+    }
+
+    [Fact]
+    public async Task LetAFailureTheFilterRefusesPropagateUnrecorded()
+    {
+        Func<Task> cancelled = () => Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new OperationCanceledException(), exception => exception is GitException, _ => "blank");
+
+        await cancelled.ShouldThrowAsync<OperationCanceledException>();
+        log.Snapshot().ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task NameTheEffectAWorkingStatusMessageWaitsFor()
     {
         StatusMessage working = new StatusMessage.Working(new Quit());
