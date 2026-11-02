@@ -4,6 +4,7 @@ using static Source191.Vantage.Application.Views.ViewUpdate<Source191.Vantage.Ap
 
 namespace Source191.Vantage.Application.Views;
 
+/// <summary>The Sessions tab as a pure function of state and input; every key that acts on the selected row goes through <see cref="RowAction"/>, and <see cref="Opening"/> is shared with the console.</summary>
 public static class SessionsView
 {
     public static ViewUpdate<SessionsViewState> Reduce(SessionsViewState state, ViewInput input)
@@ -31,21 +32,18 @@ public static class SessionsView
             { Name: KeyName.Up } => Unchanged(state.With(state.List.Move(-1)) with { Message = StatusMessage.None }),
             { Name: KeyName.Down } => Unchanged(state.With(state.List.Move(+1)) with { Message = StatusMessage.None }),
             { Name: KeyName.Escape } when state.Filter.Text.Length > 0 => Unchanged(state.With(state.List.ClearFilter()) with { Message = StatusMessage.None }),
-            { Name: KeyName.Enter } => Open(state),
+            { Name: KeyName.Enter } => RowAction(state, Opening),
             { Name: KeyName.Character, Character: '/' } => Unchanged(state.With(state.List.StartFilter()) with { Message = StatusMessage.None }),
-            { Name: KeyName.Character, Character: 'r' } => Rename(state),
-            { Name: KeyName.Character, Character: 'x' } => SessionAction(state, (_, session) => new StopSession(session)),
-            { Name: KeyName.Character, Character: 'd' } when state.Selected is { Session: InteractiveSession terminal, HasTranscript: false } =>
-                Effect(state with { Message = StatusMessage.None }, new CloseEmptyTerminals([terminal])),
+            { Name: KeyName.Character, Character: 'r' } => RowAction(state, Rename),
+            { Name: KeyName.Character, Character: 'x' } => RowAction(state, row => OnJob(row, job => new StopSession(job))),
+            { Name: KeyName.Character, Character: 'd' } => RowAction(state, Delete),
             { Name: KeyName.Character, Character: 'C' } => CloseEmpty(state),
-            { Name: KeyName.Character, Character: 'd' } => SessionAction(state, (_, session) => new DeleteSession(session)),
-            { Name: KeyName.Character, Character: 'b' } => Adopt(state),
-            { Name: KeyName.Character, Character: 'c' } => FolderAction(state, (folder, _) => new CopyFolderPath(folder)),
-            { Name: KeyName.Character, Character: 'f' } => FolderAction(state, (folder, _) => new OpenFolderInEditor(folder)),
-            { Name: KeyName.Character, Character: 's' } => FolderAction(state, (folder, repository) => new FindSolution(folder, repository)),
-            { Name: KeyName.Character, Character: 'p' } => OpenPullRequest(state),
-            { Name: KeyName.Character, Character: 'm' } => MeasureMemory(state),
-            { Name: KeyName.Character, Character: 'n' } => Effect(state, new OpenLaunchWizard()),
+            { Name: KeyName.Character, Character: 'b' } => RowAction(state, Adopt),
+            { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => new RowDecision.Act(new CopyFolderPath(row.Session.WorkingDirectory))),
+            { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => new RowDecision.Act(new OpenFolderInEditor(row.Session.WorkingDirectory))),
+            { Name: KeyName.Character, Character: 's' } => RowAction(state, row => new RowDecision.Act(new FindSolution(row.Session.WorkingDirectory, row.Repository))),
+            { Name: KeyName.Character, Character: 'p' } => RowAction(state, PullRequestOf),
+            { Name: KeyName.Character, Character: 'm' } => RowAction(state, Memory), { Name: KeyName.Character, Character: 'n' } => Effect(state, new OpenLaunchWizard()),
             { Name: KeyName.Character, Character: 'R' } => ResumeAll(state),
             _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
@@ -70,20 +68,22 @@ public static class SessionsView
         };
     }
 
-    private static ViewUpdate<SessionsViewState> Open(SessionsViewState state)
+    /// <summary>Either an effect to run or a status message explaining why nothing happens.</summary>
+    private static ViewUpdate<SessionsViewState> RowAction(SessionsViewState state, Func<SessionRow, RowDecision> decide)
     {
-        return state.Selected switch
+        SessionRow? row = state.Selected;
+        if (row is null)
         {
-            null => Unchanged(state with { Message = new StatusMessage.NoSessionSelected() }),
-            SessionRow row => Opening(row) switch
-            {
-                RowDecision.Act act => Effect(state with { Message = StatusMessage.None }, act.Effect),
-                RowDecision.Explain explain => Unchanged(state with { Message = explain.Message }),
-                _ => throw new UnreachableException(),
-            },
+            return Unchanged(state with { Message = new StatusMessage.NoSessionSelected() });
+        }
+
+        return decide(row) switch
+        {
+            RowDecision.Act act => Effect(state with { Message = StatusMessage.None }, act.Effect),
+            RowDecision.Explain explain => Unchanged(state with { Message = explain.Message }),
+            _ => throw new UnreachableException(),
         };
     }
-
     /// <summary>
     /// Every stopped or failed job the table shows, in its order, so a filter narrows what R brings back; a session
     /// stopped on purpose and not wanted is deleted with d instead.
@@ -101,55 +101,46 @@ public static class SessionsView
     }
 
     /// <summary>A key that acts on a supervised job; a terminal session gets the status message that says why it cannot.</summary>
-    private static ViewUpdate<SessionsViewState> SessionAction(SessionsViewState state, Func<SessionRow, BackgroundSession, ViewEffect> effect)
+    private static RowDecision OnJob(SessionRow row, Func<BackgroundSession, ViewEffect> effect)
     {
-        SessionRow? row = state.Selected;
-        if (row is null)
+        return row.Session switch
         {
-            return Unchanged(state with { Message = new StatusMessage.NoSessionSelected() });
-        }
-
-        if (row.Session is not BackgroundSession session)
-        {
-            return Unchanged(state with { Message = new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript) });
-        }
-
-        return Effect(state with { Message = StatusMessage.None }, effect(row, session));
-    }
-
-    /// <summary>A key that takes the row's folder to another tool; every row has one, whatever kind of session it is.</summary>
-    private static ViewUpdate<SessionsViewState> FolderAction(SessionsViewState state, Func<FolderPath, string, ViewEffect> effect)
-    {
-        return state.Selected switch
-        {
-            null => Unchanged(state with { Message = new StatusMessage.NoSessionSelected() }),
-            SessionRow row => Effect(state with { Message = StatusMessage.None }, effect(row.Session.WorkingDirectory, row.Repository)),
+            BackgroundSession job => new RowDecision.Act(effect(job)),
+            InteractiveSession => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
+            _ => throw new UnreachableException(),
         };
     }
-    /// <summary>The row's pull request in the browser, or a status message saying why it has none.</summary>
-    private static ViewUpdate<SessionsViewState> OpenPullRequest(SessionsViewState state)
+
+    /// <summary>A terminal session never sent a message is closed; any other is deleted as a job, or refused when it is a terminal with a conversation.</summary>
+    private static RowDecision Delete(SessionRow row)
     {
-        return state.Selected switch
+        return row is { Session: InteractiveSession terminal, HasTranscript: false }
+            ? new RowDecision.Act(new CloseEmptyTerminals([terminal]))
+            : OnJob(row, job => new DeleteSession(job));
+    }
+
+    /// <summary>The row's pull request in the browser, or a status message saying why it has none.</summary>
+    private static RowDecision PullRequestOf(SessionRow row)
+    {
+        return row.PullRequest switch
         {
-            null => Unchanged(state with { Message = new StatusMessage.NoSessionSelected() }),
-            { PullRequest: PullRequestLookup.Found found } => Effect(state with { Message = StatusMessage.None }, new OpenPullRequest(found.PullRequest)),
-            { PullRequest: PullRequestLookup.Missing missing } row => Unchanged(state with { Message = new StatusMessage.NoPullRequest(row.Session.Name, missing.Gap, missing.Host) }),
+            PullRequestLookup.Found found => new RowDecision.Act(new OpenPullRequest(found.PullRequest)),
+            PullRequestLookup.Missing missing => new RowDecision.Explain(new StatusMessage.NoPullRequest(row.Session.Name, missing.Gap, missing.Host)),
             _ => throw new UnreachableException(),
         };
     }
 
     /// <summary>The memory breakdown of the selected session; a background session with no process is stopped, so there is nothing to measure.</summary>
-    private static ViewUpdate<SessionsViewState> MeasureMemory(SessionsViewState state)
+    private static RowDecision Memory(SessionRow row)
     {
-        return state.Selected switch
+        return row.Session switch
         {
-            null => Unchanged(state with { Message = new StatusMessage.NoSessionSelected() }),
-            { Session: BackgroundSession { Process: JobProcess.Running running } session } => Effect(state with { Message = StatusMessage.None }, new ShowMemory(session, running.Id)),
-            { Session: InteractiveSession session } => Effect(state with { Message = StatusMessage.None }, new ShowMemory(session, session.ProcessId)),
-            SessionRow row => Unchanged(state with { Message = new StatusMessage.NothingToMeasure(row.Session.Name) }),
+            BackgroundSession { Process: JobProcess.Running running } session => new RowDecision.Act(new ShowMemory(session, running.Id)),
+            InteractiveSession session => new RowDecision.Act(new ShowMemory(session, session.ProcessId)),
+            BackgroundSession => new RowDecision.Explain(new StatusMessage.NothingToMeasure(row.Session.Name)),
+            _ => throw new UnreachableException(),
         };
     }
-
     /// <summary>Every plain claude session that was never sent a message, in one go; the TUI confirms before closing.</summary>
     private static ViewUpdate<SessionsViewState> CloseEmpty(SessionsViewState state)
     {
@@ -161,22 +152,21 @@ public static class SessionsView
     }
 
     /// <summary>Renaming restarts the session under the new name, so it waits until nothing is in flight.</summary>
-    private static ViewUpdate<SessionsViewState> Rename(SessionsViewState state)
+    private static RowDecision Rename(SessionRow row)
     {
-        if (state.Selected is not { Session: BackgroundSession session } row)
+        if (row.Session is not BackgroundSession session)
         {
-            return SessionAction(state, (_, background) => new AskForNewName(background));
+            return new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript));
         }
 
         return (row.HasTranscript, session) switch
         {
-            (false, { Process: JobProcess.None }) => Unchanged(state with { Message = new StatusMessage.NeverSentAMessage(session.Name) }),
-            (false, _) => Unchanged(state with { Message = new StatusMessage.NoMessagesToRename(session.Name) }),
-            (_, { State.Kind: DisplayStateKind.Working }) => Unchanged(state with { Message = new StatusMessage.WorkingSoRenameWaits(session.Name) }),
-            _ => Effect(state with { Message = StatusMessage.None }, new AskForNewName(session)),
+            (false, { Process: JobProcess.None }) => new RowDecision.Explain(new StatusMessage.NeverSentAMessage(session.Name)),
+            (false, _) => new RowDecision.Explain(new StatusMessage.NoMessagesToRename(session.Name)),
+            (_, { State.Kind: DisplayStateKind.Working }) => new RowDecision.Explain(new StatusMessage.WorkingSoRenameWaits(session.Name)),
+            _ => new RowDecision.Act(new AskForNewName(session)),
         };
     }
-
     private static ViewUpdate<SessionsViewState> RenameWith(SessionsViewState state, RenameConfirmed confirmed)
     {
         return SessionName.Validate(confirmed.Name.Trim()) switch
@@ -193,16 +183,13 @@ public static class SessionsView
     /// Adoption ends the interactive process and resumes the conversation under the supervisor, so it is refused
     /// while the session is mid-turn: whatever that turn was doing would be lost.
     /// </summary>
-    private static ViewUpdate<SessionsViewState> Adopt(SessionsViewState state)
+    private static RowDecision Adopt(SessionRow row)
     {
-        SessionRow? row = state.Selected;
-
-        return row switch
+        return row.Session switch
         {
-            null => Unchanged(state with { Message = new StatusMessage.NoSessionSelected() }),
-            { Session: BackgroundSession } => Unchanged(state with { Message = new StatusMessage.AlreadyUnderVantage(row.Session.Name) }),
-            { Session.State.Kind: DisplayStateKind.Working } => Unchanged(state with { Message = new StatusMessage.WorkingSoAdoptWaits(row.Session.Name) }),
-            { Session: InteractiveSession terminal } => Effect(state with { Message = StatusMessage.None }, new AdoptSession(terminal)),
+            BackgroundSession => new RowDecision.Explain(new StatusMessage.AlreadyUnderVantage(row.Session.Name)),
+            InteractiveSession { State.Kind: DisplayStateKind.Working } => new RowDecision.Explain(new StatusMessage.WorkingSoAdoptWaits(row.Session.Name)),
+            InteractiveSession terminal => new RowDecision.Act(new AdoptSession(terminal)),
             _ => throw new UnreachableException(),
         };
     }

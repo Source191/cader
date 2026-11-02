@@ -32,7 +32,6 @@ public sealed record SessionsViewState(
 
     public SessionRow? Selected => List.Selected;
 
-
     public TableTitle Title => List.Title("session", row => row.Session.Name);
 
     /// <summary>The status message to show: the last message; <see cref="StatusMessage.Blank"/> shows no status line.</summary>
