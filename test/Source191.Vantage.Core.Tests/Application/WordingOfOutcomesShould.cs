@@ -235,36 +235,36 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayASessionWasDeleted()
     {
-        Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123"))).ShouldBe("Deleted fix-123.");
-        Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123")) { TabClosed = true }).ShouldBe("Deleted fix-123 and closed its tab.");
-        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123")) { TabClosed = true }).ShouldBe("Deleted fix-123 and closed its tab, and removed the worktree and branch fix-123.");
+        Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123"), TabClosed: false)).ShouldBe("Deleted fix-123.");
+        Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123"), TabClosed: true)).ShouldBe("Deleted fix-123 and closed its tab.");
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true)).ShouldBe("Deleted fix-123 and closed its tab, and removed the worktree and branch fix-123.");
     }
 
     [Fact]
     public void SayWhyADeletedSessionsWorktreeWasKept()
     {
-        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.ChangesWouldBeLost(1)))
+        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.ChangesWouldBeLost(1), TabClosed: false))
             .ShouldBe("Deleted fix-123; kept its worktree because 1 changed or untracked files would be lost.");
     }
 
     [Fact]
     public void SayHowToDeleteAKeptWorktreeThatStillHoldsFiles()
     {
-        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false)))
+        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false), TabClosed: false))
             .ShouldBe("Deleted fix-123; kept its worktree because 12 files that git no longer tracks would be lost; force remove (D) on the Worktrees tab deletes it.");
     }
 
     [Fact]
     public void SayAKeptWorktreeWhoseRepositoryHasGone()
     {
-        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.RepositoryGone(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"))))
+        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.RepositoryGone(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders")), TabClosed: false))
             .ShouldBe(@"Deleted fix-123; kept its worktree because its repository C:\Users\me\source\repos\Northwind.Orders no longer exists; remove it from the Worktrees tab.");
     }
 
     [Fact]
     public void SayAKeptWorktreeThatGitCouldNotInspect()
     {
-        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.GitFailed("fatal: not a git repository")))
+        Wording.Describe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.GitFailed("fatal: not a git repository"), TabClosed: false))
             .ShouldBe("Deleted fix-123; kept its worktree because git could not inspect it: fatal: not a git repository; check it on the Worktrees tab.");
     }
 
@@ -278,13 +278,13 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayADeletedSessionsWorktreeAndBranchWentToo()
     {
-        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"))).ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123.");
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false)).ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123.");
     }
 
     [Fact]
     public void SayADeletedSessionsBranchIsNotMerged()
     {
-        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch)).ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged.");
+        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: false)).ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged.");
     }
 
     [Fact]
@@ -305,14 +305,14 @@ public sealed class WordingOfOutcomesShould
     public void SayAWorktreeIsStillInUse()
     {
         Wording.Describe(new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123")).ShouldBe("Not removed: the folder Northwind.Orders-fix-123 is still in use by a tab or program; close it and remove again.");
-        Wording.Describe(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123"))
+        Wording.Describe(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123", TabClosed: false))
             .ShouldBe("Deleted fix-123; its worktree folder Northwind.Orders-fix-123 is still in use by a tab or program: close it and remove the folder from the worktrees view.");
     }
 
     [Fact]
     public void SayABrokenWorktreeWasDeletedWithTheSession()
     {
-        Wording.Describe(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolderAndPruned("Northwind.Orders-fix-123", 1, "Northwind.Orders")))
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolderAndPruned("Northwind.Orders-fix-123", 1, "Northwind.Orders"), TabClosed: false))
             .ShouldBe("Deleted fix-123; deleted the folder Northwind.Orders-fix-123 and pruned 1 stale registration from Northwind.Orders.");
     }
 
@@ -583,6 +583,6 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayADeleteClaudeRefused()
     {
-        Wording.Describe(new DeleteSessionOutcome.NotDeleted(Listed.As("fix-123"), "Session 81cdb0f9 not found")).ShouldBe("Could not delete fix-123: Session 81cdb0f9 not found");
+        Wording.Describe(new DeleteSessionOutcome.NotDeleted(Listed.As("fix-123"), "Session 81cdb0f9 not found", TabClosed: false)).ShouldBe("Could not delete fix-123: Session 81cdb0f9 not found");
     }
 }

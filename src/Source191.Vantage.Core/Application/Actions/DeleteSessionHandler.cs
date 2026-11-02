@@ -21,27 +21,27 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         }
         catch (ClaudeCliException refusal)
         {
-            return new DeleteSessionOutcome.NotDeleted(session.Name, refusal.Message);
+            return new DeleteSessionOutcome.NotDeleted(session.Name, refusal.Message, TabClosed: false);
         }
 
         bool tabClosed = await tabs.CloseAsync(session.SessionId) == TabClosure.Closed;
 
-        return await RemoveWorktreeAsync(session, forced, cancellationToken) with { TabClosed = tabClosed };
+        return await RemoveWorktreeAsync(session, forced, tabClosed, cancellationToken);
     }
 
-    private async Task<DeleteSessionOutcome> RemoveWorktreeAsync(BackgroundSession session, bool forced, CancellationToken cancellationToken)
+    private async Task<DeleteSessionOutcome> RemoveWorktreeAsync(BackgroundSession session, bool forced, bool tabClosed, CancellationToken cancellationToken)
     {
         ListedName name = session.Name;
         CreatedWorktree? created = (await createdWorktrees.ReadCreatedWorktreesAsync())
             .FirstOrDefault(worktree => worktree.Path == session.WorkingDirectory);
         if (created is null)
         {
-            return new DeleteSessionOutcome.Deleted(name);
+            return new DeleteSessionOutcome.Deleted(name, tabClosed);
         }
 
         if (!folders.DirectoryExists(created.Repository.Value))
         {
-            return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.RepositoryGone(created.Repository));
+            return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.RepositoryGone(created.Repository), tabClosed);
         }
 
         WorktreeRow row;
@@ -54,16 +54,16 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         }
         catch (GitException failure)
         {
-            return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.GitFailed(failure.Message));
+            return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.GitFailed(failure.Message), tabClosed);
         }
 
         return await remover.CarryOutAsync(row, decision, createdByVantage: true, cancellationToken) switch
         {
-            RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason),
-            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch),
-            RemoveWorktreeOutcome.BranchKept kept => new DeleteSessionOutcome.BranchNotMerged(name, kept.Branch),
-            RemoveWorktreeOutcome.InUse inUse => new DeleteSessionOutcome.WorktreeInUse(name, inUse.FolderName),
-            RemoveWorktreeOutcome other => new DeleteSessionOutcome.RemovedWorktree(name, other),
+            RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason, tabClosed),
+            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch, tabClosed),
+            RemoveWorktreeOutcome.BranchKept kept => new DeleteSessionOutcome.BranchNotMerged(name, kept.Branch, tabClosed),
+            RemoveWorktreeOutcome.InUse inUse => new DeleteSessionOutcome.WorktreeInUse(name, inUse.FolderName, tabClosed),
+            RemoveWorktreeOutcome other => new DeleteSessionOutcome.RemovedWorktree(name, other, tabClosed),
         };
     }
 
