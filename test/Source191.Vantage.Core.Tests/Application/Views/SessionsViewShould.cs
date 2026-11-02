@@ -156,6 +156,43 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void RefuseToStopOrRenameAnInteractiveRow()
+    {
+        SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
+        onInteractive.Selected.ShouldBe(Interactive);
+
+        foreach (char key in new[] { 'x', 'r' })
+        {
+            ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
+
+            update.Effects.ShouldBeEmpty();
+            update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
+        }
+    }
+
+    [Theory]
+    [InlineData('x')]
+    [InlineData('d')]
+    [InlineData('r')]
+    [InlineData('b')]
+    public void SayNoSessionIsSelectedOnAnEmptyTable(char key)
+    {
+        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Of(key)));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
+    }
+
+    [Fact]
+    public void SayNoSessionIsSelectedOnEnterOnAnEmptyTable()
+    {
+        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Enter));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
+    }
+
+    [Fact]
     public void AdoptAnIdleInteractiveSessionOnB()
     {
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
