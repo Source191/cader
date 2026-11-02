@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Claude;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Effects;
@@ -15,7 +14,7 @@ public sealed class StopSessionHandlerShould
     private readonly FakeProcessRegistry registry = new();
     private readonly InMemoryState store = new();
 
-    private StopSessionHandler Handler => new(new ClaudeCli(processes, Claude), new SessionTabs(store, registry, new FakeTimeProvider(Noon)));
+    private StopSessionHandler Handler => new(new ClaudeCli(processes, Claude), new SessionTabs(store, registry));
 
     [Fact]
     public async Task StopTheSessionByJobId()

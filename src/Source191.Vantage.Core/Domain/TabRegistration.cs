@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Source191.Vantage.Domain;
 
@@ -24,7 +25,7 @@ public sealed record TabRegistration(
     /// </summary>
     public TerminalWindow OwningTerminal(IProcessRegistry processes) => Claim switch
     {
-        TabClaim.Claimed claimed => WindowOf(TerminalTab.TerminalOf(claimed.ProcessId, processes)),
+        TabClaim.Claimed => TryConfirmShell(processes, out ConfirmedProcess? shell) ? WindowOf(TerminalTab.TerminalOf(shell, processes)) : new TerminalWindow.Any(),
         TabClaim.Pending => new TerminalWindow.Any(),
         _ => throw new UnreachableException(),
     };
@@ -34,7 +35,25 @@ public sealed record TabRegistration(
     public bool IsLive(DateTimeOffset now, IProcessRegistry processes) => Claim switch
     {
         TabClaim.Pending => now - CreatedAt < PendingGracePeriod,
-        TabClaim.Claimed claimed => processes.StartTimeOf(claimed.ProcessId) == claimed.StartedAt,
+        TabClaim.Claimed => TryConfirmShell(processes, out _),
         _ => throw new UnreachableException(),
     };
+
+    /// <summary>
+    /// The tab's shell, when the tab is claimed and the process behind the claimed id started exactly when the claim
+    /// recorded; a reused id is another process and is never confirmed.
+    /// </summary>
+    public bool TryConfirmShell(IProcessRegistry processes, [MaybeNullWhen(false)] out ConfirmedProcess shell)
+    {
+        ArgumentNullException.ThrowIfNull(processes);
+
+        if (Claim is not TabClaim.Claimed claimed)
+        {
+            shell = null;
+
+            return false;
+        }
+
+        return ConfirmedProcess.TryConfirmClaim(claimed.ProcessId, processes.StartTimeOf(claimed.ProcessId), claimed.StartedAt, out shell);
+    }
 }

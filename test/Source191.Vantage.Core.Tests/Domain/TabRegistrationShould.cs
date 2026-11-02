@@ -72,6 +72,41 @@ public sealed class TabRegistrationShould
         remaining.ShouldBe([live]);
     }
 
+    [Fact]
+    public void AnswerTheShellOfALiveClaimedTab()
+    {
+        TabRegistration claimed = Pending(createdAt: Now.AddMinutes(-10)).ClaimedBy(processId: 4242, ProcessStart);
+        FakeProcessRegistry processes = new FakeProcessRegistry().Running(4242, ProcessStart);
+
+        claimed.TryConfirmShell(processes, out ConfirmedProcess? shell).ShouldBeTrue();
+
+        shell.Id.ShouldBe(4242);
+        shell.StartedAt.ShouldBe(ProcessStart);
+    }
+
+    [Fact]
+    public void AnswerNoShellWhilePending()
+    {
+        Pending(createdAt: Now).TryConfirmShell(new FakeProcessRegistry().Running(4242, ProcessStart), out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AnswerNoShellWhenTheProcessIdWasReused()
+    {
+        TabRegistration claimed = Pending(createdAt: Now.AddMinutes(-10)).ClaimedBy(processId: 4242, ProcessStart);
+
+        claimed.TryConfirmShell(new FakeProcessRegistry().Running(4242, ProcessStart.AddMinutes(3)), out _).ShouldBeFalse();
+        claimed.TryConfirmShell(new FakeProcessRegistry(), out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AnswerAnyWindowWhenTheClaimedProcessIdWasReused()
+    {
+        FakeProcessRegistry processes = new FakeProcessRegistry().InTree(1, "WindowsTerminal", 0, ProcessStart.AddHours(-1)).InTree(4000, "pwsh", 1, ProcessStart.AddMinutes(3));
+
+        Pending(createdAt: Now).ClaimedBy(4000, ProcessStart).OwningTerminal(processes).ShouldBe(new TerminalWindow.Any());
+    }
+
     private static TabRegistration Pending(DateTimeOffset createdAt)
     {
         return TabRegistration.Pending(
@@ -89,7 +124,7 @@ public sealed class TabRegistrationShould
             processes.InTree(process, "node", process - 1, ProcessStart.AddMinutes(process - 4008));
         }
 
-        TabRegistration claimed = Pending(createdAt: Now).ClaimedBy(4007, ProcessStart);
+        TabRegistration claimed = Pending(createdAt: Now).ClaimedBy(4007, ProcessStart.AddMinutes(-1));
 
         claimed.OwningTerminal(processes).ShouldBe(new TerminalWindow.Owning(1));
     }

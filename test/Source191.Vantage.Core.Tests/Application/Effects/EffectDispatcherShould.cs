@@ -28,7 +28,7 @@ public sealed class EffectDispatcherShould
     [Fact]
     public async Task RouteAnEffectToItsHandler()
     {
-        EffectDispatcher dispatcher = new EffectDispatcher(log, clock).Register(new StopSessionHandler(new ClaudeCli(processes, Claude), new SessionTabs(new InMemoryState(), new FakeProcessRegistry(), TimeProvider.System)));
+        EffectDispatcher dispatcher = new EffectDispatcher(log, clock).Register(new StopSessionHandler(new ClaudeCli(processes, Claude), new SessionTabs(new InMemoryState(), new FakeProcessRegistry())));
         StopSession stop = new(Job(Repository));
 
         dispatcher.Handles(typeof(StopSession)).ShouldBeTrue();
@@ -39,7 +39,7 @@ public sealed class EffectDispatcherShould
     [Fact]
     public async Task RecordEachEffectThatRuns()
     {
-        EffectDispatcher dispatcher = new EffectDispatcher(log, clock).Register(new StopSessionHandler(new ClaudeCli(processes, Claude), new SessionTabs(new InMemoryState(), new FakeProcessRegistry(), TimeProvider.System)));
+        EffectDispatcher dispatcher = new EffectDispatcher(log, clock).Register(new StopSessionHandler(new ClaudeCli(processes, Claude), new SessionTabs(new InMemoryState(), new FakeProcessRegistry())));
 
         await dispatcher.DispatchAsync(new StopSession(Job(Repository)), CancellationToken.None);
 

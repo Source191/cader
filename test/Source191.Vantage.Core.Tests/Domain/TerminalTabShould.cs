@@ -16,7 +16,7 @@ public sealed class TerminalTabShould
             .InTree(4100, "cmd", 4000, Noon.AddMinutes(2))
             .InTree(4242, "claude", 4100, Noon.AddMinutes(3));
 
-        TerminalTab.ShellAbove(4242, processes).ShouldBe(new TabShell.Above(4000));
+        ShellIdAbove(4242, processes).ShouldBe(4000);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public sealed class TerminalTabShould
     {
         FakeProcessRegistry processes = new FakeProcessRegistry().InTree(1, "WindowsTerminal", 0, Noon).InTree(4242, "claude", 1, Noon.AddMinutes(1));
 
-        TerminalTab.ShellAbove(4242, processes).ShouldBe(new TabShell.TheProcess());
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(processes, 4242), processes).ShouldBe(new TabShell.TheProcess());
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public sealed class TerminalTabShould
     {
         FakeProcessRegistry processes = new FakeProcessRegistry().InTree(7, "explorer", 0, Noon).InTree(4000, "pwsh", 7, Noon.AddMinutes(1)).InTree(4242, "claude", 4000, Noon.AddMinutes(2));
 
-        TerminalTab.ShellAbove(4242, processes).ShouldBe(new TabShell.None());
-        TerminalTab.ShellAbove(9999, processes).ShouldBe(new TabShell.None());
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(processes, 4242), processes).ShouldBe(new TabShell.None());
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(9999, Noon), processes).ShouldBe(new TabShell.None());
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class TerminalTabShould
             processes.InTree(process, "node", process - 1, Noon.AddMinutes(process - 3999));
         }
 
-        TerminalTab.ShellAbove(4007, processes).ShouldBe(new TabShell.Above(4000));
+        ShellIdAbove(4007, processes).ShouldBe(4000);
     }
 
     [Fact]
@@ -56,8 +56,8 @@ public sealed class TerminalTabShould
             .InTree(4000, "pwsh", 1, Noon.AddMinutes(5))
             .InTree(4242, "claude", 4000, Noon.AddMinutes(1));
 
-        TerminalTab.ShellAbove(4242, reused).ShouldBe(new TabShell.None());
-        TerminalTab.TerminalOf(4242, reused).ShouldBeNull();
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(reused, 4242), reused).ShouldBe(new TabShell.None());
+        TerminalTab.TerminalOf(TestProcesses.Confirmed(reused, 4242), reused).ShouldBeNull();
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class TerminalTabShould
             .InTree(4000, "pwsh", 1)
             .InTree(4242, "claude", 4000, Noon.AddMinutes(1));
 
-        TerminalTab.ShellAbove(4242, unknown).ShouldBe(new TabShell.None());
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(unknown, 4242), unknown).ShouldBe(new TabShell.None());
     }
 
     [Fact]
@@ -79,7 +79,14 @@ public sealed class TerminalTabShould
             .InTree(4000, "pwsh", 1, Noon.AddMinutes(1))
             .InTree(4242, "claude", 4000, Noon.AddMinutes(1));
 
-        TerminalTab.ShellAbove(4242, processes).ShouldBe(new TabShell.Above(4000));
-        TerminalTab.TerminalOf(4242, processes).ShouldBe(1);
+        ShellIdAbove(4242, processes).ShouldBe(4000);
+        TerminalTab.TerminalOf(TestProcesses.Confirmed(processes, 4242), processes).ShouldBe(1);
+    }
+
+    private static int ShellIdAbove(int processId, FakeProcessRegistry processes)
+    {
+        TabShell shell = TerminalTab.ShellAbove(TestProcesses.Confirmed(processes, processId), processes);
+
+        return shell.ShouldBeOfType<TabShell.Above>().Shell.Id;
     }
 }
