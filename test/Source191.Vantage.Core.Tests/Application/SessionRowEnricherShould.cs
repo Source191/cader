@@ -11,11 +11,9 @@ namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class SessionRowEnricherShould : IDisposable
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(128, string.Empty, "fatal: not a git repository"));
     private readonly FakeProcessRegistry registry = new();
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     private readonly FakeTranscripts transcripts = new();
     private readonly InMemoryState store = new();
@@ -34,7 +32,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public async Task CarryEachRowsPullRequest()
     {
-        PullRequest open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Noon);
+        PullRequest open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Fixtures.Noon);
         hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix"), open)]));
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
         Session session = Session(@"C:\repos\Northwind.Orders-fix");
@@ -57,12 +55,7 @@ public sealed class SessionRowEnricherShould : IDisposable
         AnswerGit(@"C:\repos\Northwind.Orders-spike", root: "C:/repos/Northwind.Orders-spike", commonDir: "C:/repos/Northwind.Orders/.git", branch: string.Empty);
 
         await Enricher.EnrichAsync([Session(@"C:\repos\Northwind.Orders-fix"), Session(@"C:\repos\Northwind.Orders-spike")], CancellationToken.None);
-        while (hosts.Requests.Count < 1)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
-
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await hosts.WhenCalledAsync(1).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         hosts.Requests.Select(request => request.Branch.Value).ShouldBe(["fix"], "a detached head has no branch to look up");
     }
 
@@ -81,8 +74,8 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public async Task CarryTheMemoryOfARunningSessionsProcessTree()
     {
-        registry.InTree(100, "claude", 1).Using(100, Noon.AddMinutes(-10), MemorySize.FromMegabytes(296))
-            .InTree(200, "cmd", 100).Using(200, Noon.AddMinutes(-9), MemorySize.FromMegabytes(607));
+        registry.InTree(100, "claude", 1).Using(100, Fixtures.Noon.AddMinutes(-10), MemorySize.FromMegabytes(296))
+            .InTree(200, "cmd", 100).Using(200, Fixtures.Noon.AddMinutes(-9), MemorySize.FromMegabytes(607));
         Session.Background running = Session(@"C:\repos\Northwind.Orders") with { Process = new JobProcess.Running(100) };
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([running], CancellationToken.None);
@@ -93,9 +86,9 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public void CountTheAutomatedRunsAndAddUpTheMemoryOfTheirTrees()
     {
-        registry.InTree(300, "claude", 1).Using(300, Noon.AddSeconds(-20), MemorySize.FromMegabytes(200))
-            .InTree(301, "node", 300).Using(301, Noon.AddSeconds(-19), MemorySize.FromMegabytes(15))
-            .InTree(400, "claude", 1).Using(400, Noon.AddSeconds(-5), MemorySize.FromMegabytes(216));
+        registry.InTree(300, "claude", 1).Using(300, Fixtures.Noon.AddSeconds(-20), MemorySize.FromMegabytes(200))
+            .InTree(301, "node", 300).Using(301, Fixtures.Noon.AddSeconds(-19), MemorySize.FromMegabytes(15))
+            .InTree(400, "claude", 1).Using(400, Fixtures.Noon.AddSeconds(-5), MemorySize.FromMegabytes(216));
 
         AutomatedRuns runs = Enricher.Measure([Run(300), Run(400)]);
 
@@ -105,7 +98,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public void CountARunWhoseProcessHasGoneWithoutItsMemory()
     {
-        registry.InTree(400, "claude", 1).Using(400, Noon.AddSeconds(-5), MemorySize.FromMegabytes(216));
+        registry.InTree(400, "claude", 1).Using(400, Fixtures.Noon.AddSeconds(-5), MemorySize.FromMegabytes(216));
 
         AutomatedRuns runs = Enricher.Measure([Run(400), Run(401)]);
 
@@ -121,10 +114,10 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public async Task CarryNothingToMeasureForASessionWithoutAProcessOrWhoseProcessHasGone()
     {
-        registry.InTree(100, "claude", 1).Using(100, Noon.AddMinutes(-10), MemorySize.FromMegabytes(296));
+        registry.InTree(100, "claude", 1).Using(100, Fixtures.Noon.AddMinutes(-10), MemorySize.FromMegabytes(296));
         Session.Background stopped = Session(@"C:\repos\Northwind.Orders");
         Session.Background gone = Session(@"C:\repos\Northwind.Orders") with { Process = new JobProcess.Running(101) };
-        Session.Interactive terminal = new(SessionId.From("terminal"), Listed.As("plain"), FolderPath.From(@"C:\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 100);
+        Session.Interactive terminal = new(SessionId.From("terminal"), Listed.As("plain"), FolderPath.From(@"C:\repos\Northwind.Orders"), Fixtures.Noon, DisplayState.Idle, ProcessId: 100);
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([stopped, gone, terminal], CancellationToken.None);
 
@@ -136,7 +129,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public async Task TakeOneSnapshotOfTheProcessTablePerRefresh()
     {
-        registry.InTree(100, "claude", 1).Using(100, Noon, MemorySize.FromMegabytes(1)).InTree(101, "claude", 1).Using(101, Noon, MemorySize.FromMegabytes(2));
+        registry.InTree(100, "claude", 1).Using(100, Fixtures.Noon, MemorySize.FromMegabytes(1)).InTree(101, "claude", 1).Using(101, Fixtures.Noon, MemorySize.FromMegabytes(2));
         Session.Background first = Session(@"C:\repos\Northwind.Orders") with { Process = new JobProcess.Running(100) };
         Session.Background second = Session(@"C:\repos\Northwind.Orders") with { Process = new JobProcess.Running(101) };
 
@@ -228,11 +221,11 @@ public sealed class SessionRowEnricherShould : IDisposable
     public async Task MarkASessionWithALiveVantageTab()
     {
         Session session = Session(@"C:\repos\Northwind.Orders");
-        TabRegistration live = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[0], Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5));
-        TabRegistration stale = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[1], Noon.AddHours(-1));
+        TabRegistration live = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[0], Fixtures.Noon.AddMinutes(-5)).ClaimedBy(7001, Fixtures.Noon.AddMinutes(-5));
+        TabRegistration stale = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[1], Fixtures.Noon.AddHours(-1));
         await store.WriteTabAsync(live);
         await store.WriteTabAsync(stale);
-        registry.Running(7001, Noon.AddMinutes(-5));
+        registry.Running(7001, Fixtures.Noon.AddMinutes(-5));
 
         SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
 
@@ -244,8 +237,8 @@ public sealed class SessionRowEnricherShould : IDisposable
     public async Task NotTakeVantagesOwnTabForASessionsTab()
     {
         Session session = Session(@"C:\repos\Northwind.Orders");
-        await store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Green, Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
-        registry.Running(7001, Noon.AddMinutes(-5));
+        await store.WriteTabAsync(TabRegistration.Pending(TabOwner.Vantage, TabPalette.Green, Fixtures.Noon.AddMinutes(-5)).ClaimedBy(7001, Fixtures.Noon.AddMinutes(-5)));
+        registry.Running(7001, Fixtures.Noon.AddMinutes(-5));
 
         SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
 
@@ -290,8 +283,8 @@ public sealed class SessionRowEnricherShould : IDisposable
     {
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
         Session inWorktree = Session(@"C:\repos\Northwind.Orders-fix");
-        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(inWorktree.SessionId), TabPalette.Green, Noon.AddMinutes(-5)).ClaimedBy(7001, Noon.AddMinutes(-5)));
-        registry.Running(7001, Noon.AddMinutes(-5));
+        await store.WriteTabAsync(TabRegistration.Pending(new TabOwner.ForSession(inWorktree.SessionId), TabPalette.Green, Fixtures.Noon.AddMinutes(-5)).ClaimedBy(7001, Fixtures.Noon.AddMinutes(-5)));
+        registry.Running(7001, Fixtures.Noon.AddMinutes(-5));
         Session outside = Session(@"C:\Users\me\scratch\notes");
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([inWorktree, outside], CancellationToken.None);
@@ -311,7 +304,7 @@ public sealed class SessionRowEnricherShould : IDisposable
 
     private static Session.Background Session(string workingDirectory)
     {
-        return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From("81cdb0f9"), Listed.As("name"), FolderPath.From(workingDirectory), Noon, DisplayState.Working, new JobProcess.None());
+        return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From("81cdb0f9"), Listed.As("name"), FolderPath.From(workingDirectory), Fixtures.Noon, DisplayState.Working, new JobProcess.None());
     }
 
     private static AutomatedRun Run(int processId)

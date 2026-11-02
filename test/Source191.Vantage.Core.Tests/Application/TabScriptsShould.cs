@@ -11,7 +11,6 @@ public sealed class TabScriptsShould
     private const string Claude = @"C:\Users\me\.local\bin\claude.exe";
     private const string Vantage = @"C:\Users\me\.dotnet\tools\vantage.exe";
 
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
     private static readonly FolderPath Repository = FolderPath.From(@"C:\repos\Northwind.Orders");
 
     private readonly TabScripts scripts = new(Claude, Vantage);
@@ -19,8 +18,8 @@ public sealed class TabScriptsShould
     [Fact]
     public void BuildTheAttachScript()
     {
-        Session.Background session = new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), Repository, Noon, DisplayState.Working, new JobProcess.None());
-        TabRegistration registration = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[0], Noon);
+        Session.Background session = new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), Repository, Fixtures.Noon, DisplayState.Working, new JobProcess.None());
+        TabRegistration registration = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[0], Fixtures.Noon);
 
         TabLaunch tab = scripts.Attach(session, registration);
 

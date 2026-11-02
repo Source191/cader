@@ -104,14 +104,14 @@ public sealed class ProcessRegistryIntegrationShould
     [Fact]
     public void MeasureAChildItStarted()
     {
-        DateTimeOffset before = DateTimeOffset.UtcNow.AddMinutes(-1);
+        DateTimeOffset before = TimeProvider.System.GetUtcNow().AddMinutes(-1);
         using Process child = StartSleeper();
         try
         {
             ProcessUsage? usage = registry.UsageOf(child.Id);
 
             usage.ShouldNotBeNull();
-            usage.StartedAt.ShouldBeInRange(before, DateTimeOffset.UtcNow.AddMinutes(1));
+            usage.StartedAt.ShouldBeInRange(before, TimeProvider.System.GetUtcNow().AddMinutes(1));
             usage.StartedAt.Offset.ShouldBe(TimeSpan.Zero);
             usage.PrivateMemory.Bytes.ShouldBeGreaterThan(0);
             usage.Label.ShouldBe("ping");

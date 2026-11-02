@@ -123,6 +123,7 @@ public sealed class WordingOfScreensShould
             new TextPart(" · ", TextTone.Grey), new TextPart("Claude ", TextTone.Orange), new TextPart("2.1.310", TextTone.Plain),
         ]);
     }
+
     [Theory]
     [InlineData("0.18.0", "2.1.310", true, false, "Vantage 0.18.0 (35 MB; 0.19.0 available, U to update) · Claude 2.1.310")]
     [InlineData("0.5.0-local", null, false, false, "Vantage 0.5.0-local (35 MB) · Claude unknown")]
@@ -156,10 +157,6 @@ public sealed class WordingOfScreensShould
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("7 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("6 settings", TextTone.Plain)]);
     }
-
-    private static string Text(IReadOnlyList<TextPart> row) => string.Concat(row.Select(part => part.Text));
-
-    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"));
 
     [Fact]
     public void DescribeTableTitles()
@@ -234,18 +231,6 @@ public sealed class WordingOfScreensShould
         Wording.WorktreeCounts([WorktreeIn(WorktreeHealthKind.Ok, 0)]).ShouldBe([new TextPart("1 ok", TextTone.Plain)]);
     }
 
-    private static WorktreeRow WorktreeIn(WorktreeHealthKind health, int index, int dirty = 0, int unpushed = 0)
-    {
-        return new WorktreeRow(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), FolderPath.From($@"C:\Users\me\source\worktrees\Northwind.Orders-fix-{index}"), new Head.OnBranch(BranchName.From($"fix-{index}")), new WorktreeHealth(health, new HealthReason.None()), dirty, unpushed, new LastCommit.Unknown(), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
-    }
-
-    private static SessionRow SessionIn(DisplayState state, int index)
-    {
-        Session.Background session = new(SessionId.From($"sess-{index}"), JobId.From($"81cdb0f{index}"), Listed.As($"fix-{index}"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, new JobProcess.None());
-
-        return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
-    }
-
     [Fact]
     public void IgnoreAFilterOfOnlySpaces()
     {
@@ -294,5 +279,21 @@ public sealed class WordingOfScreensShould
     {
         Wording.TabBlock.ShouldBe("██");
         Wording.Dot.ShouldBe(new TextPart(" · ", TextTone.Grey));
+    }
+
+    private static string Text(IReadOnlyList<TextPart> row) => string.Concat(row.Select(part => part.Text));
+
+    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"));
+
+    private static WorktreeRow WorktreeIn(WorktreeHealthKind health, int index, int dirty = 0, int unpushed = 0)
+    {
+        return new WorktreeRow(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), FolderPath.From($@"C:\Users\me\source\worktrees\Northwind.Orders-fix-{index}"), new Head.OnBranch(BranchName.From($"fix-{index}")), new WorktreeHealth(health, new HealthReason.None()), dirty, unpushed, new LastCommit.Unknown(), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
+    }
+
+    private static SessionRow SessionIn(DisplayState state, int index)
+    {
+        Session.Background session = new(SessionId.From($"sess-{index}"), JobId.From($"81cdb0f{index}"), Listed.As($"fix-{index}"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, new JobProcess.None());
+
+        return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }
 }

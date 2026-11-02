@@ -38,7 +38,7 @@ public sealed class CrashRecorderShould
         IReadOnlyList<TimedEvent> recorded = log.Snapshot();
         recorded.Select(timed => timed.Event).ShouldBe([new ViewShown(ViewKind.Sessions), new Failed(FailureSite.Crash, null, ExceptionSummary.From(crash))]);
         crashFile.Written.ShouldBe(string.Join('\n', [.. recorded.Select(DiagnosticLine.Render), "2026-10-29T12:00:00.000Z counts git status exit 0: 1 run, median 12 ms, p95 12 ms, longest 12 ms", "2026-10-29T12:00:00.000Z refreshes worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms", "2026-10-29T12:00:00.000Z stalls ui thread: 1 stall, median 180 ms, p95 180 ms, longest 180 ms"]) + "\n");
-        crashFile.Written!.ShouldNotContain("Northwind");
+        crashFile.Written.ShouldNotBeNull().ShouldNotContain("Northwind");
     }
 
     [Fact]

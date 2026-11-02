@@ -11,6 +11,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
 {
     private const int RecentLimit = 10;
 
+    private readonly Lock gate = new();
     private readonly Dictionary<Guid, TabRegistration> tabs = [];
     private readonly List<FolderPath> recent = [];
     private readonly List<CreatedWorktree> created = [];
@@ -21,33 +22,50 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
 
     public Task<IReadOnlyList<TabRegistration>> ReadTabsAsync()
     {
-        return Task.FromResult<IReadOnlyList<TabRegistration>>([.. tabs.Values]);
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<TabRegistration>>([.. tabs.Values]);
+        }
     }
 
     public Task WriteTabAsync(TabRegistration registration)
     {
-        tabs[registration.Id] = registration;
+        lock (gate)
+        {
+            tabs[registration.Id] = registration;
+        }
+
         return Task.CompletedTask;
     }
 
     public Task RemoveTabAsync(Guid id)
     {
-        tabs.Remove(id);
+        lock (gate)
+        {
+            tabs.Remove(id);
+        }
+
         return Task.CompletedTask;
     }
 
     public Task<IReadOnlyList<FolderPath>> ReadRecentRepositoriesAsync()
     {
-        return Task.FromResult<IReadOnlyList<FolderPath>>([.. recent]);
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<FolderPath>>([.. recent]);
+        }
     }
 
     public Task RecordRecentRepositoryAsync(FolderPath repository)
     {
-        recent.RemoveAll(path => path.Equals(repository));
-        recent.Insert(0, repository);
-        if (recent.Count > RecentLimit)
+        lock (gate)
         {
-            recent.RemoveRange(RecentLimit, recent.Count - RecentLimit);
+            recent.RemoveAll(path => path.Equals(repository));
+            recent.Insert(0, repository);
+            if (recent.Count > RecentLimit)
+            {
+                recent.RemoveRange(RecentLimit, recent.Count - RecentLimit);
+            }
         }
 
         return Task.CompletedTask;
@@ -55,7 +73,10 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
 
     public Task<IReadOnlyList<CreatedWorktree>> ReadCreatedWorktreesAsync()
     {
-        return Task.FromResult<IReadOnlyList<CreatedWorktree>>([.. created]);
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<CreatedWorktree>>([.. created]);
+        }
     }
 
     /// <summary>Makes the next <c>RecordCreatedWorktreeAsync</c> throw the exception, as a state file the file system refuses would.</summary>
@@ -72,14 +93,22 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
             return Task.FromException(failure);
         }
 
-        created.RemoveAll(existing => existing.Path == worktree.Path);
-        created.Add(worktree);
+        lock (gate)
+        {
+            created.RemoveAll(existing => existing.Path == worktree.Path);
+            created.Add(worktree);
+        }
+
         return Task.CompletedTask;
     }
 
     public Task ForgetCreatedWorktreeAsync(FolderPath path)
     {
-        created.RemoveAll(existing => existing.Path == path);
+        lock (gate)
+        {
+            created.RemoveAll(existing => existing.Path == path);
+        }
+
         return Task.CompletedTask;
     }
 

@@ -16,8 +16,16 @@ public sealed class FakeWindowsTerminal : IWindowsTerminal
     /// <summary>Whether a focus request finds its tab; the real terminal answers false when no tab item matches.</summary>
     public bool FocusFinds { get; set; } = true;
 
+    /// <summary>When set, opening a tab throws it, as Windows Terminal refusing the tab does; nothing is recorded.</summary>
+    public TerminalException? FailTheOpenWith { get; set; }
+
     public Task OpenTabAsync(TabLaunch launch, CancellationToken cancellationToken)
     {
+        if (FailTheOpenWith is not null)
+        {
+            throw FailTheOpenWith;
+        }
+
         opened.Add(launch);
         return Task.CompletedTask;
     }

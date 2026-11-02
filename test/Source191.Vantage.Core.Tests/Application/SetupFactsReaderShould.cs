@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
@@ -12,7 +13,7 @@ public sealed class SetupFactsReaderShould
     private const string SettingsFile = @"C:\Users\me\AppData\Local\Vantage\config.json";
     private const string LogFile = @"C:\Users\me\vantage.log";
 
-    private readonly DiagnosticLog log = new(TimeProvider.System, []);
+    private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
 
     [Fact]
     public async Task ReadEverythingSetUp()

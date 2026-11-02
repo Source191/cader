@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Diagnostics;
@@ -152,7 +153,7 @@ public sealed class DiagnosticLineShould
     public void RenderTheStallCountsEvenWithNone()
     {
         StallCounts stalls = new();
-        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(TimeProvider.System, new DiagnosticLog(TimeProvider.System, [])), stalls);
+        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])), stalls);
         string[] none = [.. DiagnosticLine.Render(counts, At)];
 
         foreach (int milliseconds in (int[])[150, 180, 820])

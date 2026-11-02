@@ -9,6 +9,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 /// opened are .txt or .cmd, which every Windows install associates, because a type with no application never reaches PowerShell.
 /// </summary>
 [Trait("Category", "Integration")]
+[Collection("Process environment")]
 public sealed class DesktopShould : IDisposable
 {
     private const string Pwsh = "pwsh.exe";

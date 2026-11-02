@@ -6,19 +6,18 @@ namespace Source191.Vantage.Core.Tests.Application.Actions;
 
 public sealed class SessionTabsShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
     private static readonly SessionId Session = SessionId.From("sess-1");
 
     private readonly InMemoryState store = new();
-    private readonly FakeProcessRegistry processes = new FakeProcessRegistry().Running(4000, Noon.AddMinutes(-5)).Running(4100, Noon.AddMinutes(-2));
+    private readonly FakeProcessRegistry processes = new FakeProcessRegistry().Running(4000, Fixtures.Noon.AddMinutes(-5)).Running(4100, Fixtures.Noon.AddMinutes(-2));
 
     private SessionTabs Tabs => new(store, processes);
 
     [Fact]
     public async Task EndEveryLiveShellAndForgetTheRegistrations()
     {
-        await store.WriteTabAsync(Registration(Session, Noon.AddMinutes(-6)).ClaimedBy(4000, Noon.AddMinutes(-5)));
-        await store.WriteTabAsync(Registration(Session, Noon.AddMinutes(-3)).ClaimedBy(4100, Noon.AddMinutes(-2)));
+        await store.WriteTabAsync(Registration(Session, Fixtures.Noon.AddMinutes(-6)).ClaimedBy(4000, Fixtures.Noon.AddMinutes(-5)));
+        await store.WriteTabAsync(Registration(Session, Fixtures.Noon.AddMinutes(-3)).ClaimedBy(4100, Fixtures.Noon.AddMinutes(-2)));
 
         TabClosure closure = await Tabs.CloseAsync(Session);
 
@@ -30,7 +29,7 @@ public sealed class SessionTabsShould
     [Fact]
     public async Task ForgetAPendingRegistrationWithoutEndingAnything()
     {
-        await store.WriteTabAsync(Registration(Session, Noon.AddSeconds(-10)));
+        await store.WriteTabAsync(Registration(Session, Fixtures.Noon.AddSeconds(-10)));
 
         TabClosure closure = await Tabs.CloseAsync(Session);
 
@@ -42,7 +41,7 @@ public sealed class SessionTabsShould
     [Fact]
     public async Task AnswerNoTabWhenThereIsNone()
     {
-        TabRegistration another = Registration(SessionId.From("sess-2"), Noon.AddMinutes(-6)).ClaimedBy(4000, Noon.AddMinutes(-5));
+        TabRegistration another = Registration(SessionId.From("sess-2"), Fixtures.Noon.AddMinutes(-6)).ClaimedBy(4000, Fixtures.Noon.AddMinutes(-5));
         await store.WriteTabAsync(another);
 
         TabClosure closure = await Tabs.CloseAsync(Session);

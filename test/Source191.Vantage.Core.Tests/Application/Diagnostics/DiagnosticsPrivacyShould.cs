@@ -43,9 +43,7 @@ public sealed class DiagnosticsPrivacyShould
         @"C:\Users\me", "C:/Users/me", @"C:\\Users\\me", "Northwind", Branch, Name, Job, SessionIdentity, Prompt, "PaymentGateway", "fatal", "modified or untracked",
     ];
 
-    private static readonly DateTimeOffset Noon = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
-
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly RecordingSink sink = new();
     private readonly ProcessCounts counts = new();
     private readonly FakeCrashFile crashFile = new();
@@ -78,8 +76,8 @@ public sealed class DiagnosticsPrivacyShould
         lines.ShouldContain(line => line.Contains("failed Load SessionsViewState: InvalidOperationException", StringComparison.Ordinal));
         lines.Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         lines.ShouldContain(line => line.Contains("slow refresh worktrees scan in ", StringComparison.Ordinal));
-        DiagnosticLine.Render(counts, Noon).ShouldContain("2026-10-29T12:00:00.000Z counts git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
-        string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts()), Noon)]);
+        DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain("2026-10-23T12:00:00.000Z counts git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
+        string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts()), Fixtures.Noon)]);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
@@ -134,6 +132,7 @@ public sealed class DiagnosticsPrivacyShould
 
         return version;
     }
+
     private async Task RunTheDailyFlowsAsync()
     {
         ClaudeCli claude = new(processes, Claude);

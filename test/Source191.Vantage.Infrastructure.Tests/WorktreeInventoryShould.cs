@@ -14,6 +14,7 @@ namespace Source191.Vantage.Infrastructure.Tests;
 [Trait("Category", "Integration")]
 public sealed class WorktreeInventoryShould : IDisposable
 {
+    // The same noon as Core.Tests' Fixtures.Noon, which this project cannot reach.
     private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     private readonly TemporaryGitRoot root = new();
@@ -67,30 +68,8 @@ public sealed class WorktreeInventoryShould : IDisposable
         await root.GitAsync(orders, "worktree", "add", "--detach", $"{orders}-spike", "main");
 
         await Inventory.ScanAsync([], TestContext.Current.CancellationToken);
-        while (hosts.Requests.Count < 2)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
-
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await hosts.WhenCalledAsync(2).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         hosts.Requests.Select(request => request.Branch.Value).ShouldBe(["fix-1", "fix-2"], ignoreOrder: true);
-    }
-
-    /// <summary>Plain claude running in the folder, or a stopped job there when it has no process.</summary>
-    private static Session SessionIn(string directory, string name, int? processId)
-    {
-        SessionId id = SessionId.From(Guid.NewGuid().ToString());
-
-        return processId is int running
-            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
-            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
-    }
-
-    public void Dispose()
-    {
-        catalogue.Dispose();
-        root.Dispose();
-        outside.Dispose();
     }
 
     [Fact]
@@ -343,5 +322,22 @@ public sealed class WorktreeInventoryShould : IDisposable
         IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], TestContext.Current.CancellationToken);
 
         rows.Single().Path.Value.ShouldBe(worktree);
+    }
+
+    /// <summary>Plain claude running in the folder, or a stopped job there when it has no process.</summary>
+    private static Session SessionIn(string directory, string name, int? processId)
+    {
+        SessionId id = SessionId.From(Guid.NewGuid().ToString());
+
+        return processId is int running
+            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
+            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
+    }
+
+    public void Dispose()
+    {
+        catalogue.Dispose();
+        root.Dispose();
+        outside.Dispose();
     }
 }

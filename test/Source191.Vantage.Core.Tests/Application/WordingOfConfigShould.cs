@@ -90,6 +90,7 @@ public sealed class WordingOfConfigShould
 
         Wording.ConfigValue(row, new DateTimeOffset(2026, 11, 1, 12, 0, 0, TimeSpan.Zero), UnitedKingdom).ShouldBe("24 October 2026 09:12");
     }
+
     [Fact]
     public void SayHowEachPieceOfSetupIsChanged()
     {

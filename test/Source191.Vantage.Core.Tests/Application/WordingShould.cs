@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Diagnostics;
-using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Launch;
 using Source191.Vantage.Application.Reporting;
 using Source191.Vantage.Application.TerminalSetup;
@@ -32,9 +32,7 @@ public sealed class WordingShould
     [MemberData(nameof(StatusMessageCases))]
     public void HaveWordsForEveryStatusMessageCase(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        object[] arguments = [.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))];
-        StatusMessage message = (StatusMessage)constructor.Invoke(arguments);
+        StatusMessage message = (StatusMessage)Fixtures.Build(type);
 
         Wording.Describe(message).ShouldNotBe(message.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -475,6 +473,7 @@ public sealed class WordingShould
         Wording.ChooseSolutionTitle.ShouldBe("Open solution");
         Wording.ChooseSolutionQuestion("Northwind.Orders-fix-123").ShouldBe("Northwind.Orders-fix-123 holds more than one solution. Which one?");
     }
+
     [Fact]
     public void NameTheSessionBeingStarted()
     {
@@ -499,8 +498,7 @@ public sealed class WordingShould
     [MemberData(nameof(RemovalReasons))]
     public void HaveWordsForEveryRemovalReason(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        RemovalReason reason = (RemovalReason)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        RemovalReason reason = (RemovalReason)Fixtures.Build(type);
 
         Wording.Describe(reason).ShouldNotBe(reason.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -573,8 +571,7 @@ public sealed class WordingShould
     [MemberData(nameof(HealthReasons))]
     public void HaveWordsForEveryHealthReason(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        HealthReason reason = (HealthReason)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        HealthReason reason = (HealthReason)Fixtures.Build(type);
 
         Wording.Describe(reason).ShouldNotBe(reason.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -659,31 +656,6 @@ public sealed class WordingShould
         Wording.ClipboardUnavailable.ShouldBe("The clipboard is not available here; Shift+drag selects text in Windows Terminal.");
     }
 
-    private static object Placeholder(Type type)
-    {
-        return type switch
-        {
-            _ when type == typeof(string) => "fix-123",
-            _ when type == typeof(ListedName) => Listed.As("fix-123"),
-            _ when type == typeof(int) => 2,
-            _ when type == typeof(bool) => true,
-            _ when type == typeof(WorktreeHealthKind) => WorktreeHealthKind.Locked,
-            _ when type == typeof(ReleaseVersion) => ReleaseVersions.Version("0.21.0"),
-            _ when type == typeof(RemovalReason) => new RemovalReason.Locked(),
-            _ when type == typeof(HealthReason) => new HealthReason.FolderGone(),
-            _ when type == typeof(NameProblem) => NameProblem.Missing,
-            _ when type == typeof(FolderPath) => FolderPath.From(@"D:\nowhere"),
-            _ when type == typeof(LaunchProblem) => new LaunchProblem.WorktreeNeedsLetters(),
-            _ when type == typeof(ViewEffect) => new Quit(),
-            _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false),
-            _ when type == typeof(PullRequestGap) => PullRequestGap.NotSignedIn,
-            _ when type == typeof(LookupHost) => new LookupHost.Known(PullRequestHost.GitHub),
-            _ when type == typeof(SetupItem) => SetupItem.TerminalProfiles,
-            _ when type == typeof(ConfigRow) => new ConfigRow.CheckForUpdates(On: true),
-            _ => throw new InvalidOperationException($"A status message field of type {type.Name} needs a placeholder."),
-        };
-    }
-
     // The new-session wizard.
 
     public static TheoryData<Type> WizardProblems => [.. typeof(WizardProblem).GetNestedTypes().Where(type => type.IsAssignableTo(typeof(WizardProblem)))];
@@ -692,8 +664,7 @@ public sealed class WordingShould
     [MemberData(nameof(WizardProblems))]
     public void HaveWordsForEveryWizardProblem(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        WizardProblem problem = (WizardProblem)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        WizardProblem problem = (WizardProblem)Fixtures.Build(type);
 
         Wording.Describe(problem).ShouldNotBe(problem.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -725,8 +696,7 @@ public sealed class WordingShould
     [MemberData(nameof(SettingsProblems))]
     public void HaveWordsForEverySettingsProblem(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        SettingsProblem problem = (SettingsProblem)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        SettingsProblem problem = (SettingsProblem)Fixtures.Build(type);
 
         Wording.Describe(problem).ShouldNotBe(problem.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -788,8 +758,7 @@ public sealed class WordingShould
     [MemberData(nameof(LaunchProblems))]
     public void HaveWordsForEveryLaunchProblem(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        LaunchProblem problem = (LaunchProblem)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        LaunchProblem problem = (LaunchProblem)Fixtures.Build(type);
 
         Wording.Describe(problem).ShouldNotBe(problem.ToString(), $"{type.Name} has no arm in Wording.Describe");
     }
@@ -802,8 +771,7 @@ public sealed class WordingShould
     [MemberData(nameof(LaunchProblems))]
     public void FitEveryWizardProblemOnItsOneLine(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        object problem = constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        object problem = Fixtures.Build(type);
         string sentence = problem is WizardProblem wizardProblem ? Wording.Describe(wizardProblem) : Wording.Describe((LaunchProblem)problem);
 
         sentence.Length.ShouldBeLessThanOrEqualTo(ProblemLineWidth, sentence);
@@ -886,19 +854,6 @@ public sealed class WordingShould
         Wording.WizardHint(Wizard(FixedFolder)).ShouldBe("Enter or F5 starts and opens in tab   Esc cancel");
     }
 
-    /// <summary>A wizard with no repositories to offer.</summary>
-    private static WizardState Wizard() => Wizard(new WizardOrigin.Anywhere());
-
-    /// <summary>A wizard fixed in one folder.</summary>
-    private static WizardState Wizard(string fixedDirectory) => Wizard(WizardOrigin.In(FolderPath.From(fixedDirectory)));
-
-    private static WizardState Wizard(WizardOrigin origin)
-    {
-        FakeFolders folders = new();
-
-        return WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current()), [], folders, TestSettings.For(), origin);
-    }
-
     // vantage setup-terminal.
 
     private const string SetupUsage = "Usage: vantage setup-terminal [--sound <wav>] [--session-sound <wav>] [--yes] [--remove]";
@@ -915,8 +870,7 @@ public sealed class WordingShould
     [MemberData(nameof(SetupProblems))]
     public void HaveWordsForEveryTerminalSetupProblem(Type type)
     {
-        System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
-        TerminalSetupProblem problem = (TerminalSetupProblem)constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);
+        TerminalSetupProblem problem = (TerminalSetupProblem)Fixtures.Build(type);
 
         Wording.DescribeSetupProblem(problem).ShouldEndWith(SetupUsage);
         Wording.DescribeSetupProblem(problem).ShouldNotBe(problem.ToString());
@@ -1017,7 +971,7 @@ public sealed class WordingShould
     [Fact]
     public async Task SayWhatTheProblemReportIsDoing()
     {
-        ProblemReport report = await new ProblemReports(new DiagnosticLog(TimeProvider.System, []), new ProcessCounts(), new FakeCrashFile(), new Started(new ToolVersion("0.18.0"), null, new Version(10, 0), new Version(10, 0), 120, 36), TestSettings.Current(@"C:\Users\me\source\repos"), TimeProvider.System).BuildAsync();
+        ProblemReport report = await new ProblemReports(new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []), new ProcessCounts(), new FakeCrashFile(), new Started(new ToolVersion("0.18.0"), null, new Version(10, 0), new Version(10, 0), 120, 36), TestSettings.Current(@"C:\Users\me\source\repos"), new FakeTimeProvider(Fixtures.Noon)).BuildAsync();
 
         Wording.Working(new ShowProblemReport()).ShouldBe("Gathering the diagnostics...");
         Wording.Working(new OpenProblemReport(ReportTitle.From("x"), report)).ShouldBe("Opening the problem report in your browser...");
@@ -1074,5 +1028,18 @@ public sealed class WordingShould
         Wording.CopyNameButton.ShouldBe("Cop_y name (F2)");
         Wording.StartButton.ShouldBe("_Start (F5)");
         Wording.SaveButton.ShouldBe("_Save (F5)");
+    }
+
+    /// <summary>A wizard with no repositories to offer.</summary>
+    private static WizardState Wizard() => Wizard(new WizardOrigin.Anywhere());
+
+    /// <summary>A wizard fixed in one folder.</summary>
+    private static WizardState Wizard(string fixedDirectory) => Wizard(WizardOrigin.In(FolderPath.From(fixedDirectory)));
+
+    private static WizardState Wizard(WizardOrigin origin)
+    {
+        FakeFolders folders = new();
+
+        return WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current()), [], folders, TestSettings.For(), origin);
     }
 }

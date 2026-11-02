@@ -15,9 +15,9 @@ public sealed class ClaudeAgentsListingShould
     private const string Capture = """
         [
           {"pid":51432,"cwd":"C:\\Users\\me\\source\\repos","kind":"interactive","startedAt":1792591583841,"sessionId":"82db48ec-63de-49db-9831-b8147075dc3a","name":"repos-93","status":"idle"},
-          {"pid":57456,"id":"1a4d2d86","cwd":"C:\\Users\\me\\source\\repos\\Source191.Vantage-spike-commit","kind":"background","startedAt":1792745753340,"sessionId":"1a4d2d86-8e87-44fe-a9f7-61d47d481ae3","name":"spike-commit-check","status":"idle","state":"done"},
-          {"pid":67268,"id":"23abd87d","cwd":"C:\\Users\\me\\source\\repos\\Source191.Vantage-spike-commit","kind":"background","startedAt":1792745984436,"sessionId":"23abd87d-3498-436d-b264-7227a61036f8","name":"spike-permission-2","status":"waiting","waitingFor":"permission prompt","state":"blocked"},
-          {"id":"fa82d736","cwd":"C:\\Users\\me\\source\\repos\\Source191.Vantage","kind":"background","startedAt":1792745856987,"sessionId":"fa82d736-d876-4840-b6c2-d62a6767e1c1","name":"spike-permission","state":"done"}
+          {"pid":57456,"id":"1a4d2d86","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Archive-spike-commit","kind":"background","startedAt":1792745753340,"sessionId":"1a4d2d86-8e87-44fe-a9f7-61d47d481ae3","name":"spike-commit-check","status":"idle","state":"done"},
+          {"pid":67268,"id":"23abd87d","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Archive-spike-commit","kind":"background","startedAt":1792745984436,"sessionId":"23abd87d-3498-436d-b264-7227a61036f8","name":"spike-permission-2","status":"waiting","waitingFor":"permission prompt","state":"blocked"},
+          {"id":"fa82d736","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Archive","kind":"background","startedAt":1792745856987,"sessionId":"fa82d736-d876-4840-b6c2-d62a6767e1c1","name":"spike-permission","state":"done"}
         ]
         """;
 

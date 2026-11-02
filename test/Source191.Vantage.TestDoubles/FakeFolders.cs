@@ -52,14 +52,14 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
 
     public IEnumerable<string> Directories(string path)
     {
-        string parent = Normalise(path);
+        string parent = Declared(path);
 
         return directories.Where(directory => string.Equals(Path.GetDirectoryName(directory), parent, StringComparison.OrdinalIgnoreCase));
     }
 
     public IEnumerable<string> Files(string path)
     {
-        string prefix = Normalise(path) + Path.DirectorySeparatorChar;
+        string prefix = Declared(path) + Path.DirectorySeparatorChar;
 
         return files.Keys.Where(file => file.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
     }
@@ -78,11 +78,16 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
 
     public IEnumerable<string> Lines(string file)
     {
-        return files[Normalise(file)].Split('\n');
+        string full = Normalise(file);
+
+        return files.TryGetValue(full, out string? contents)
+            ? contents.Split('\n')
+            : throw new FileNotFoundException($"Could not find file '{full}'.", full);
     }
 
     public void DeleteTree(string path)
     {
+        RefuseRootsAndRelativePaths(path);
         string full = Normalise(path);
         if (heldOpen.Contains(full))
         {
@@ -95,6 +100,29 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
         {
             files.Remove(file);
         }
+    }
+
+    private static void RefuseRootsAndRelativePaths(string path)
+    {
+        if (!Path.IsPathFullyQualified(path) || IsRoot(path))
+        {
+            throw new IOException($"Vantage will not delete {path}: it is a drive root, a share root or a relative path.");
+        }
+    }
+
+    private static bool IsRoot(string path)
+    {
+        string full = Path.GetFullPath(path);
+        string root = Path.GetPathRoot(full) ?? full;
+
+        return string.Equals(Path.TrimEndingDirectorySeparator(full), Path.TrimEndingDirectorySeparator(root), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string Declared(string path)
+    {
+        string full = Normalise(path);
+
+        return directories.Contains(full) ? full : throw new DirectoryNotFoundException($"Could not find a part of the path '{full}'.");
     }
 
     private static string Normalise(string path)

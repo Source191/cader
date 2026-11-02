@@ -17,39 +17,6 @@ public sealed class CommandLineShould : IDisposable
     private readonly StringWriter output = new();
     private readonly StringWriter error = new();
 
-    private Task<int> InvokeAsync(params string[] arguments)
-    {
-        CommandActions actions = new(
-            OpenConsole: _ => Record("console"),
-            StartHere: (name, prompt, _) =>
-            {
-                heres.Add((name, prompt));
-                return Record($"here name={Describe(name)} prompt={(prompt.Length == 0 ? "(none)" : prompt)}");
-            },
-            SetUpTerminal: (request, _) =>
-            {
-                setups.Add(request);
-                return Record("setup");
-            },
-            ClaimTab: (registration, processId, _) => Record($"claim {registration:N} {processId}"));
-
-        return CommandLine.InvokeAsync(CommandLine.Build(actions), arguments, output, error);
-    }
-
-    private static string Describe(HereName name) => name switch
-    {
-        HereName.FolderName => "(folder)",
-        HereName.Typed typed => typed.Text,
-        _ => throw new System.Diagnostics.UnreachableException(),
-    };
-
-    private Task<int> Record(string call)
-    {
-        calls.Add(call);
-
-        return Task.FromResult(0);
-    }
-
     [Fact]
     public async Task OpenTheConsoleWithNoArguments()
     {
@@ -280,6 +247,39 @@ public sealed class CommandLineShould : IDisposable
         calls.ShouldBeEmpty();
         error.ToString().ShouldContain(mistyped);
         output.ToString().ShouldContain(suggestion);
+    }
+
+    private Task<int> InvokeAsync(params string[] arguments)
+    {
+        CommandActions actions = new(
+            OpenConsole: _ => Record("console"),
+            StartHere: (name, prompt, _) =>
+            {
+                heres.Add((name, prompt));
+                return Record($"here name={Describe(name)} prompt={(prompt.Length == 0 ? "(none)" : prompt)}");
+            },
+            SetUpTerminal: (request, _) =>
+            {
+                setups.Add(request);
+                return Record("setup");
+            },
+            ClaimTab: (registration, processId, _) => Record($"claim {registration:N} {processId}"));
+
+        return CommandLine.InvokeAsync(CommandLine.Build(actions), arguments, output, error);
+    }
+
+    private static string Describe(HereName name) => name switch
+    {
+        HereName.FolderName => "(folder)",
+        HereName.Typed typed => typed.Text,
+        _ => throw new System.Diagnostics.UnreachableException(),
+    };
+
+    private Task<int> Record(string call)
+    {
+        calls.Add(call);
+
+        return Task.FromResult(0);
     }
 
     public void Dispose()

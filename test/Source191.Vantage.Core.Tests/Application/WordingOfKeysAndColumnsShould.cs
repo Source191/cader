@@ -27,6 +27,7 @@ public sealed class WordingOfKeysAndColumnsShould
             listed[index].ShouldBeSameAs(named[index]);
         }
     }
+
     [Fact]
     public void ListEveryKeyOnceWithItsHintAndLine()
     {
@@ -102,6 +103,7 @@ public sealed class WordingOfKeysAndColumnsShould
     {
         Wording.SessionsColumns.Single(column => column.Name == "STATE").Meaning.ShouldContain("? unknown (grey)");
     }
+
     [Fact]
     public void ListEveryHealthGlyphInTheHelp()
     {

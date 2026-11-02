@@ -7,9 +7,7 @@ namespace Source191.Vantage.Core.Tests.Application.Diagnostics;
 
 public sealed class DiagnosticLogShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
-
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     [Fact]
     public void KeepTheLatest500()
@@ -24,8 +22,8 @@ public sealed class DiagnosticLogShould
 
         IReadOnlyList<TimedEvent> snapshot = log.Snapshot();
         snapshot.Count.ShouldBe(500);
-        snapshot[0].At.ShouldBe(Noon.AddSeconds(2));
-        snapshot[^1].At.ShouldBe(Noon.AddSeconds(501));
+        snapshot[0].At.ShouldBe(Fixtures.Noon.AddSeconds(2));
+        snapshot[^1].At.ShouldBe(Fixtures.Noon.AddSeconds(501));
     }
 
     [Fact]
@@ -35,7 +33,7 @@ public sealed class DiagnosticLogShould
 
         log.Record(new ViewShown(ViewKind.Sessions));
 
-        log.Snapshot().ShouldBe([new TimedEvent(Noon, new ViewShown(ViewKind.Sessions))]);
+        log.Snapshot().ShouldBe([new TimedEvent(Fixtures.Noon, new ViewShown(ViewKind.Sessions))]);
     }
 
     [Fact]
@@ -78,7 +76,7 @@ public sealed class DiagnosticLogShould
 
         log.WriteCounts(new PerformanceCounts(counts, new RefreshCounts(clock, log), new StallCounts()));
 
-        sink.Lines.ShouldBe(["2026-10-29T12:00:00.000Z counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", "2026-10-29T12:00:00.000Z stalls ui thread: 0 stalls"]);
+        sink.Lines.ShouldBe(["2026-10-23T12:00:00.000Z counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", "2026-10-23T12:00:00.000Z stalls ui thread: 0 stalls"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
@@ -96,9 +94,9 @@ public sealed class DiagnosticLogShould
         log.WriteCounts(new PerformanceCounts(new ProcessCounts(), refreshes, new StallCounts()));
 
         sink.Lines.ShouldBe([
-            "2026-10-29T12:10:04.700Z refreshes sessions listing: 2 runs, median 1700 ms, p95 2200 ms, longest 2200 ms",
-            "2026-10-29T12:10:04.700Z refreshes worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
-            "2026-10-29T12:10:04.700Z stalls ui thread: 0 stalls",
+            "2026-10-23T12:10:04.700Z refreshes sessions listing: 2 runs, median 1700 ms, p95 2200 ms, longest 2200 ms",
+            "2026-10-23T12:10:04.700Z refreshes worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
+            "2026-10-23T12:10:04.700Z stalls ui thread: 0 stalls",
         ]);
         log.Snapshot().ShouldBeEmpty();
     }

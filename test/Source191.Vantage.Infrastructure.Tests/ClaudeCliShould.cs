@@ -216,6 +216,7 @@ public sealed class ClaudeCliShould
 
         processes.CapturedRequests.Single().Arguments.ShouldBe(expected);
     }
+
     [Fact]
     public async Task ReportWhenResumeStartedACopyInstead()
     {

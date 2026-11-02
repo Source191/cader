@@ -22,7 +22,7 @@ public sealed class ResumeSessionsHandlerShould
     {
         get
         {
-            OpenTabHandler openTab = new(store, new FakeProcessRegistry(), terminal, new FakeTimeProvider(Noon), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\vantage.exe"));
+            OpenTabHandler openTab = new(store, new FakeProcessRegistry(), terminal, new FakeTimeProvider(Fixtures.Noon), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\vantage.exe"));
 
             return new(new ClaudeCli(processes, Claude), transcripts, openTab);
         }
@@ -149,5 +149,21 @@ public sealed class ResumeSessionsHandlerShould
         ResumeSessionsOutcome resume = message.ShouldBeOfType<ResumeSessionsOutcome>();
         (resume.Resumed, resume.Chosen).ShouldBe((1, 2));
         resume.Notes.ShouldBe([new ResumeNote.NotRemoved(Listed.As("fix-123"), "Session 81cdb0f9 not found")]);
+    }
+
+    [Fact]
+    public async Task StopAtTheFirstRefusedTab()
+    {
+        processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
+        transcripts.WithMessages(SessionId.From("sess-1")).WithMessages(SessionId.From("sess-2"));
+        terminal.FailTheOpenWith = new TerminalException("wt refused");
+        Session.Background first = Job(Repository, DisplayState.Failed);
+        Session.Background second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
+
+        await Should.ThrowAsync<TerminalException>(() => Handler.HandleAsync(new ResumeSessions([first, second]), CancellationToken.None));
+
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("81cdb0f9") && request.Arguments.Contains("rm"));
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("--resume"));
+        processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("c429a96e"));
     }
 }

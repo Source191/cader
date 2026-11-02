@@ -12,20 +12,19 @@ namespace Source191.Vantage.Core.Tests.Application.Detail;
 
 public sealed class DetailSourcesShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 30, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset SummerNoon = new(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
     private static readonly TimeZoneInfo UnitedKingdom = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
     private static readonly FolderPath Worktree = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf");
     private static readonly FolderPath Repository = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing");
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
-    private readonly FakeTimeProvider clock = new(Noon);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     [Fact]
     public async Task WordASessionsDetailKeyedByItsIdInItsFactRows()
     {
         SessionDetails source = new(Loader(), clock);
-        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Noon.AddMinutes(-5), DisplayState.Stopped, new JobProcess.None());
+        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Fixtures.Noon.AddMinutes(-5), DisplayState.Stopped, new JobProcess.None());
         SessionRow row = new(session, new SessionLocation.Outside("Northwind.Billing"), new Head.OnBranch(BranchName.From("invoice-pdf")), new LiveTab.None(), HasTranscript: true);
 
         DetailContent content = await source.ReadAsync(row, CancellationToken.None);
@@ -40,7 +39,7 @@ public sealed class DetailSourcesShould
     public async Task WordAWorktreesDetailKeyedByItsFolderWithRoomForItsListing()
     {
         WorktreeDetails source = new(Loader(), clock);
-        WorktreeRow row = new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 12, new LastCommit.Made(Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: false, FolderExists: true);
+        WorktreeRow row = new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 12, new LastCommit.Made(Fixtures.Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: false, FolderExists: true);
 
         DetailContent content = await source.ReadAsync(row, CancellationToken.None);
 

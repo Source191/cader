@@ -6,18 +6,16 @@ namespace Source191.Vantage.Core.Tests.TestDoubles;
 
 public sealed class InMemoryStateShould
 {
-    private static readonly DateTimeOffset Noon = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     private readonly InMemoryState state = new();
 
     [Fact]
     public async Task KeepTabsByIdAndRemoveThem()
     {
-        TabRegistration pending = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("session-1")), TabPalette.Default[0], Noon);
+        TabRegistration pending = TabRegistration.Pending(new TabOwner.ForSession(SessionId.From("session-1")), TabPalette.Default[0], Fixtures.Noon);
         await state.WriteTabAsync(pending);
-        await state.WriteTabAsync(pending.ClaimedBy(4242, Noon));
+        await state.WriteTabAsync(pending.ClaimedBy(4242, Fixtures.Noon));
 
-        (await state.ReadTabsAsync()).Single().Claim.ShouldBe(new TabClaim.Claimed(4242, Noon));
+        (await state.ReadTabsAsync()).Single().Claim.ShouldBe(new TabClaim.Claimed(4242, Fixtures.Noon));
         await state.RemoveTabAsync(pending.Id);
         (await state.ReadTabsAsync()).ShouldBeEmpty();
     }
@@ -41,8 +39,8 @@ public sealed class InMemoryStateShould
     [Fact]
     public async Task KeepOneCreatedWorktreePerPathAndForgetIt()
     {
-        await state.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(@"C:\repos\A-fix"), BranchName.From("fix"), FolderPath.From(@"C:\repos\A"), Noon));
-        await state.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(@"C:\repos\a-fix"), BranchName.From("fix-2"), FolderPath.From(@"C:\repos\A"), Noon));
+        await state.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(@"C:\repos\A-fix"), BranchName.From("fix"), FolderPath.From(@"C:\repos\A"), Fixtures.Noon));
+        await state.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(@"C:\repos\a-fix"), BranchName.From("fix-2"), FolderPath.From(@"C:\repos\A"), Fixtures.Noon));
 
         (await state.ReadCreatedWorktreesAsync()).Single().Branch.ShouldBe(BranchName.From("fix-2"));
         await state.ForgetCreatedWorktreeAsync(FolderPath.From(@"C:\repos\A-FIX"));
@@ -61,5 +59,24 @@ public sealed class InMemoryStateShould
         await state.WriteConfigAsync(new VantageConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null));
 
         (await state.ReadConfigAsync()).DefaultBase.ShouldBe(WorktreeBase.Head);
+    }
+
+    [Fact]
+    public async Task SurviveTabsWrittenAndRemovedFromManyThreads()
+    {
+        TabRegistration[] registrations = [.. Enumerable.Range(1, 400).Select(index => TabRegistration.Pending(new TabOwner.ForSession(SessionId.From($"session-{index}")), TabPalette.Default[0], Fixtures.Noon))];
+
+        await Parallel.ForEachAsync(registrations, TestContext.Current.CancellationToken, async (registration, _) =>
+        {
+            await state.WriteTabAsync(registration);
+            await state.ReadTabsAsync();
+            if (registration.Id.GetHashCode() % 2 == 0)
+            {
+                await state.RemoveTabAsync(registration.Id);
+            }
+        });
+
+        IReadOnlyList<TabRegistration> remaining = await state.ReadTabsAsync();
+        remaining.Count.ShouldBe(registrations.Count(registration => registration.Id.GetHashCode() % 2 != 0));
     }
 }
