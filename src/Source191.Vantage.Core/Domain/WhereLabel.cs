@@ -8,7 +8,6 @@ namespace Source191.Vantage.Domain;
 /// </summary>
 public abstract record WhereLabel
 {
-    private const string Ellipsis = "…";
     private const string Separator = " › ";
 
     /// <summary>A character, the ellipsis and a character.</summary>
@@ -56,34 +55,16 @@ public abstract record WhereLabel
 
             if (Place.Length == 0 || width < LeastPlaced)
             {
-                return ElideMiddle(Repository, width);
+                return TextFit.ElideMiddle(Repository, width);
             }
 
             int room = width - tail.Length;
             if (room >= LeastElided)
             {
-                return ElideMiddle(Repository, room) + tail;
+                return TextFit.ElideMiddle(Repository, room) + tail;
             }
 
-            return Ellipsis + Separator + CutEnd(Place, width - Ellipsis.Length - Separator.Length);
-        }
-
-        private static string ElideMiddle(string text, int width)
-        {
-            if (text.Length <= width)
-            {
-                return text;
-            }
-
-            if (width < LeastElided)
-            {
-                return CutEnd(text, width);
-            }
-
-            int kept = width - Ellipsis.Length;
-            int head = (kept + 1) / 2;
-
-            return text[..head] + Ellipsis + text[^(kept - head)..];
+            return TextFit.Ellipsis + Separator + CutEnd(Place, width - TextFit.Ellipsis.Length - Separator.Length);
         }
     }
 
@@ -109,6 +90,6 @@ public abstract record WhereLabel
     {
         (true, _) => text,
         (_, 0) => string.Empty,
-        _ => text[..(width - Ellipsis.Length)] + Ellipsis,
+        _ => text[..(width - TextFit.Ellipsis.Length)] + TextFit.Ellipsis,
     };
 }
