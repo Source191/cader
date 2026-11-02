@@ -3,8 +3,8 @@ name: publish
 # Run by hand (Actions, "publish", Run workflow) once a release is tested: it pushes the .nupkg
 # already attached to a GitHub Release to nuget.org, so what is published is exactly what was
 # built, tested and released from main. It never builds. nuget.org versions cannot be replaced
-# (only unlisted), which is why this is not part of release.yml: that publishes a GitHub Release on
-# every merge that raises Version, before anyone has tried the package by hand.
+# (only unlisted), which is why this is not part of check.yml's release job: that publishes a GitHub
+# Release on every merge that raises Version, before anyone has tried the package by hand.
 #
 # No API key is stored. NuGet/login exchanges this run's GitHub identity for a short-lived key
 # through a Trusted Publishing policy on nuget.org (owner Source191, repository vantage, workflow
@@ -63,10 +63,11 @@ jobs:
           }
           Write-Host "Publishing $($packages[0].Name)"
 
-      # Only what release.yml built from main is pushed: the package must carry the provenance attestation that
-      # release.yml signed for this repository, from main. A package swapped on the release after it was made, or
-      # attested by any other workflow or ref, fails here and nothing reaches nuget.org.
-      # (https://cli.github.com/manual/gh_attestation_verify)
+      # Only what the release job built from main is pushed: the package must carry the provenance attestation that
+      # check.yml's release job signed for this repository, from main, or that release.yml signed for a tag released
+      # before the release job moved into check.yml. The certificate identity is the signing workflow's file and ref,
+      # matched whole. A package swapped on the release after it was made, or attested by any other workflow or ref,
+      # fails here and nothing reaches nuget.org. (https://cli.github.com/manual/gh_attestation_verify)
       - name: Verify the package's provenance
         shell: pwsh
         env:
@@ -74,9 +75,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $package = (Get-ChildItem package -Filter *.nupkg).FullName
-          gh attestation verify $package --repo Source191/vantage --signer-workflow Source191/vantage/.github/workflows/release.yml --source-ref refs/heads/main
+          $signer = '^https://github\.com/Source191/vantage/\.github/workflows/(check|release)\.yml@refs/heads/main$'
+          gh attestation verify $package --repo Source191/vantage --cert-identity-regex $signer --source-ref refs/heads/main
           if ($LASTEXITCODE -ne 0) {
-              throw "gh attestation verify failed with exit code $LASTEXITCODE: the package is not the one release.yml built from main."
+              throw "gh attestation verify failed with exit code $LASTEXITCODE: the package is not one the release job built from main."
           }
 
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0

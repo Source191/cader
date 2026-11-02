@@ -6,7 +6,6 @@
   </Folder>
   <Folder Name="/pipelines/workflows/">
     <File Path=".github/workflows/check.yml" />
-    <File Path=".github/workflows/release.yml" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
