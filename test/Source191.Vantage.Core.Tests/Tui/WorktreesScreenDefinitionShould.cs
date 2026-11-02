@@ -86,5 +86,17 @@ public sealed class WorktreesScreenDefinitionShould
         });
     }
 
+    [Fact]
+    public void NameItsTab()
+    {
+        definition.Tab.ShouldBe(ConsoleTab.Worktrees);
+    }
+
+    [Fact]
+    public void RefreshEveryFifteenSeconds()
+    {
+        definition.Refresh.ShouldBe(new TabRefresh.Every(TimeSpan.FromSeconds(15)));
+    }
+
     private static WorktreeRow Row(LastCommit lastCommit) => new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 0, lastCommit, new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
 }

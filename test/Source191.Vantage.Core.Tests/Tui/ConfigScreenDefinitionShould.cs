@@ -49,4 +49,16 @@ public sealed class ConfigScreenDefinitionShould
 
         value.ShouldBe("08:12…18.0");
     }
+
+    [Fact]
+    public void NameItsTab()
+    {
+        new ConfigScreenDefinition(new FakeTimeProvider()).Tab.ShouldBe(ConsoleTab.Config);
+    }
+
+    [Fact]
+    public void NeverRefreshOnATimer()
+    {
+        new ConfigScreenDefinition(new FakeTimeProvider()).Refresh.ShouldBe(new TabRefresh.Never());
+    }
 }

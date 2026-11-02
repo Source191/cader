@@ -402,17 +402,33 @@ public sealed class ConsoleScreen(
         /// </summary>
         private void StartRefreshing()
         {
-            Every(sessions.RefreshEvery, ListSessions);
-            Every(worktrees.RefreshEvery, () =>
+            Refresh(sessions, ListSessions);
+            Refresh(worktrees, () =>
             {
                 if (Active == worktrees)
                 {
                     ScanWorktrees();
                 }
             });
+            Refresh(config, ReadConfig);
             Every(Heartbeat.Interval, screen.context.Heartbeat.Beat);
             ListSessions();
             ScanWorktrees();
+        }
+
+        /// <summary>Adds the tab's refresh timer, or none for a tab that never refreshes on one.</summary>
+        private void Refresh(ITabBody body, Action tick)
+        {
+            switch (body.Refresh)
+            {
+                case TabRefresh.Every every:
+                    Every(every.Interval, tick);
+                    break;
+                case TabRefresh.Never:
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
         }
 
         private void Every(TimeSpan interval, Action tick)

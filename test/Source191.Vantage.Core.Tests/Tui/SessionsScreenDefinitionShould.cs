@@ -126,5 +126,17 @@ public sealed class SessionsScreenDefinitionShould
         DisplayStateKind.Unknown => new DisplayState.Unknown("odd words"),
     };
 
+    [Fact]
+    public void NameItsTab()
+    {
+        definition.Tab.ShouldBe(ConsoleTab.Sessions);
+    }
+
+    [Fact]
+    public void RefreshEveryFiveSeconds()
+    {
+        definition.Refresh.ShouldBe(new TabRefresh.Every(TimeSpan.FromSeconds(5)));
+    }
+
     private static SessionRow Row(Session session, LiveTab tab) => new(session, new SessionLocation.Outside("Northwind.Billing"), new Head.OnBranch(BranchName.From("invoice-pdf")), tab, HasTranscript: true);
 }
