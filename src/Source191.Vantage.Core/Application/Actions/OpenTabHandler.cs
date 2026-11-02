@@ -61,7 +61,7 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
             return await OpenAsync(session, cancellationToken);
         }
 
-        bool found = await terminal.FocusTabAsync(registration.OwningTerminal(processes), session.Name, cancellationToken);
+        bool found = await terminal.FocusTabAsync(registration.OwningTerminal(processes), Wording.Name(session.Name), cancellationToken);
 
         return found
             ? new OpenTabOutcome.SwitchedTo(session.Name)

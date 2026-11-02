@@ -23,7 +23,7 @@ public sealed class StopSessionHandlerShould
         Outcome outcome = await Handler.HandleAsync(new StopSession(Job(Repository)), CancellationToken.None);
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["stop", "81cdb0f9"]);
-        outcome.ShouldBe(new StopSessionOutcome.Stopped("fix-123", TabClosed: false));
+        outcome.ShouldBe(new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false));
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class StopSessionHandlerShould
         Outcome outcome = await Handler.HandleAsync(new StopSession(Job(Repository)), CancellationToken.None);
 
         order.ShouldBe(["shell 4000 ended after 1 claude call"]);
-        outcome.ShouldBe(new StopSessionOutcome.Stopped("fix-123", TabClosed: true));
+        outcome.ShouldBe(new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: true));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class StopSessionHandlerShould
         Outcome outcome = await Handler.HandleAsync(new StopSession(Job(Repository)), CancellationToken.None);
 
         registry.EndedCleanly.ShouldBeEmpty();
-        outcome.ShouldBe(new StopSessionOutcome.Stopped("fix-123", TabClosed: false));
+        outcome.ShouldBe(new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class StopSessionHandlerShould
 
         Outcome outcome = await Handler.HandleAsync(new StopSession(Job(Repository)), CancellationToken.None);
 
-        outcome.ShouldBe(new StopSessionOutcome.NotStopped("fix-123", "Session 81cdb0f9 not found"));
+        outcome.ShouldBe(new StopSessionOutcome.NotStopped(Listed.As("fix-123"), "Session 81cdb0f9 not found"));
         registry.EndedCleanly.ShouldBeEmpty();
     }
 }

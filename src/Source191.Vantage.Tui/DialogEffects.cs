@@ -65,7 +65,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
 
     private static void Rename(IEffectContext context, BackgroundSession session)
     {
-        ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, Wording.RenameTitle, Wording.RenamePrompt(session.Name), session.Name) switch
+        ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, Wording.RenameTitle, Wording.RenamePrompt(session.Name), Wording.Name(session.Name)) switch
         {
             TypedAnswer.Typed typed => new RenameConfirmed(session, typed.Text),
             TypedAnswer.Cancelled => new RenameCancelled(session),

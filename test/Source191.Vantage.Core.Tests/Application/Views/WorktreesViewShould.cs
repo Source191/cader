@@ -2,6 +2,7 @@ using Source191.Vantage.Application;
 using Source191.Vantage.Application.Actions;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Views;
 
@@ -15,7 +16,7 @@ public sealed class WorktreesViewShould
     private static readonly WorktreeRow Orphan = Row(@"C:\repos\Northwind.Orders\.claude\worktrees\fix-service-tests", new Head.Unknown(), WorktreeHealthKind.Orphan) with { LeftoverFileCount = 12 };
     private static readonly WorktreeRow Empty = Row(@"C:\repos\Northwind.Orders.worktrees", new Head.Unknown(), WorktreeHealthKind.Empty) with { Repository = FolderPath.From(@"C:\repos") };
     private static readonly WorktreeRow Gone = Row(@"C:\repos\Northwind.Retired-republish", new Head.Unknown(), WorktreeHealthKind.Broken) with { Repository = FolderPath.From(@"C:\repos\Northwind.Retired"), OwnerExists = false };
-    private static readonly WorktreeRow Busy = Row(@"C:\repos\Northwind.Orders-fix-3", On("fix-3"), WorktreeHealthKind.Ok) with { Session = new WorktreeSession.Running(SessionId.From("sess-fix-3"), "fix-the-tests") };
+    private static readonly WorktreeRow Busy = Row(@"C:\repos\Northwind.Orders-fix-3", On("fix-3"), WorktreeHealthKind.Ok) with { Session = new WorktreeSession.Running(SessionId.From("sess-fix-3"), Listed.As("fix-the-tests")) };
     private static readonly WorktreeRow Elsewhere = Row(@"C:\Users\me\source\worktrees\Northwind.Ledger-fix", On("fix"), WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(FolderPath.From(@"D:\other\Northwind.Ledger"))) with { Repository = FolderPath.From(@"D:\other\Northwind.Ledger"), DirtyFiles = 3 };
 
     private static readonly WorktreesViewState Loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Gone, Busy, Empty, Orphan, Locked, Dirty, Clean]));
@@ -112,7 +113,7 @@ public sealed class WorktreesViewShould
         WorktreesViewState onBusy = Press(Loaded, Key.Down, Key.Down, Key.Down, Key.Down);
 
         WorktreesView.Reduce(onLocked, new KeyPressed(Key.Of('D'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.Locked(), OfferForce: false));
-        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Of('D'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.LiveSession("fix-the-tests"), OfferForce: false));
+        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Of('D'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.LiveSession(Listed.As("fix-the-tests")), OfferForce: false));
         WorktreesView.Reduce(onBusy, new KeyPressed(Key.Of('D'))).Effects.ShouldBeEmpty();
     }
 
@@ -123,7 +124,7 @@ public sealed class WorktreesViewShould
         WorktreesViewState onBusy = At(Busy);
 
         WorktreesView.Reduce(onLocked, new KeyPressed(Key.Of('d'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.Locked(), OfferForce: false));
-        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Of('d'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.LiveSession("fix-the-tests"), OfferForce: false));
+        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Of('d'))).State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.LiveSession(Listed.As("fix-the-tests")), OfferForce: false));
         WorktreesView.Reduce(At(Dirty), new KeyPressed(Key.Of('d'))).State.Message.ShouldBeOfType<StatusMessage.NotRemoved>().OfferForce.ShouldBeTrue();
     }
 
@@ -224,7 +225,7 @@ public sealed class WorktreesViewShould
     {
         WorktreesViewState onBusy = Press(Loaded, Key.Down, Key.Down, Key.Down, Key.Down);
 
-        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Enter)).Effects.ShouldBe([new OpenWorktreeSession(SessionId.From("sess-fix-3"), "fix-the-tests")]);
+        WorktreesView.Reduce(onBusy, new KeyPressed(Key.Enter)).Effects.ShouldBe([new OpenWorktreeSession(SessionId.From("sess-fix-3"), Listed.As("fix-the-tests"))]);
         WorktreesView.Reduce(Press(Loaded, Key.Down, Key.Down), new KeyPressed(Key.Enter)).State.Message.ShouldBe(new StatusMessage.NoSessionIn("Northwind.Orders-fix-1"));
     }
 
@@ -326,7 +327,7 @@ public sealed class WorktreesViewShould
     {
         new SelectTab(ConsoleTab.Sessions).ShouldBeAssignableTo<ISwitchesTab>();
         new PreviousTab().ShouldNotBeAssignableTo<ILeavesScreen>();
-        new OpenWorktreeSession(SessionId.From("sess-1"), "fix-the-tests").ShouldBeAssignableTo<IConsultsSessions>();
+        new OpenWorktreeSession(SessionId.From("sess-1"), Listed.As("fix-the-tests")).ShouldBeAssignableTo<IConsultsSessions>();
         new Quit().ShouldBeAssignableTo<ILeavesScreen>();
         new ConfirmForceRemove(Dirty, "x").ShouldBeAssignableTo<IDialogEffect>();
         new StartSessionIn(Clean).ShouldBeAssignableTo<IDialogEffect>();

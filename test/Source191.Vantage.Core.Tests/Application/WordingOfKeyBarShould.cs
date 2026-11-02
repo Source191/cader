@@ -2,6 +2,8 @@ using Source191.Vantage.Application;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 
+using Source191.Vantage.TestDoubles;
+
 namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class WordingOfKeyBarShould
@@ -144,14 +146,14 @@ public sealed class WordingOfKeyBarShould
 
     private static SessionRow Background(string id, string name, DisplayState state, JobProcess process)
     {
-        BackgroundSession session = new(SessionId.From(id), JobId.From("81cdb0f9"), name, FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, process);
+        BackgroundSession session = new(SessionId.From(id), JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, process);
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }
 
     private static SessionRow Terminal(string id, string name, bool hasTranscript)
     {
-        InteractiveSession session = new(SessionId.From(id), name, FolderPath.From(@"C:\Users\me\source\repos"), DateTimeOffset.UnixEpoch, DisplayState.Idle, ProcessId: 200);
+        InteractiveSession session = new(SessionId.From(id), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos"), DateTimeOffset.UnixEpoch, DisplayState.Idle, ProcessId: 200);
 
         return new SessionRow(session, new SessionLocation.Outside("repos"), new Head.Unknown(), new LiveTab.None(), hasTranscript);
     }

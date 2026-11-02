@@ -32,7 +32,7 @@ public sealed class ClaudeCliShould
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.FileName.ShouldBe(Executable),
             request => request.Arguments.ShouldBe(["agents", "--json", "--all"]));
-        sessions.Single().Name.ShouldBe("one");
+        sessions.Single().Name.ShouldBe(Listed.As("one"));
     }
 
     [Theory]
@@ -196,7 +196,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
 
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Directory)),
@@ -204,32 +204,24 @@ public sealed class ClaudeCliShould
         result.ShouldBeOfType<ResumeResult.Continued>();
     }
 
-    [Fact]
-    public async Task ResumeWithoutANameWhenNoneIsGiven()
+    [Theory]
+    [InlineData("cc-spike", new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "-n", "cc-spike" })]
+    [InlineData(null, new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6" })]
+    public async Task ResumeWithANameOnlyForANamedSession(string? name, string[] expected)
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));
+        ListedName listed = name is null ? Listed.None() : Listed.As(name);
 
-        await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, CancellationToken.None);
+        await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, listed, CancellationToken.None);
 
-        processes.CapturedRequests.Single().Arguments.ShouldNotContain("-n");
+        processes.CapturedRequests.Single().Arguments.ShouldBe(expected);
     }
-
-    [Fact]
-    public async Task KeepTheDisplayNameWhenResumingWithOne()
-    {
-        processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));
-
-        await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, SessionName.From("cc-spike"), CancellationToken.None);
-
-        processes.CapturedRequests.Single().Arguments.ShouldBe(["--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "-n", "cc-spike"]);
-    }
-
     [Fact]
     public async Task ReportWhenResumeStartedACopyInstead()
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 99aa88bb · cc-spike\nnote: the session is already running, so a copy was started", string.Empty));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
 
         result.ShouldBeOfType<ResumeResult.Failed>().Message.ShouldContain("copy");
     }
@@ -239,7 +231,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(1, string.Empty, "Session 81cdb0f9 can't start: source session not found\n"));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
 
         result.ShouldBeOfType<ResumeResult.Failed>().Message.ShouldBe("Session 81cdb0f9 can't start: source session not found");
     }

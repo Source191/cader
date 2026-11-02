@@ -10,7 +10,7 @@ public sealed record SessionsViewState(
 {
     private static readonly ListPolicy<SessionRow> Policy = new(
         KeyOf: row => row.Session.SessionId.Value,
-        FilterFields: row => [row.Session.Name, row.Repository, .. FilterText.Of(row.Head)],
+        FilterFields: row => [row.Repository, .. FilterText.Of(row.Session.Name), .. FilterText.Of(row.Head)],
         Order: ByAttention,
         KeyComparison: StringComparison.Ordinal,
         Selectable: _ => true);
@@ -25,7 +25,7 @@ public sealed record SessionsViewState(
 
     public SessionRow? Selected => List.Selected;
 
-    public TableTitle Title => List.Title("session", row => row.Session.Name);
+    public TableTitle Title => List.Title("session", row => Wording.Name(row.Session.Name));
 
     private static IEnumerable<SessionRow> ByAttention(IEnumerable<SessionRow> rows)
     {

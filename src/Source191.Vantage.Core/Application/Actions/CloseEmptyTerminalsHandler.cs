@@ -16,10 +16,10 @@ public sealed class CloseEmptyTerminalsHandler(IProcessRegistry processes, ITran
 {
     public Task<Outcome> HandleAsync(CloseEmptyTerminals effect, CancellationToken cancellationToken)
     {
-        List<string> closed = [];
-        List<string> ended = [];
+        List<ListedName> closed = [];
+        List<ListedName> ended = [];
         List<SkippedSession> skipped = [];
-        List<string> gone = [];
+        List<ListedName> gone = [];
         foreach (InteractiveSession session in effect.Sessions)
         {
             if (transcripts.HasMessages(session.SessionId.Value))

@@ -125,7 +125,7 @@ public static class SessionsView
         return row.PullRequest switch
         {
             PullRequestLookup.Found found => new RowDecision.Act(new OpenPullRequest(found.PullRequest)),
-            PullRequestLookup.Missing missing => new RowDecision.Explain(new StatusMessage.NoPullRequest(row.Session.Name, missing.Gap, missing.Host)),
+            PullRequestLookup.Missing missing => new RowDecision.Explain(new StatusMessage.NoPullRequest(Wording.Name(row.Session.Name), missing.Gap, missing.Host)),
             _ => throw new UnreachableException(),
         };
     }

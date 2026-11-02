@@ -35,7 +35,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
         processTable.Terminated.ShouldBe([4242]);
         processTable.EndedCleanly.ShouldBe([4000]);
         CloseEmptyTerminalsOutcome close = message.ShouldBeOfType<CloseEmptyTerminalsOutcome>();
-        close.Closed.ShouldBe(["repos-f6"]);
+        close.Closed.ShouldBe([Listed.As("repos-f6")]);
         close.Ended.ShouldBe([]);
         close.Skipped.ShouldBe([]);
     }
@@ -50,7 +50,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
 
         processTable.EndedCleanly.ShouldBe([4242]);
         processTable.Terminated.ShouldBeEmpty();
-        message.ShouldBeOfType<CloseEmptyTerminalsOutcome>().Closed.ShouldBe(["repos-f6"]);
+        message.ShouldBeOfType<CloseEmptyTerminalsOutcome>().Closed.ShouldBe([Listed.As("repos-f6")]);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
         processTable.EndedCleanly.ShouldBeEmpty();
         CloseEmptyTerminalsOutcome close = message.ShouldBeOfType<CloseEmptyTerminalsOutcome>();
         close.Closed.ShouldBe([]);
-        close.Ended.ShouldBe(["repos-f6"]);
+        close.Ended.ShouldBe([Listed.As("repos-f6")]);
         close.Skipped.ShouldBe([]);
     }
 
@@ -83,7 +83,7 @@ public sealed class CloseEmptyTerminalsHandlerShould
         CloseEmptyTerminalsOutcome close = message.ShouldBeOfType<CloseEmptyTerminalsOutcome>();
         close.Closed.ShouldBe([]);
         close.Ended.ShouldBe([]);
-        close.Gone.ShouldBe(["repos-f6"]);
+        close.Gone.ShouldBe([Listed.As("repos-f6")]);
     }
 
     [Fact]
@@ -98,6 +98,6 @@ public sealed class CloseEmptyTerminalsHandlerShould
         CloseEmptyTerminalsOutcome close = message.ShouldBeOfType<CloseEmptyTerminalsOutcome>();
         close.Closed.ShouldBe([]);
         close.Ended.ShouldBe([]);
-        close.Skipped.ShouldBe([new SkippedSession("repos-31")]);
+        close.Skipped.ShouldBe([new SkippedSession(Listed.As("repos-31"))]);
     }
 }

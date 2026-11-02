@@ -1,6 +1,7 @@
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Views;
 
@@ -20,7 +21,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void ShowLoadedRowsOrderedByAttention()
     {
-        Loaded.VisibleRows.Select(row => row.Session.Name).ShouldBe(["change-feed", "remove-sonar", "repos-93", "old-spike"]);
+        Loaded.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("change-feed"), Listed.As("remove-sonar"), Listed.As("repos-93"), Listed.As("old-spike")]);
     }
 
     [Fact]
@@ -112,7 +113,7 @@ public sealed class SessionsViewShould
         SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l')));
 
         typing.List.FilterEditing.ShouldBeTrue();
-        typing.VisibleRows.Select(row => row.Session.Name).ShouldBe(["old-spike"]);
+        typing.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("old-spike")]);
         typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "ol", Selected: "old-spike"));
     }
 
@@ -152,7 +153,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Enter));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
+        update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal(Listed.As("repos-93"), HasTranscript: true));
     }
 
     [Theory]
@@ -166,7 +167,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
+        update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal(Listed.As("repos-93"), HasTranscript: true));
     }
 
     [Theory]
@@ -204,7 +205,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(state, new KeyPressed(Key.Of('b')));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.WorkingSoAdoptWaits("busy-terminal"));
+        update.State.Message.ShouldBe(new StatusMessage.WorkingSoAdoptWaits(Listed.As("busy-terminal")));
     }
 
     [Fact]
@@ -213,7 +214,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('b')));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.AlreadyUnderVantage("change-feed"));
+        update.State.Message.ShouldBe(new StatusMessage.AlreadyUnderVantage(Listed.As("change-feed")));
     }
 
     [Fact]
@@ -229,7 +230,7 @@ public sealed class SessionsViewShould
             ViewUpdate<SessionsViewState> update = SessionsView.Reduce(withStub, new KeyPressed(key));
 
             update.Effects.ShouldBeEmpty();
-            update.State.Message.ShouldBe(new StatusMessage.NeverSentAMessage("repos-f6"));
+            update.State.Message.ShouldBe(new StatusMessage.NeverSentAMessage(Listed.As("repos-f6")));
         }
 
         SessionsView.Reduce(withStub, new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new DeleteSession(stubJob)]);
@@ -246,7 +247,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> closed = SessionsView.Reduce(onUntouched, new KeyPressed(Key.Of('d')));
 
         enter.Effects.ShouldBeEmpty();
-        enter.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-f6", HasTranscript: false));
+        enter.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal(Listed.As("repos-f6"), HasTranscript: false));
         closed.Effects.Single().ShouldBeOfType<CloseEmptyTerminals>().Sessions.ShouldBe([untouchedTerminal]);
     }
 
@@ -328,7 +329,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onWorking, new KeyPressed(Key.Of('r')));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.WorkingSoRenameWaits("remove-sonar"));
+        update.State.Message.ShouldBe(new StatusMessage.WorkingSoRenameWaits(Listed.As("remove-sonar")));
     }
 
     [Theory]
@@ -402,7 +403,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onStopped, new KeyPressed(Key.Of('m')));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Message.ShouldBe(new StatusMessage.NothingToMeasure("old-spike"));
+        update.State.Message.ShouldBe(new StatusMessage.NothingToMeasure(Listed.As("old-spike")));
     }
 
     [Fact]
@@ -648,11 +649,11 @@ public sealed class SessionsViewShould
 
     private static BackgroundSession Job(string name, DisplayState state, string repository, string jobId)
     {
-        return new BackgroundSession(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), name, FolderPath.From($@"C:\repos\{repository}"), Noon, state, new JobProcess.None());
+        return new BackgroundSession(SessionId.From(Guid.NewGuid().ToString()), JobId.From(jobId), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, new JobProcess.None());
     }
 
     private static InteractiveSession Terminal(string name, DisplayState state, string repository)
     {
-        return new InteractiveSession(SessionId.From(Guid.NewGuid().ToString()), name, FolderPath.From($@"C:\repos\{repository}"), Noon, state, ProcessId: 4242);
+        return new InteractiveSession(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Noon, state, ProcessId: 4242);
     }
 }

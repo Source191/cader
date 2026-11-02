@@ -2,6 +2,7 @@ using Source191.Vantage.Adapters.Claude;
 using Source191.Vantage.Adapters.Processes;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
+using Source191.Vantage.TestDoubles;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -125,7 +126,7 @@ public sealed class ClaudeContractShould
             await EndAsync(cli, jobId);
 
             IReadOnlyList<Session> sessions = (await cli.ListSessionsAsync(Cancellation)).Sessions;
-            sessions.ShouldNotContain(session => session.Name == name.Value);
+            sessions.ShouldNotContain(session => session.Name == Listed.As(name.Value));
         }
         finally
         {
@@ -272,7 +273,7 @@ public sealed class ClaudeContractShould
         while (TimeProvider.System.GetUtcNow() < deadline)
         {
             IReadOnlyList<Session> sessions = (await cli.ListSessionsAsync(Cancellation)).Sessions;
-            Session? listed = sessions.FirstOrDefault(session => session.Name == name.Value);
+            Session? listed = sessions.FirstOrDefault(session => session.Name == Listed.As(name.Value));
             if (listed is not null)
             {
                 return listed;

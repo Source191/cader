@@ -121,17 +121,17 @@ public static partial class Wording
             StatusMessage.Blank => string.Empty,
             StatusMessage.NoSessionSelected => "No session selected.",
             StatusMessage.RunsInOwnTerminal { HasTranscript: true } terminal =>
-                $"{terminal.Name} runs in its own terminal. Press b to move it under Vantage (its old tab closes), or type /bg there.",
+                $"{Name(terminal.Name)} runs in its own terminal. Press b to move it under Vantage (its old tab closes), or type /bg there.",
             StatusMessage.RunsInOwnTerminal terminal =>
-                $"{terminal.Name} runs in its own terminal and has no messages yet. d closes its tab, C closes every such tab, or send it something there and press b.",
-            StatusMessage.NeverSentAMessage never => $"{never.Name} has nothing to resume: it was never sent a message. d deletes it.",
+                $"{Name(terminal.Name)} runs in its own terminal and has no messages yet. d closes its tab, C closes every such tab, or send it something there and press b.",
+            StatusMessage.NeverSentAMessage never => $"{Name(never.Name)} has nothing to resume: it was never sent a message. d deletes it.",
             StatusMessage.NoEmptyTerminals => "No terminal sessions without messages.",
-            StatusMessage.NoMessagesToRename rename => $"{rename.Name} has no messages yet, so it cannot be renamed; send it something first.",
-            StatusMessage.WorkingSoRenameWaits rename => $"{rename.Name} is working; wait until it is idle or needs input, because renaming restarts it.",
+            StatusMessage.NoMessagesToRename rename => $"{Name(rename.Name)} has no messages yet, so it cannot be renamed; send it something first.",
+            StatusMessage.WorkingSoRenameWaits rename => $"{Name(rename.Name)} is working; wait until it is idle or needs input, because renaming restarts it.",
             StatusMessage.RenameCancelled => "Rename cancelled.",
             StatusMessage.InvalidName invalid => Describe(invalid.Problem),
-            StatusMessage.AlreadyUnderVantage adopted => $"{adopted.Name} already runs in the background under Vantage.",
-            StatusMessage.WorkingSoAdoptWaits adopt => $"{adopt.Name} is working; wait until it is idle or needs input, so nothing in flight is lost.",
+            StatusMessage.AlreadyUnderVantage adopted => $"{Name(adopted.Name)} already runs in the background under Vantage.",
+            StatusMessage.WorkingSoAdoptWaits adopt => $"{Name(adopt.Name)} is working; wait until it is idle or needs input, so nothing in flight is lost.",
             _ => DescribeWorktreesAndScreen(message),
         };
     }
@@ -158,7 +158,7 @@ public static partial class Wording
         return reason switch
         {
             RemovalReason.None => string.Empty,
-            RemovalReason.LiveSession live => $"session {live.Name} is using it",
+            RemovalReason.LiveSession live => $"session {Name(live.Name)} is using it",
             RemovalReason.Locked => "the worktree is locked",
             RemovalReason.LeftoverFilesWouldBeLost leftover => $"{(leftover.AtLeast ? "at least " : string.Empty)}{leftover.Count} files that git no longer tracks would be lost",
             RemovalReason.ChangesWouldBeLost changes => $"{changes.Count} changed or untracked files would be lost",
@@ -265,13 +265,13 @@ public static partial class Wording
     {
         return effect switch
         {
-            OpenTabForSession open => $"Opening a tab for {open.Session.Name}...",
+            OpenTabForSession open => $"Opening a tab for {Name(open.Session.Name)}...",
             StopSession => "Stopping...",
-            AdoptSession adopt => $"Moving {adopt.Session.Name} under Vantage...",
-            RenameSession rename => $"Renaming {rename.Session.Name} to {rename.NewName.Value}...",
+            AdoptSession adopt => $"Moving {Name(adopt.Session.Name)} under Vantage...",
+            RenameSession rename => $"Renaming {Name(rename.Session.Name)} to {rename.NewName.Value}...",
             CloseEmptyTerminals => "Closing...",
             ResumeSessions resume => $"Resuming {resume.Sessions.Count}...",
-            DeleteSession deletion => $"Deleting {deletion.Session.Name}...",
+            DeleteSession deletion => $"Deleting {Name(deletion.Session.Name)}...",
             DeleteBranch branch => $"Deleting branch {branch.Branch.Branch}...",
             RemoveWorktree remove => $"Removing {remove.Row.FolderName}...",
             PruneRepository => "Pruning...",
@@ -280,7 +280,7 @@ public static partial class Wording
             CopyFolderPath => "Copying...",
             OpenFolderInEditor open => $"Opening {open.Folder.Name} in the editor...",
             FindSolution find => $"Looking for a solution in {find.Folder.Name}...",
-            ShowMemory show => $"Measuring {show.Session.Name}...",
+            ShowMemory show => $"Measuring {Name(show.Session.Name)}...",
             OpenSolution solution => $"Opening {Path.GetFileName(solution.File)}...",
             OpenPullRequest open => $"Opening {PullRequestNumber(open.PullRequest.Host, open.PullRequest.Number)}...",
             OpenReleasePage page => $"Opening the {page.Version} release page...",
@@ -319,7 +319,7 @@ public static partial class Wording
         return wizard.ShowsChooser ? $"Type to filter, ↑↓ to choose, Enter confirms the repository   {Fields}" : "Enter or F5 starts and opens in tab   Esc cancel";
     }
 
-    public static string MemoryDialogTitle(string sessionName) => $"Memory: {sessionName}";
+    public static string MemoryDialogTitle(ListedName sessionName) => $"Memory: {Name(sessionName)}";
 
     /// <summary>The breakdown dialog's text: Claude Code, each program with its subtree's memory, then the total with the process count, figures right-aligned.</summary>
     public static string MemoryBreakdownLines(MemoryBreakdown breakdown)
@@ -340,13 +340,21 @@ public static partial class Wording
 
     public static string ChooseSolutionQuestion(string folderName) => $"{folderName} holds more than one solution. Which one?";
 
-    public static string RenamePrompt(string name) => $"Rename {name}. The session restarts under the new name and keeps its conversation.";
-
-    public static string DeleteSessionQuestion(string name) => $"Delete {name}?\nIts worktree is removed only when nothing in it would be lost.";
-
-    public static string CloseEmptyQuestion(IReadOnlyList<string> names)
+    /// <summary>A session's name as shown anywhere: its value, or nothing for a session the listing gave none.</summary>
+    public static string Name(ListedName name) => name switch
     {
-        string listed = string.Join(", ", names);
+        ListedName.Named named => named.Name.Value,
+        ListedName.Unnamed => string.Empty,
+        _ => throw new UnreachableException(),
+    };
+
+    public static string RenamePrompt(ListedName name) => $"Rename {Name(name)}. The session restarts under the new name and keeps its conversation.";
+
+    public static string DeleteSessionQuestion(ListedName name) => $"Delete {Name(name)}?\nIts worktree is removed only when nothing in it would be lost.";
+
+    public static string CloseEmptyQuestion(IReadOnlyList<ListedName> names)
+    {
+        string listed = string.Join(", ", names.Select(Name));
         string what = names.Count == 1 ? $"Close the tab of {listed}?" : $"Close {names.Count} tabs: {listed}?";
 
         return $"{what}\nNone of them has been sent a message, so nothing is lost.";
@@ -443,9 +451,9 @@ public static partial class Wording
             StatusMessage.NothingToPrune prune => $"Nothing to prune: the repository {prune.RepositoryName} no longer exists.",
             StatusMessage.LeftoverFolder leftover => $"{leftover.FolderName} is a leftover folder, not a worktree.",
             StatusMessage.NoSessionIn none => $"No session is running in {none.FolderName}.",
-            StatusMessage.SessionNotListed gone => $"{gone.Name} is not in the sessions list any more; it may have ended. Try again after the next refresh.",
+            StatusMessage.SessionNotListed gone => $"{Name(gone.Name)} is not in the sessions list any more; it may have ended. Try again after the next refresh.",
             StatusMessage.NoSolution none => $"No solution found in {none.FolderName} or its src folder.",
-            StatusMessage.NothingToMeasure stopped => $"{stopped.Name} has no process to measure; it is stopped.",
+            StatusMessage.NothingToMeasure stopped => $"{Name(stopped.Name)} has no process to measure; it is stopped.",
             StatusMessage.NoPullRequest none => Describe(none),
             StatusMessage.UpToDate => "Vantage is up to date.",
             StatusMessage.NewerReleaseFound found => $"Vantage {found.Version} is available: press U to see what changed.",

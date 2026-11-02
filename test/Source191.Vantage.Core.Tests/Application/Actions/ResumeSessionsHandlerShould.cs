@@ -34,7 +34,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
         transcripts.WithMessages("sess-1");
         BackgroundSession withTranscript = Job(Repository, DisplayState.Failed);
-        BackgroundSession stub = withTranscript with { SessionId = SessionId.From("sess-stub"), Name = "repos-f6" };
+        BackgroundSession stub = withTranscript with { SessionId = SessionId.From("sess-stub"), Name = Listed.As("repos-f6") };
 
         Outcome message = await Handler.HandleAsync(new ResumeSessions([withTranscript, stub]), CancellationToken.None);
 
@@ -42,7 +42,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.CapturedRequests.Count(request => request.Arguments.Contains("rm")).ShouldBe(1, "a session with no transcript keeps its job, since it could not come back");
         ResumeSessionsOutcome resume = message.ShouldBeOfType<ResumeSessionsOutcome>();
         (resume.Resumed, resume.Chosen).ShouldBe((1, 2));
-        resume.Notes.ShouldBe([new ResumeNote.NeverSentAMessage("repos-f6")]);
+        resume.Notes.ShouldBe([new ResumeNote.NeverSentAMessage(Listed.As("repos-f6"))]);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
         transcripts.WithMessages("sess-1").WithMessages("sess-2");
         BackgroundSession first = Job(Repository, DisplayState.Failed);
-        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = "fix-124" };
+        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
         await Handler.HandleAsync(new ResumeSessions([first, second]), CancellationToken.None);
 
@@ -87,7 +87,7 @@ public sealed class ResumeSessionsHandlerShould
 
         ResumeSessionsOutcome resume = message.ShouldBeOfType<ResumeSessionsOutcome>();
         resume.Resumed.ShouldBe(0);
-        resume.Notes.ShouldBe([new ResumeNote.Failed("fix-123", "Workspace not trusted", SessionId.From("sess-1"))], "the job is gone, so the note carries what brings the session back");
+        resume.Notes.ShouldBe([new ResumeNote.Failed(Listed.As("fix-123"), "Workspace not trusted", SessionId.From("sess-1"))], "the job is gone, so the note carries what brings the session back");
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
         transcripts.WithMessages("sess-1").WithMessages("sess-2");
         BackgroundSession named = Job(Repository, DisplayState.Failed);
-        BackgroundSession blank = named with { SessionId = SessionId.From("sess-2"), Name = " " };
+        BackgroundSession blank = named with { SessionId = SessionId.From("sess-2"), Name = Listed.None() };
 
         await Handler.HandleAsync(new ResumeSessions([named, blank]), CancellationToken.None);
 
@@ -110,7 +110,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-123", string.Empty));
         transcripts.WithMessages("sess-1").WithMessages("sess-2");
         BackgroundSession first = Job(Repository, DisplayState.Failed);
-        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = "fix-124" };
+        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
         await Handler.HandleAsync(new ResumeSessions([first, second]), CancellationToken.None);
 
@@ -123,14 +123,14 @@ public sealed class ResumeSessionsHandlerShould
     {
         processes.Answer(request => request.Arguments.Contains("sess-2"), new ProcessResult(1, string.Empty, "Workspace not trusted"));
         transcripts.WithMessages("sess-2");
-        BackgroundSession stub = Job(Repository, DisplayState.Stopped) with { SessionId = SessionId.From("sess-stub"), Name = "repos-f6" };
-        BackgroundSession refused = Job(Worktree, DisplayState.Failed) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = "fix-124" };
+        BackgroundSession stub = Job(Repository, DisplayState.Stopped) with { SessionId = SessionId.From("sess-stub"), Name = Listed.As("repos-f6") };
+        BackgroundSession refused = Job(Worktree, DisplayState.Failed) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
         Outcome message = await Handler.HandleAsync(new ResumeSessions([stub, refused]), CancellationToken.None);
 
         terminal.Opened.ShouldBeEmpty("neither session is running again, so there is nothing to attach to");
         (await store.ReadTabsAsync()).ShouldBeEmpty();
-        message.ShouldBeOfType<ResumeSessionsOutcome>().Notes.ShouldBe([new ResumeNote.NeverSentAMessage("repos-f6"), new ResumeNote.Failed("fix-124", "Workspace not trusted", SessionId.From("sess-2"))]);
+        message.ShouldBeOfType<ResumeSessionsOutcome>().Notes.ShouldBe([new ResumeNote.NeverSentAMessage(Listed.As("repos-f6")), new ResumeNote.Failed(Listed.As("fix-124"), "Workspace not trusted", SessionId.From("sess-2"))]);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public sealed class ResumeSessionsHandlerShould
         processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · c429a96e · fix-124", string.Empty));
         transcripts.WithMessages("sess-1").WithMessages("sess-2");
         BackgroundSession first = Job(Repository, DisplayState.Failed);
-        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = "fix-124" };
+        BackgroundSession second = Job(Worktree, DisplayState.Stopped) with { SessionId = SessionId.From("sess-2"), JobId = JobId.From("c429a96e"), Name = Listed.As("fix-124") };
 
         Outcome message = await Handler.HandleAsync(new ResumeSessions([first, second]), CancellationToken.None);
 
@@ -148,6 +148,6 @@ public sealed class ResumeSessionsHandlerShould
         terminal.Opened.ShouldHaveSingleItem().Title.ShouldBe("fix-124");
         ResumeSessionsOutcome resume = message.ShouldBeOfType<ResumeSessionsOutcome>();
         (resume.Resumed, resume.Chosen).ShouldBe((1, 2));
-        resume.Notes.ShouldBe([new ResumeNote.NotRemoved("fix-123", "Session 81cdb0f9 not found")]);
+        resume.Notes.ShouldBe([new ResumeNote.NotRemoved(Listed.As("fix-123"), "Session 81cdb0f9 not found")]);
     }
 }

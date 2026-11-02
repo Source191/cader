@@ -52,7 +52,7 @@ public sealed class StartSessionHandlerShould
     {
         Outcome outcome = await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
 
-        outcome.ShouldBe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened("Fix flaky tests", "Red", ColourReused: false)));
+        outcome.ShouldBe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false)));
         TabLaunch tab = terminal.Opened.Single();
         tab.Title.ShouldBe("Fix flaky tests");
         tab.Script.ShouldContain($"& '{Claude}' 'attach' '81cdb0f9'");

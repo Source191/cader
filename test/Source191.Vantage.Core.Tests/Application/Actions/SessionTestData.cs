@@ -40,13 +40,13 @@ internal static class SessionTestData
     /// <summary>A plain claude session in some tab, session id sess-9.</summary>
     public static InteractiveSession Terminal(string name, int processId, DisplayState? state = null)
     {
-        return new InteractiveSession(SessionId.From("sess-9"), name, FolderPath.From(Repository), Noon, state ?? DisplayState.Idle, processId);
+        return new InteractiveSession(SessionId.From("sess-9"), Listed.Of(name), FolderPath.From(Repository), Noon, state ?? DisplayState.Idle, processId);
     }
 
     /// <summary>A supervised session named fix-123, job 81cdb0f9, session id sess-1.</summary>
     public static BackgroundSession Job(string directory, DisplayState? state = null)
     {
-        return new BackgroundSession(SessionId.From("sess-1"), JobId.From("81cdb0f9"), "fix-123", FolderPath.From(directory), Noon, state ?? DisplayState.Working, new JobProcess.None());
+        return new BackgroundSession(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("fix-123"), FolderPath.From(directory), Noon, state ?? DisplayState.Working, new JobProcess.None());
     }
 
     /// <summary>The <see cref="Terminal"/> session as a row on main.</summary>

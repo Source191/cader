@@ -1,6 +1,7 @@
 using Source191.Vantage.Adapters.Claude;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
+using Source191.Vantage.TestDoubles;
 using System.Text.Json;
 
 namespace Source191.Vantage.Infrastructure.Tests;
@@ -40,7 +41,7 @@ public sealed class ClaudeAgentsListingShould
             ]
             """;
 
-        ClaudeAgentsListing.Parse(json).Sessions.Select(session => session.Name).ShouldBe(["full-cwd"]);
+        ClaudeAgentsListing.Parse(json).Sessions.Select(session => session.Name).ShouldBe([Listed.As("full-cwd")]);
     }
 
     [Fact]
@@ -54,14 +55,14 @@ public sealed class ClaudeAgentsListingShould
             ]
             """;
 
-        ClaudeAgentsListing.Parse(json).Sessions.Select(session => session.Name).ShouldBe(["an-id"]);
+        ClaudeAgentsListing.Parse(json).Sessions.Select(session => session.Name).ShouldBe([Listed.As("an-id")]);
     }
 
     [Fact]
     public void MapBackgroundRowsAndInteractiveRows()
     {
-        InteractiveSession interactive = Sessions.Single(session => session.Name == "repos-93").ShouldBeOfType<InteractiveSession>();
-        BackgroundSession background = Sessions.Single(session => session.Name == "spike-commit-check").ShouldBeOfType<BackgroundSession>();
+        InteractiveSession interactive = Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<InteractiveSession>();
+        BackgroundSession background = Sessions.Single(session => session.Name == Listed.As("spike-commit-check")).ShouldBeOfType<BackgroundSession>();
 
         interactive.ProcessId.ShouldBe(51432);
         interactive.SessionId.Value.ShouldBe("82db48ec-63de-49db-9831-b8147075dc3a");
@@ -70,7 +71,7 @@ public sealed class ClaudeAgentsListingShould
         background.JobId.ShouldBe(JobId.From("1a4d2d86"));
         background.Process.ShouldBe(new JobProcess.Running(57456));
         background.State.ShouldBe(DisplayState.Completed);
-        Sessions.Single(session => session.Name == "spike-permission").ShouldBeOfType<BackgroundSession>().Process.ShouldBe(new JobProcess.None(), "a stopped job has no process");
+        Sessions.Single(session => session.Name == Listed.As("spike-permission")).ShouldBeOfType<BackgroundSession>().Process.ShouldBe(new JobProcess.None(), "a stopped job has no process");
     }
 
     /// <summary>
@@ -90,7 +91,7 @@ public sealed class ClaudeAgentsListingShould
 
         IReadOnlyList<Session> sessions = ClaudeAgentsListing.Parse(json).Sessions;
 
-        sessions.Select(session => session.Name).ShouldBe(["no-job", "interactive-ended"]);
+        sessions.Select(session => session.Name).ShouldBe([Listed.As("no-job"), Listed.As("interactive-ended")]);
         sessions[0].ShouldBeOfType<BackgroundSession>().JobId.ShouldBe(JobId.From("fa82d736"));
         sessions[1].ShouldBeOfType<BackgroundSession>().JobId.ShouldBe(JobId.From("b2db48ec"), "an interactive row without a process cannot be its own terminal");
         sessions.ShouldAllBe(session => session.State == DisplayState.Stopped);
@@ -113,7 +114,7 @@ public sealed class ClaudeAgentsListingShould
 
         SessionListing listing = ClaudeAgentsListing.Parse(json);
 
-        listing.Sessions.Select(session => session.Name).ShouldBe(["fix-123"]);
+        listing.Sessions.Select(session => session.Name).ShouldBe([Listed.As("fix-123")]);
         listing.AutomatedRuns.ShouldBe([
             new AutomatedRun(SessionId.From("0fe9bf3e-385c-452d-a37b-7da761157fac"), FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123"), 60672),
             new AutomatedRun(SessionId.From("788e2abb-6dde-41c5-84e9-890d3a367799"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), 56712),
@@ -125,7 +126,7 @@ public sealed class ClaudeAgentsListingShould
     {
         SessionListing listing = ClaudeAgentsListing.Parse(Capture);
 
-        listing.Sessions.Single(session => session.Name == "repos-93").ShouldBeOfType<InteractiveSession>();
+        listing.Sessions.Single(session => session.Name == Listed.As("repos-93")).ShouldBeOfType<InteractiveSession>();
         listing.AutomatedRuns.ShouldBeEmpty();
     }
 
@@ -145,9 +146,25 @@ public sealed class ClaudeAgentsListingShould
     }
 
     [Fact]
+    public void ListARowWithNoNameOrABlankOneAsUnnamed()
+    {
+        const string json = """
+            [
+              {"pid":57456,"id":"1a4d2d86","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Orders","kind":"background","startedAt":1,"sessionId":"1a4d2d86-8e87-44fe-a9f7-61d47d481ae3"},
+              {"pid":57457,"id":"2b5e3e97","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Orders","kind":"background","startedAt":1,"sessionId":"2b5e3e97-8e87-44fe-a9f7-61d47d481ae3","name":" "},
+              {"pid":57458,"id":"3c6f4fa8","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Orders","kind":"background","startedAt":1,"sessionId":"3c6f4fa8-8e87-44fe-a9f7-61d47d481ae3","name":"fix-123"}
+            ]
+            """;
+
+        SessionListing listing = ClaudeAgentsListing.Parse(json);
+
+        listing.Sessions.Select(session => session.Name).ShouldBe([Listed.None(), Listed.None(), Listed.As("fix-123")]);
+    }
+
+    [Fact]
     public void ConvertStartedAtFromEpochMilliseconds()
     {
-        Session background = Sessions.Single(session => session.Name == "spike-commit-check");
+        Session background = Sessions.Single(session => session.Name == Listed.As("spike-commit-check"));
 
         background.StartedAt.ShouldBe(DateTimeOffset.FromUnixTimeMilliseconds(1792745753340));
     }
@@ -155,7 +172,7 @@ public sealed class ClaudeAgentsListingShould
     [Fact]
     public void MapAWaitingRowToNeedsInput()
     {
-        Session waiting = Sessions.Single(session => session.Name == "spike-permission-2");
+        Session waiting = Sessions.Single(session => session.Name == Listed.As("spike-permission-2"));
 
         waiting.State.ShouldBe(DisplayState.NeedsInput);
     }
@@ -163,7 +180,7 @@ public sealed class ClaudeAgentsListingShould
     [Fact]
     public void MapARowWithoutAProcessToStopped()
     {
-        Session stopped = Sessions.Single(session => session.Name == "spike-permission");
+        Session stopped = Sessions.Single(session => session.Name == Listed.As("spike-permission"));
 
         stopped.State.ShouldBe(DisplayState.Stopped);
     }
@@ -182,8 +199,8 @@ public sealed class ClaudeAgentsListingShould
     {
         IReadOnlyList<Session> sessions = ClaudeAgentsListing.Parse(Capture).Sessions;
 
-        sessions.Single(session => session.Name == "spike-permission-2").WaitingFor.ShouldBe(new WaitingReason.Given("permission prompt"));
-        sessions.Single(session => session.Name == "spike-commit-check").WaitingFor.ShouldBe(new WaitingReason.None());
+        sessions.Single(session => session.Name == Listed.As("spike-permission-2")).WaitingFor.ShouldBe(new WaitingReason.Given("permission prompt"));
+        sessions.Single(session => session.Name == Listed.As("spike-commit-check")).WaitingFor.ShouldBe(new WaitingReason.None());
     }
 
     [Fact]

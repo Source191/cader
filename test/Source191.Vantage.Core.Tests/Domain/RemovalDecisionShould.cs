@@ -1,4 +1,5 @@
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Domain;
 
@@ -83,10 +84,10 @@ public sealed class RemovalDecisionShould
     [Fact]
     public void RefuseAWorktreeWithALiveSessionEvenWhenForced()
     {
-        RemovalDecision decision = RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), "remove-sonar") }, forced: true);
+        RemovalDecision decision = RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), Listed.As("remove-sonar")) }, forced: true);
 
         decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LiveSession("remove-sonar"));
+        decision.Reason.ShouldBe(new RemovalReason.LiveSession(Listed.As("remove-sonar")));
     }
 
     [Fact]
@@ -160,18 +161,18 @@ public sealed class RemovalDecisionShould
     [Fact]
     public void RefuseALeftoverFolderWithALiveSessionEvenWhenForced()
     {
-        RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), "fix-service-tests") }, forced: true);
+        RemovalDecision decision = RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), Listed.As("fix-service-tests")) }, forced: true);
 
         decision.Outcome.ShouldBe(RemovalOutcome.Refused);
-        decision.Reason.ShouldBe(new RemovalReason.LiveSession("fix-service-tests"));
+        decision.Reason.ShouldBe(new RemovalReason.LiveSession(Listed.As("fix-service-tests")));
     }
 
     [Fact]
     public void SayWhetherARefusalCanBeForced()
     {
         RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Locked }, forced: false).CanBeForced.ShouldBeFalse();
-        RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), "remove-sonar") }, forced: false).CanBeForced.ShouldBeFalse();
-        RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), "fix-service-tests") }, forced: false).CanBeForced.ShouldBeFalse();
+        RemovalDecision.For(Clean with { Session = new WorktreeSession.Running(SessionId.From("sess-1"), Listed.As("remove-sonar")) }, forced: false).CanBeForced.ShouldBeFalse();
+        RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, Session = new WorktreeSession.Running(SessionId.From("sess-2"), Listed.As("fix-service-tests")) }, forced: false).CanBeForced.ShouldBeFalse();
         RemovalDecision.For(Clean with { DirtyFileCount = 5 }, forced: false).CanBeForced.ShouldBeTrue();
         RemovalDecision.For(Clean with { UnpushedCommitCount = 2 }, forced: false).CanBeForced.ShouldBeTrue();
         RemovalDecision.For(Clean with { Health = WorktreeHealthKind.Orphan, LeftoverFileCount = 12 }, forced: false).CanBeForced.ShouldBeTrue();

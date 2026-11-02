@@ -25,7 +25,7 @@ public sealed class DeleteSessionHandlerShould
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
         processes.CapturedRequests.ShouldNotContain(request => request.FileName == "git");
-        outcome.ShouldBe(new DeleteSessionOutcome.Deleted("fix-123"));
+        outcome.ShouldBe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123")));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class DeleteSessionHandlerShould
         processes.CapturedRequests.Single(request => request.Arguments.Contains("remove")).Arguments.ShouldBe(["worktree", "remove", Worktree]);
         processes.CapturedRequests.Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "fix-123"]);
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
-        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch("fix-123", BranchName.From("fix-123")));
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123")));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class DeleteSessionHandlerShould
 
         DeleteSessionOutcome outcome = await handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
-        outcome.ShouldBe(new DeleteSessionOutcome.KeptWorktree("fix-123", new RemovalReason.RepositoryGone(FolderPath.From(Repository))));
+        outcome.ShouldBe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.RepositoryGone(FolderPath.From(Repository))));
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
         processes.CapturedRequests.ShouldNotContain(request => request.FileName == "git");
         worktreeOnly.DirectoryExists(Worktree).ShouldBeTrue();
@@ -93,7 +93,7 @@ public sealed class DeleteSessionHandlerShould
 
         processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("remove"));
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("branch"));
-        outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged("fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123"))));
+        outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123"))));
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
         order.ShouldBe(["shell 4000 ended after 0 git calls"]);
-        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch("fix-123", BranchName.From("fix-123")) { TabClosed = true });
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123")) { TabClosed = true });
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
-        outcome.ShouldBe(new DeleteSessionOutcome.WorktreeInUse("fix-123", "Northwind.Orders-fix-123"));
+        outcome.ShouldBe(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123"));
     }
 
     private const string FixListedPrunable = "worktree C:/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n";
@@ -153,7 +153,7 @@ public sealed class DeleteSessionHandlerShould
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
         folders.DirectoryExists(Worktree).ShouldBeTrue();
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("prune") || request.Arguments.Contains("remove"));
-        outcome.ShouldBe(new DeleteSessionOutcome.KeptWorktree("fix-123", new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false)));
+        outcome.ShouldBe(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false)));
     }
 
     [Fact]
@@ -183,6 +183,6 @@ public sealed class DeleteSessionHandlerShould
         processes.CapturedRequests.ShouldNotContain(request => request.FileName == "git");
         registry.EndedCleanly.ShouldBeEmpty();
         folders.DirectoryExists(Worktree).ShouldBeTrue();
-        outcome.ShouldBe(new DeleteSessionOutcome.NotDeleted("fix-123", "Session 81cdb0f9 not found"));
+        outcome.ShouldBe(new DeleteSessionOutcome.NotDeleted(Listed.As("fix-123"), "Session 81cdb0f9 not found"));
     }
 }

@@ -6,7 +6,7 @@ public abstract record RemovalReason
     /// <summary>A plain removal: nothing to explain.</summary>
     public sealed record None : RemovalReason;
 
-    public sealed record LiveSession(string Name) : RemovalReason;
+    public sealed record LiveSession(ListedName Name) : RemovalReason;
 
     public sealed record Locked : RemovalReason;
 

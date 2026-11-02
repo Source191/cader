@@ -2,6 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application.Diagnostics;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Ports;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Diagnostics;
 
@@ -44,6 +45,6 @@ public sealed class AttemptShould
     [Fact]
     public void NameAnyOtherStatusMessageByItsKind()
     {
-        Attempt.What(new StatusMessage.WorkingSoRenameWaits("Fix flaky tests")).ShouldBe(CodeName.For(typeof(StatusMessage.WorkingSoRenameWaits)));
+        Attempt.What(new StatusMessage.WorkingSoRenameWaits(Listed.As("Fix flaky tests"))).ShouldBe(CodeName.For(typeof(StatusMessage.WorkingSoRenameWaits)));
     }
 }

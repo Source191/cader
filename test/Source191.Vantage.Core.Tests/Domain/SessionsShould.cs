@@ -1,4 +1,5 @@
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Domain;
 
@@ -17,7 +18,7 @@ public sealed class SessionsShould
 
         IReadOnlyList<Session> ordered = sessions.OrderedByAttention();
 
-        ordered.Select(session => session.Name).ShouldBe(["waiting", "working", "stopped"]);
+        ordered.Select(session => session.Name).ShouldBe([Listed.As("waiting"), Listed.As("working"), Listed.As("stopped")]);
     }
 
     [Fact]
@@ -35,7 +36,7 @@ public sealed class SessionsShould
 
         IReadOnlyList<Session> ordered = sessions.OrderedByAttention();
 
-        ordered.Select(session => session.Name).ShouldBe(["waiting", "working", "idle", "completed", "failed", "stopped", "unknown"]);
+        ordered.Select(session => session.Name).ShouldBe([Listed.As("waiting"), Listed.As("working"), Listed.As("idle"), Listed.As("completed"), Listed.As("failed"), Listed.As("stopped"), Listed.As("unknown")]);
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public sealed class SessionsShould
 
         IReadOnlyList<Session> ordered = sessions.OrderedByAttention();
 
-        ordered.Select(session => session.Name).ShouldBe(["newer", "older"]);
+        ordered.Select(session => session.Name).ShouldBe([Listed.As("newer"), Listed.As("older")]);
     }
 
     private static BackgroundSession Session(string name, DisplayState state, DateTimeOffset startedAt)
@@ -56,7 +57,7 @@ public sealed class SessionsShould
         return new BackgroundSession(
             SessionId: SessionId.From(Guid.NewGuid().ToString()),
             JobId: JobId.From("81cdb0f9"),
-            Name: name,
+            Name: Listed.As(name),
             WorkingDirectory: FolderPath.From(@"C:\repos\Northwind.Orders"),
             StartedAt: startedAt,
             State: state,

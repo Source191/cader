@@ -1,6 +1,7 @@
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Source191.Vantage.Adapters.Claude;
@@ -53,11 +54,15 @@ public sealed class ClaudeCli(IProcessRunner processes, string executable) : ICl
 
     public Task RemoveAsync(string jobId, CancellationToken cancellationToken) => RunOrThrowAsync(["rm", jobId], cancellationToken);
 
-    public Task<ResumeResult> ResumeBackgroundAsync(string sessionId, string directory, SessionName name, CancellationToken cancellationToken) =>
-        ResumeAsync(["--bg", "--resume", sessionId, "-n", name.Value], directory, cancellationToken);
+    public Task<ResumeResult> ResumeBackgroundAsync(string sessionId, string directory, ListedName name, CancellationToken cancellationToken) =>
+        ResumeAsync(["--bg", "--resume", sessionId, .. NameArguments(name)], directory, cancellationToken);
 
-    public Task<ResumeResult> ResumeBackgroundAsync(string sessionId, string directory, CancellationToken cancellationToken) =>
-        ResumeAsync(["--bg", "--resume", sessionId], directory, cancellationToken);
+    private static string[] NameArguments(ListedName name) => name switch
+    {
+        ListedName.Named named => ["-n", named.Name.Value],
+        ListedName.Unnamed => [],
+        _ => throw new UnreachableException(),
+    };
 
     private async Task<ResumeResult> ResumeAsync(IReadOnlyList<string> arguments, string directory, CancellationToken cancellationToken)
     {

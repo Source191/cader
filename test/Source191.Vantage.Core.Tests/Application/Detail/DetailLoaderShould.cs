@@ -130,7 +130,7 @@ public sealed class DetailLoaderShould
 
     private static SessionRow Row(JobProcess process)
     {
-        BackgroundSession session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), "invoice-pdf", Worktree, Noon, DisplayState.Working, process);
+        BackgroundSession session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Noon, DisplayState.Working, process);
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Billing", Repository), new Head.OnBranch(BranchName.From("invoice-pdf")), new LiveTab.None(), HasTranscript: true);
     }

@@ -1,6 +1,7 @@
 using Source191.Vantage.Application;
 using Source191.Vantage.Domain;
 using Source191.Vantage.Ports;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application;
 
@@ -18,7 +19,7 @@ public sealed class TabScriptsShould
     [Fact]
     public void BuildTheAttachScript()
     {
-        BackgroundSession session = new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), "Refund retry policy", Repository, Noon, DisplayState.Working, new JobProcess.None());
+        BackgroundSession session = new(SessionId.From("sess-1"), JobId.From("81cdb0f9"), Listed.As("Refund retry policy"), Repository, Noon, DisplayState.Working, new JobProcess.None());
         TabRegistration registration = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), TabPalette.Default[0], Noon);
 
         TabLaunch tab = scripts.Attach(session, registration);

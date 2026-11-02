@@ -42,6 +42,18 @@ public sealed class WordingShould
     // Standing messages.
 
     [Fact]
+    public void NameANamedSession()
+    {
+        Wording.Name(Listed.As("fix-123")).ShouldBe("fix-123");
+    }
+
+    [Fact]
+    public void NameAnUnnamedSessionAsBlank()
+    {
+        Wording.Name(Listed.None()).ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public void SayNothingForNoStatusMessage()
     {
         Wording.Describe(StatusMessage.None).ShouldBe(string.Empty);
@@ -58,21 +70,21 @@ public sealed class WordingShould
     [Fact]
     public void ExplainATerminalSessionWithMessages()
     {
-        Wording.Describe(new StatusMessage.RunsInOwnTerminal("fix-123", HasTranscript: true))
+        Wording.Describe(new StatusMessage.RunsInOwnTerminal(Listed.As("fix-123"), HasTranscript: true))
             .ShouldBe("fix-123 runs in its own terminal. Press b to move it under Vantage (its old tab closes), or type /bg there.");
     }
 
     [Fact]
     public void ExplainATerminalSessionWithoutMessages()
     {
-        Wording.Describe(new StatusMessage.RunsInOwnTerminal("fix-123", HasTranscript: false))
+        Wording.Describe(new StatusMessage.RunsInOwnTerminal(Listed.As("fix-123"), HasTranscript: false))
             .ShouldBe("fix-123 runs in its own terminal and has no messages yet. d closes its tab, C closes every such tab, or send it something there and press b.");
     }
 
     [Fact]
     public void SayASessionNeverSentAMessageHasNothingToResume()
     {
-        Wording.Describe(new StatusMessage.NeverSentAMessage("fix-123")).ShouldBe("fix-123 has nothing to resume: it was never sent a message. d deletes it.");
+        Wording.Describe(new StatusMessage.NeverSentAMessage(Listed.As("fix-123"))).ShouldBe("fix-123 has nothing to resume: it was never sent a message. d deletes it.");
     }
 
     [Fact]
@@ -84,13 +96,13 @@ public sealed class WordingShould
     [Fact]
     public void RefuseToRenameASessionWithoutMessages()
     {
-        Wording.Describe(new StatusMessage.NoMessagesToRename("fix-123")).ShouldBe("fix-123 has no messages yet, so it cannot be renamed; send it something first.");
+        Wording.Describe(new StatusMessage.NoMessagesToRename(Listed.As("fix-123"))).ShouldBe("fix-123 has no messages yet, so it cannot be renamed; send it something first.");
     }
 
     [Fact]
     public void WaitForAWorkingSessionBeforeRenaming()
     {
-        Wording.Describe(new StatusMessage.WorkingSoRenameWaits("fix-123")).ShouldBe("fix-123 is working; wait until it is idle or needs input, because renaming restarts it.");
+        Wording.Describe(new StatusMessage.WorkingSoRenameWaits(Listed.As("fix-123"))).ShouldBe("fix-123 is working; wait until it is idle or needs input, because renaming restarts it.");
     }
 
     [Fact]
@@ -110,13 +122,13 @@ public sealed class WordingShould
     [Fact]
     public void SayABackgroundSessionIsAlreadyUnderVantage()
     {
-        Wording.Describe(new StatusMessage.AlreadyUnderVantage("fix-123")).ShouldBe("fix-123 already runs in the background under Vantage.");
+        Wording.Describe(new StatusMessage.AlreadyUnderVantage(Listed.As("fix-123"))).ShouldBe("fix-123 already runs in the background under Vantage.");
     }
 
     [Fact]
     public void WaitForAWorkingSessionBeforeAdopting()
     {
-        Wording.Describe(new StatusMessage.WorkingSoAdoptWaits("fix-123")).ShouldBe("fix-123 is working; wait until it is idle or needs input, so nothing in flight is lost.");
+        Wording.Describe(new StatusMessage.WorkingSoAdoptWaits(Listed.As("fix-123"))).ShouldBe("fix-123 is working; wait until it is idle or needs input, so nothing in flight is lost.");
     }
 
     // The worktrees view.
@@ -175,27 +187,27 @@ public sealed class WordingShould
     public void SayNoSessionRunsInTheWorktree()
     {
         Wording.Describe(new StatusMessage.NoSessionIn("Northwind.Orders-fix-123")).ShouldBe("No session is running in Northwind.Orders-fix-123.");
-        Wording.Describe(new StatusMessage.SessionNotListed("fix-123")).ShouldBe("fix-123 is not in the sessions list any more; it may have ended. Try again after the next refresh.");
+        Wording.Describe(new StatusMessage.SessionNotListed(Listed.As("fix-123"))).ShouldBe("fix-123 is not in the sessions list any more; it may have ended. Try again after the next refresh.");
     }
 
     [Fact]
     public void SayAStoppedSessionHasNothingToMeasure()
     {
-        Wording.Describe(new StatusMessage.NothingToMeasure("fix-123")).ShouldBe("fix-123 has no process to measure; it is stopped.");
+        Wording.Describe(new StatusMessage.NothingToMeasure(Listed.As("fix-123"))).ShouldBe("fix-123 has no process to measure; it is stopped.");
         Wording.Working(new ShowMemory(Job, 5151)).ShouldBe("Measuring fix-123...");
     }
 
     [Fact]
     public void TitleTheMemoryDialogWithTheSessionName()
     {
-        Wording.MemoryDialogTitle("fix-123").ShouldBe("Memory: fix-123");
+        Wording.MemoryDialogTitle(Listed.As("fix-123")).ShouldBe("Memory: fix-123");
     }
 
     [Fact]
     public void LayOutTheMemoryBreakdownAsAlignedLines()
     {
         MemoryBreakdown breakdown = new(
-            "fix-123",
+            Listed.As("fix-123"),
             MemorySize.FromMegabytes(296),
             [new MemoryShare("@azure-devops/mcp", MemorySize.FromMegabytes(100)), new MemoryShare("pwsh", MemorySize.FromMegabytes(78)), new MemoryShare("mcp-grafana", MemorySize.FromMegabytes(30))],
             MemorySize.FromMegabytes(504),
@@ -214,7 +226,7 @@ public sealed class WordingShould
     [Fact]
     public void LayOutAMemoryBreakdownOfOneProcess()
     {
-        MemoryBreakdown alone = new("fix-123", MemorySize.FromMegabytes(296), [], MemorySize.FromMegabytes(296), 1);
+        MemoryBreakdown alone = new(Listed.As("fix-123"), MemorySize.FromMegabytes(296), [], MemorySize.FromMegabytes(296), 1);
 
         Wording.MemoryBreakdownLines(alone).ShouldBe("Claude Code   296 MB\n\nTotal         296 MB in 1 process");
     }
@@ -326,20 +338,20 @@ public sealed class WordingShould
     [Fact]
     public void SayWhatAHandlerDid()
     {
-        Wording.Describe(new StatusMessage.Reported(new StopSessionOutcome.Stopped("fix-123", TabClosed: false))).ShouldBe("Stopped fix-123.");
+        Wording.Describe(new StatusMessage.Reported(new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false))).ShouldBe("Stopped fix-123.");
     }
 
     [Fact]
     public void SayTheBranchWasKeptAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged("fix-123", new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")))))
+        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")))))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch kept.");
     }
 
     [Fact]
     public void SayTheBranchWasDeletedAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged("fix-123", new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123"))), new DeleteBranchOutcome()))
+        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123"))), new DeleteBranchOutcome()))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch deleted.");
     }
 
@@ -352,25 +364,25 @@ public sealed class WordingShould
     [Fact]
     public void AskForANewName()
     {
-        Wording.RenamePrompt("fix-123").ShouldBe("Rename fix-123. The session restarts under the new name and keeps its conversation.");
+        Wording.RenamePrompt(Listed.As("fix-123")).ShouldBe("Rename fix-123. The session restarts under the new name and keeps its conversation.");
     }
 
     [Fact]
     public void AskBeforeDeletingASession()
     {
-        Wording.DeleteSessionQuestion("fix-123").ShouldBe("Delete fix-123?\nIts worktree is removed only when nothing in it would be lost.");
+        Wording.DeleteSessionQuestion(Listed.As("fix-123")).ShouldBe("Delete fix-123?\nIts worktree is removed only when nothing in it would be lost.");
     }
 
     [Fact]
     public void AskBeforeClosingOneEmptyTab()
     {
-        Wording.CloseEmptyQuestion(["fix-123"]).ShouldBe("Close the tab of fix-123?\nNone of them has been sent a message, so nothing is lost.");
+        Wording.CloseEmptyQuestion([Listed.As("fix-123")]).ShouldBe("Close the tab of fix-123?\nNone of them has been sent a message, so nothing is lost.");
     }
 
     [Fact]
     public void AskBeforeClosingSeveralEmptyTabs()
     {
-        Wording.CloseEmptyQuestion(["fix-123", "repos-f6"]).ShouldBe("Close 2 tabs: fix-123, repos-f6?\nNone of them has been sent a message, so nothing is lost.");
+        Wording.CloseEmptyQuestion([Listed.As("fix-123"), Listed.As("repos-f6")]).ShouldBe("Close 2 tabs: fix-123, repos-f6?\nNone of them has been sent a message, so nothing is lost.");
     }
 
     [Fact]
@@ -503,7 +515,7 @@ public sealed class WordingShould
     [Fact]
     public void NameTheSessionUsingTheWorktree()
     {
-        Wording.Describe(new RemovalReason.LiveSession("fix-123")).ShouldBe("session fix-123 is using it");
+        Wording.Describe(new RemovalReason.LiveSession(Listed.As("fix-123"))).ShouldBe("session fix-123 is using it");
     }
 
     [Fact]
@@ -665,6 +677,7 @@ public sealed class WordingShould
         return type switch
         {
             _ when type == typeof(string) => "fix-123",
+            _ when type == typeof(ListedName) => Listed.As("fix-123"),
             _ when type == typeof(int) => 2,
             _ when type == typeof(bool) => true,
             _ when type == typeof(WorktreeHealthKind) => WorktreeHealthKind.Locked,
@@ -675,7 +688,7 @@ public sealed class WordingShould
             _ when type == typeof(FolderPath) => FolderPath.From(@"D:\nowhere"),
             _ when type == typeof(LaunchProblem) => new LaunchProblem.WorktreeNeedsLetters(),
             _ when type == typeof(ViewEffect) => new Quit(),
-            _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped("fix-123", TabClosed: false),
+            _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false),
             _ when type == typeof(PullRequestGap) => PullRequestGap.NotSignedIn,
             _ when type == typeof(LookupHost) => new LookupHost.Known(PullRequestHost.GitHub),
             _ when type == typeof(SetupItem) => SetupItem.TerminalProfiles,

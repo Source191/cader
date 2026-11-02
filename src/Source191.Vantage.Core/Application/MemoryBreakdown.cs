@@ -7,9 +7,9 @@ namespace Source191.Vantage.Application;
 /// What a session's memory is made of, for the breakdown dialog: Claude Code's own process, then each program it
 /// started directly with that program's whole subtree, largest first, then the total and the process count.
 /// </summary>
-public sealed record MemoryBreakdown(string SessionName, MemorySize ClaudeCode, IReadOnlyList<MemoryShare> Programs, MemorySize Total, int ProcessCount)
+public sealed record MemoryBreakdown(ListedName SessionName, MemorySize ClaudeCode, IReadOnlyList<MemoryShare> Programs, MemorySize Total, int ProcessCount)
 {
-    public static MemoryBreakdown Of(string sessionName, ProcessTree tree)
+    public static MemoryBreakdown Of(ListedName sessionName, ProcessTree tree)
     {
         ArgumentNullException.ThrowIfNull(tree);
 

@@ -33,22 +33,19 @@ public sealed class RenameSessionHandler(IClaudeCli claude, ITranscripts transcr
         }
 
         bool tabClosed = await tabs.CloseAsync(session.SessionId) == TabClosure.Closed;
-        ResumeResult renamed = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, newName, cancellationToken);
+        ResumeResult renamed = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, new ListedName.Named(newName), cancellationToken);
         if (renamed is ResumeResult.Continued)
         {
             if (tabClosed)
             {
-                BackgroundSession renamedSession = session with { Name = newName.Value };
+                BackgroundSession renamedSession = session with { Name = new ListedName.Named(newName) };
                 await (earlier is null ? openTab.OpenAsync(renamedSession, cancellationToken) : openTab.OpenAsync(renamedSession, earlier.Colour, cancellationToken));
             }
 
-            return new RenameSessionOutcome.Renamed(session.Name, newName.Value, TabMoved: tabClosed);
+            return new RenameSessionOutcome.Renamed(session.Name, newName, TabMoved: tabClosed);
         }
 
-        // A listed name SessionName refuses is restored unnamed.
-        ResumeResult restored = SessionName.TryParse(session.Name, out SessionName? name)
-            ? await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, name, cancellationToken)
-            : await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, cancellationToken);
+        ResumeResult restored = await claude.ResumeBackgroundAsync(session.SessionId.Value, session.WorkingDirectory.Value, session.Name, cancellationToken);
 
         return restored is ResumeResult.Continued
             ? new RenameSessionOutcome.Restored(session.Name, renamed.Message, tabClosed)

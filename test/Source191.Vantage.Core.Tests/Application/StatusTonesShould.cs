@@ -4,6 +4,7 @@ using Source191.Vantage.Application.Effects;
 using Source191.Vantage.Application.Launch;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application;
 
@@ -120,35 +121,35 @@ public sealed class StatusTonesShould
     [Fact]
     public void MarkATabOpenedInAColourOfItsOwnAsDone()
     {
-        Wording.ToneOf(new OpenTabOutcome.Opened("fix-123", "Purple", ColourReused: false)).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new OpenTabOutcome.Opened("fix-123", "Purple", ColourReused: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false)).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true)).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
     public void MarkAStartByWhatHappenedToItsTab()
     {
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened("fix-123", "Purple", ColourReused: false))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened("fix-123", "Purple", ColourReused: true))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound("fix-123"))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false))).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound(Listed.As("fix-123")))).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
     public void MarkADeleteByWhatHappenedToItsWorktree()
     {
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree("fix-123", new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree("fix-123", new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new DeleteSessionOutcome.KeptWorktree("fix-123", new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree("fix-123", new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive"))))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive"))))).ShouldBe(StatusTone.Notice);
         Wording.ToneOf(new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive")))).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
     public void MarkClosingEmptyTabsAsDoneOnlyWhenNothingWasLeft()
     {
-        Wording.ToneOf(new CloseEmptyTerminalsOutcome(["fix-123"], [], [], [])).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new CloseEmptyTerminalsOutcome([], ["fix-123"], [], [])).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new CloseEmptyTerminalsOutcome(["fix-123"], [], [new SkippedSession("templates-sync")], [])).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new CloseEmptyTerminalsOutcome(["fix-123"], [], [], ["templates-sync"])).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new CloseEmptyTerminalsOutcome([Listed.As("fix-123")], [], [], [])).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new CloseEmptyTerminalsOutcome([], [Listed.As("fix-123")], [], [])).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new CloseEmptyTerminalsOutcome([Listed.As("fix-123")], [], [new SkippedSession(Listed.As("templates-sync"))], [])).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new CloseEmptyTerminalsOutcome([Listed.As("fix-123")], [], [], [Listed.As("templates-sync")])).ShouldBe(StatusTone.Notice);
         Wording.ToneOf(new CloseEmptyTerminalsOutcome([], [], [], [])).ShouldBe(StatusTone.Notice);
     }
 
@@ -157,8 +158,8 @@ public sealed class StatusTonesShould
     {
         Wording.ToneOf(new ResumeSessionsOutcome(2, 2, [])).ShouldBe(StatusTone.Success);
         Wording.ToneOf(new ResumeSessionsOutcome(1, 2, [])).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new ResumeSessionsOutcome(2, 2, [new ResumeNote.NeverSentAMessage("fix-123")])).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new ResumeSessionsOutcome(1, 2, [new ResumeNote.NotRemoved("fix-123", "Session 81cdb0f9 not found")])).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new ResumeSessionsOutcome(2, 2, [new ResumeNote.NeverSentAMessage(Listed.As("fix-123"))])).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new ResumeSessionsOutcome(1, 2, [new ResumeNote.NotRemoved(Listed.As("fix-123"), "Session 81cdb0f9 not found")])).ShouldBe(StatusTone.Notice);
     }
 
     // Status messages, each built with the placeholders below; the placeholder outcome is a success.
@@ -233,7 +234,7 @@ public sealed class StatusTonesShould
     public void MarkAKeptBranchWithItsRemovalsTone()
     {
         Wording.ToneOf(new StatusMessage.BranchKept(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedByVantage: true))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new StatusMessage.BranchKept(new DeleteSessionOutcome.WorktreeInUse("fix-123", "Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StatusMessage.BranchKept(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123"))).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
@@ -262,6 +263,8 @@ public sealed class StatusTonesShould
         return type switch
         {
             _ when type == typeof(string) => "fix-123",
+            _ when type == typeof(ListedName) => Listed.As("fix-123"),
+            _ when type == typeof(SessionName) => SessionName.From("fix-124"),
             _ when type == typeof(int) => 2,
             _ when type == typeof(bool) => true,
             _ when type == typeof(RemovalReason) => new RemovalReason.Locked(),
@@ -272,9 +275,9 @@ public sealed class StatusTonesShould
             _ when type == typeof(SessionId) => SessionId.From("sess-1"),
             _ when type == typeof(ReleaseVersion) => ReleaseVersions.Version("0.21.0"),
             _ when type == typeof(BranchName) => BranchName.From("fix-123"),
-            _ when type == typeof(OpenTabOutcome) => new OpenTabOutcome.SwitchedTo("fix-123"),
+            _ when type == typeof(OpenTabOutcome) => new OpenTabOutcome.SwitchedTo(Listed.As("fix-123")),
             _ when type == typeof(RemoveWorktreeOutcome) => new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"),
-            _ when type == typeof(IReadOnlyList<string>) => new List<string> { "fix-123" },
+            _ when type == typeof(IReadOnlyList<ListedName>) => new List<ListedName> { Listed.As("fix-123") },
             _ when type == typeof(IReadOnlyList<SkippedSession>) => new List<SkippedSession>(),
             _ when type == typeof(IReadOnlyList<ResumeNote>) => new List<ResumeNote>(),
             _ when type == typeof(PullRequestHost) => PullRequestHost.AzureDevOps,
@@ -285,7 +288,7 @@ public sealed class StatusTonesShould
             _ when type == typeof(NameProblem) => NameProblem.Missing,
             _ when type == typeof(LaunchProblem) => new LaunchProblem.WorktreeNeedsLetters(),
             _ when type == typeof(ViewEffect) => new Quit(),
-            _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped("fix-123", TabClosed: false),
+            _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false),
             _ when type == typeof(SetupItem) => SetupItem.TerminalProfiles,
             _ when type == typeof(ConfigRow) => new ConfigRow.CheckForUpdates(On: true),
             _ => throw new InvalidOperationException($"A field of type {type.Name} needs a placeholder."),

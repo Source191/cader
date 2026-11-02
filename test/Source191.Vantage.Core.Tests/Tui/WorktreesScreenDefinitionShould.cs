@@ -47,7 +47,7 @@ public sealed class WorktreesScreenDefinitionShould
     [Fact]
     public void ShowEveryColumnOfARow()
     {
-        WorktreeRow row = Row(new LastCommit.Made(Noon.AddHours(-2))) with { Session = new WorktreeSession.Running(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), "invoice-pdf") };
+        WorktreeRow row = Row(new LastCommit.Made(Noon.AddHours(-2))) with { Session = new WorktreeSession.Running(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), Listed.As("invoice-pdf")) };
 
         definition.Columns.Select(column => column.Cell(row, Noon, int.MaxValue)).ShouldBe(
         [

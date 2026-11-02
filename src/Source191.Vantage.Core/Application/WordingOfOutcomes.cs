@@ -13,9 +13,9 @@ public static partial class Wording
     {
         return outcome switch
         {
-            StopSessionOutcome.Stopped { TabClosed: true } stopped => $"Stopped {stopped.Name} and closed its tab.",
-            StopSessionOutcome.Stopped stopped => $"Stopped {stopped.Name}.",
-            StopSessionOutcome.NotStopped refused => $"Could not stop {refused.Name}: {refused.Failure}",
+            StopSessionOutcome.Stopped { TabClosed: true } stopped => $"Stopped {Name(stopped.Name)} and closed its tab.",
+            StopSessionOutcome.Stopped stopped => $"Stopped {Name(stopped.Name)}.",
+            StopSessionOutcome.NotStopped refused => $"Could not stop {Name(refused.Name)}: {refused.Failure}",
             AdoptSessionOutcome adopt => Describe(adopt),
             RenameSessionOutcome rename => Describe(rename),
             CloseEmptyTerminalsOutcome close => Describe(close),
@@ -191,11 +191,11 @@ public static partial class Wording
         return outcome switch
         {
             AdoptSessionOutcome.NoMessages empty =>
-                $"{empty.Name} has no messages yet, so there is nothing to move. Send it something in its tab first, or close that tab and start a session from Vantage.",
-            AdoptSessionOutcome.Moved { TabClosed: true } moved => $"Moved {moved.Name} under Vantage and closed its old tab.",
-            AdoptSessionOutcome.Moved moved => $"Moved {moved.Name} under Vantage.",
-            AdoptSessionOutcome.Failed failed => $"Could not move {failed.Name} under Vantage: {failed.Message}",
-            AdoptSessionOutcome.ProcessGone gone => $"Could not move {gone.Name}: it no longer runs under its listed process. Refresh and try again.",
+                $"{Name(empty.Name)} has no messages yet, so there is nothing to move. Send it something in its tab first, or close that tab and start a session from Vantage.",
+            AdoptSessionOutcome.Moved { TabClosed: true } moved => $"Moved {Name(moved.Name)} under Vantage and closed its old tab.",
+            AdoptSessionOutcome.Moved moved => $"Moved {Name(moved.Name)} under Vantage.",
+            AdoptSessionOutcome.Failed failed => $"Could not move {Name(failed.Name)} under Vantage: {failed.Message}",
+            AdoptSessionOutcome.ProcessGone gone => $"Could not move {Name(gone.Name)}: it no longer runs under its listed process. Refresh and try again.",
             _ => outcome.ToString(),
         };
     }
@@ -204,22 +204,22 @@ public static partial class Wording
     {
         return outcome switch
         {
-            RenameSessionOutcome.NoMessages empty => $"{empty.Name} has no messages yet, so it cannot be renamed; send it something first.",
-            RenameSessionOutcome.Renamed { TabMoved: true } renamed => $"Renamed {renamed.OldName} to {renamed.NewName} and moved its tab; it restarts idle and keeps its conversation.",
-            RenameSessionOutcome.Renamed renamed => $"Renamed {renamed.OldName} to {renamed.NewName}; it restarts idle and keeps its conversation.",
-            RenameSessionOutcome.Restored { TabClosed: true } restored => $"Could not rename {restored.OldName}: {restored.Failure}; it is back under its old name and its tab is closed: Enter opens a new one.",
-            RenameSessionOutcome.Restored restored => $"Could not rename {restored.OldName}: {restored.Failure}; it is back under its old name.",
-            RenameSessionOutcome.NotRemoved kept => $"Could not rename {kept.OldName}: {kept.Failure}; it is still listed under its old name.",
+            RenameSessionOutcome.NoMessages empty => $"{Name(empty.Name)} has no messages yet, so it cannot be renamed; send it something first.",
+            RenameSessionOutcome.Renamed { TabMoved: true } renamed => $"Renamed {Name(renamed.OldName)} to {renamed.NewName.Value} and moved its tab; it restarts idle and keeps its conversation.",
+            RenameSessionOutcome.Renamed renamed => $"Renamed {Name(renamed.OldName)} to {renamed.NewName.Value}; it restarts idle and keeps its conversation.",
+            RenameSessionOutcome.Restored { TabClosed: true } restored => $"Could not rename {Name(restored.OldName)}: {restored.Failure}; it is back under its old name and its tab is closed: Enter opens a new one.",
+            RenameSessionOutcome.Restored restored => $"Could not rename {Name(restored.OldName)}: {restored.Failure}; it is back under its old name.",
+            RenameSessionOutcome.NotRemoved kept => $"Could not rename {Name(kept.OldName)}: {kept.Failure}; it is still listed under its old name.",
             RenameSessionOutcome.Unsupervised lost =>
-                $"Could not rename {lost.OldName}: {lost.Failure}; resume it with claude --bg --resume {lost.SessionId} ({lost.RestoreFailure}).",
+                $"Could not rename {Name(lost.OldName)}: {lost.Failure}; resume it with claude --bg --resume {lost.SessionId} ({lost.RestoreFailure}).",
             _ => outcome.ToString(),
         };
     }
 
     private static string Describe(CloseEmptyTerminalsOutcome outcome)
     {
-        IEnumerable<string> skipped = outcome.Skipped.Select(session => $"{session.Name} has messages (press b to move it under Vantage)")
-            .Concat(outcome.Gone.Select(name => $"{name} no longer runs under its listed process (refresh and try again)"));
+        IEnumerable<string> skipped = outcome.Skipped.Select(session => $"{Name(session.Name)} has messages (press b to move it under Vantage)")
+            .Concat(outcome.Gone.Select(name => $"{Name(name)} no longer runs under its listed process (refresh and try again)"));
         if (outcome.Closed.Count == 0 && outcome.Ended.Count == 0)
         {
             return skipped.Any() ? $"Nothing closed: {string.Join("; ", skipped)}." : "Nothing to close.";
@@ -228,12 +228,12 @@ public static partial class Wording
         List<string> parts = [];
         if (outcome.Closed.Count > 0)
         {
-            parts.Add($"Closed {Count(outcome.Closed.Count, "tab")}: {string.Join(", ", outcome.Closed)}.");
+            parts.Add($"Closed {Count(outcome.Closed.Count, "tab")}: {string.Join(", ", outcome.Closed.Select(Name))}.");
         }
 
         if (outcome.Ended.Count > 0)
         {
-            parts.Add($"Ended {Count(outcome.Ended.Count, "session")}: {string.Join(", ", outcome.Ended)} (not in a Windows Terminal tab, so nothing to close).");
+            parts.Add($"Ended {Count(outcome.Ended.Count, "session")}: {string.Join(", ", outcome.Ended.Select(Name))} (not in a Windows Terminal tab, so nothing to close).");
         }
 
         if (skipped.Any())
@@ -248,9 +248,9 @@ public static partial class Wording
     {
         IEnumerable<string> notes = outcome.Notes.Select(note => note switch
         {
-            ResumeNote.NeverSentAMessage => $"{note.Name}: never sent a message, so there is nothing to resume; d deletes it",
-            ResumeNote.NotRemoved kept => $"{note.Name}: could not remove its job ({kept.Failure}), so it was not resumed",
-            ResumeNote.Failed failed => $"{note.Name}: {failed.Failure}; resume it with claude --bg --resume {failed.SessionId.Value}",
+            ResumeNote.NeverSentAMessage => $"{Name(note.Name)}: never sent a message, so there is nothing to resume; d deletes it",
+            ResumeNote.NotRemoved kept => $"{Name(note.Name)}: could not remove its job ({kept.Failure}), so it was not resumed",
+            ResumeNote.Failed failed => $"{Name(note.Name)}: {failed.Failure}; resume it with claude --bg --resume {failed.SessionId.Value}",
             _ => throw new UnreachableException(),
         });
         string suffix = outcome.Notes.Count == 0 ? string.Empty : $" Notes: {string.Join("; ", notes)}";
@@ -264,7 +264,7 @@ public static partial class Wording
     {
         return outcome switch
         {
-            DeleteSessionOutcome.NotDeleted kept => $"Could not delete {kept.Name}: {kept.Failure}",
+            DeleteSessionOutcome.NotDeleted kept => $"Could not delete {Name(kept.Name)}: {kept.Failure}",
             DeleteSessionOutcome.Deleted deleted => $"{Gone(deleted, deleted.Name)}.",
             DeleteSessionOutcome.KeptWorktree { Reason: RemovalReason.LeftoverFilesWouldBeLost } kept => $"{Gone(kept, kept.Name)}; kept its worktree because {Describe(kept.Reason)}; force remove (D) on the Worktrees tab deletes it.",
             DeleteSessionOutcome.KeptWorktree kept => $"{Gone(kept, kept.Name)}; kept its worktree because {Describe(kept.Reason)}.",
@@ -298,10 +298,10 @@ public static partial class Wording
         return outcome switch
         {
             OpenTabOutcome.Opened { ColourReused: true } opened =>
-                $"Opened {opened.Name} in a {opened.Colour.ToLowerInvariant()} tab (every palette colour is in use, so one was reused).",
-            OpenTabOutcome.Opened opened => $"Opened {opened.Name} in a {opened.Colour.ToLowerInvariant()} tab.",
-            OpenTabOutcome.SwitchedTo switched => $"Switched to the tab of {switched.Name}.",
-            OpenTabOutcome.NotFound missing => $"{missing.Name} is open in another tab, but Vantage could not find it. Is it in another window?",
+                $"Opened {Name(opened.Name)} in a {opened.Colour.ToLowerInvariant()} tab (every palette colour is in use, so one was reused).",
+            OpenTabOutcome.Opened opened => $"Opened {Name(opened.Name)} in a {opened.Colour.ToLowerInvariant()} tab.",
+            OpenTabOutcome.SwitchedTo switched => $"Switched to the tab of {Name(switched.Name)}.",
+            OpenTabOutcome.NotFound missing => $"{Name(missing.Name)} is open in another tab, but Vantage could not find it. Is it in another window?",
             _ => outcome.ToString(),
         };
     }
@@ -328,7 +328,7 @@ public static partial class Wording
     private static string EditorName(EditorChoice editor) => editor.Preset == EditorPreset.Custom ? Path.GetFileNameWithoutExtension(editor.Executable) : Describe(editor.Preset);
 
     /// <summary>How a delete sentence opens: the session deleted, and its tab closed when there was one.</summary>
-    private static string Gone(DeleteSessionOutcome outcome, string name) => outcome.TabClosed ? $"Deleted {name} and closed its tab" : $"Deleted {name}";
+    private static string Gone(DeleteSessionOutcome outcome, ListedName name) => outcome.TabClosed ? $"Deleted {Name(name)} and closed its tab" : $"Deleted {Name(name)}";
 
     /// <summary>A sentence carried on after a semicolon: its first letter lowered.</summary>
     private static string Lowered(string sentence) => sentence.Length == 0 ? sentence : char.ToLowerInvariant(sentence[0]) + sentence[1..];
