@@ -60,7 +60,7 @@ public sealed class FoldersShould : IDisposable
         await File.WriteAllTextAsync(Path.Combine(shared, "index.js"), "// shared", TestContext.Current.CancellationToken);
         string link = Path.Combine(root, "Northwind.Orders", "node_modules", "pkg");
         Directory.CreateDirectory(Path.GetDirectoryName(link)!);
-        ProcessResult result = await new ProcessRunner().RunAsync(new ProcessRequest("cmd.exe", ["/c", "mklink", "/J", link, shared], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
+        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(new ProcessRequest("cmd.exe", ["/c", "mklink", "/J", link, shared], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
         result.ExitCode.ShouldBe(0, result.StandardError);
         junctions.Add(link);
 
