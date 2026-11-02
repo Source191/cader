@@ -82,8 +82,8 @@ public sealed class WorktreeInventoryShould : IDisposable
         SessionId id = SessionId.From(Guid.NewGuid().ToString());
 
         return processId is int running
-            ? new InteractiveSession(id, name, FolderPath.From(directory), Noon, DisplayState.Idle, running)
-            : new BackgroundSession(id, JobId.From("81cdb0f9"), name, FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
+            ? new InteractiveSession(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
+            : new BackgroundSession(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
     }
 
     public void Dispose()
@@ -317,7 +317,7 @@ public sealed class WorktreeInventoryShould : IDisposable
 
         WorktreeRow row = (await Inventory.ScanAsync([elsewhere, dead, live], TestContext.Current.CancellationToken)).Single();
 
-        row.Session.ShouldBe(new WorktreeSession.Running(live.SessionId, "fix-the-tests"));
+        row.Session.ShouldBe(new WorktreeSession.Running(live.SessionId, Listed.As("fix-the-tests")));
     }
 
     [Fact]
@@ -330,7 +330,7 @@ public sealed class WorktreeInventoryShould : IDisposable
 
         WorktreeRow row = (await Inventory.ScanAsync([sameName, live], TestContext.Current.CancellationToken)).Single();
 
-        row.Session.ShouldBe(new WorktreeSession.Running(live.SessionId, "fix-tests"));
+        row.Session.ShouldBe(new WorktreeSession.Running(live.SessionId, Listed.As("fix-tests")));
     }
 
     [Fact]

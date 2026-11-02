@@ -2,6 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application;
 
@@ -76,8 +77,8 @@ public sealed class SessionActivityShould
         SessionId id = SessionId.From(Guid.NewGuid().ToString());
         FolderPath directory = FolderPath.From(@"C:\repos\Northwind.Orders");
         Session session = interactive
-            ? new InteractiveSession(id, "fix-123", directory, Noon, state, ProcessId: 4242)
-            : new BackgroundSession(id, JobId.From("81cdb0f9"), "fix-123", directory, Noon, state, new JobProcess.None());
+            ? new InteractiveSession(id, Listed.As("fix-123"), directory, Noon, state, ProcessId: 4242)
+            : new BackgroundSession(id, JobId.From("81cdb0f9"), Listed.As("fix-123"), directory, Noon, state, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", directory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }

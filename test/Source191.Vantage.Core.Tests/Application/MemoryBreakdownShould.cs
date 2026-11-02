@@ -22,9 +22,9 @@ public sealed class MemoryBreakdownShould
     {
         ProcessTree tree = ProcessTree.Under(100, Processes.Snapshot(), Processes.UsageOf).ShouldBeOfType<ProcessTreeLookup.Found>().Tree;
 
-        MemoryBreakdown breakdown = MemoryBreakdown.Of("fix-123", tree);
+        MemoryBreakdown breakdown = MemoryBreakdown.Of(Listed.As("fix-123"), tree);
 
-        breakdown.SessionName.ShouldBe("fix-123");
+        breakdown.SessionName.ShouldBe(Listed.As("fix-123"));
         breakdown.ClaudeCode.ShouldBe(MemorySize.FromMegabytes(296));
         breakdown.Programs.ShouldBe(
         [
@@ -44,6 +44,6 @@ public sealed class MemoryBreakdownShould
             .InTree(200, "gk-alpha", 100);
         ProcessTree tree = ProcessTree.Under(100, processes.Snapshot(), processes.UsageOf).ShouldBeOfType<ProcessTreeLookup.Found>().Tree;
 
-        MemoryBreakdown.Of("fix-123", tree).Programs.ShouldBe([new MemoryShare("gk-alpha", MemorySize.Zero)]);
+        MemoryBreakdown.Of(Listed.As("fix-123"), tree).Programs.ShouldBe([new MemoryShare("gk-alpha", MemorySize.Zero)]);
     }
 }

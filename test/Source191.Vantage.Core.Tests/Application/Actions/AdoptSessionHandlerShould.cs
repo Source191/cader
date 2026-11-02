@@ -27,7 +27,7 @@ public sealed class AdoptSessionHandlerShould
         ProcessRequest resume = processes.CapturedRequests.Single(request => request.Arguments.Contains("--resume"));
         resume.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository));
         resume.Arguments.ShouldBe(["--bg", "--resume", "sess-9", "-n", "repos-31"]);
-        message.ShouldBe(new AdoptSessionOutcome.Moved("repos-31", TabClosed: false));
+        message.ShouldBe(new AdoptSessionOutcome.Moved(Listed.As("repos-31"), TabClosed: false));
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class AdoptSessionHandlerShould
 
         processTable.Terminated.ShouldBe([4242]);
         processTable.EndedCleanly.ShouldBeEmpty();
-        message.ShouldBe(new AdoptSessionOutcome.Moved("repos-31", TabClosed: false));
+        message.ShouldBe(new AdoptSessionOutcome.Moved(Listed.As("repos-31"), TabClosed: false));
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class AdoptSessionHandlerShould
         Outcome message = await Handler.HandleAsync(new AdoptSession(SessionTestData.Terminal("repos-31", 4242)), CancellationToken.None);
 
         AdoptSessionOutcome.Failed failed = message.ShouldBeOfType<AdoptSessionOutcome.Failed>();
-        failed.Name.ShouldBe("repos-31");
+        failed.Name.ShouldBe(Listed.As("repos-31"));
         failed.Message.ShouldContain("copy");
     }
 
@@ -73,7 +73,7 @@ public sealed class AdoptSessionHandlerShould
 
         Outcome message = await handler.HandleAsync(new AdoptSession(SessionTestData.Terminal("repos-31", 4242)), CancellationToken.None);
 
-        message.ShouldBe(new AdoptSessionOutcome.ProcessGone("repos-31"));
+        message.ShouldBe(new AdoptSessionOutcome.ProcessGone(Listed.As("repos-31")));
         reused.Terminated.ShouldBeEmpty();
         processes.CapturedRequests.ShouldBeEmpty();
     }
@@ -85,7 +85,7 @@ public sealed class AdoptSessionHandlerShould
 
         Outcome message = await handler.HandleAsync(new AdoptSession(SessionTestData.Terminal("repos-f6", 4242)), CancellationToken.None);
 
-        message.ShouldBe(new AdoptSessionOutcome.NoMessages("repos-f6"));
+        message.ShouldBe(new AdoptSessionOutcome.NoMessages(Listed.As("repos-f6")));
         processTable.Terminated.ShouldBeEmpty();
         processes.CapturedRequests.ShouldBeEmpty();
     }
@@ -100,7 +100,7 @@ public sealed class AdoptSessionHandlerShould
 
         processTable.Terminated.ShouldBe([4242]);
         processTable.EndedCleanly.ShouldBe([4000]);
-        message.ShouldBe(new AdoptSessionOutcome.Moved("repos-31", TabClosed: true));
+        message.ShouldBe(new AdoptSessionOutcome.Moved(Listed.As("repos-31"), TabClosed: true));
     }
 
     [Fact]
@@ -126,6 +126,6 @@ public sealed class AdoptSessionHandlerShould
 
         processTable.Terminated.ShouldBe([4242]);
         processTable.EndedCleanly.ShouldBeEmpty();
-        message.ShouldBe(new AdoptSessionOutcome.Moved("repos-31", TabClosed: false));
+        message.ShouldBe(new AdoptSessionOutcome.Moved(Listed.As("repos-31"), TabClosed: false));
     }
 }

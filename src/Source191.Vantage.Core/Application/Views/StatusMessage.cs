@@ -17,25 +17,25 @@ public abstract record StatusMessage
     public sealed record NoSessionSelected : StatusMessage;
 
     /// <summary>A plain claude session in some tab: Vantage cannot open it in a tab, stop it or delete it from outside.</summary>
-    public sealed record RunsInOwnTerminal(string Name, bool HasTranscript) : StatusMessage;
+    public sealed record RunsInOwnTerminal(ListedName Name, bool HasTranscript) : StatusMessage;
 
     /// <summary>A stopped session with no transcript: there is nothing to open or resume.</summary>
-    public sealed record NeverSentAMessage(string Name) : StatusMessage;
+    public sealed record NeverSentAMessage(ListedName Name) : StatusMessage;
 
     public sealed record NoEmptyTerminals : StatusMessage;
 
-    public sealed record NoMessagesToRename(string Name) : StatusMessage;
+    public sealed record NoMessagesToRename(ListedName Name) : StatusMessage;
 
-    public sealed record WorkingSoRenameWaits(string Name) : StatusMessage;
+    public sealed record WorkingSoRenameWaits(ListedName Name) : StatusMessage;
 
     public sealed record RenameCancelled : StatusMessage;
 
     /// <summary>The typed name was refused, for the domain's reason.</summary>
     public sealed record InvalidName(NameProblem Problem) : StatusMessage;
 
-    public sealed record AlreadyUnderVantage(string Name) : StatusMessage;
+    public sealed record AlreadyUnderVantage(ListedName Name) : StatusMessage;
 
-    public sealed record WorkingSoAdoptWaits(string Name) : StatusMessage;
+    public sealed record WorkingSoAdoptWaits(ListedName Name) : StatusMessage;
 
     public sealed record NoWorktreeSelected : StatusMessage;
 
@@ -55,13 +55,13 @@ public abstract record StatusMessage
     public sealed record NoSessionIn(string FolderName) : StatusMessage;
 
     /// <summary>Enter on a worktree whose session the Sessions tab's latest listing no longer holds.</summary>
-    public sealed record SessionNotListed(string Name) : StatusMessage;
+    public sealed record SessionNotListed(ListedName Name) : StatusMessage;
 
     /// <summary>The pull request key found none for the row: Gap says why, and Host names the CLI when the remote was read.</summary>
     public sealed record NoPullRequest(string RowName, PullRequestGap Gap, LookupHost Host) : StatusMessage;
 
     /// <summary>The memory key on a session with no process: it is stopped, so there is nothing to measure.</summary>
-    public sealed record NothingToMeasure(string Name) : StatusMessage;
+    public sealed record NothingToMeasure(ListedName Name) : StatusMessage;
 
     /// <summary>The solution key found no .sln or .slnx in the folder or its src folder.</summary>
     public sealed record NoSolution(string FolderName) : StatusMessage;

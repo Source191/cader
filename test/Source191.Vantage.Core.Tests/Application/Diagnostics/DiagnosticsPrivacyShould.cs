@@ -153,7 +153,7 @@ public sealed class DiagnosticsPrivacyShould
     {
         SessionListing listing = await Attempt.RunAsync(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => claude.ListSessionsAsync(CancellationToken.None), _ => SessionListing.Empty);
 
-        listing.Sessions.Single().Name.ShouldBe(Name);
+        listing.Sessions.Single().Name.ShouldBe(Listed.As(Name));
 
         return listing;
     }

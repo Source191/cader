@@ -2,6 +2,8 @@ using Source191.Vantage.Application;
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
 
+using Source191.Vantage.TestDoubles;
+
 namespace Source191.Vantage.Core.Tests.Application;
 
 public sealed class WordingOfScreensShould
@@ -241,7 +243,7 @@ public sealed class WordingOfScreensShould
 
     private static SessionRow SessionIn(DisplayState state, int index)
     {
-        BackgroundSession session = new(SessionId.From($"sess-{index}"), JobId.From($"81cdb0f{index}"), $"fix-{index}", FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, new JobProcess.None());
+        BackgroundSession session = new(SessionId.From($"sess-{index}"), JobId.From($"81cdb0f{index}"), Listed.As($"fix-{index}"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), DateTimeOffset.UnixEpoch, state, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }

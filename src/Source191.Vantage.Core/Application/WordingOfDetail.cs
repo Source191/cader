@@ -41,7 +41,7 @@ public static partial class Wording
             ],
         ];
 
-        return new DetailContent(session.Name, facts, []);
+        return new DetailContent(Name(session.Name), facts, []);
     }
 
     /// <summary>A worktree's facts in four rows, its health and changes across the pane, and its unpushed commits or changed files beneath.</summary>

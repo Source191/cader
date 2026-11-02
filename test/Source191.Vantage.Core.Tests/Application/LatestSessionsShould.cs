@@ -29,7 +29,7 @@ public sealed class LatestSessionsShould
         SessionListing listing = await latest.ListAsync(CancellationToken.None);
         IReadOnlyList<Session> sessions = await latest.SessionsAsync(CancellationToken.None);
 
-        sessions.Select(session => session.Name).ShouldBe(["fix-orders", "fix-billing"]);
+        sessions.Select(session => session.Name).ShouldBe([Listed.As("fix-orders"), Listed.As("fix-billing")]);
         sessions.ShouldBe(listing.Sessions);
         AgentsRuns.ShouldBe(1);
     }
@@ -45,7 +45,7 @@ public sealed class LatestSessionsShould
         IReadOnlyList<Session> sessions = await waiting;
 
         completedBeforeTheListing.ShouldBeFalse();
-        sessions.Select(session => session.Name).ShouldBe(["fix-orders", "fix-billing"]);
+        sessions.Select(session => session.Name).ShouldBe([Listed.As("fix-orders"), Listed.As("fix-billing")]);
     }
 
     [Fact]
@@ -70,6 +70,6 @@ public sealed class LatestSessionsShould
         await Should.ThrowAsync<InvalidOperationException>(() => latest.ListAsync(CancellationToken.None));
         IReadOnlyList<Session> sessions = await latest.SessionsAsync(CancellationToken.None);
 
-        sessions.Select(session => session.Name).ShouldBe(["fix-orders", "fix-billing"]);
+        sessions.Select(session => session.Name).ShouldBe([Listed.As("fix-orders"), Listed.As("fix-billing")]);
     }
 }

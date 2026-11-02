@@ -8,20 +8,20 @@ public abstract record DeleteSessionOutcome : Outcome
 {
     public bool TabClosed { get; init; }
 
-    public sealed record Deleted(string Name) : DeleteSessionOutcome;
+    public sealed record Deleted(ListedName Name) : DeleteSessionOutcome;
 
     /// <summary>Claude refused to remove the job: the session is still listed, its tab is open and its worktree untouched.</summary>
-    public sealed record NotDeleted(string Name, string Failure) : DeleteSessionOutcome;
+    public sealed record NotDeleted(ListedName Name, string Failure) : DeleteSessionOutcome;
 
-    public sealed record KeptWorktree(string Name, RemovalReason Reason) : DeleteSessionOutcome;
+    public sealed record KeptWorktree(ListedName Name, RemovalReason Reason) : DeleteSessionOutcome;
 
-    public sealed record RemovedWorktreeAndBranch(string Name, BranchName Branch) : DeleteSessionOutcome;
+    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch) : DeleteSessionOutcome;
 
-    public sealed record BranchNotMerged(string Name, BranchToConfirm Branch) : DeleteSessionOutcome;
+    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch) : DeleteSessionOutcome;
 
     /// <summary>The worktree was a leftover: its folder deleted, and its registration pruned when stale.</summary>
-    public sealed record RemovedWorktree(string Name, RemoveWorktreeOutcome Worktree) : DeleteSessionOutcome;
+    public sealed record RemovedWorktree(ListedName Name, RemoveWorktreeOutcome Worktree) : DeleteSessionOutcome;
 
     /// <summary>The session is deleted; its worktree folder could not be, because a tab or program still has it open.</summary>
-    public sealed record WorktreeInUse(string Name, string FolderName) : DeleteSessionOutcome;
+    public sealed record WorktreeInUse(ListedName Name, string FolderName) : DeleteSessionOutcome;
 }

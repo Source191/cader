@@ -26,7 +26,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public IReadOnlyList<TableColumn<SessionRow>> Columns { get; } =
     [
-        TableColumn<SessionRow>.Plain(Wording.NameColumn, (row, _, _) => row.Session.Name, new ColumnFit.Capped(28)),
+        TableColumn<SessionRow>.Plain(Wording.NameColumn, (row, _, _) => Wording.Name(row.Session.Name), new ColumnFit.Capped(28)),
         new(Wording.TabColumn, (row, _, _) => Swatch(row), new ColumnFit.Natural(), TabPaint),
         TableColumn<SessionRow>.Plain(Wording.StateColumn, (row, _, _) => $"{Wording.StateGlyph(row.Session.State.Kind)} {Wording.StateWord(row.Session.State)}", new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.RepositoryColumn, (row, _, width) => Repository(row, folders).Fit(width), new ColumnFit.Elastic()),

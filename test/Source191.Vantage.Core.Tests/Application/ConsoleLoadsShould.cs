@@ -58,7 +58,7 @@ public sealed class ConsoleLoadsShould : IDisposable
         ViewInput loaded = await Loads().LoadSessionsAsync(TestContext.Current.CancellationToken);
 
         RowsLoaded rows = loaded.ShouldBeOfType<RowsLoaded>();
-        rows.Rows.Select(row => row.Session.Name).ShouldBe(["fix-orders"]);
+        rows.Rows.Select(row => row.Session.Name).ShouldBe([Listed.As("fix-orders")]);
         rows.AutomatedRuns.ShouldBe(new AutomatedRuns(1, MemorySize.FromMegabytes(216)));
     }
 
@@ -72,7 +72,7 @@ public sealed class ConsoleLoadsShould : IDisposable
 
         WorktreeRow row = scanned.ShouldBeOfType<WorktreeRowsLoaded>().Rows.ShouldHaveSingleItem();
         row.Path.ShouldBe(FolderPath.From(Worktree));
-        row.Session.ShouldBe(new WorktreeSession.Running(SessionId.From("81cdb0f9-1111"), "fix-orders"));
+        row.Session.ShouldBe(new WorktreeSession.Running(SessionId.From("81cdb0f9-1111"), Listed.As("fix-orders")));
         claudeRuns.CapturedRequests.Count(request => request.Arguments.Contains("agents")).ShouldBe(1, "the scan runs no listing of its own");
     }
 

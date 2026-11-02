@@ -28,7 +28,7 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
         TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true).Fit(width), new ColumnFit.Elastic()),
         TableColumn<WorktreeRow>.Plain(Wording.HealthColumn, (row, _, _) => Wording.HealthCell(row.Health.Kind), new ColumnFit.Natural()),
         TableColumn<WorktreeRow>.Plain(Wording.LastCommitColumn, (row, now, _) => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-", new ColumnFit.RightAligned()),
-        TableColumn<WorktreeRow>.Plain(Wording.SessionColumn, (row, _, _) => row.Session is WorktreeSession.Running running ? running.Name : string.Empty, new ColumnFit.Natural()),
+        TableColumn<WorktreeRow>.Plain(Wording.SessionColumn, (row, _, _) => row.Session is WorktreeSession.Running running ? Wording.Name(running.Name) : string.Empty, new ColumnFit.Natural()),
     ];
     public Color RowColour(WorktreeRow row)
     {

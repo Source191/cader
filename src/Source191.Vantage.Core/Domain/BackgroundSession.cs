@@ -4,7 +4,7 @@ namespace Source191.Vantage.Domain;
 public sealed record BackgroundSession(
     SessionId SessionId,
     JobId JobId,
-    string Name,
+    ListedName Name,
     FolderPath WorkingDirectory,
     DateTimeOffset StartedAt,
     DisplayState State,

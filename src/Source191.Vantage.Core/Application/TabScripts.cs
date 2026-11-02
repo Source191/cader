@@ -20,7 +20,7 @@ public sealed class TabScripts(string claudeExecutable, string vantageExecutable
     /// with 0 (measured with CLI 2.1.312), so the shell exits and Windows Terminal closes the tab; a failed attach keeps the prompt.
     /// </summary>
     public TabLaunch Attach(BackgroundSession session, TabRegistration registration) => new(
-        session.Name,
+        Wording.Name(session.Name),
         registration.Colour,
         session.WorkingDirectory,
         string.Join('\n',

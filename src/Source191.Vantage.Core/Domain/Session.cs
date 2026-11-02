@@ -5,7 +5,7 @@ namespace Source191.Vantage.Domain;
 /// <see cref="InteractiveSession"/> running as plain claude in some tab. The type says which, so code that acts on one
 /// kind takes that type and never checks a flag or forgives a null job id.
 /// </summary>
-public abstract record Session(SessionId SessionId, string Name, FolderPath WorkingDirectory, DateTimeOffset StartedAt, DisplayState State)
+public abstract record Session(SessionId SessionId, ListedName Name, FolderPath WorkingDirectory, DateTimeOffset StartedAt, DisplayState State)
 {
     /// <summary>What the listing says the session waits for ("permission prompt"), in the CLI's own words; none when it says nothing.</summary>
     public WaitingReason WaitingFor { get; init; } = new WaitingReason.None();

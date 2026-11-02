@@ -32,7 +32,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
 
     private async Task<DeleteSessionOutcome> RemoveWorktreeAsync(BackgroundSession session, bool forced, CancellationToken cancellationToken)
     {
-        string name = session.Name;
+        ListedName name = session.Name;
         CreatedWorktree? created = (await createdWorktrees.ReadCreatedWorktreesAsync())
             .FirstOrDefault(worktree => worktree.Path == session.WorkingDirectory);
         if (created is null)

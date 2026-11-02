@@ -45,7 +45,7 @@ public static class ClaudeAgentsListing
             return null;
         }
 
-        string name = row.Name ?? string.Empty;
+        ListedName name = SessionName.TryParse(row.Name, out SessionName? listed) ? new ListedName.Named(listed) : new ListedName.Unnamed();
         DateTimeOffset startedAt = DateTimeOffset.FromUnixTimeMilliseconds(row.StartedAt ?? 0);
         DisplayState state = ClaudeStates.From(row.Pid, row.Status, row.State);
 

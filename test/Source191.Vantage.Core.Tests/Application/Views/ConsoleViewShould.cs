@@ -1,5 +1,6 @@
 using Source191.Vantage.Application.Views;
 using Source191.Vantage.Domain;
+using Source191.Vantage.TestDoubles;
 
 namespace Source191.Vantage.Core.Tests.Application.Views;
 
@@ -66,7 +67,7 @@ public sealed class ConsoleViewShould
     [Fact]
     public void OpenAWorktreesBackgroundSessionInItsOwnTab()
     {
-        RowDecision decision = ConsoleView.OpenSession(Loaded, new OpenWorktreeSession(SessionId.From("sess-2"), "fix-tests"));
+        RowDecision decision = ConsoleView.OpenSession(Loaded, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
         decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)Second.Session, Second.Tab)));
     }
@@ -77,7 +78,7 @@ public sealed class ConsoleViewShould
         SessionRow withTab = Second with { Tab = new LiveTab.Open(new TabColour("Purple", "#8E44AD")) };
         ConsoleState state = Loaded with { Sessions = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([First, withTab])).State };
 
-        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), "fix-tests"));
+        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
         decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)withTab.Session, withTab.Tab)));
     }
@@ -88,7 +89,7 @@ public sealed class ConsoleViewShould
         SessionRow twin = Row("sess-3", "fix-tests");
         ConsoleState state = Loaded with { Sessions = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([First, Second, twin])).State };
 
-        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-3"), "fix-tests"));
+        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-3"), Listed.As("fix-tests")));
 
         decision.ShouldBe(new RowDecision.Act(new OpenTabForSession((BackgroundSession)twin.Session, twin.Tab)));
     }
@@ -96,13 +97,13 @@ public sealed class ConsoleViewShould
     [Fact]
     public void SayAWorktreesTerminalSessionRunsInItsOwnTerminal()
     {
-        InteractiveSession terminal = new(SessionId.From("sess-4"), "repos-94", FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 200);
+        InteractiveSession terminal = new(SessionId.From("sess-4"), Listed.As("repos-94"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 200);
         SessionRow row = new(terminal, new SessionLocation.InRepository("Northwind.Orders", terminal.WorkingDirectory), new Head.Unknown(), new LiveTab.None(), HasTranscript: true);
         ConsoleState state = Loaded with { Sessions = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([First, row])).State };
 
-        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-4"), "repos-94"));
+        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-4"), Listed.As("repos-94")));
 
-        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal("repos-94", HasTranscript: true)));
+        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(Listed.As("repos-94"), HasTranscript: true)));
     }
 
     [Fact]
@@ -111,17 +112,17 @@ public sealed class ConsoleViewShould
         SessionRow fresh = Second with { HasTranscript = false };
         ConsoleState state = Loaded with { Sessions = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([First, fresh])).State };
 
-        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), "fix-tests"));
+        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
-        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.NeverSentAMessage("fix-tests")));
+        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.NeverSentAMessage(Listed.As("fix-tests"))));
     }
 
     [Fact]
     public void SayAWorktreesSessionIsNotListed()
     {
-        RowDecision decision = ConsoleView.OpenSession(Loaded, new OpenWorktreeSession(SessionId.From("sess-9"), "gone-away"));
+        RowDecision decision = ConsoleView.OpenSession(Loaded, new OpenWorktreeSession(SessionId.From("sess-9"), Listed.As("gone-away")));
 
-        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.SessionNotListed("gone-away")));
+        decision.ShouldBe(new RowDecision.Explain(new StatusMessage.SessionNotListed(Listed.As("gone-away"))));
     }
 
     [Fact]
@@ -132,7 +133,7 @@ public sealed class ConsoleViewShould
         filtered = SessionsView.Reduce(filtered, new KeyPressed(Key.Enter)).State;
         ConsoleState state = Loaded with { Sessions = filtered, Active = ConsoleTab.Worktrees };
 
-        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), "fix-tests"));
+        RowDecision decision = ConsoleView.OpenSession(state, new OpenWorktreeSession(SessionId.From("sess-2"), Listed.As("fix-tests")));
 
         decision.ShouldBeOfType<RowDecision.Act>("a filter on the Sessions tab does not hide a worktree's session");
     }
@@ -148,7 +149,7 @@ public sealed class ConsoleViewShould
 
     private static SessionRow Row(string sessionId, string name)
     {
-        BackgroundSession session = new(SessionId.From(sessionId), JobId.From(sessionId == "sess-1" ? "81cdb0f9" : "92ddc1a0"), name, FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, new JobProcess.None());
+        BackgroundSession session = new(SessionId.From(sessionId), JobId.From(sessionId == "sess-1" ? "81cdb0f9" : "92ddc1a0"), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon, DisplayState.Idle, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
     }

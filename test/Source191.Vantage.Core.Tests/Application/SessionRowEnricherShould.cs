@@ -124,7 +124,7 @@ public sealed class SessionRowEnricherShould : IDisposable
         registry.InTree(100, "claude", 1).Using(100, Noon.AddMinutes(-10), MemorySize.FromMegabytes(296));
         BackgroundSession stopped = Session(@"C:\repos\Northwind.Orders");
         BackgroundSession gone = Session(@"C:\repos\Northwind.Orders") with { Process = new JobProcess.Running(101) };
-        InteractiveSession terminal = new(SessionId.From("terminal"), "plain", FolderPath.From(@"C:\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 100);
+        InteractiveSession terminal = new(SessionId.From("terminal"), Listed.As("plain"), FolderPath.From(@"C:\repos\Northwind.Orders"), Noon, DisplayState.Idle, ProcessId: 100);
 
         IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([stopped, gone, terminal], CancellationToken.None);
 
@@ -311,7 +311,7 @@ public sealed class SessionRowEnricherShould : IDisposable
 
     private static BackgroundSession Session(string workingDirectory)
     {
-        return new BackgroundSession(SessionId.From(Guid.NewGuid().ToString()), JobId.From("81cdb0f9"), "name", FolderPath.From(workingDirectory), Noon, DisplayState.Working, new JobProcess.None());
+        return new BackgroundSession(SessionId.From(Guid.NewGuid().ToString()), JobId.From("81cdb0f9"), Listed.As("name"), FolderPath.From(workingDirectory), Noon, DisplayState.Working, new JobProcess.None());
     }
 
     private static AutomatedRun Run(int processId)

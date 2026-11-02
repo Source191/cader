@@ -43,7 +43,7 @@ public sealed class RenameSessionHandlerShould
         List<ProcessRequest> claude = [.. processes.CapturedRequests.Where(request => request.FileName == Claude)];
         claude.Select(request => string.Join(' ', request.Arguments)).ShouldBe(["rm 81cdb0f9", "--bg --resume sess-1 -n fix-124"]);
         claude[1].WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository));
-        message.ShouldBe(new RenameSessionOutcome.Renamed("fix-123", "fix-124", TabMoved: false));
+        message.ShouldBe(new RenameSessionOutcome.Renamed(Listed.As("fix-123"), SessionName.From("fix-124"), TabMoved: false));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class RenameSessionHandlerShould
     {
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
-        message.ShouldBe(new RenameSessionOutcome.NoMessages("fix-123"));
+        message.ShouldBe(new RenameSessionOutcome.NoMessages(Listed.As("fix-123")));
         processes.CapturedRequests.ShouldBeEmpty();
     }
 
@@ -65,7 +65,7 @@ public sealed class RenameSessionHandlerShould
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
         processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => request.Arguments[^1]).ShouldBe(["81cdb0f9", "fix-124", "fix-123"]);
-        message.ShouldBeOfType<RenameSessionOutcome.Restored>().OldName.ShouldBe("fix-123");
+        message.ShouldBeOfType<RenameSessionOutcome.Restored>().OldName.ShouldBe(Listed.As("fix-123"));
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public sealed class RenameSessionHandlerShould
         processes.Answer(request => request.Arguments.Contains("fix-124"), new ProcessResult(1, string.Empty, "boom"));
         processes.Answer(request => request.Arguments.Contains("--resume") && !request.Arguments.Contains("-n"), new ProcessResult(0, "backgrounded · 81cdb0f9 · sess-1", string.Empty));
         transcripts.WithMessages("sess-1");
-        RenameSession rename = new(Job(Repository, DisplayState.Idle) with { Name = " " }, SessionName.From("fix-124"));
+        RenameSession rename = new(Job(Repository, DisplayState.Idle) with { Name = Listed.None() }, SessionName.From("fix-124"));
 
         await Handler.HandleAsync(rename, CancellationToken.None);
 
@@ -98,7 +98,7 @@ public sealed class RenameSessionHandlerShould
         TabLaunch reopened = terminal.Opened.ShouldHaveSingleItem();
         reopened.Title.ShouldBe("fix-124");
         reopened.Colour.ShouldBe(TabPalette.Default[3]);
-        message.ShouldBe(new RenameSessionOutcome.Renamed("fix-123", "fix-124", TabMoved: true));
+        message.ShouldBe(new RenameSessionOutcome.Renamed(Listed.As("fix-123"), SessionName.From("fix-124"), TabMoved: true));
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class RenameSessionHandlerShould
 
         registry.EndedCleanly.ShouldBe([4000]);
         terminal.Opened.ShouldBeEmpty();
-        message.ShouldBe(new RenameSessionOutcome.Restored("fix-123", "boom", TabClosed: true));
+        message.ShouldBe(new RenameSessionOutcome.Restored(Listed.As("fix-123"), "boom", TabClosed: true));
     }
 
     private string ClaudeCalls() => string.Join(", ", processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(' ', request.Arguments)));
@@ -130,6 +130,6 @@ public sealed class RenameSessionHandlerShould
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("--resume"));
         registry.EndedCleanly.ShouldBeEmpty();
         terminal.Opened.ShouldBeEmpty();
-        message.ShouldBe(new RenameSessionOutcome.NotRemoved("fix-123", "Session 81cdb0f9 not found"));
+        message.ShouldBe(new RenameSessionOutcome.NotRemoved(Listed.As("fix-123"), "Session 81cdb0f9 not found"));
     }
 }
