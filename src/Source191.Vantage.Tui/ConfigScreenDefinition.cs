@@ -39,7 +39,7 @@ internal sealed class ConfigScreenDefinition(TimeProvider clock) : IScreenDefini
 
     public string TabTitle(ConfigViewState state) => Wording.TabTitleFor(ConsoleTab.Config);
 
-    public IReadOnlyList<TextPart> Counts(ConfigViewState state) => Wording.ConfigCounts(state.Rows);
+    public IReadOnlyList<TextPart> Counts(ConfigViewState state) => Wording.ConfigCounts(state.List.Rows);
 
     public KeyBar Bar(ConfigViewState state, bool updateKnown) => Wording.ConfigBar(state, updateKnown);
 

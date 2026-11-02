@@ -91,7 +91,7 @@ public sealed class WordingOfKeyBarShould
     [Fact]
     public void AddUpdateToTheConfigBarWhenAReleaseIsKnown()
     {
-        KeyBar bar = Wording.ConfigBar(ConfigLoaded.With(ConfigLoaded.List.Select("worktree-root")), updateKnown: true);
+        KeyBar bar = Wording.ConfigBar(ConfigLoaded with { List = ConfigLoaded.List.Select("worktree-root") }, updateKnown: true);
 
         Texts(bar.First).ShouldBe(["Enter Edit", "U Update"]);
     }
@@ -124,9 +124,9 @@ public sealed class WordingOfKeyBarShould
             }
 
             Wording.WorktreesBar(Loaded(WorktreesViewState.Empty), updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
-            foreach (ConfigRow selected in ConfigLoaded.Rows)
+            foreach (ConfigRow selected in ConfigLoaded.List.Rows)
             {
-                Wording.ConfigBar(ConfigLoaded.With(ConfigLoaded.List.Select(selected.Key)), updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
+                Wording.ConfigBar((ConfigLoaded with { List = ConfigLoaded.List.Select(selected.Key) }), updateKnown).Width.ShouldBeLessThanOrEqualTo(MostCells);
             }
         }
     }
@@ -137,7 +137,7 @@ public sealed class WordingOfKeyBarShould
     {
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded(rows)).State;
 
-        return loaded.With(loaded.List.Select(selected.Session.SessionId.Value));
+        return loaded with { List = loaded.List.Select(selected.Session.SessionId.Value) };
     }
 
     private static WorktreesViewState Loaded(WorktreesViewState state) => WorktreesView.Reduce(state, new WorktreeRowsLoaded([])).State;

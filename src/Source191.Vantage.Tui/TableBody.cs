@@ -258,7 +258,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
             table.SetSelection(0, index, false, null);
         }
 
-        waiting.Show(isShown && !State.Loaded && State.Banner is LoadBanner.None);
+        waiting.Show(isShown && !State.List.Loaded && State.Banner is LoadBanner.None);
         AskForDetail(refreshed: false);
         View.SetNeedsDraw();
         host.FrameChanged();

@@ -22,7 +22,7 @@ public sealed class ConfigViewShould
     [Fact]
     public void LoadTheRowsWithTheFirstSelected()
     {
-        Loaded.Loaded.ShouldBeTrue();
+        Loaded.List.Loaded.ShouldBeTrue();
         Loaded.Selected.ShouldBe(new ConfigRow.RepositoryRoot(0, FolderPath.From(Repos)));
         Loaded.Message.ShouldBe(StatusMessage.None);
     }
@@ -33,7 +33,7 @@ public sealed class ConfigViewShould
         ConfigViewState failed = ConfigView.Reduce(Loaded, new LoadFailed("config.json is locked")).State;
 
         failed.Banner.ShouldBe(new LoadBanner.Failed("config.json is locked"));
-        ConfigView.Reduce(failed, new ConfigRowsLoaded(Loaded.Rows)).State.Banner.ShouldBe(new LoadBanner.None());
+        ConfigView.Reduce(failed, new ConfigRowsLoaded(Loaded.List.Rows)).State.Banner.ShouldBe(new LoadBanner.None());
     }
 
     [Theory]
@@ -150,7 +150,7 @@ public sealed class ConfigViewShould
         ViewUpdate<ConfigViewState> update = ConfigView.Reduce(filtered, new KeyPressed(Key.Escape));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Filter.Text.ShouldBeEmpty();
+        update.State.List.Filter.Text.ShouldBeEmpty();
     }
 
     [Theory]
@@ -206,7 +206,7 @@ public sealed class ConfigViewShould
 
         ConfigViewState filtered = Press(advised, Key.Of('/'), Key.Of('w'), Key.Enter) with { Message = new StatusMessage.Kept() };
         ConfigViewState cleared = Press(filtered, Key.Escape);
-        cleared.Filter.Text.ShouldBeEmpty();
+        cleared.List.Filter.Text.ShouldBeEmpty();
         cleared.Message.ShouldBe(StatusMessage.None);
     }
 
@@ -243,7 +243,7 @@ public sealed class ConfigViewShould
         oneRoot.Title.Shown.ShouldBe(11);
         oneRoot.Title.Total.ShouldBe(11);
     }
-    private static ConfigViewState At(string key) => Loaded.With(Loaded.List.Select(key));
+    private static ConfigViewState At(string key) => Loaded with { List = Loaded.List.Select(key) };
 
     private static ConfigViewState Press(ConfigViewState state, params Key[] keys) => keys.Aggregate(state, (current, key) => ConfigView.Reduce(current, new KeyPressed(key)).State);
 

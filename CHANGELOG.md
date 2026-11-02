@@ -87,6 +87,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Internal
 
+- Each view state holds its ListSelection directly; SelectionKey and the With copies are gone (#193)
 - Every dialog title and button, the waiting words, the STATE words and the wizard's preview are declared in Wording and pinned by a fact, and a source fact keeps sentences out of the rest of Application (#191)
 - Convention nets: a banned-symbols list for src, layering, reducer, handler, diagnostic-line, key-parity and source-text facts, and UnreachableException in the closed discards (#189)
 - Smoke test of the packed tool in CI, its script built from Wording (#75)

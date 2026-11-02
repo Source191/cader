@@ -33,7 +33,7 @@ public static class ConsoleView
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(open);
 
-        return state.Sessions.Rows.FirstOrDefault(row => row.Session.SessionId == open.SessionId) switch
+        return state.Sessions.List.Rows.FirstOrDefault(row => row.Session.SessionId == open.SessionId) switch
         {
             null => new RowDecision.Explain(new StatusMessage.SessionNotListed(open.Name)),
             SessionRow row => SessionsView.Opening(row),
