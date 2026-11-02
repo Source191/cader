@@ -603,12 +603,7 @@ public sealed class ConsoleScreen(
             }
 
             mouse.Handled = true;
-            Active.Press(item.Key switch
-            {
-                "Enter" => Key.Enter,
-                "Esc" => Key.Escape,
-                _ => Key.Of(item.Key[0]),
-            });
+            Active.Press(item.Press);
         }
 
         /// <summary>A label that shows its text as written: no character is taken as a hotkey mark.</summary>
