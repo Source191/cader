@@ -66,19 +66,7 @@ public sealed class JsonFileStoreShould : IDisposable
 
     private static readonly TabRegistration PendingTab = SessionTab with { Claim = new TabClaim.Pending() };
 
-    /// <summary>created.json exactly as the store wrote it before paths became FolderPath: plain strings.</summary>
-    private const string CreatedJson = """
-        [
-          {
-            "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders-fix-123",
-            "branch": "fix-123",
-            "repository": "C:\\Users\\me\\source\\repos\\Northwind.Orders",
-            "createdAt": "2026-10-23T12:00:00+00:00"
-          }
-        ]
-        """;
-
-    /// <summary>One file under created\ exactly as the store writes it: the object of one element of CreatedJson.</summary>
+    /// <summary>One file under created\ exactly as the store writes it: the object of one record.</summary>
     private const string CreatedRecordJson = """
         {
           "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders-fix-123",
@@ -431,28 +419,14 @@ public sealed class JsonFileStoreShould : IDisposable
     }
 
     [Fact]
-    public async Task ImportTheLegacyCreatedFile()
+    public async Task IgnoreTheLegacyCreatedFile()
     {
         Directory.CreateDirectory(folder);
-        await File.WriteAllTextAsync(Path.Combine(folder, "created.json"), CreatedJson, TestContext.Current.CancellationToken);
-
-        CreatedWorktree created = (await Store.ReadCreatedWorktreesAsync()).Single();
-
-        created.ShouldBe(new CreatedWorktree(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders-fix-123"), BranchName.From("fix-123"), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Noon));
-        File.Exists(Path.Combine(folder, "created.json")).ShouldBeFalse();
-        Directory.EnumerateFiles(Path.Combine(folder, "created")).Count().ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task ForgetAnImportedCreatedWorktreeForGood()
-    {
-        Directory.CreateDirectory(folder);
-        await File.WriteAllTextAsync(Path.Combine(folder, "created.json"), CreatedJson, TestContext.Current.CancellationToken);
-
-        await Store.ForgetCreatedWorktreeAsync(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders-fix-123"));
+        string legacy = Path.Combine(folder, "created.json");
+        await File.WriteAllTextAsync(legacy, """[{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders-fix-123", "branch": "fix-123", "repository": "C:\\Users\\me\\source\\repos\\Northwind.Orders", "createdAt": "2026-10-23T12:00:00+00:00" }]""", TestContext.Current.CancellationToken);
 
         (await Store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
-        File.Exists(Path.Combine(folder, "created.json")).ShouldBeFalse();
+        File.Exists(legacy).ShouldBeTrue();
     }
 
     [Fact]

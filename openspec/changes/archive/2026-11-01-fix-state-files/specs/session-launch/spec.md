@@ -24,13 +24,9 @@ Vantage SHALL record each worktree and branch it created and each launched repos
 - **THEN** one record holds that worktree, with the newer branch and creation time
 
 #### Scenario: Existing state is kept
-- **WHEN** Vantage starts with recent repositories and created worktrees saved by an earlier version
-- **THEN** the recent repositories are still listed first in the wizard and the created worktrees still decide the branch-deletion rules
+- **WHEN** Vantage starts with recent repositories saved by an earlier version
+- **THEN** the recent repositories are still listed first in the wizard
 
-#### Scenario: The old created list is imported once
-- **WHEN** the state folder holds a `created.json` list written by an earlier version and Vantage reads, records or forgets a created worktree
-- **THEN** each worktree in the list is a record of its own, the list file is gone, and a worktree forgotten straight after is not revived by a later read
-
-#### Scenario: Old description files are ignored
-- **WHEN** the state folder holds a `descriptions` folder or a `sessions.json` written by an earlier version
+#### Scenario: Old state files are ignored
+- **WHEN** the state folder holds a `descriptions` folder, a `sessions.json` or a `created.json` written by an earlier version
 - **THEN** Vantage neither reads nor deletes them
