@@ -88,10 +88,15 @@ dotnet_diagnostic.IDE0022.severity = warning
 
 # Guard clauses use the throw helpers (ArgumentNullException.ThrowIfNull, ArgumentException.ThrowIfNullOrEmpty,
 # ArgumentOutOfRangeException.ThrowIfNegative and so on, ObjectDisposedException.ThrowIf) wherever one fits.
+# Every externally visible method guards each reference parameter it dereferences (CA1062), tests included, an
+# extension method's this excepted. CA1062 does not reach a primary constructor's parameter, even one a field
+# initialiser dereferences, so there the initialiser guards it (store ?? throw new ArgumentNullException(nameof(store))).
 dotnet_diagnostic.CA1510.severity = warning
 dotnet_diagnostic.CA1511.severity = warning
 dotnet_diagnostic.CA1512.severity = warning
 dotnet_diagnostic.CA1513.severity = warning
+dotnet_diagnostic.CA1062.severity = warning
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true
 
 # A class that can be sealed is sealed (CA1852, a warning under AnalysisLevel 10.0-recommended). The rule skips an
 # assembly with InternalsVisibleTo unless told otherwise; SealedTypesShould covers the public types.
