@@ -353,15 +353,15 @@ public static partial class Wording
     public static string ClaudeBellPlan(string settingsPath, string? replacing)
     {
         string change = replacing is null
-            ? "This sets \"preferredNotifChannel\": \"terminal_bell\""
-            : $"This replaces \"preferredNotifChannel\": \"{replacing}\" with \"terminal_bell\"";
+            ? $"This sets \"preferredNotifChannel\": \"{NotificationChannelState.TerminalBell}\""
+            : $"This replaces \"preferredNotifChannel\": \"{replacing}\" with \"{NotificationChannelState.TerminalBell}\"";
 
         return string.Join(Environment.NewLine,
             "Claude Code can ring the terminal bell when a session finishes or needs permission.",
             $"{change} in {settingsPath} and keeps every other setting.");
     }
 
-    public static string ClaudeBellEnabled(string settingsPath) => $"Set preferredNotifChannel to terminal_bell in {settingsPath}. It applies to sessions started from now on.";
+    public static string ClaudeBellEnabled(string settingsPath) => $"Set preferredNotifChannel to {NotificationChannelState.TerminalBell} in {settingsPath}. It applies to sessions started from now on.";
 
     public static string ClaudeSettingsUnreadable(string settingsPath, string reason) => $"Could not read {settingsPath} ({reason}), so it was left alone.";
 

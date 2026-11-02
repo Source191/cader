@@ -19,7 +19,7 @@ public sealed class SetupFactsReaderShould
         InMemoryState state = new();
         DateTimeOffset nine = new(2026, 10, 30, 9, 12, 0, TimeSpan.Zero);
         await state.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(nine, new NewestRelease.Found(ReleaseVersions.Version("0.18.0"))));
-        SetupFactsReader reader = new(fragment, new FakeClaudeSettings(new NotificationChannelState.Configured("terminal_bell")), state, SettingsFile, new DiagnosticLogSetting.File(LogFile));
+        SetupFactsReader reader = new(fragment, new FakeClaudeSettings(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell)), state, SettingsFile, new DiagnosticLogSetting.File(LogFile));
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 

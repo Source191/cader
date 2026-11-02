@@ -3,6 +3,9 @@ namespace Source191.Vantage.Ports;
 /// <summary>What Claude Code's settings file says about <c>preferredNotifChannel</c>.</summary>
 public abstract record NotificationChannelState
 {
+    /// <summary>The <c>preferredNotifChannel</c> value that makes Claude Code ring the terminal bell.</summary>
+    public const string TerminalBell = "terminal_bell";
+
     /// <summary>There is no settings file.</summary>
     public sealed record Missing : NotificationChannelState;
 

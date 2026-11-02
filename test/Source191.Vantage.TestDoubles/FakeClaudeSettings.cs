@@ -2,7 +2,7 @@ using Source191.Vantage.Ports;
 
 namespace Source191.Vantage.TestDoubles;
 
-/// <summary>An in-memory settings file: enabling the bell turns the state into Configured("terminal_bell").</summary>
+/// <summary>An in-memory settings file: enabling the bell turns the state into Configured(NotificationChannelState.TerminalBell).</summary>
 public sealed class FakeClaudeSettings(NotificationChannelState state) : IClaudeSettings
 {
     public FakeClaudeSettings()
@@ -40,7 +40,7 @@ public sealed class FakeClaudeSettings(NotificationChannelState state) : IClaude
         }
 
         Enabled++;
-        State = new NotificationChannelState.Configured("terminal_bell");
+        State = new NotificationChannelState.Configured(NotificationChannelState.TerminalBell);
 
         return Task.CompletedTask;
     }

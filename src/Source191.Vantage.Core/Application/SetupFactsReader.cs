@@ -11,7 +11,6 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLogSetting log)
 {
-    private const string TerminalBell = "terminal_bell";
 
     public async Task<SetupFacts> ReadAsync(CancellationToken cancellationToken)
     {
@@ -48,7 +47,7 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings
     {
         return await claude.ReadNotificationChannelAsync(cancellationToken) switch
         {
-            NotificationChannelState.Configured { Value: TerminalBell } => new SetupState.Enabled(),
+            NotificationChannelState.Configured { Value: NotificationChannelState.TerminalBell } => new SetupState.Enabled(),
             NotificationChannelState.Configured other => new SetupState.OtherChannel(other.Value),
             NotificationChannelState.Unreadable => new SetupState.Unreadable(),
             NotificationChannelState.Missing or NotificationChannelState.Unset => new SetupState.NotSetUp(),

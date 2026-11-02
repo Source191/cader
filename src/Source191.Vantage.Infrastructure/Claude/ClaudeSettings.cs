@@ -14,7 +14,6 @@ namespace Source191.Vantage.Adapters.Claude;
 public sealed class ClaudeSettings(string claudeHome) : IClaudeSettings
 {
     private const string Property = "preferredNotifChannel";
-    private const string TerminalBell = "terminal_bell";
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 
@@ -55,7 +54,7 @@ public sealed class ClaudeSettings(string claudeHome) : IClaudeSettings
         string text = File.Exists(Location) ? await File.ReadAllTextAsync(Location, cancellationToken) : "{}\n";
         JsonObject settings = ParseOrThrowIoException(text);
 
-        settings[Property] = TerminalBell;
+        settings[Property] = NotificationChannelState.TerminalBell;
         Directory.CreateDirectory(claudeHome);
 
         // Written beside the file and moved over it, so a crash or a full disk cannot leave settings.json truncated.
