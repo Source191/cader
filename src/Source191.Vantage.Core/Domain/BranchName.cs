@@ -2,7 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Source191.Vantage.Domain;
 
-/// <summary>A git branch name: not blank and without whitespace, which git refuses in a branch name.</summary>
+/// <summary>
+/// A git branch name, by Vantage's minimal rule: not blank and without whitespace. Branch text comes from Vantage's
+/// own slugs and git's own output, so the rule only guards against a blank or a split name; git's
+/// <c>check-ref-format</c> refuses far more.
+/// </summary>
 public sealed record BranchName : ITextValue<BranchName>
 {
     private BranchName(string text)

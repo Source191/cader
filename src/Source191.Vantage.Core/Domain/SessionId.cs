@@ -11,7 +11,6 @@ public sealed record SessionId : ITextValue<SessionId>
 {
     private SessionId(string text)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(text);
         if (!IsSessionId(text))
         {
             throw new ArgumentException($"{text} is not a session id: letters, digits and hyphens, a letter or digit first.", nameof(text));
