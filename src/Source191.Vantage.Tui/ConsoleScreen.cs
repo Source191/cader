@@ -380,7 +380,11 @@ public sealed class ConsoleScreen(
         /// <summary>Replaces a row's labels with one per part, in its tone, each after the last.</summary>
         private static void Fill(View row, IReadOnlyList<TextPart> parts)
         {
-            row.RemoveAll();
+            foreach (View removed in row.RemoveAll())
+            {
+                removed.Dispose();
+            }
+
             int x = 0;
             foreach (TextPart part in parts)
             {
@@ -589,7 +593,12 @@ public sealed class ConsoleScreen(
             }
 
             shownBar = keys;
-            bar.RemoveAll();
+            foreach (View removed in bar.RemoveAll())
+            {
+                app.ToolTips?.RemoveToolTip(removed);
+                removed.Dispose();
+            }
+
             AddBarRow(keys.First, 0);
             AddBarRow(keys.Second, 1);
         }
