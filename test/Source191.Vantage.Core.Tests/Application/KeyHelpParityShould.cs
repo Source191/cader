@@ -77,11 +77,8 @@ public sealed class KeyHelpParityShould
         return effects.Count > 0 || !Equals(after, before);
     }
 
-    private static (object State, IReadOnlyList<ViewEffect> Effects) Pressed(ViewUpdate update) => (update.State, update.Effects);
-
-    private static (object State, IReadOnlyList<ViewEffect> Effects) Pressed(WorktreesViewUpdate update) => (update.State, update.Effects);
-
-    private static (object State, IReadOnlyList<ViewEffect> Effects) Pressed(ConfigViewUpdate update) => (update.State, update.Effects);
+    private static (object State, IReadOnlyList<ViewEffect> Effects) Pressed<TState>(ViewUpdate<TState> update)
+        where TState : notnull => (update.State, update.Effects);
     private static Key KeyFor(string text) => text switch
     {
         "enter" => Key.Enter,

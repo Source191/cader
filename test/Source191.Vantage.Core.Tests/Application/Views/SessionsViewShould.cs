@@ -138,7 +138,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void OpenTheSelectedBackgroundSessionInItsOwnTabOnEnter()
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Enter));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Enter));
 
         update.Effects.ShouldBe([new OpenTabForSession(WaitingJob, new LiveTab.None())]);
     }
@@ -149,7 +149,7 @@ public sealed class SessionsViewShould
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
         onInteractive.Selected.ShouldBe(Interactive);
 
-        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Enter));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Enter));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
@@ -163,7 +163,7 @@ public sealed class SessionsViewShould
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
         onInteractive.Selected.ShouldBe(Interactive);
 
-        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-93", HasTranscript: true));
@@ -179,7 +179,7 @@ public sealed class SessionsViewShould
     {
         Key pressed = key == "Enter" ? Key.Enter : Key.Of(key[0]);
 
-        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(pressed));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(pressed));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());
@@ -190,7 +190,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
 
-        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('b')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('b')));
 
         update.Effects.ShouldBe([new AdoptSession(InteractiveTerminal)]);
     }
@@ -201,7 +201,7 @@ public sealed class SessionsViewShould
         SessionRow busy = Row("busy-terminal", DisplayState.Working, "repos", jobId: null, interactive: true);
         SessionsViewState state = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([busy])).State;
 
-        ViewUpdate update = SessionsView.Reduce(state, new KeyPressed(Key.Of('b')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(state, new KeyPressed(Key.Of('b')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.WorkingSoAdoptWaits("busy-terminal"));
@@ -210,7 +210,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void ExplainThatABackgroundSessionNeedsNoAdoption()
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('b')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('b')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.AlreadyUnderVantage("change-feed"));
@@ -226,7 +226,7 @@ public sealed class SessionsViewShould
         Key[] keys = [Key.Enter, Key.Of('r')];
         foreach (Key key in keys)
         {
-            ViewUpdate update = SessionsView.Reduce(withStub, new KeyPressed(key));
+            ViewUpdate<SessionsViewState> update = SessionsView.Reduce(withStub, new KeyPressed(key));
 
             update.Effects.ShouldBeEmpty();
             update.State.Message.ShouldBe(new StatusMessage.NeverSentAMessage("repos-f6"));
@@ -242,8 +242,8 @@ public sealed class SessionsViewShould
         SessionRow untouched = Row(untouchedTerminal) with { HasTranscript = false };
         SessionsViewState onUntouched = Reduce(SessionsViewState.Empty, new RowsLoaded([untouched]));
 
-        ViewUpdate enter = SessionsView.Reduce(onUntouched, new KeyPressed(Key.Enter));
-        ViewUpdate closed = SessionsView.Reduce(onUntouched, new KeyPressed(Key.Of('d')));
+        ViewUpdate<SessionsViewState> enter = SessionsView.Reduce(onUntouched, new KeyPressed(Key.Enter));
+        ViewUpdate<SessionsViewState> closed = SessionsView.Reduce(onUntouched, new KeyPressed(Key.Of('d')));
 
         enter.Effects.ShouldBeEmpty();
         enter.State.Message.ShouldBe(new StatusMessage.RunsInOwnTerminal("repos-f6", HasTranscript: false));
@@ -260,8 +260,8 @@ public sealed class SessionsViewShould
         SessionRow withMessages = Row("repos-31", DisplayState.Idle, "repos", jobId: null, interactive: true);
         SessionsViewState mixed = Reduce(SessionsViewState.Empty, new RowsLoaded([withMessages, first, Waiting, second]));
 
-        ViewUpdate update = SessionsView.Reduce(mixed, new KeyPressed(Key.Of('C')));
-        ViewUpdate none = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('C')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(mixed, new KeyPressed(Key.Of('C')));
+        ViewUpdate<SessionsViewState> none = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('C')));
 
         update.Effects.Single().ShouldBeOfType<CloseEmptyTerminals>().Sessions.ShouldBe([firstTerminal, secondTerminal], ignoreOrder: true);
         none.Effects.ShouldBeEmpty();
@@ -273,7 +273,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
 
-        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('d')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('d')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBeOfType<StatusMessage.RunsInOwnTerminal>().HasTranscript.ShouldBeTrue();
@@ -284,7 +284,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState withTab = Reduce(Loaded, new RowsLoaded([Waiting with { Tab = new LiveTab.Open(TabPalette.Default[0]) }]));
 
-        ViewUpdate update = SessionsView.Reduce(withTab, new KeyPressed(Key.Enter));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(withTab, new KeyPressed(Key.Enter));
 
         update.Effects.ShouldBe([new OpenTabForSession(WaitingJob, new LiveTab.Open(TabPalette.Default[0]))]);
         update.State.Message.ShouldBe(StatusMessage.None);
@@ -295,7 +295,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState withTab = Reduce(Loaded, new RowsLoaded([Waiting with { Tab = new LiveTab.Open(TabPalette.Default[0]) }]));
 
-        ViewUpdate update = SessionsView.Reduce(withTab, new KeyPressed(Key.Of('o')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(withTab, new KeyPressed(Key.Of('o')));
 
         update.Effects.ShouldBeEmpty();
         update.State.ShouldBe(withTab);
@@ -306,10 +306,10 @@ public sealed class SessionsViewShould
     {
         SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('r'))).Effects.ShouldBe([new AskForNewName(WaitingJob)]);
 
-        ViewUpdate renamed = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "fix the tests"));
-        ViewUpdate blank = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "   "));
-        ViewUpdate semicolon = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "fix a;b"));
-        ViewUpdate cancelled = SessionsView.Reduce(Loaded, new RenameCancelled(WaitingJob));
+        ViewUpdate<SessionsViewState> renamed = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "fix the tests"));
+        ViewUpdate<SessionsViewState> blank = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "   "));
+        ViewUpdate<SessionsViewState> semicolon = SessionsView.Reduce(Loaded, new RenameConfirmed(WaitingJob, "fix a;b"));
+        ViewUpdate<SessionsViewState> cancelled = SessionsView.Reduce(Loaded, new RenameCancelled(WaitingJob));
 
         renamed.Effects.ShouldBe([new RenameSession(WaitingJob, SessionName.From("fix the tests"))]);
         renamed.State.Message.ShouldBe(new StatusMessage.Working(new RenameSession(WaitingJob, SessionName.From("fix the tests"))));
@@ -325,7 +325,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState onWorking = Press(Loaded, Key.Down);
 
-        ViewUpdate update = SessionsView.Reduce(onWorking, new KeyPressed(Key.Of('r')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onWorking, new KeyPressed(Key.Of('r')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.WorkingSoRenameWaits("remove-sonar"));
@@ -343,7 +343,7 @@ public sealed class SessionsViewShould
     [InlineData('!', typeof(ShowProblemReport))]
     public void EmitTheEffectForTheKey(char key, Type effect)
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
 
         update.Effects.Single().ShouldBeOfType(effect);
     }
@@ -363,7 +363,7 @@ public sealed class SessionsViewShould
     [InlineData('v')]
     public void IgnoreTheRetiredKeys(char key)
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.ShouldBe(Loaded);
@@ -375,7 +375,7 @@ public sealed class SessionsViewShould
         BackgroundSession running = WaitingJob with { Process = new JobProcess.Running(5151) };
         SessionsViewState state = Reduce(SessionsViewState.Empty, new RowsLoaded([Row(running)]));
 
-        ViewUpdate update = SessionsView.Reduce(state, new KeyPressed(Key.Of('m')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(state, new KeyPressed(Key.Of('m')));
 
         update.Effects.ShouldBe([new ShowMemory(running, 5151)]);
         update.State.Message.ShouldBe(StatusMessage.None);
@@ -388,7 +388,7 @@ public sealed class SessionsViewShould
         SessionsViewState onInteractive = Press(Press(Loaded, Key.Down), Key.Down);
         onInteractive.Selected.ShouldBe(Interactive);
 
-        ViewUpdate update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('m')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onInteractive, new KeyPressed(Key.Of('m')));
 
         update.Effects.ShouldBe([new ShowMemory(InteractiveTerminal, 4242)]);
     }
@@ -399,7 +399,7 @@ public sealed class SessionsViewShould
         SessionsViewState onStopped = Press(Press(Press(Loaded, Key.Down), Key.Down), Key.Down);
         onStopped.Selected.ShouldBe(Stopped);
 
-        ViewUpdate update = SessionsView.Reduce(onStopped, new KeyPressed(Key.Of('m')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onStopped, new KeyPressed(Key.Of('m')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NothingToMeasure("old-spike"));
@@ -414,7 +414,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void IgnoreTheRetiredAgentViewKey()
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('a')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('a')));
 
         update.Effects.ShouldBeEmpty();
         update.State.ShouldBe(Loaded);
@@ -431,7 +431,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState typing = Press(Loaded, Key.Slash);
 
-        ViewUpdate update = SessionsView.Reduce(typing, new KeyPressed(Key.Of('q')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(typing, new KeyPressed(Key.Of('q')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Filter.Text.ShouldBe("q");
@@ -465,7 +465,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState said = Loaded with { Message = new StatusMessage.Kept() };
 
-        ViewUpdate update = SessionsView.Reduce(said, new KeyPressed(Key.Escape));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(said, new KeyPressed(Key.Escape));
 
         update.State.ShouldBe(said);
         update.Effects.ShouldBeEmpty();
@@ -478,7 +478,7 @@ public sealed class SessionsViewShould
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, failed])).State;
         List<BackgroundSession> expected = [.. loaded.VisibleRows.Where(row => row == Stopped || row == failed).Select(row => (BackgroundSession)row.Session)];
 
-        ViewUpdate update = SessionsView.Reduce(loaded, new KeyPressed(Key.Of('R')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(loaded, new KeyPressed(Key.Of('R')));
 
         expected.Count.ShouldBe(2);
         update.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe(expected, "the working and terminal rows are left alone, and the rest go in the order the table shows them");
@@ -491,7 +491,7 @@ public sealed class SessionsViewShould
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, otherStopped, Working])).State;
         SessionsViewState filtered = Press(loaded, Key.Slash, Key.Of('o'), Key.Of('l'), Key.Enter);
 
-        ViewUpdate update = SessionsView.Reduce(filtered, new KeyPressed(Key.Of('R')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(filtered, new KeyPressed(Key.Of('R')));
 
         update.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(BackgroundSession)Stopped.Session]);
     }
@@ -501,7 +501,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Working, Interactive, Waiting])).State;
 
-        ViewUpdate update = SessionsView.Reduce(loaded, new KeyPressed(Key.Of('R')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(loaded, new KeyPressed(Key.Of('R')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NothingToResume());
@@ -521,7 +521,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState state = Reduce(SessionsViewState.Empty, new RowsLoaded([Waiting with { PullRequest = new PullRequestLookup.Missing(PullRequestGap.NotSignedIn, new LookupHost.Known(PullRequestHost.GitHub)) }]));
 
-        ViewUpdate update = SessionsView.Reduce(state, new KeyPressed(Key.Of('p')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(state, new KeyPressed(Key.Of('p')));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoPullRequest("change-feed", PullRequestGap.NotSignedIn, new LookupHost.Known(PullRequestHost.GitHub)));
@@ -536,7 +536,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void CopyTheSelectedSessionsFolder()
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('c')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('c')));
 
         update.Effects.ShouldBe([new CopyFolderPath(Waiting.Session.WorkingDirectory)]);
     }
@@ -556,7 +556,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void FindTheSelectedSessionsSolutionByItsFolderAndRepository()
     {
-        ViewUpdate update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('s')));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(Loaded, new KeyPressed(Key.Of('s')));
 
         update.Effects.ShouldBe([new FindSolution(Waiting.Session.WorkingDirectory, "Northwind.Shipping")]);
     }
@@ -567,7 +567,7 @@ public sealed class SessionsViewShould
     [InlineData('s')]
     public void SayNoSessionIsSelectedWhenAFolderKeyIsPressedOnAnEmptyTable(char key)
     {
-        ViewUpdate update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Of(key)));
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(SessionsViewState.Empty, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoSessionSelected());

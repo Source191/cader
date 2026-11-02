@@ -63,7 +63,7 @@ public sealed class ConfigViewShould
     [InlineData(SetupItem.LastUpdateCheck)]
     public void AdviseOnASetupRowOnEnter(SetupItem item)
     {
-        ConfigViewUpdate update = ConfigView.Reduce(At($"setup:{item}"), new KeyPressed(Key.Enter));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At($"setup:{item}"), new KeyPressed(Key.Enter));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.SetupAdvice(item));
@@ -112,7 +112,7 @@ public sealed class ConfigViewShould
     [InlineData('f')]
     public void SayWhenTheValueIsNotAPath(char key)
     {
-        ConfigViewUpdate update = ConfigView.Reduce(At("open-folder-with"), new KeyPressed(Key.Of(key)));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At("open-folder-with"), new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoPathHere());
@@ -135,7 +135,7 @@ public sealed class ConfigViewShould
     [InlineData('v')]
     public void IgnoreTheRetiredKeys(char key)
     {
-        ConfigViewUpdate update = ConfigView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(Loaded, new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.ShouldBe(Loaded);
@@ -147,7 +147,7 @@ public sealed class ConfigViewShould
         ConfigViewState filtered = Press(Loaded, Key.Slash, Key.Of('t'), Key.Of('r'), Key.Of('e'), Key.Of('e'), Key.Enter);
 
         filtered.Selected.ShouldBe(new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")));
-        ConfigViewUpdate update = ConfigView.Reduce(filtered, new KeyPressed(Key.Escape));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(filtered, new KeyPressed(Key.Escape));
 
         update.Effects.ShouldBeEmpty();
         update.State.Filter.Text.ShouldBeEmpty();

@@ -1,12 +1,13 @@
 using Source191.Vantage.Domain;
 using System.Diagnostics;
+using static Source191.Vantage.Application.Views.ViewUpdate<Source191.Vantage.Application.Views.WorktreesViewState>;
 
 namespace Source191.Vantage.Application.Views;
 
 /// <summary>The worktrees view as a pure function of state and input, mirroring <see cref="SessionsView"/>.</summary>
 public static class WorktreesView
 {
-    public static WorktreesViewUpdate Reduce(WorktreesViewState state, ViewInput input)
+    public static ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input)
     {
         return input switch
         {
@@ -23,7 +24,7 @@ public static class WorktreesView
         };
     }
 
-    private static WorktreesViewUpdate Act(WorktreesViewState state, Key key)
+    private static ViewUpdate<WorktreesViewState> Act(WorktreesViewState state, Key key)
     {
         return key switch
         {
@@ -53,7 +54,7 @@ public static class WorktreesView
     }
 
     /// <summary>Either an effect to run or a status message explaining why nothing happens.</summary>
-    private static WorktreesViewUpdate RowAction(WorktreesViewState state, Func<WorktreeRow, RowDecision> decide)
+    private static ViewUpdate<WorktreesViewState> RowAction(WorktreesViewState state, Func<WorktreeRow, RowDecision> decide)
     {
         WorktreeRow? row = state.Selected;
         if (row is null)
@@ -84,7 +85,7 @@ public static class WorktreesView
     }
 
     /// <summary>The typed text must match exactly; anything else says what was typed so a near miss is obvious.</summary>
-    private static WorktreesViewUpdate Force(WorktreesViewState state, ForceConfirmed confirmed)
+    private static ViewUpdate<WorktreesViewState> Force(WorktreesViewState state, ForceConfirmed confirmed)
     {
         return confirmed.Typed switch
         {
@@ -95,7 +96,7 @@ public static class WorktreesView
         };
     }
 
-    private static WorktreesViewUpdate Forced(WorktreesViewState state, RemoveWorktree remove) => Effect(state with { Message = new StatusMessage.Working(remove) }, remove);
+    private static ViewUpdate<WorktreesViewState> Forced(WorktreesViewState state, RemoveWorktree remove) => Effect(state with { Message = new StatusMessage.Working(remove) }, remove);
 
     private static RowDecision PullRequestOf(WorktreeRow row) => row.PullRequest switch
     {
@@ -133,8 +134,4 @@ public static class WorktreesView
             ? new RowDecision.Act(new OpenWorktreeSession(running.Id, running.Name))
             : new RowDecision.Explain(new StatusMessage.NoSessionIn(row.FolderName));
     }
-
-    private static WorktreesViewUpdate Unchanged(WorktreesViewState state) => new(state, []);
-
-    private static WorktreesViewUpdate Effect(WorktreesViewState state, ViewEffect effect) => new(state, [effect]);
 }

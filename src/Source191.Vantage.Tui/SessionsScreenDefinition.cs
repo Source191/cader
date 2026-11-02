@@ -55,12 +55,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public SessionsViewState WithMessage(SessionsViewState state, StatusMessage message) => state with { Message = message };
 
-    public (SessionsViewState State, IReadOnlyList<ViewEffect> Effects) Reduce(SessionsViewState state, ViewInput input)
-    {
-        ViewUpdate update = SessionsView.Reduce(state, input);
-
-        return (update.State, update.Effects);
-    }
+    public ViewUpdate<SessionsViewState> Reduce(SessionsViewState state, ViewInput input) => SessionsView.Reduce(state, input);
 
     public void OnInput(SessionsViewState before, ViewInput input)
     {

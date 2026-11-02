@@ -1,11 +1,12 @@
 using Source191.Vantage.Domain;
 using System.Diagnostics;
+using static Source191.Vantage.Application.Views.ViewUpdate<Source191.Vantage.Application.Views.SessionsViewState>;
 
 namespace Source191.Vantage.Application.Views;
 
 public static class SessionsView
 {
-    public static ViewUpdate Reduce(SessionsViewState state, ViewInput input)
+    public static ViewUpdate<SessionsViewState> Reduce(SessionsViewState state, ViewInput input)
     {
         return input switch
         {
@@ -22,7 +23,7 @@ public static class SessionsView
         };
     }
 
-    private static ViewUpdate Act(SessionsViewState state, Key key)
+    private static ViewUpdate<SessionsViewState> Act(SessionsViewState state, Key key)
     {
         return key switch
         {
@@ -72,7 +73,7 @@ public static class SessionsView
         };
     }
 
-    private static ViewUpdate Open(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> Open(SessionsViewState state)
     {
         return state.Selected switch
         {
@@ -90,7 +91,7 @@ public static class SessionsView
     /// Every stopped or failed job the table shows, in its order, so a filter narrows what R brings back; a session
     /// stopped on purpose and not wanted is deleted with d instead.
     /// </summary>
-    private static ViewUpdate ResumeAll(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> ResumeAll(SessionsViewState state)
     {
         BackgroundSession[] sessions = [.. state.VisibleRows
             .Select(row => row.Session)
@@ -103,7 +104,7 @@ public static class SessionsView
     }
 
     /// <summary>A key that acts on a supervised job; a terminal session gets the status message that says why it cannot.</summary>
-    private static ViewUpdate SessionAction(SessionsViewState state, Func<SessionRow, BackgroundSession, ViewEffect> effect)
+    private static ViewUpdate<SessionsViewState> SessionAction(SessionsViewState state, Func<SessionRow, BackgroundSession, ViewEffect> effect)
     {
         SessionRow? row = state.Selected;
         if (row is null)
@@ -120,7 +121,7 @@ public static class SessionsView
     }
 
     /// <summary>A key that takes the row's folder to another tool; every row has one, whatever kind of session it is.</summary>
-    private static ViewUpdate FolderAction(SessionsViewState state, Func<FolderPath, string, ViewEffect> effect)
+    private static ViewUpdate<SessionsViewState> FolderAction(SessionsViewState state, Func<FolderPath, string, ViewEffect> effect)
     {
         return state.Selected switch
         {
@@ -129,7 +130,7 @@ public static class SessionsView
         };
     }
     /// <summary>The row's pull request in the browser, or a status message saying why it has none.</summary>
-    private static ViewUpdate OpenPullRequest(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> OpenPullRequest(SessionsViewState state)
     {
         return state.Selected switch
         {
@@ -141,7 +142,7 @@ public static class SessionsView
     }
 
     /// <summary>The memory breakdown of the selected session; a background session with no process is stopped, so there is nothing to measure.</summary>
-    private static ViewUpdate MeasureMemory(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> MeasureMemory(SessionsViewState state)
     {
         return state.Selected switch
         {
@@ -153,7 +154,7 @@ public static class SessionsView
     }
 
     /// <summary>Every plain claude session that was never sent a message, in one go; the TUI confirms before closing.</summary>
-    private static ViewUpdate CloseEmpty(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> CloseEmpty(SessionsViewState state)
     {
         IReadOnlyList<InteractiveSession> empty = [.. state.Rows.Where(row => !row.HasTranscript).Select(row => row.Session).OfType<InteractiveSession>()];
 
@@ -163,7 +164,7 @@ public static class SessionsView
     }
 
     /// <summary>Renaming restarts the session under the new name, so it waits until nothing is in flight.</summary>
-    private static ViewUpdate Rename(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> Rename(SessionsViewState state)
     {
         if (state.Selected is not { Session: BackgroundSession session } row)
         {
@@ -179,7 +180,7 @@ public static class SessionsView
         };
     }
 
-    private static ViewUpdate RenameWith(SessionsViewState state, RenameConfirmed confirmed)
+    private static ViewUpdate<SessionsViewState> RenameWith(SessionsViewState state, RenameConfirmed confirmed)
     {
         return SessionName.Validate(confirmed.Name.Trim()) switch
         {
@@ -189,13 +190,13 @@ public static class SessionsView
         };
     }
 
-    private static ViewUpdate Renamed(SessionsViewState state, RenameSession rename) => Effect(state with { Message = new StatusMessage.Working(rename) }, rename);
+    private static ViewUpdate<SessionsViewState> Renamed(SessionsViewState state, RenameSession rename) => Effect(state with { Message = new StatusMessage.Working(rename) }, rename);
 
     /// <summary>
     /// Adoption ends the interactive process and resumes the conversation under the supervisor, so it is refused
     /// while the session is mid-turn: whatever that turn was doing would be lost.
     /// </summary>
-    private static ViewUpdate Adopt(SessionsViewState state)
+    private static ViewUpdate<SessionsViewState> Adopt(SessionsViewState state)
     {
         SessionRow? row = state.Selected;
 
@@ -208,8 +209,4 @@ public static class SessionsView
             _ => throw new UnreachableException(),
         };
     }
-
-    private static ViewUpdate Unchanged(SessionsViewState state) => new(state, []);
-
-    private static ViewUpdate Effect(SessionsViewState state, ViewEffect effect) => new(state, [effect]);
 }

@@ -51,12 +51,7 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public WorktreesViewState WithMessage(WorktreesViewState state, StatusMessage message) => state with { Message = message };
 
-    public (WorktreesViewState State, IReadOnlyList<ViewEffect> Effects) Reduce(WorktreesViewState state, ViewInput input)
-    {
-        WorktreesViewUpdate update = WorktreesView.Reduce(state, input);
-
-        return (update.State, update.Effects);
-    }
+    public ViewUpdate<WorktreesViewState> Reduce(WorktreesViewState state, ViewInput input) => WorktreesView.Reduce(state, input);
 
     public void OnInput(WorktreesViewState before, ViewInput input)
     {
