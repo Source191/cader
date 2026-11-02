@@ -159,7 +159,7 @@ public static partial class Wording
         {
             KeyHelp help = keys.First(candidate => candidate.Key == key);
             KeyBarItem item = words.FirstOrDefault(word => word.Key == key) is BarWord word
-                ? new(help.HelpKey, word.Word, x, word.Tip)
+                ? new(help.HelpKey, word.Word, x, word.Tip, help.Press)
                 : OwnItem(help, x);
             items.Add(item);
             x = item.End + BarGap;
@@ -169,7 +169,7 @@ public static partial class Wording
     }
 
     /// <summary>A key's item in its own words: its hint, or its help line for a key the bar has no hint for.</summary>
-    private static KeyBarItem OwnItem(KeyHelp help, int x) => new(help.HelpKey, help.OnBar ? help.Hint : help.Line, x, help.Tip);
+    private static KeyBarItem OwnItem(KeyHelp help, int x) => new(help.HelpKey, help.OnBar ? help.Hint : help.Line, x, help.Tip, help.Press);
 
     private const string TerminalTabTip = "Close this terminal session's tab; it was never sent a message, so nothing is lost.";
 

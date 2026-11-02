@@ -155,4 +155,12 @@ public sealed class WordingOfKeyBarShould
 
         return new SessionRow(session, new SessionLocation.Outside("repos"), new Head.Unknown(), new LiveTab.None(), hasTranscript);
     }
+
+    [Fact]
+    public void PassEachItemsKeyThrough()
+    {
+        KeyBar bar = Wording.SessionsBar(Selecting([Running], Running), updateKnown: false);
+
+        bar.First.Concat(bar.Second).ShouldAllBe(item => Wording.SessionsKeys.Any(help => help.Press == item.Press && help.HelpKey == item.Key));
+    }
 }
