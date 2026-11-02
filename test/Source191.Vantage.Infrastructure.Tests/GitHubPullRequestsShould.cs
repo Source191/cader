@@ -20,7 +20,7 @@ public sealed class GitHubPullRequestsShould
 
     private const string Gh = @"C:\Program Files\GitHub CLI\gh.exe";
 
-    private static readonly GitHubRepository Orders = new("northwind", "Northwind.Orders");
+    private static readonly RemoteRepository.GitHub Orders = new("northwind", "Northwind.Orders");
     private static readonly FolderPath Checkout = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders");
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, Recorded, string.Empty));

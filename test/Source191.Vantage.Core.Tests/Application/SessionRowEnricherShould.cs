@@ -35,7 +35,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     public async Task CarryEachRowsPullRequest()
     {
         PullRequest open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Noon);
-        hosts.Answer(new GitHubRepository("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix"), open)]));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix"), open)]));
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
         Session session = Session(@"C:\repos\Northwind.Orders-fix");
         SessionRowEnricher enricher = Enricher;

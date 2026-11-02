@@ -25,7 +25,7 @@ public sealed class AzureDevOpsPullRequestsShould
         ]
         """;
 
-    private static readonly AzureDevOpsRepository Orders = new("northwind", "Northwind Trading", "Northwind.Orders");
+    private static readonly RemoteRepository.AzureDevOps Orders = new("northwind", "Northwind Trading", "Northwind.Orders");
     private static readonly FolderPath Checkout = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders");
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, Recorded, string.Empty));

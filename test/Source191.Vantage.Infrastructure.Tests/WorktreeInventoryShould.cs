@@ -39,7 +39,7 @@ public sealed class WorktreeInventoryShould : IDisposable
         string repository = await root.CreateRepositoryAsync("Northwind.Orders");
         await root.AddSiblingWorktreeAsync(repository, "fix-1");
         PullRequest open = new(PullRequestHost.GitHub, 7, new Uri("https://github.com/northwind/Northwind.Orders/pull/7"), PullRequestState.Open, Noon);
-        hosts.Answer(new GitHubRepository("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix-1"), open)]));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix-1"), open)]));
 
         WorktreeRow first = (await Inventory.ScanAsync([], TestContext.Current.CancellationToken)).Single();
         await catalogue.RefreshStaleAsync([(FolderPath.From(repository), BranchName.From("fix-1"))]);
