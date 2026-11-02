@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Source191.Vantage.Domain;
 
 public sealed record WorktreeHealth(WorktreeHealthKind Kind, HealthReason Reason)
@@ -6,14 +8,31 @@ public sealed record WorktreeHealth(WorktreeHealthKind Kind, HealthReason Reason
     {
         return observation switch
         {
-            { RegisteredWithGit: true, FolderExists: false } => new(WorktreeHealthKind.Broken, new HealthReason.FolderGone()),
-            { RegisteredWithGit: true, Prunable: true } => new(WorktreeHealthKind.Broken, new HealthReason.GitFileGone()),
-            { RegisteredWithGit: true, Lock: WorktreeLock.Locked locked } => new(WorktreeHealthKind.Locked, new HealthReason.Locked(locked.Reason)),
-            { RegisteredWithGit: true } => new(WorktreeHealthKind.Ok, new HealthReason.None()),
+            WorktreeObservation.Registered registered => FromRegistered(registered),
+            WorktreeObservation.Unregistered unregistered => FromUnregistered(unregistered),
+            _ => throw new UnreachableException(),
+        };
+    }
+
+    private static WorktreeHealth FromRegistered(WorktreeObservation.Registered observation)
+    {
+        return observation switch
+        {
+            { FolderExists: false } => new(WorktreeHealthKind.Broken, new HealthReason.FolderGone()),
+            { Prunable: true } => new(WorktreeHealthKind.Broken, new HealthReason.GitFileGone()),
+            { Lock: WorktreeLock.Locked locked } => new(WorktreeHealthKind.Locked, new HealthReason.Locked(locked.Reason)),
+            _ => new(WorktreeHealthKind.Ok, new HealthReason.None()),
+        };
+    }
+
+    private static WorktreeHealth FromUnregistered(WorktreeObservation.Unregistered observation)
+    {
+        return observation switch
+        {
             { GitFile: GitPointer.RegisteredElsewhere elsewhere } => new(WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(elsewhere.Owner)),
             { GitFile: GitPointer.TargetGone } => new(WorktreeHealthKind.Broken, new HealthReason.RegistrationGone()),
             { UnderClaudeWorktrees: true } => new(WorktreeHealthKind.Orphan, new HealthReason.UnderClaudeWorktrees()),
-            { EmptyLeftoverFolder: true } => new(WorktreeHealthKind.Empty, new HealthReason.EmptyLeftover()),
+            { EmptyLeftover: true } => new(WorktreeHealthKind.Empty, new HealthReason.EmptyLeftover()),
             _ => new(WorktreeHealthKind.Orphan, new HealthReason.NotRegistered()),
         };
     }

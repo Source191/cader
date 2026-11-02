@@ -19,16 +19,20 @@ public sealed class WorktreeInspector(IGit git)
     /// Health as git's listing and the disc give it, the caller having read whether the folder exists: listed and fine
     /// is ok or locked with git's reason; listed and prunable is broken, its folder gone or only its .git file; not
     /// listed is broken with its folder gone, or, while the folder exists (git may list it under another spelling, such
-    /// as the real folder behind a junction), not registered, so its files are counted before anything is deleted.
+    /// as the real folder behind a junction), not registered, so its files are counted before anything is deleted. The gone folder is answered here, not
+    /// through an observation, because the disc, not git, decided it.
     /// </summary>
     public async Task<WorktreeHealth> HealthAsync(FolderPath repository, FolderPath worktree, bool folderExists, CancellationToken cancellationToken)
     {
         IReadOnlyList<GitWorktreeEntry> entries = await git.ListWorktreesAsync(repository.Value, cancellationToken);
         GitWorktreeEntry? entry = entries.FirstOrDefault(candidate => FolderPath.TryParse(candidate.Path, out FolderPath? path) && path.Equals(worktree));
 
-        return entry is null
-            ? WorktreeHealth.From(new WorktreeObservation(RegisteredWithGit: !folderExists, folderExists, new WorktreeLock.Unlocked(), false, new GitPointer.NoGitFile(), false, Prunable: false))
-            : WorktreeHealth.From(new WorktreeObservation(true, folderExists, entry.Lock, false, new GitPointer.NoGitFile(), false, entry.IsPrunable));
+        return entry switch
+        {
+            null when !folderExists => new WorktreeHealth(WorktreeHealthKind.Broken, new HealthReason.FolderGone()),
+            null => WorktreeHealth.From(new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: false)),
+            _ => WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable)),
+        };
     }
 
     /// <summary>Merged into the remote default branch, or into HEAD when the repository has none.</summary>
