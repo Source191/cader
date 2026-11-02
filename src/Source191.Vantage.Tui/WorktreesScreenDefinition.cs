@@ -16,9 +16,9 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
     public string RowTip(WorktreeRow row) => string.Empty;
 
 
-    public string WaitingText => "Scanning worktrees";
+    public string WaitingText => Wording.WaitingText(ConsoleTab.Worktrees);
 
-    public string LoadFailurePrefix => "scan failed";
+    public string LoadFailurePrefix => Wording.LoadFailurePrefix(ConsoleTab.Worktrees);
 
     public string HelpText => Wording.WorktreesHelp;
 

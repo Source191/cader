@@ -86,7 +86,6 @@ public sealed class ConsoleScreen(
     /// <summary>One run's views and state: the window, the icon and settings row, the three tabs, the counts and title beside them, the key bar and the timers.</summary>
     private sealed class Frame : ITabHost, IDisposable
     {
-        private const string Separator = " · ";
         private const int SettingsRows = 1;
         private const int StripTop = SettingsRows;
         private const int TitleRow = StripTop + 1;
@@ -357,7 +356,7 @@ public sealed class ConsoleScreen(
         /// <summary>The table's title at the right end of the tab titles' row, a cell from the edge; cut at its end with an ellipsis when it would reach the counts.</summary>
         private void ShowFrameTitle(TextPart title)
         {
-            int countsEnd = HeaderSpan() + 2 + string.Join(Separator, shownCounts.Select(part => part.Text)).Length;
+            int countsEnd = HeaderSpan() + 2 + string.Join(Wording.Dot.Text, shownCounts.Select(part => part.Text)).Length;
             int room = Math.Max(ScreenWidth - 1 - (countsEnd + 2), 0);
             string text = title.Text.Length <= room ? title.Text : title.Text[..Math.Max(room - 1, 0)] + "…";
             frameTitle.X = Math.Max(ScreenWidth - 1 - text.Length, 0);
@@ -375,7 +374,7 @@ public sealed class ConsoleScreen(
             }
 
             shownCounts = parts;
-            Fill(counts, Joined(parts, new TextPart(Separator, TextTone.Grey)));
+            Fill(counts, Joined(parts, Wording.Dot));
         }
 
         /// <summary>Replaces a row's labels with one per part, in its tone, each after the last.</summary>

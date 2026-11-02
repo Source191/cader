@@ -198,7 +198,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void CountAStartingSessionWithTheWorkingOnes()
     {
-        SessionRow[] rows = [SessionIn(DisplayState.Starting, 0), SessionIn(DisplayState.Working, 1)];
+        SessionRow[] rows = [SessionIn(new DisplayState.Starting(), 0), SessionIn(DisplayState.Working, 1)];
 
         Wording.SessionCounts(rows, AutomatedRuns.None).ShouldBe([new TextPart("● 2 working", TextTone.Cyan)]);
     }
@@ -250,5 +250,49 @@ public sealed class WordingOfScreensShould
     public void IgnoreAFilterOfOnlySpaces()
     {
         Wording.Describe(new TableTitle("session", Shown: 3, Total: 3, Filter: "  ", Selected: null)).ShouldBe("3 sessions");
+    }
+
+    [Fact]
+    public void WordEveryDisplayState()
+    {
+        Wording.StateWord(DisplayState.Working).ShouldBe("working");
+        Wording.StateWord(DisplayState.NeedsInput).ShouldBe("needs input");
+        Wording.StateWord(DisplayState.Idle).ShouldBe("idle");
+        Wording.StateWord(DisplayState.Completed).ShouldBe("completed");
+        Wording.StateWord(DisplayState.Failed).ShouldBe("failed");
+        Wording.StateWord(DisplayState.Stopped).ShouldBe("stopped");
+        Wording.StateWord(new DisplayState.Starting()).ShouldBe("starting");
+        Wording.StateWord(new DisplayState.Unknown("paused/dreaming")).ShouldBe("paused/dreaming");
+    }
+
+    [Fact]
+    public void SayWhatEachTabWaitsFor()
+    {
+        Wording.WaitingText(ConsoleTab.Sessions).ShouldBe("Listing sessions");
+        Wording.WaitingText(ConsoleTab.Worktrees).ShouldBe("Scanning worktrees");
+        Wording.WaitingText(ConsoleTab.Config).ShouldBe("Reading the settings");
+    }
+
+    [Fact]
+    public void SayHowEachTabsLoadFails()
+    {
+        Wording.LoadFailurePrefix(ConsoleTab.Sessions).ShouldBe("listing failed");
+        Wording.LoadFailurePrefix(ConsoleTab.Worktrees).ShouldBe("scan failed");
+        Wording.LoadFailurePrefix(ConsoleTab.Config).ShouldBe("reading failed");
+    }
+
+    [Fact]
+    public void PutTheFilterBeingTypedBeforeTheTitle()
+    {
+        TableTitle title = new("session", Shown: 2, Total: 7, Filter: "tem", Selected: null);
+
+        Wording.FilterBeingTyped("tem", title).ShouldBe($"filter: tem_  {Wording.Describe(title)}");
+    }
+
+    [Fact]
+    public void HoldTheTabBlockAndTheGreyDotBetweenCounts()
+    {
+        Wording.TabBlock.ShouldBe("██");
+        Wording.Dot.ShouldBe(new TextPart(" · ", TextTone.Grey));
     }
 }

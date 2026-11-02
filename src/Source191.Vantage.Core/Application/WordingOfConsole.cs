@@ -13,7 +13,7 @@ public static partial class Wording
     private static readonly string[] SecondBarRowForConfig = ["c", "f", "/", "?", "!", "q"];
     private static readonly string[] FirstBarRowForWorktrees = ["d", "D", "P", "n", "o", "enter"];
 
-    private static readonly TextPart Dot = new(" · ", TextTone.Grey);
+    public static readonly TextPart Dot = new(" · ", TextTone.Grey);
 
     /// <summary>The console's settings row, labels orange and values white, an available update in amber: Vantage and Claude; the roots are on the Config tab.</summary>
     public static IReadOnlyList<TextPart> SettingsRow(ToolVersion vantage, ClaudeCodeVersion claude, UpdateStatus update, MemorySize vantageMemory) =>
@@ -121,12 +121,12 @@ public static partial class Wording
     private static string CountedState(DisplayStateKind kind, List<SessionRow> rows) => kind switch
     {
         DisplayStateKind.NeedsInput => rows.Count == 1 ? "needs input" : "need input",
-        DisplayStateKind.Working => DisplayState.Working.Label,
-        DisplayStateKind.Idle => rows[0].Session.State.Label,
-        DisplayStateKind.Completed => rows[0].Session.State.Label,
-        DisplayStateKind.Failed => rows[0].Session.State.Label,
-        DisplayStateKind.Stopped => rows[0].Session.State.Label,
-        DisplayStateKind.Unknown => rows[0].Session.State.Label,
+        DisplayStateKind.Working => StateWord(DisplayState.Working),
+        DisplayStateKind.Idle => StateWord(rows[0].Session.State),
+        DisplayStateKind.Completed => StateWord(rows[0].Session.State),
+        DisplayStateKind.Failed => StateWord(rows[0].Session.State),
+        DisplayStateKind.Stopped => StateWord(rows[0].Session.State),
+        DisplayStateKind.Unknown => StateWord(rows[0].Session.State),
     };
 
     private static TextTone ToneOf(DisplayStateKind kind) => kind switch

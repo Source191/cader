@@ -24,7 +24,7 @@ public sealed class SessionsShould
     public void OrderTheSixStatesByAttentionNeeded()
     {
         Sessions sessions = new([
-            Session("unknown", new DisplayState(DisplayStateKind.Unknown, "odd"), Noon),
+            Session("unknown", new DisplayState.Unknown("odd"), Noon),
             Session("stopped", DisplayState.Stopped, Noon),
             Session("failed", DisplayState.Failed, Noon),
             Session("completed", DisplayState.Completed, Noon),

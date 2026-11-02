@@ -152,6 +152,28 @@ public static partial class Wording
     /// <summary>The TAB cell of a plain claude in its own terminal; a session a Vantage tab shows has its cell filled with that tab's colour instead.</summary>
     public const string TerminalSwatch = "▯";
 
+    /// <summary>The block a Vantage tab's colour is drawn with: two cells, leaving the column's third as space before the state.</summary>
+    public const string TabBlock = "██";
+
+    /// <summary>The words while a tab's first load runs; a closed enum, so a new tab fails the build here.</summary>
+    public static string WaitingText(ConsoleTab tab) => tab switch
+    {
+        ConsoleTab.Sessions => "Listing sessions",
+        ConsoleTab.Worktrees => "Scanning worktrees",
+        ConsoleTab.Config => "Reading the settings",
+    };
+
+    /// <summary>The words before the banner's failure message; a closed enum, so a new tab fails the build here.</summary>
+    public static string LoadFailurePrefix(ConsoleTab tab) => tab switch
+    {
+        ConsoleTab.Sessions => "listing failed",
+        ConsoleTab.Worktrees => "scan failed",
+        ConsoleTab.Config => "reading failed",
+    };
+
+    /// <summary>The table's title while a filter is being typed: "filter: tem_  2 of 7 sessions match "tem"".</summary>
+    public static string FilterBeingTyped(string text, TableTitle title) => $"filter: {text}_  {Describe(title)}";
+
     /// <summary>The glyph before a state's word: a closed enum, so a new kind fails the build here.</summary>
     public static string StateGlyph(DisplayStateKind kind) => kind switch
     {
@@ -162,6 +184,26 @@ public static partial class Wording
         DisplayStateKind.Failed => "✗",
         DisplayStateKind.Stopped => "■",
         DisplayStateKind.Unknown => "?",
+    };
+
+    /// <summary>The word in the STATE column: a known state's own word, "starting" for a job with no status yet, and an unknown combination's raw words so it is noticed.</summary>
+    public static string StateWord(DisplayState state) => state switch
+    {
+        DisplayState.Starting => "starting",
+        DisplayState.Unknown unknown => unknown.RawWords,
+        DisplayState.Known known => KnownStateWord(known.Kind),
+        _ => throw new UnreachableException(),
+    };
+
+    private static string KnownStateWord(DisplayStateKind kind) => kind switch
+    {
+        DisplayStateKind.NeedsInput => "needs input",
+        DisplayStateKind.Working => "working",
+        DisplayStateKind.Idle => "idle",
+        DisplayStateKind.Completed => "completed",
+        DisplayStateKind.Failed => "failed",
+        DisplayStateKind.Stopped => "stopped",
+        DisplayStateKind.Unknown => throw new UnreachableException(),
     };
 
     /// <summary>The glyph before a worktree health's word, so the health reads without its colour: a closed enum, so a new kind fails the build here.</summary>
