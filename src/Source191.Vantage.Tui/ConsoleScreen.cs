@@ -289,7 +289,7 @@ public sealed class ConsoleScreen(
         /// <summary>The setting rows at once the first time, so they never wait for the setup, which is read off the UI thread each time the tab is shown.</summary>
         private void ReadConfig()
         {
-            if (!config.State.Loaded)
+            if (!config.State.List.Loaded)
             {
                 config.Reduce(new ConfigRowsLoaded(screen.settingRows()));
             }

@@ -11,14 +11,14 @@ public static class SessionsView
     {
         return input switch
         {
-            RowsLoaded loaded => Unchanged(state.With(state.List.Load(loaded.Rows)) with { Banner = new LoadBanner.None(), AutomatedRuns = loaded.AutomatedRuns }),
+            RowsLoaded loaded => Unchanged(state with { List = state.List.Load(loaded.Rows), Banner = new LoadBanner.None(), AutomatedRuns = loaded.AutomatedRuns }),
             LoadFailed failed => Unchanged(state with { Banner = new LoadBanner.Failed(failed.Message) }),
             MessageDismissed dismissed when ReferenceEquals(state.Message, dismissed.Message) => Unchanged(state with { Message = StatusMessage.None }),
             MessageDismissed => Unchanged(state),
             RenameConfirmed confirmed => RenameWith(state, confirmed),
             RenameCancelled => Unchanged(state with { Message = new StatusMessage.RenameCancelled() }),
             UpdateTabOpened => Effect(state, new Quit()),
-            KeyPressed pressed when state.FilterEditing => Unchanged(state.With(state.List.EditFilter(pressed.Key)) with { Message = StatusMessage.None }),
+            KeyPressed pressed when state.List.FilterEditing => Unchanged(state with { List = state.List.EditFilter(pressed.Key), Message = StatusMessage.None }),
             KeyPressed pressed => Act(state, pressed.Key),
             _ => Unchanged(state),
         };
@@ -29,11 +29,11 @@ public static class SessionsView
         return key switch
         {
             // Moving on or filtering clears the last message, so the status line goes until there is something new to say.
-            { Name: KeyName.Up } => Unchanged(state.With(state.List.Move(-1)) with { Message = StatusMessage.None }),
-            { Name: KeyName.Down } => Unchanged(state.With(state.List.Move(+1)) with { Message = StatusMessage.None }),
-            { Name: KeyName.Escape } when state.Filter.Text.Length > 0 => Unchanged(state.With(state.List.ClearFilter()) with { Message = StatusMessage.None }),
+            { Name: KeyName.Up } => Unchanged(state with { List = state.List.Move(-1), Message = StatusMessage.None }),
+            { Name: KeyName.Down } => Unchanged(state with { List = state.List.Move(+1), Message = StatusMessage.None }),
+            { Name: KeyName.Escape } when state.List.Filter.Text.Length > 0 => Unchanged(state with { List = state.List.ClearFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Enter } => RowAction(state, Opening),
-            { Name: KeyName.Character, Character: '/' } => Unchanged(state.With(state.List.StartFilter()) with { Message = StatusMessage.None }),
+            { Name: KeyName.Character, Character: '/' } => Unchanged(state with { List = state.List.StartFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'r' } => RowAction(state, Rename),
             { Name: KeyName.Character, Character: 'x' } => RowAction(state, row => OnJob(row, job => new StopSession(job))),
             { Name: KeyName.Character, Character: 'd' } => RowAction(state, Delete),
@@ -144,7 +144,7 @@ public static class SessionsView
     /// <summary>Every plain claude session that was never sent a message, in one go; the TUI confirms before closing.</summary>
     private static ViewUpdate<SessionsViewState> CloseEmpty(SessionsViewState state)
     {
-        IReadOnlyList<InteractiveSession> empty = [.. state.Rows.Where(row => !row.HasTranscript).Select(row => row.Session).OfType<InteractiveSession>()];
+        IReadOnlyList<InteractiveSession> empty = [.. state.List.Rows.Where(row => !row.HasTranscript).Select(row => row.Session).OfType<InteractiveSession>()];
 
         return empty.Count == 0
             ? Unchanged(state with { Message = new StatusMessage.NoEmptyTerminals() })

@@ -26,10 +26,10 @@ public sealed class SessionsViewShould
     [Fact]
     public void KnowWhetherTheFirstListingHasArrived()
     {
-        SessionsViewState.Empty.Loaded.ShouldBeFalse();
-        Reduce(SessionsViewState.Empty, new LoadFailed("claude is not installed")).Loaded.ShouldBeFalse();
-        Loaded.Loaded.ShouldBeTrue();
-        Reduce(Loaded, new RowsLoaded([])).Loaded.ShouldBeTrue();
+        SessionsViewState.Empty.List.Loaded.ShouldBeFalse();
+        Reduce(SessionsViewState.Empty, new LoadFailed("claude is not installed")).List.Loaded.ShouldBeFalse();
+        Loaded.List.Loaded.ShouldBeTrue();
+        Reduce(Loaded, new RowsLoaded([])).List.Loaded.ShouldBeTrue();
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public sealed class SessionsViewShould
     {
         SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l')));
 
-        typing.FilterEditing.ShouldBeTrue();
+        typing.List.FilterEditing.ShouldBeTrue();
         typing.VisibleRows.Select(row => row.Session.Name).ShouldBe(["old-spike"]);
         typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "ol", Selected: "old-spike"));
     }
@@ -120,7 +120,7 @@ public sealed class SessionsViewShould
     public void CommitTheFilterWithEnterAndClearItWithEscape()
     {
         SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
-        committed.FilterEditing.ShouldBeFalse();
+        committed.List.FilterEditing.ShouldBeFalse();
         committed.VisibleRows.Count.ShouldBe(2);
 
         SessionsViewState cleared = Press(committed, Key.Escape);
@@ -434,7 +434,7 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(typing, new KeyPressed(Key.Of('q')));
 
         update.Effects.ShouldBeEmpty();
-        update.State.Filter.Text.ShouldBe("q");
+        update.State.List.Filter.Text.ShouldBe("q");
     }
 
     [Fact]
@@ -456,7 +456,7 @@ public sealed class SessionsViewShould
 
         SessionsViewState filtered = Press(Loaded, Key.Slash, Key.Of('n'), Key.Enter) with { Message = new StatusMessage.Kept() };
         SessionsViewState cleared = Press(filtered, Key.Escape);
-        cleared.Filter.Text.ShouldBeEmpty();
+        cleared.List.Filter.Text.ShouldBeEmpty();
         cleared.Message.ShouldBe(StatusMessage.None);
     }
 

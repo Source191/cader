@@ -95,8 +95,8 @@ public static partial class Wording
             { Session: InteractiveSession, HasTranscript: false } => (["b", "d", "m"], [CloseTab]),
             _ => (["b", "m"], []),
         };
-        bool stoppedListed = state.Rows.Any(row => row.Session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed);
-        bool emptyTerminalListed = state.Rows.Any(row => row is { Session: InteractiveSession, HasTranscript: false });
+        bool stoppedListed = state.List.Rows.Any(row => row.Session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed);
+        bool emptyTerminalListed = state.List.Rows.Any(row => row is { Session: InteractiveSession, HasTranscript: false });
         IReadOnlyList<string> first =
         [
             .. forRow.Keys,

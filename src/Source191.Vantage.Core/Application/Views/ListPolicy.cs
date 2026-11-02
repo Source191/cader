@@ -15,8 +15,4 @@ public sealed record ListPolicy<TRow>(
 {
     /// <summary>A selection with no rows yet, governed by this policy.</summary>
     public ListSelection<TRow> EmptyList() => new(this, [], SelectedKey: null, RowFilter.None, FilterEditing: false, Loaded: false);
-
-    /// <summary>A selection governed by this policy, from a view state's fields; the one place a <see cref="SelectionKey"/> becomes the selection's own key.</summary>
-    public ListSelection<TRow> List(IReadOnlyList<TRow> rows, SelectionKey selected, RowFilter filter, bool filterEditing, bool loaded) =>
-        new(this, rows, selected is SelectionKey.Row row ? row.Key : null, filter, filterEditing, loaded);
 }

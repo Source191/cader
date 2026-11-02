@@ -12,12 +12,12 @@ public static class ConfigView
     {
         return input switch
         {
-            ConfigRowsLoaded loaded => Unchanged(state.With(state.List.Load(loaded.Rows)) with { Banner = new LoadBanner.None() }),
+            ConfigRowsLoaded loaded => Unchanged(state with { List = state.List.Load(loaded.Rows), Banner = new LoadBanner.None() }),
             LoadFailed failed => Unchanged(state with { Banner = new LoadBanner.Failed(failed.Message) }),
             MessageDismissed dismissed when ReferenceEquals(state.Message, dismissed.Message) => Unchanged(state with { Message = StatusMessage.None }),
             MessageDismissed => Unchanged(state),
             UpdateTabOpened => Effect(state, new Quit()),
-            KeyPressed pressed when state.FilterEditing => Unchanged(state.With(state.List.EditFilter(pressed.Key)) with { Message = StatusMessage.None }),
+            KeyPressed pressed when state.List.FilterEditing => Unchanged(state with { List = state.List.EditFilter(pressed.Key), Message = StatusMessage.None }),
             KeyPressed pressed => Act(state, pressed.Key),
             _ => Unchanged(state),
         };
@@ -42,12 +42,12 @@ public static class ConfigView
         return key switch
         {
             // Moving on or filtering clears the last message; what the selected row is for is only its tooltip.
-            { Name: KeyName.Up } => Unchanged(state.With(state.List.Move(-1)) with { Message = StatusMessage.None }),
-            { Name: KeyName.Down } => Unchanged(state.With(state.List.Move(+1)) with { Message = StatusMessage.None }),
-            { Name: KeyName.Escape } when state.Filter.Text.Length > 0 => Unchanged(state.With(state.List.ClearFilter()) with { Message = StatusMessage.None }),
+            { Name: KeyName.Up } => Unchanged(state with { List = state.List.Move(-1), Message = StatusMessage.None }),
+            { Name: KeyName.Down } => Unchanged(state with { List = state.List.Move(+1), Message = StatusMessage.None }),
+            { Name: KeyName.Escape } when state.List.Filter.Text.Length > 0 => Unchanged(state with { List = state.List.ClearFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Escape } => Effect(state, new SelectTab(ConsoleTab.Sessions)),
             { Name: KeyName.Enter } => RowAction(state, Enter),
-            { Name: KeyName.Character, Character: '/' } => Unchanged(state.With(state.List.StartFilter()) with { Message = StatusMessage.None }),
+            { Name: KeyName.Character, Character: '/' } => Unchanged(state with { List = state.List.StartFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithPath(row, path => new CopyFolderPath(FolderPath.From(path)))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => new OpenFolderInEditor(FolderOf(row, path)))),
             _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),

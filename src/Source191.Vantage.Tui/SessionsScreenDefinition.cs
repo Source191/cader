@@ -49,7 +49,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public string TabTitle(SessionsViewState state) => Wording.TabTitleFor(ConsoleTab.Sessions);
 
-    public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.Rows, state.AutomatedRuns);
+    public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.List.Rows, state.AutomatedRuns);
 
     public KeyBar Bar(SessionsViewState state, bool updateKnown) => Wording.SessionsBar(state, updateKnown);
 
@@ -61,8 +61,8 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     {
         if (input is RowsLoaded loaded)
         {
-            notifier.Observe(before.Rows, loaded.Rows);
-            activity.Observe(before.Rows, loaded.Rows);
+            notifier.Observe(before.List.Rows, loaded.Rows);
+            activity.Observe(before.List.Rows, loaded.Rows);
         }
     }
 

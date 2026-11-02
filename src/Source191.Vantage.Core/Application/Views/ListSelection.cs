@@ -22,9 +22,6 @@ public sealed record ListSelection<TRow>(
     /// <summary>The visible rows the selection may rest on, in table order.</summary>
     private IReadOnlyList<TRow> Choosable => [.. Visible.Where(Policy.Selectable)];
 
-    /// <summary>The selected key as a view state holds it.</summary>
-    public SelectionKey Selection => SelectedKey is string key ? new SelectionKey.Row(key) : new SelectionKey.None();
-
     /// <summary>What the table's title says: how many rows show of how many, the filter if one is set, and the selected row's label.</summary>
     public TableTitle Title(string noun, Func<TRow, string> labelOf)
     {
