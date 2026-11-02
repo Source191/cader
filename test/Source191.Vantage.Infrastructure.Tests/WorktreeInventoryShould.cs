@@ -72,23 +72,6 @@ public sealed class WorktreeInventoryShould : IDisposable
         hosts.Requests.Select(request => request.Branch.Value).ShouldBe(["fix-1", "fix-2"], ignoreOrder: true);
     }
 
-    /// <summary>Plain claude running in the folder, or a stopped job there when it has no process.</summary>
-    private static Session SessionIn(string directory, string name, int? processId)
-    {
-        SessionId id = SessionId.From(Guid.NewGuid().ToString());
-
-        return processId is int running
-            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
-            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
-    }
-
-    public void Dispose()
-    {
-        catalogue.Dispose();
-        root.Dispose();
-        outside.Dispose();
-    }
-
     [Fact]
     public async Task ListTheLinkedWorktreesOfEveryRepositoryUnderTheRoots()
     {
@@ -339,5 +322,22 @@ public sealed class WorktreeInventoryShould : IDisposable
         IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], TestContext.Current.CancellationToken);
 
         rows.Single().Path.Value.ShouldBe(worktree);
+    }
+
+    /// <summary>Plain claude running in the folder, or a stopped job there when it has no process.</summary>
+    private static Session SessionIn(string directory, string name, int? processId)
+    {
+        SessionId id = SessionId.From(Guid.NewGuid().ToString());
+
+        return processId is int running
+            ? new Session.Interactive(id, Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Idle, running)
+            : new Session.Background(id, JobId.From("81cdb0f9"), Listed.As(name), FolderPath.From(directory), Noon, DisplayState.Stopped, new JobProcess.None());
+    }
+
+    public void Dispose()
+    {
+        catalogue.Dispose();
+        root.Dispose();
+        outside.Dispose();
     }
 }

@@ -243,10 +243,6 @@ public sealed class ConfigViewShould
         oneRoot.Title.Total.ShouldBe(11);
     }
 
-    private static ConfigViewState At(string key) => Loaded with { List = Loaded.List.Select(key) };
-
-    private static ConfigViewState Press(ConfigViewState state, params Key[] keys) => keys.Aggregate(state, (current, key) => ConfigView.Reduce(current, new KeyPressed(key)).State);
-
     [Fact]
     public void ClearTheMessageItWasAskedToClear()
     {
@@ -265,4 +261,8 @@ public sealed class ConfigViewShould
 
         ConfigView.Reduce(shown, new MessageDismissed(older)).State.Message.ShouldBeSameAs(newer);
     }
+
+    private static ConfigViewState At(string key) => Loaded with { List = Loaded.List.Select(key) };
+
+    private static ConfigViewState Press(ConfigViewState state, params Key[] keys) => keys.Aggregate(state, (current, key) => ConfigView.Reduce(current, new KeyPressed(key)).State);
 }

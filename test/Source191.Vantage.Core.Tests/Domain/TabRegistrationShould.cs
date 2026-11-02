@@ -107,14 +107,6 @@ public sealed class TabRegistrationShould
         Pending(createdAt: Now).ClaimedBy(4000, ProcessStart).OwningTerminal(processes).ShouldBe(new TerminalWindow.Any());
     }
 
-    private static TabRegistration Pending(DateTimeOffset createdAt)
-    {
-        return TabRegistration.Pending(
-            owner: new TabOwner.ForSession(SessionId.From(Guid.NewGuid().ToString())),
-            colour: TabPalette.Default[0],
-            createdAt: createdAt);
-    }
-
     [Fact]
     public void FindTheOwningTerminalWhateverItsCaseAndUpToEightStepsAway()
     {
@@ -137,5 +129,13 @@ public sealed class TabRegistrationShould
         Pending(createdAt: Now).ClaimedBy(4000, ProcessStart).OwningTerminal(processes).ShouldBe(new TerminalWindow.Owning(1));
         Pending(createdAt: Now).OwningTerminal(processes).ShouldBe(new TerminalWindow.Any(), "a tab still being claimed may be in any window");
         Pending(createdAt: Now).ClaimedBy(5000, ProcessStart).OwningTerminal(processes).ShouldBe(new TerminalWindow.Any(), "a shell outside Windows Terminal names no window");
+    }
+
+    private static TabRegistration Pending(DateTimeOffset createdAt)
+    {
+        return TabRegistration.Pending(
+            owner: new TabOwner.ForSession(SessionId.From(Guid.NewGuid().ToString())),
+            colour: TabPalette.Default[0],
+            createdAt: createdAt);
     }
 }

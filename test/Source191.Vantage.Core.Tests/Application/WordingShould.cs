@@ -854,19 +854,6 @@ public sealed class WordingShould
         Wording.WizardHint(Wizard(FixedFolder)).ShouldBe("Enter or F5 starts and opens in tab   Esc cancel");
     }
 
-    /// <summary>A wizard with no repositories to offer.</summary>
-    private static WizardState Wizard() => Wizard(new WizardOrigin.Anywhere());
-
-    /// <summary>A wizard fixed in one folder.</summary>
-    private static WizardState Wizard(string fixedDirectory) => Wizard(WizardOrigin.In(FolderPath.From(fixedDirectory)));
-
-    private static WizardState Wizard(WizardOrigin origin)
-    {
-        FakeFolders folders = new();
-
-        return WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current()), [], folders, TestSettings.For(), origin);
-    }
-
     // vantage setup-terminal.
 
     private const string SetupUsage = "Usage: vantage setup-terminal [--sound <wav>] [--session-sound <wav>] [--yes] [--remove]";
@@ -1041,5 +1028,18 @@ public sealed class WordingShould
         Wording.CopyNameButton.ShouldBe("Cop_y name (F2)");
         Wording.StartButton.ShouldBe("_Start (F5)");
         Wording.SaveButton.ShouldBe("_Save (F5)");
+    }
+
+    /// <summary>A wizard with no repositories to offer.</summary>
+    private static WizardState Wizard() => Wizard(new WizardOrigin.Anywhere());
+
+    /// <summary>A wizard fixed in one folder.</summary>
+    private static WizardState Wizard(string fixedDirectory) => Wizard(WizardOrigin.In(FolderPath.From(fixedDirectory)));
+
+    private static WizardState Wizard(WizardOrigin origin)
+    {
+        FakeFolders folders = new();
+
+        return WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current()), [], folders, TestSettings.For(), origin);
     }
 }

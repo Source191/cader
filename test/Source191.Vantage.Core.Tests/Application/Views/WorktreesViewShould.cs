@@ -387,15 +387,6 @@ public sealed class WorktreesViewShould
         update.State.Message.ShouldBe(new StatusMessage.NoWorktreeSelected());
     }
 
-    private static WorktreesViewState At(WorktreeRow row) => At(Loaded, row);
-
-    private static WorktreesViewState At(WorktreesViewState state, WorktreeRow row) => state with { List = state.List.Select(row.Path.Key) };
-
-    private static WorktreesViewState Press(WorktreesViewState state, params Key[] keys)
-    {
-        return keys.Aggregate(state, (current, key) => WorktreesView.Reduce(current, new KeyPressed(key)).State);
-    }
-
     [Fact]
     public void ClearTheMessageItWasAskedToClear()
     {
@@ -425,5 +416,14 @@ public sealed class WorktreesViewShould
     private static WorktreeRow Row(string path, Head head, WorktreeHealthKind health, HealthReason? reason = null)
     {
         return new WorktreeRow(FolderPath.From(Repository), FolderPath.From(path), head, new WorktreeHealth(health, reason ?? new HealthReason.None()), 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
+    }
+
+    private static WorktreesViewState At(WorktreeRow row) => At(Loaded, row);
+
+    private static WorktreesViewState At(WorktreesViewState state, WorktreeRow row) => state with { List = state.List.Select(row.Path.Key) };
+
+    private static WorktreesViewState Press(WorktreesViewState state, params Key[] keys)
+    {
+        return keys.Aggregate(state, (current, key) => WorktreesView.Reduce(current, new KeyPressed(key)).State);
     }
 }

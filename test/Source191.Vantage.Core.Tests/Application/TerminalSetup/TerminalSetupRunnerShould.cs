@@ -21,13 +21,6 @@ public sealed class TerminalSetupRunnerShould : IDisposable
 
     private static readonly TerminalSetupRequest Defaults = new(new SoundArgument.Omitted(), new SoundArgument.Omitted(), Yes: false, Remove: false);
 
-    private Task<int> RunAsync(string answers, TerminalSetupRequest? request = null)
-    {
-        TerminalSetupRunner runner = new(folders, fragment, settings, Vantage, Media, new StringReader(answers), output, error);
-
-        return runner.RunAsync(request ?? Defaults, CancellationToken.None);
-    }
-
     [Fact]
     public async Task ShowTheFragmentAndProfilesAndWriteNothingWhenDeclined()
     {
@@ -321,6 +314,13 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         fragment.Removals.ShouldBe(0);
         settings.Enabled.ShouldBe(1);
         settings.State.ShouldBe(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
+    }
+
+    private Task<int> RunAsync(string answers, TerminalSetupRequest? request = null)
+    {
+        TerminalSetupRunner runner = new(folders, fragment, settings, Vantage, Media, new StringReader(answers), output, error);
+
+        return runner.RunAsync(request ?? Defaults, CancellationToken.None);
     }
 
     public void Dispose()

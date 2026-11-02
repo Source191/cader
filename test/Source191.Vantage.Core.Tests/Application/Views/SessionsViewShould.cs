@@ -602,11 +602,6 @@ public sealed class SessionsViewShould
         new StopSession(WaitingJob).ShouldNotBeAssignableTo<IDialogEffect>();
     }
 
-    private static SessionsViewState Press(SessionsViewState state, params Key[] keys)
-    {
-        return keys.Aggregate(state, (current, key) => SessionsView.Reduce(current, new KeyPressed(key)).State);
-    }
-
     [Fact]
     public void ClearTheMessageItWasAskedToClear()
     {
@@ -653,5 +648,10 @@ public sealed class SessionsViewShould
     private static Session.Interactive Terminal(string name, DisplayState state, string repository)
     {
         return new Session.Interactive(SessionId.From(Guid.NewGuid().ToString()), Listed.As(name), FolderPath.From($@"C:\repos\{repository}"), Fixtures.Noon, state, ProcessId: 4242);
+    }
+
+    private static SessionsViewState Press(SessionsViewState state, params Key[] keys)
+    {
+        return keys.Aggregate(state, (current, key) => SessionsView.Reduce(current, new KeyPressed(key)).State);
     }
 }

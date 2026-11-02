@@ -20,15 +20,6 @@ public sealed class ScreenLoopShould : IDisposable
     private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
     private readonly StringWriter terminal = new();
 
-    private ScreenLoop Loop(ScriptedConsoleScreen screen, UpdateCheck? updates = null, WhatsNewOnStart? whatsNew = null)
-    {
-        OwnTab ownTab = new(new InMemoryState(), registry, new FakeTimeProvider(Fixtures.Noon));
-        UpdateCheck checkTurnedOff = new(Running, () => false, new InMemoryState(), new FakePackageVersions([]), new FakeTimeProvider(Fixtures.Noon));
-        WhatsNewOnStart firstEverStart = new(Running, new InMemoryState(), new FakePackagedReleaseNotes(Changelog), log);
-
-        return new ScreenLoop(screen, ownTab, console, updates ?? checkTurnedOff, whatsNew ?? firstEverStart, log);
-    }
-
     [Fact]
     public async Task HandTheScreenWhatsNewToShowBeforeAnyKey()
     {
@@ -158,6 +149,15 @@ public sealed class ScreenLoopShould : IDisposable
         screen.Given.Count.ShouldBe(1, "only quit leaves the console, so it is never run a second time");
         console.Recovered.ShouldBe(0);
         (console.Coloured.Count + console.TitledOnly).ShouldBe(1, "the tab is labelled once, at start");
+    }
+
+    private ScreenLoop Loop(ScriptedConsoleScreen screen, UpdateCheck? updates = null, WhatsNewOnStart? whatsNew = null)
+    {
+        OwnTab ownTab = new(new InMemoryState(), registry, new FakeTimeProvider(Fixtures.Noon));
+        UpdateCheck checkTurnedOff = new(Running, () => false, new InMemoryState(), new FakePackageVersions([]), new FakeTimeProvider(Fixtures.Noon));
+        WhatsNewOnStart firstEverStart = new(Running, new InMemoryState(), new FakePackagedReleaseNotes(Changelog), log);
+
+        return new ScreenLoop(screen, ownTab, console, updates ?? checkTurnedOff, whatsNew ?? firstEverStart, log);
     }
 
     public void Dispose()
