@@ -44,10 +44,7 @@ public static class WorktreesView
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithFolder(row, new CopyFolderPath(row.Path))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithFolder(row, new OpenFolderInEditor(row.Path))),
             { Name: KeyName.Character, Character: 's' } => RowAction(state, row => WithFolder(row, new FindSolution(row.Path, row.RepositoryName))),
-            { Name: KeyName.Character, Character: 'q' } => Effect(state, new Quit()),
-            { Name: KeyName.Character, Character: '?' } => Effect(state, new ShowHelp()),
-            { Name: KeyName.Character, Character: 'U' } => Effect(state, new UpdateVantage()),
-            { Name: KeyName.Character, Character: '!' } => Effect(state, new ShowProblemReport()),
+            _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
         };

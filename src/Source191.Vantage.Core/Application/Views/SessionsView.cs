@@ -47,10 +47,7 @@ public static class SessionsView
             { Name: KeyName.Character, Character: 'm' } => MeasureMemory(state),
             { Name: KeyName.Character, Character: 'n' } => Effect(state, new OpenLaunchWizard()),
             { Name: KeyName.Character, Character: 'R' } => ResumeAll(state),
-            { Name: KeyName.Character, Character: 'q' } => Effect(state, new Quit()),
-            { Name: KeyName.Character, Character: '?' } => Effect(state, new ShowHelp()),
-            { Name: KeyName.Character, Character: 'U' } => Effect(state, new UpdateVantage()),
-            { Name: KeyName.Character, Character: '!' } => Effect(state, new ShowProblemReport()),
+            _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
         };

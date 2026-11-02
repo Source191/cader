@@ -52,10 +52,7 @@ public static class ConfigView
             { Name: KeyName.Character, Character: '/' } => Unchanged(state.With(state.List.StartFilter()) with { Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithPath(row, path => new CopyFolderPath(FolderPath.From(path)))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => new OpenFolderInEditor(FolderOf(row, path)))),
-            { Name: KeyName.Character, Character: 'q' } => Effect(state, new Quit()),
-            { Name: KeyName.Character, Character: '?' } => Effect(state, new ShowHelp()),
-            { Name: KeyName.Character, Character: 'U' } => Effect(state, new UpdateVantage()),
-            { Name: KeyName.Character, Character: '!' } => Effect(state, new ShowProblemReport()),
+            _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
         };
