@@ -41,11 +41,13 @@ runs:
 
     # Whitespace only: EnforceCodeStyleInBuild and TreatWarningsAsErrors in Directory.Build.props already fail
     # the build on every style and analyser rule at warning, which is what dotnet format's style and analyzers
-    # passes check. Workspace mode, not --folder, so the generated files under obj are left out.
+    # passes check. Folder mode reads the same .editorconfig without loading an MSBuild workspace (about 2 s
+    # against 16 s on the runner) and skips the SDK's generated files under obj unless --include-generated is
+    # given. openspec is left out: its archive holds sample .cs files that are not part of the solution.
     # (https://learn.microsoft.com/dotnet/core/tools/dotnet-format)
     - name: Format (whitespace)
       shell: pwsh
-      run: dotnet format whitespace --verify-no-changes --no-restore
+      run: dotnet format whitespace --folder --verify-no-changes --exclude openspec
 
     - name: Pack
       shell: pwsh
