@@ -29,7 +29,7 @@ See proposal.md for why.
 ## Decisions
 
 ### The build: self-contained, single file, not trimmed, x64 only
-`PublishSingleFile`, `SelfContained`, `RuntimeIdentifier win-x64`, `EnableCompressionInSingleFile`, with `InvariantGlobalization` unchanged. The zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt`; the PDBs and XML documentation files the publish also writes are left out. A project's `.csproj` carries no comments, so the reasons go in `src\Source191.Vantage\README.md`.
+`PublishSingleFile`, `SelfContained`, `RuntimeIdentifier win-x64`, `EnableCompressionInSingleFile`, with `InvariantGlobalization` unchanged. The zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt`; the PDBs and XML documentation files the publish also writes are left out. The settings live in a publish profile, `Properties\PublishProfiles\win-x64.pubxml`, rather than the `.csproj`, so `dotnet pack` still makes the framework-dependent nupkg the migration release needs (a RID or self-contained setting in the project would make it a RID-specific tool, which was rejected before). A project's `.csproj` carries no comments, so the reasons go in `src\Source191.Vantage\README.md`.
 - **Alternative: framework-dependent zip plus a .NET runtime dependency:** `Microsoft.DotNet.Runtime.10` is a winget package, so the zip would be about 1 MB. Rejected because winget would install a shared runtime the user did not ask for, and a runtime-only machine is a second prerequisite state to test.
 - **Alternative: `win-arm64` too:** deferred; x64 runs under emulation, and a second runner and smoke run is a later change.
 - **Alternative: native AOT:** rejected, see Non-Goals.
