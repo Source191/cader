@@ -179,7 +179,7 @@ public sealed class ConfigViewShould
 
         ConfigViewState moved = Press(advised, Key.Down);
 
-        moved.Selected!.Key.ShouldBe("setup:DiagnosticLog");
+        moved.Selected.ShouldNotBeNull().Key.ShouldBe("setup:DiagnosticLog");
         moved.Message.ShouldBe(StatusMessage.None);
     }
 

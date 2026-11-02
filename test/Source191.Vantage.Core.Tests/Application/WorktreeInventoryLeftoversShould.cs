@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Vantage.Adapters.Git;
 using Source191.Vantage.Application;
 using Source191.Vantage.Application.Diagnostics;
@@ -20,9 +21,9 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         .AnswerAll(new ProcessResult(0, string.Empty, string.Empty))
         .Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n", string.Empty));
 
-    private readonly PullRequestCatalogue catalogue = new(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), TimeProvider.System, new RefreshCounts(TimeProvider.System, new DiagnosticLog(TimeProvider.System, [])));
+    private readonly PullRequestCatalogue catalogue = new(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), new FakeTimeProvider(Fixtures.Noon), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])));
 
-    private readonly DiagnosticLog log = new(TimeProvider.System, []);
+    private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
 
     private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, log);
 

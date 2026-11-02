@@ -10,7 +10,7 @@ public sealed class SessionsViewShould
     private static readonly SessionRow Working = Row("remove-sonar", DisplayState.Working, "Northwind.Templates", jobId: "aaaa1111");
     private static readonly Session.Background WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
     private static readonly SessionRow Waiting = Row(WaitingJob);
-    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Source191.Vantage", jobId: "cccc3333");
+    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Northwind.Archive", jobId: "cccc3333");
     private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "repos");
     private static readonly SessionRow Interactive = Row(InteractiveTerminal);
 
@@ -66,7 +66,7 @@ public sealed class SessionsViewShould
 
         SessionsViewState refreshed = Reduce(selectedWorking, new RowsLoaded([Working with { Session = Working.Session with { State = DisplayState.NeedsInput } }, Waiting, Stopped]));
 
-        refreshed.Selected!.Session.SessionId.ShouldBe(Working.Session.SessionId);
+        refreshed.Selected.ShouldNotBeNull().Session.SessionId.ShouldBe(Working.Session.SessionId);
     }
 
     [Fact]

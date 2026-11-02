@@ -66,6 +66,6 @@ public sealed class OpenProblemReportHandlerShould
 
     private Task<ProblemReport> Report()
     {
-        return new ProblemReports(log, new ProcessCounts(), crashFile, Start, TestSettings.Current(@"C:\Users\me\source\repos"), TimeProvider.System).BuildAsync();
+        return new ProblemReports(log, new ProcessCounts(), crashFile, Start, TestSettings.Current(@"C:\Users\me\source\repos"), new FakeTimeProvider(Fixtures.Noon)).BuildAsync();
     }
 }

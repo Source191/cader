@@ -22,7 +22,7 @@ public sealed class WorktreesScreenDefinitionShould
     {
         FakeTimeProvider clock = new(Fixtures.Noon);
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
-        DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(TimeProvider.System, []));
+        DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
         definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock));
     }
