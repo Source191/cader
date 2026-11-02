@@ -14,5 +14,9 @@ public static class BatchFileArgument
 {
     private static readonly SearchValues<char> Plain = SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._/-");
 
-    public static bool IsSafe(string text) => text.Length > 0 && !text.AsSpan().ContainsAnyExcept(Plain);
+    public static bool IsSafe(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return text.Length > 0 && !text.AsSpan().ContainsAnyExcept(Plain);
+    }
 }

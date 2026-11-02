@@ -8,6 +8,9 @@ public static class FolderLabel
 {
     public static string For(FolderPath folder, IReadOnlyList<FolderPath> roots, FolderPath home)
     {
+        ArgumentNullException.ThrowIfNull(folder);
+        ArgumentNullException.ThrowIfNull(roots);
+        ArgumentNullException.ThrowIfNull(home);
         FolderPath? root = roots
             .Where(candidate => Holds(candidate, folder))
             .OrderByDescending(candidate => candidate.Value.Length)

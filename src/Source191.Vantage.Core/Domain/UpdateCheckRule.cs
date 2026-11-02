@@ -6,7 +6,11 @@ public static class UpdateCheckRule
     public static readonly TimeSpan Interval = TimeSpan.FromHours(24);
 
     /// <summary>With no previous check: only a release build with the check on, and straight away.</summary>
-    public static bool ShouldCheck(ToolVersion running, bool enabled) => enabled && ReleaseOf(running) is not null;
+    public static bool ShouldCheck(ToolVersion running, bool enabled)
+    {
+        ArgumentNullException.ThrowIfNull(running);
+        return enabled && ReleaseOf(running) is not null;
+    }
 
     /// <summary>Only a release build with the check on, and only when it last checked a day or more ago.</summary>
     public static bool ShouldCheck(ToolVersion running, bool enabled, DateTimeOffset lastCheckedAt, DateTimeOffset now) => ShouldCheck(running, enabled) && now - lastCheckedAt >= Interval;
@@ -24,6 +28,7 @@ public static class UpdateCheckRule
     /// <summary>An update is offered only to a release build with the check on, and only when the newest known release is higher.</summary>
     public static UpdateStatus Offer(ToolVersion running, bool enabled, NewestRelease newest)
     {
+        ArgumentNullException.ThrowIfNull(running);
         ReleaseVersion? current = ReleaseOf(running);
         if (!enabled || current is null)
         {

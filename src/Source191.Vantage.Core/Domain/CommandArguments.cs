@@ -10,6 +10,7 @@ public static class CommandArguments
 {
     public static IReadOnlyList<string> Split(string line)
     {
+        ArgumentNullException.ThrowIfNull(line);
         List<string> arguments = [];
         StringBuilder current = new();
         bool quoted = false;

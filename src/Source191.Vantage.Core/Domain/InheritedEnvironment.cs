@@ -13,6 +13,7 @@ public static class InheritedEnvironment
 
     public static bool ShouldDrop(string name)
     {
+        ArgumentNullException.ThrowIfNull(name);
         return Exact.Contains(name, StringComparer.OrdinalIgnoreCase)
             || name.StartsWith("CLAUDE_CODE_", StringComparison.OrdinalIgnoreCase);
     }

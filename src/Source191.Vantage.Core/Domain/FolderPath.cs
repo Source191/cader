@@ -22,7 +22,11 @@ public sealed record FolderPath : ITextValue<FolderPath>
         Value = full.Length > root.Length ? full.TrimEnd(IOPath.DirectorySeparatorChar) : full;
     }
 
-    public static FolderPath From(string text) => new(text);
+    public static FolderPath From(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return new(text);
+    }
 
     public string Value { get; }
 
@@ -45,7 +49,11 @@ public sealed record FolderPath : ITextValue<FolderPath>
     public FolderPath Combine(string child) => FolderPath.From(IOPath.Combine(Value, child));
 
     /// <summary>True for this folder itself or anything inside it; a sibling that shares a name prefix is not inside.</summary>
-    public bool IsUnder(FolderPath other) => Equals(other) || Value.StartsWith(Inside(other.Value), StringComparison.OrdinalIgnoreCase);
+    public bool IsUnder(FolderPath other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        return Equals(other) || Value.StartsWith(Inside(other.Value), StringComparison.OrdinalIgnoreCase);
+    }
 
     public bool Equals(FolderPath? other) => other is not null && string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
 

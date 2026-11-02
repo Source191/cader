@@ -55,22 +55,33 @@ public sealed record ReleaseVersion : IComparable<ReleaseVersion>
     /// <summary>The texts that read as versions, in order; the rest are skipped.</summary>
     public static IEnumerable<ReleaseVersion> Parsed(IEnumerable<string> texts)
     {
-        foreach (string text in texts)
-        {
-            if (TryParse(text, out ReleaseVersion? version))
-            {
-                yield return version;
-            }
-        }
+        ArgumentNullException.ThrowIfNull(texts);
+        return ParsedFrom(texts);
     }
 
-    public static bool operator <(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) < 0;
+    public static bool operator <(ReleaseVersion left, ReleaseVersion right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        return left.CompareTo(right) < 0;
+    }
 
-    public static bool operator <=(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) <= 0;
+    public static bool operator <=(ReleaseVersion left, ReleaseVersion right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        return left.CompareTo(right) <= 0;
+    }
 
-    public static bool operator >(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) > 0;
+    public static bool operator >(ReleaseVersion left, ReleaseVersion right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        return left.CompareTo(right) > 0;
+    }
 
-    public static bool operator >=(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) >= 0;
+    public static bool operator >=(ReleaseVersion left, ReleaseVersion right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+        return left.CompareTo(right) >= 0;
+    }
 
     public bool IsHigherThan(ReleaseVersion other) => this > other;
 
@@ -87,6 +98,17 @@ public sealed record ReleaseVersion : IComparable<ReleaseVersion>
     }
 
     public override string ToString() => Prerelease.Length == 0 ? $"{Major}.{Minor}.{Patch}" : $"{Major}.{Minor}.{Patch}-{Prerelease}";
+
+    private static IEnumerable<ReleaseVersion> ParsedFrom(IEnumerable<string> texts)
+    {
+        foreach (string text in texts)
+        {
+            if (TryParse(text, out ReleaseVersion? version))
+            {
+                yield return version;
+            }
+        }
+    }
 
     /// <summary>Digits only, with no leading zero: <see cref="NumberStyles.None"/> refuses a sign, spaces and an empty identifier.</summary>
     private static int? Number(string text) => HasNoLeadingZero(text) && int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out int number) ? number : null;
