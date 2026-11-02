@@ -11,7 +11,7 @@ public sealed class StopSessionHandler(IClaudeCli claude, SessionTabs tabs) : IE
     {
         try
         {
-            await claude.StopAsync(effect.Session.JobId.Value, cancellationToken);
+            await claude.StopAsync(effect.Session.JobId, cancellationToken);
         }
         catch (ClaudeCliException refusal)
         {

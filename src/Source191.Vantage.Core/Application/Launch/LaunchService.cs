@@ -24,7 +24,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, IRecentRepositori
             return new LaunchOutcome.Failed(failure.Message);
         }
 
-        StartResult start = await claude.StartBackgroundAsync(plan.Directory.Value, plan.Name, plan.OpeningPrompt, cancellationToken);
+        StartResult start = await claude.StartBackgroundAsync(plan.Directory, plan.Name, plan.OpeningPrompt, cancellationToken);
 
         return start switch
         {

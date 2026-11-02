@@ -53,7 +53,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(2, string.Empty, string.Empty));
 
-        ClaudeCliException exception = await Should.ThrowAsync<ClaudeCliException>(() => Cli.StopAsync("81cdb0f9", CancellationToken.None));
+        ClaudeCliException exception = await Should.ThrowAsync<ClaudeCliException>(() => Cli.StopAsync(JobId.From("81cdb0f9"), CancellationToken.None));
 
         exception.Message.ShouldBe("claude stop exited with code 2");
     }
@@ -61,8 +61,8 @@ public sealed class ClaudeCliShould
     private Task RunAsync(string subcommand) => subcommand switch
     {
         "agents" => Cli.ListSessionsAsync(CancellationToken.None),
-        "stop" => Cli.StopAsync("81cdb0f9", CancellationToken.None),
-        _ => Cli.RemoveAsync("81cdb0f9", CancellationToken.None),
+        "stop" => Cli.StopAsync(JobId.From("81cdb0f9"), CancellationToken.None),
+        _ => Cli.RemoveAsync(JobId.From("81cdb0f9"), CancellationToken.None),
     };
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, StartedOutput, string.Empty));
 
-        StartResult result = await Cli.StartBackgroundAsync(Directory, name, new OpeningPrompt.None(), CancellationToken.None);
+        StartResult result = await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.None(), CancellationToken.None);
 
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Directory)),
@@ -146,7 +146,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, StartedOutput, string.Empty));
 
-        await Cli.StartBackgroundAsync(Directory, name, new OpeningPrompt.Text("Fix the flaky test"), CancellationToken.None);
+        await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.Text("Fix the flaky test"), CancellationToken.None);
 
         processes.CapturedRequests.Single().Arguments.ShouldBe(["--bg", "-n", "Refund retry policy", "Fix the flaky test"]);
     }
@@ -156,7 +156,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(1, string.Empty, "Workspace not trusted. Run `claude` in C:\\repos\\Northwind.Orders once and accept the trust prompt, then retry."));
 
-        StartResult result = await Cli.StartBackgroundAsync(Directory, name, new OpeningPrompt.None(), CancellationToken.None);
+        StartResult result = await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.None(), CancellationToken.None);
 
         result.ShouldBeOfType<StartResult.WorkspaceNotTrusted>().Message.ShouldStartWith("Workspace not trusted.");
     }
@@ -166,7 +166,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(1, string.Empty, "Couldn't start the background service"));
 
-        StartResult result = await Cli.StartBackgroundAsync(Directory, name, new OpeningPrompt.None(), CancellationToken.None);
+        StartResult result = await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.None(), CancellationToken.None);
 
         result.ShouldBeOfType<StartResult.Failed>().Message.ShouldContain("background service");
     }
@@ -176,7 +176,7 @@ public sealed class ClaudeCliShould
     {
         processes.InteractiveExitCode = 0;
 
-        int exitCode = await Cli.AttachAsync("81cdb0f9", CancellationToken.None);
+        int exitCode = await Cli.AttachAsync(JobId.From("81cdb0f9"), CancellationToken.None);
 
         processes.InteractiveRequests.Single().Arguments.ShouldBe(["attach", "81cdb0f9"]);
         exitCode.ShouldBe(0);
@@ -185,8 +185,8 @@ public sealed class ClaudeCliShould
     [Fact]
     public async Task StopAndRemoveByJobId()
     {
-        await Cli.StopAsync("81cdb0f9", CancellationToken.None);
-        await Cli.RemoveAsync("81cdb0f9", CancellationToken.None);
+        await Cli.StopAsync(JobId.From("81cdb0f9"), CancellationToken.None);
+        await Cli.RemoveAsync(JobId.From("81cdb0f9"), CancellationToken.None);
 
         processes.CapturedRequests.Select(request => request.Arguments).ShouldBe([["stop", "81cdb0f9"], ["rm", "81cdb0f9"]]);
     }
@@ -196,7 +196,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync(SessionId.From("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"), FolderPath.From(Directory), Listed.None(), CancellationToken.None);
 
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Directory)),
@@ -212,7 +212,7 @@ public sealed class ClaudeCliShould
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));
         ListedName listed = name is null ? Listed.None() : Listed.As(name);
 
-        await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, listed, CancellationToken.None);
+        await Cli.ResumeBackgroundAsync(SessionId.From("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"), FolderPath.From(Directory), listed, CancellationToken.None);
 
         processes.CapturedRequests.Single().Arguments.ShouldBe(expected);
     }
@@ -221,7 +221,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 99aa88bb · cc-spike\nnote: the session is already running, so a copy was started", string.Empty));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync(SessionId.From("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"), FolderPath.From(Directory), Listed.None(), CancellationToken.None);
 
         result.ShouldBeOfType<ResumeResult.Failed>().Message.ShouldContain("copy");
     }
@@ -231,7 +231,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(1, string.Empty, "Session 81cdb0f9 can't start: source session not found\n"));
 
-        ResumeResult result = await Cli.ResumeBackgroundAsync("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", Directory, Listed.None(), CancellationToken.None);
+        ResumeResult result = await Cli.ResumeBackgroundAsync(SessionId.From("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"), FolderPath.From(Directory), Listed.None(), CancellationToken.None);
 
         result.ShouldBeOfType<ResumeResult.Failed>().Message.ShouldBe("Session 81cdb0f9 can't start: source session not found");
     }
@@ -241,7 +241,7 @@ public sealed class ClaudeCliShould
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9x · cc-spike", string.Empty));
 
-        StartResult result = await Cli.StartBackgroundAsync(Directory, name, new OpeningPrompt.None(), CancellationToken.None);
+        StartResult result = await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.None(), CancellationToken.None);
 
         result.ShouldBeOfType<StartResult.Failed>();
     }

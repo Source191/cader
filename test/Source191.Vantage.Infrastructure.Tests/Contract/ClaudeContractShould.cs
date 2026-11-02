@@ -97,7 +97,7 @@ public sealed class ClaudeContractShould
     {
         ClaudeCli cli = new(runner, ClaudeContract.Executable());
 
-        StartResult started = await cli.StartBackgroundAsync(RepositoryFolder.Root(), UniqueName("encoding"), new OpeningPrompt.None(), Cancellation);
+        StartResult started = await cli.StartBackgroundAsync(FolderPath.From(RepositoryFolder.Root()), UniqueName("encoding"), new OpeningPrompt.None(), Cancellation);
         try
         {
             StartResult.Started running = started.ShouldBeOfType<StartResult.Started>(started.Message);
@@ -237,7 +237,7 @@ public sealed class ClaudeContractShould
 
     private static async Task<string> StartAsync(ClaudeCli cli, SessionName name)
     {
-        StartResult started = await cli.StartBackgroundAsync(RepositoryFolder.Root(), name, new OpeningPrompt.None(), Cancellation);
+        StartResult started = await cli.StartBackgroundAsync(FolderPath.From(RepositoryFolder.Root()), name, new OpeningPrompt.None(), Cancellation);
         return started.ShouldBeOfType<StartResult.Started>(started.Message).JobId.Value;
     }
 
@@ -287,7 +287,7 @@ public sealed class ClaudeContractShould
 
     private static async Task EndAsync(ClaudeCli cli, string jobId)
     {
-        await cli.StopAsync(jobId, Cancellation);
-        await cli.RemoveAsync(jobId, Cancellation);
+        await cli.StopAsync(JobId.From(jobId), Cancellation);
+        await cli.RemoveAsync(JobId.From(jobId), Cancellation);
     }
 }

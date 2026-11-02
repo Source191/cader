@@ -17,7 +17,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
     {
         try
         {
-            await claude.RemoveAsync(session.JobId.Value, cancellationToken);
+            await claude.RemoveAsync(session.JobId, cancellationToken);
         }
         catch (ClaudeCliException refusal)
         {
