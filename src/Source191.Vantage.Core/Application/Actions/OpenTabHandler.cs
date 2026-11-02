@@ -33,12 +33,14 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     private async Task<OpenTabOutcome> OpenAsync(Session.Background session, Func<IReadOnlyList<TabColour>, ColourChoice> choose, CancellationToken cancellationToken)
     {
         DateTimeOffset now = clock.GetUtcNow();
-        foreach (TabRegistration earlier in (await tabs.ReadTabsAsync()).Where(tab => tab.Owner == new TabOwner.ForSession(session.SessionId)))
+        IReadOnlyList<TabRegistration> stored = await tabs.ReadTabsAsync();
+        IReadOnlyList<TabRegistration> earlier = new TabRegistrations(stored).For(session.SessionId);
+        foreach (TabRegistration registration in earlier)
         {
-            await tabs.RemoveTabAsync(earlier.Id);
+            await tabs.RemoveTabAsync(registration.Id);
         }
 
-        IReadOnlyList<TabRegistration> live = new TabRegistrations(await tabs.ReadTabsAsync()).Live(now, processes);
+        IReadOnlyList<TabRegistration> live = new TabRegistrations([.. stored.Except(earlier)]).Live(now, processes);
         TabColour[] inUse = [.. live.Select(registration => registration.Colour)];
         ColourChoice colour = choose(inUse);
         TabRegistration pending = TabRegistration.Pending(new TabOwner.ForSession(session.SessionId), colour.Colour, now);
@@ -55,7 +57,7 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     /// </summary>
     private async Task<OpenTabOutcome> SwitchToTabAsync(Session.Background session, CancellationToken cancellationToken)
     {
-        TabRegistration? registration = (await tabs.ReadTabsAsync()).FirstOrDefault(tab => tab.Owner == new TabOwner.ForSession(session.SessionId));
+        TabRegistration? registration = new TabRegistrations(await tabs.ReadTabsAsync()).For(session.SessionId) is [TabRegistration first, ..] ? first : null;
         if (registration is null || !registration.IsLive(clock.GetUtcNow(), processes))
         {
             return await OpenAsync(session, cancellationToken);

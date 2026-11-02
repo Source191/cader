@@ -48,7 +48,7 @@ public sealed class TabColourSelectionShould
     [Fact]
     public void PreferAColourWhenItIsFree()
     {
-        ColourChoice choice = selection.Choose(inUse: [TabPalette.Default[0]], preferred: TabPalette.Default.Single(colour => colour.Name == "Green"));
+        ColourChoice choice = selection.Choose(inUse: [TabPalette.Default[0]], preferred: TabPalette.Green);
 
         choice.Colour.Name.ShouldBe("Green");
         choice.Reused.ShouldBeFalse();
@@ -57,7 +57,7 @@ public sealed class TabColourSelectionShould
     [Fact]
     public void FallBackToTheFirstFreeColourWhenThePreferredOneIsInUse()
     {
-        ColourChoice choice = selection.Choose(inUse: [TabPalette.Default.Single(colour => colour.Name == "Green")], preferred: TabPalette.Default.Single(colour => colour.Name == "Green"));
+        ColourChoice choice = selection.Choose(inUse: [TabPalette.Green], preferred: TabPalette.Green);
 
         choice.Colour.Name.ShouldBe("Red");
         choice.Reused.ShouldBeFalse();
@@ -66,7 +66,7 @@ public sealed class TabColourSelectionShould
     [Fact]
     public void GiveFiveSessionTabsBesideVantagesGreenFiveDistinctColours()
     {
-        List<TabColour> inUse = [TabPalette.Default.Single(colour => colour.Name == "Green")];
+        List<TabColour> inUse = [TabPalette.Green];
         List<string> given = [];
 
         for (int tab = 0; tab < 5; tab++)

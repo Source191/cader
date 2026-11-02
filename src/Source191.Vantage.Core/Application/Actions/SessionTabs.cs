@@ -12,7 +12,7 @@ public sealed class SessionTabs(ITabRegistry tabs, IProcessRegistry processes)
     public async Task<TabClosure> CloseAsync(SessionId session)
     {
         TabClosure closure = TabClosure.NoTab;
-        foreach (TabRegistration tab in (await tabs.ReadTabsAsync()).Where(tab => tab.Owner == new TabOwner.ForSession(session)))
+        foreach (TabRegistration tab in new TabRegistrations(await tabs.ReadTabsAsync()).For(session))
         {
             if (tab.TryConfirmShell(processes, out ConfirmedProcess? shell))
             {
