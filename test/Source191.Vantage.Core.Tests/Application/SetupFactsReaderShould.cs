@@ -12,6 +12,8 @@ public sealed class SetupFactsReaderShould
     private const string SettingsFile = @"C:\Users\me\AppData\Local\Vantage\config.json";
     private const string LogFile = @"C:\Users\me\vantage.log";
 
+    private readonly DiagnosticLog log = new(TimeProvider.System, []);
+
     [Fact]
     public async Task ReadEverythingSetUp()
     {
@@ -19,7 +21,7 @@ public sealed class SetupFactsReaderShould
         InMemoryState state = new();
         DateTimeOffset nine = new(2026, 10, 30, 9, 12, 0, TimeSpan.Zero);
         await state.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(nine, new NewestRelease.Found(ReleaseVersions.Version("0.18.0"))));
-        SetupFactsReader reader = new(fragment, new FakeClaudeSettings(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell)), state, SettingsFile, new DiagnosticLogSetting.File(LogFile));
+        SetupFactsReader reader = new(fragment, new FakeClaudeSettings(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell)), state, SettingsFile, new DiagnosticLogSetting.File(LogFile), log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -29,7 +31,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task ReadNothingSetUp()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off());
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off(), log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -39,7 +41,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task CallAMissingClaudeSettingsFileNotSetUp()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Missing()), new InMemoryState(), SettingsFile, DiagnosticLogSetting.Read("  "));
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Missing()), new InMemoryState(), SettingsFile, DiagnosticLogSetting.Read("  "), log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -50,7 +52,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task NameAnotherChannel()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Configured("iterm2")), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off());
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Configured("iterm2")), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off(), log);
 
         (await reader.ReadAsync(TestContext.Current.CancellationToken)).ClaudeBell.ShouldBe(new SetupState.OtherChannel("iterm2"));
     }
@@ -58,7 +60,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task KeepTheOtherFactsWhenClaudesSettingsAreUnreadable()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeClaudeSettings(new NotificationChannelState.Unreadable("not JSON")), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off());
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeClaudeSettings(new NotificationChannelState.Unreadable("not JSON")), new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off(), log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -70,11 +72,24 @@ public sealed class SetupFactsReaderShould
     public async Task KeepTheOtherFactsWhenAReadThrows()
     {
         FakeClaudeSettings claude = new() { FailTheReadWith = new IOException("locked") };
-        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), claude, new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off());
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), claude, new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off(), log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
         facts.ClaudeBell.ShouldBe(new SetupState.Unreadable());
         facts.TerminalProfiles.ShouldBeOfType<SetupState.At>();
+    }
+
+    [Fact]
+    public async Task RecordAnUnreadablePiece()
+    {
+        FakeClaudeSettings claude = new() { FailTheReadWith = new IOException("locked") };
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), claude, new InMemoryState(), SettingsFile, new DiagnosticLogSetting.Off(), log);
+
+        await reader.ReadAsync(TestContext.Current.CancellationToken);
+
+        Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+        failed.Site.ShouldBe(FailureSite.Load);
+        failed.What.ShouldBe(CodeName.For(typeof(SetupFactsReader)));
     }
 }

@@ -9,8 +9,9 @@ namespace Source191.Vantage.Application;
 /// Reads the setup the Config tab shows, through the ports that already read it for <c>vantage setup-terminal</c> and the
 /// update check; a piece whose read fails is unreadable on its own, and never stops the others.
 /// </summary>
-public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLogSetting log)
+public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLogSetting logSetting, DiagnosticLog log)
 {
+    private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
 
     public async Task<SetupFacts> ReadAsync(CancellationToken cancellationToken)
     {
@@ -22,19 +23,9 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings
             await Guarded(LastUpdateCheckAsync));
     }
 
-    private static async Task<SetupState> Guarded(Func<Task<SetupState>> read)
-    {
-        try
-        {
-            return await read();
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return new SetupState.Unreadable();
-        }
-    }
+    private Task<SetupState> Guarded(Func<Task<SetupState>> read) => Attempt.RunAsync(log, FailureSite.Load, This, read, exception => exception is IOException or UnauthorizedAccessException, _ => new SetupState.Unreadable());
 
-    private SetupState LogState() => log switch
+    private SetupState LogState() => logSetting switch
     {
         DiagnosticLogSetting.File file => new SetupState.At(file.Path),
         DiagnosticLogSetting.Off => new SetupState.Disabled(),
