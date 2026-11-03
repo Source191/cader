@@ -4,7 +4,7 @@
     Fails when a change to the packaged tool does not raise Version in the tool's csproj.
 
 .DESCRIPTION
-    Compares two commits: check.yml passes the two parents of a pull request's merge ref, so Base is the
+    Compares two commits: pipeline.yml passes the two parents of a pull request's merge ref, so Base is the
     tip of the base branch the merge was computed against (main, or the parent of a stacked pull request) and
     Head is what that branch would become. Run it locally with any two refs, for example -Base main -Head HEAD. Exit code 0 means no bump is needed or the version
     was raised; 1 means a bump is missing, lower, or not a semantic version.
@@ -13,7 +13,7 @@
     .github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '',
-    Justification = 'Workflow commands such as ::error:: go to the console, as in check.yml; Write-Output inside a function would become its return value.')]
+    Justification = 'Workflow commands such as ::error:: go to the console, as in pipeline.yml; Write-Output inside a function would become its return value.')]
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $Base,

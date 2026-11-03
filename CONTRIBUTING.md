@@ -159,7 +159,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 
 ## Continuous integration
 
-`.github\workflows\check.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
+`.github\workflows\pipeline.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
 
 - **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, packs the tool as `<Version>-ci.<run number>` and uploads it as an artefact (see [Trying your build](#trying-your-build)), then installs that package and runs the smoke check against it.
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README, because `DocumentedMinimumShould` reads it.
@@ -189,7 +189,7 @@ Releasing and publishing are the owner's; see [MAINTAINING.md](MAINTAINING.md).
 
 - **Where:** every pull request that changes the packaged tool adds one line under `## Unreleased`, below one of the headings `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Security` or `### Internal`, in that order. `Assert-ChangelogUpdated.ps1` fails the pull request otherwise; a change outside the tool needs no line.
 - **How:** one line starting `- `, saying what a user will notice in words they would use, ending with the pull request's number, `(#171)`. Nothing else on the line is read as Markdown, so no links, bold or tables; control characters are dropped.
-- **Internal:** a refactor, a test, tooling or anything else nobody using Vantage can see goes under Internal, which Vantage never shows. Dependabot's pull requests get theirs from `check.yml`, which raises `Version` and runs `Add-InternalChangelogEntry.ps1` with the pull request's title.
+- **Internal:** a refactor, a test, tooling or anything else nobody using Vantage can see goes under Internal, which Vantage never shows. Dependabot's pull requests get theirs from `pipeline.yml`, which raises `Version` and runs `Add-InternalChangelogEntry.ps1` with the pull request's title.
 - **Size:** nuget.org keeps 35,000 characters of release notes, and the check fails at that size; the oldest sections then move to `docs\CHANGELOG-earlier.md`, which is not packed.
 
 ```powershell

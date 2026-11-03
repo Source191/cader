@@ -17,16 +17,16 @@ Every merge to `main` then builds and tests the same commit twice, once in `chec
 ## What Changes
 
 - **One build per merge:**
-  - `release.yml`'s two jobs move into `check.yml`. On a push to `main` that raises `Version`, the `check` job packs the plain version (no `-ci.N` suffix), installs and smoke-tests that exact package, and writes the release notes.
+  - `release.yml`'s two jobs move into `check.yml`, renamed `pipeline.yml` because it now releases too (its job keeps the name `check`, which branch protection requires). On a push to `main` that raises `Version`, the `check` job packs the plain version (no `-ci.N` suffix), installs and smoke-tests that exact package, and writes the release notes.
   - A new `release` job (`needs: check`, the same job-level write permissions, no checkout) attests and publishes it as before. `release.yml` is deleted.
   - A release now waits for the check, about a minute and a half later than today, and never happens for a commit whose check failed.
-- **Provenance:** `publish.yml` accepts packages attested by `check.yml` or by `release.yml` (older tags), still only from `refs/heads/main` of this repository. It checks the certificate identity with a regex in place of `--signer-workflow`.
+- **Provenance:** `publish.yml` accepts only packages attested by `pipeline.yml` from `refs/heads/main` of this repository. Releases made by the old `release.yml` will not be published, by the owner's choice.
 - **Format in folder mode:** `dotnet format whitespace --folder --verify-no-changes --exclude openspec`, which needs no MSBuild workspace (2.4 s locally, against 7 s).
 - **Smoke check:** `dotnet run --no-build`, since the solution build already built HeadlessTerminal in Release.
 - **Measured experiments, kept only if a draft pull request's runs show they pay:**
   - **NuGet cache:** `actions/cache` over `~\.nuget\packages`.
   - **.NET first-run variables:** `DOTNET_NOLOGO` and `DOTNET_CLI_TELEMETRY_OPTOUT` stay regardless, as they are harmless; `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` and `DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE` stay only if the cold start shrinks.
-- **Docs and references:** `.claude\rules\checks.md`, `MAINTAINING.md`, the comments in `.github\scripts` and `build-test-pack` that name `release.yml`, `Source191.Vantage.slnx`, and the open `install-with-winget` change's text all point at the release job in `check.yml`.
+- **Docs and references:** `.claude\rules\checks.md`, `MAINTAINING.md`, the comments in `.github\scripts` and `build-test-pack` that name `release.yml`, `Source191.Vantage.slnx`, and the open `install-with-winget` change's text all point at the release job in `pipeline.yml`.
 - **No Version bump or changelog line:** nothing under the tool paths in `ToolPaths.ps1` changes.
 
 ## Out of scope
@@ -48,6 +48,6 @@ None. Users get the same package, release notes and GitHub Releases. The `releas
 
 ## Impact
 
-- **Workflows and scripts:** `.github\workflows\check.yml`, `release.yml` (deleted), `publish.yml`, `.github\actions\build-test-pack\action.yml`, and comments in `.github\scripts`.
+- **Workflows and scripts:** `.github\workflows\check.yml` (renamed `pipeline.yml`), `release.yml` (deleted), `publish.yml`, `.github\actions\build-test-pack\action.yml`, and comments in `.github\scripts`.
 - **Docs:** `.claude\rules\checks.md`, `MAINTAINING.md`, `Source191.Vantage.slnx`, and `openspec\changes\install-with-winget` (text only).
 - **Branch protection:** unchanged; it still requires `check`.

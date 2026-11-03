@@ -25,21 +25,30 @@ See proposal.md for the motivation and the measured step times.
 
 ## Decisions
 
-### The release is a job in `check.yml`, not a `workflow_run` of it
+### The release is a job in `pipeline.yml`, not a `workflow_run` of it
 
 **Alternative considered:** a `workflow_run` trigger would keep `release.yml` and `publish.yml`'s signer as they are.
 
 **Why not:** a `workflow_run` run's `GITHUB_SHA` and OIDC claims name the tip of `main` when the release runs, which is a later commit than the one `check` built whenever merges come quickly. The provenance would then name the wrong commit. A job in the same run carries the built commit in its own claims.
 
-**The cost:** `publish.yml` must accept two signers.
+**The cost:** the signer `publish.yml` checks changes.
 
-### `publish.yml` matches the certificate identity with a regex
+### `check.yml` is renamed `pipeline.yml`
 
-`gh attestation verify --cert-identity-regex '^https://github\.com/Source191/vantage/\.github/workflows/(check|release)\.yml@refs/heads/main$'` replaces `--signer-workflow`, keeping `--repo Source191/vantage` and `--source-ref refs/heads/main`.
+Once it also releases, `check.yml` undersells the file. `pipeline.yml` (workflow name `pipeline`) is the one pipeline every pull request and merge goes through. The job keeps the name `check`, because branch protection requires the job's name, not the file's. The rename is made before any release is signed, because an attestation records the signing workflow's file and `publish.yml` checks it.
 
-- **Why:** the regex is anchored at both ends and names exactly the two workflow files on `main`.
-- **Why keep `release.yml`:** tags released before this change were signed by `release.yml` and must still publish.
-- **Alternative considered:** two `verify` calls, the first allowed to fail. Rejected, because it is harder to read and an error in the first call is easy to mask.
+**Alternatives considered:**
+
+- **`ci.yml`:** suggests a separate release workflow.
+- **`build-and-release.yml`:** wrong for pull requests, which never release.
+
+### `publish.yml` accepts only `pipeline.yml`
+
+`gh attestation verify --signer-workflow Source191/vantage/.github/workflows/pipeline.yml --source-ref refs/heads/main`, as before but naming the new file.
+
+The owner will not publish any release made by the old `release.yml` (up to v0.20.0-preview.30), so those packages fail the check. Verified on 3 November 2026 with v0.20.0-preview.30: it fails this command, and passes the same command naming `release.yml`.
+
+**Alternative considered:** a `--cert-identity-regex` accepting both files, which was this change's first design. It was dropped once the owner ruled out publishing the older releases.
 
 ### The `check` job decides the package version first
 
@@ -89,12 +98,12 @@ Each experiment is measured on the draft pull request against run 41529898838.
 - **The release job can't be exercised before merge:** it runs only on a push to `main` that raises `Version`. → It is moved verbatim. The owner checks the first such merge after this one:
   - the release job ran after `check`;
   - the Release has the nupkg;
-  - `gh attestation verify` with the new regex passes.
-- **The regex accepts a workflow it shouldn't:** → It is anchored at both ends with escaped dots and a fixed ref. Verified locally against a `release.yml`-signed package (passes) and a regex naming only `check.yml` (fails).
+  - `gh attestation verify --signer-workflow` naming `pipeline.yml` passes.
+- **An older release can't be published:** → Accepted by the owner; a fix is a new version in any case.
 - **Folder mode misses a file that workspace mode checked:** → Every project file lives under the repository root, and folder mode covers everything there except `openspec`. Verified locally by adding a trailing space to a `src` file and seeing exit 2.
 - **A poisoned or stale cache:** → It is keyed on every project file. The experiment is dropped if it doesn't pay.
 
 ## Migration Plan
 
-- **Rollout:** merging this pull request changes no Version, so its own push to `main` runs `check` only and no release. The next merge that raises Version is the first release made by `check.yml`.
-- **Rollback:** revert the merge. `release.yml` returns and `publish.yml` still accepts both signers.
+- **Rollout:** merging this pull request changes no Version, so its own push to `main` runs `check` only and no release. The next merge that raises Version is the first release made by `pipeline.yml`.
+- **Rollback:** revert the merge. `check.yml` and `release.yml` return, and `publish.yml` names `release.yml` again.

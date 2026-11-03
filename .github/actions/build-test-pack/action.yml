@@ -2,7 +2,7 @@ name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
   project against that build, checks whitespace formatting, and packs the dotnet tool. Run by
-  check.yml's check job, whose package on a release is the one the release job publishes, so the
+  pipeline.yml's check job, whose package on a release is the one the release job publishes, so the
   release never ships a build that the check did not see.
 
 inputs:

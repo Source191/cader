@@ -1,9 +1,10 @@
-name: check
+name: pipeline
 
-# Runs on every pull request, whatever its base, and every push to main. A pull request stacked on
-# another branch is checked against that branch, so each one in a stack is green before it is
-# retargeted to main. Branch protection on main requires the `check` job, so a red pull request
-# cannot merge. Windows only: the code uses P/Invoke, ConPTY and cmd.exe in the integration tests.
+# The one pipeline every pull request and every merge goes through: it checks a pull request, and on main it checks
+# and, when Version changed, releases. Runs on every pull request, whatever its base, and every push to main. A pull
+# request stacked on another branch is checked against that branch, so each one in a stack is green before it is
+# retargeted to main. Branch protection on main requires the `check` job (the job's name, not this file's), so a red
+# pull request cannot merge. Windows only: the code uses P/Invoke, ConPTY and cmd.exe in the integration tests.
 # (ConPTY: https://learn.microsoft.com/windows/console/creating-a-pseudoconsole-session)
 #
 # A push to main that changes Version in src/Source191.Vantage/Source191.Vantage.csproj is also a release: the check
@@ -18,7 +19,7 @@ on:
 # A new commit on a pull request cancels the run for the older one, whose result branch protection no longer reads.
 # Each push to main has a group of its own (its run id), so it is never cancelled or queued behind another.
 concurrency:
-  group: check-${{ github.event.pull_request.number || github.run_id }}
+  group: pipeline-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Read-only token for every job but release: check and handoff run the downloaded Claude Code installer, and the
