@@ -1,10 +1,10 @@
 #Requires -Version 7
 <#
 .SYNOPSIS
-    Answers whether a change touches only documentation, so check.yml can skip the build for it.
+    Answers whether a change touches only documentation, so pipeline.yml can skip the build for it.
 
 .DESCRIPTION
-    Compares two commits: check.yml passes the two parents of a pull request's merge ref, as it does for
+    Compares two commits: pipeline.yml passes the two parents of a pull request's merge ref, as it does for
     Assert-VersionBumped.ps1. Writes $true when every changed path is under openspec/, or is a .md file outside
     .github/, and $false otherwise, printing the first path that is not documentation. An empty difference is not
     documentation-only, so nothing is skipped by mistake. Renames are listed as a deletion and an addition, so a

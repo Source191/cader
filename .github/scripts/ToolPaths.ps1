@@ -32,7 +32,7 @@ function Get-ChangedToolPath([string] $Base, [string] $Head) {
     return @($changed | Where-Object { Test-ToolPath $_ })
 }
 
-# The tool's Version at a commit. The same regex release.yml uses: git's output comes through the console encoding,
+# The tool's Version at a commit. The same regex pipeline.yml uses: git's output comes through the console encoding,
 # and a byte order mark would break an [xml] cast.
 function Read-ToolVersion([string] $commit) {
     $csproj = 'src/Source191.Vantage/Source191.Vantage.csproj'

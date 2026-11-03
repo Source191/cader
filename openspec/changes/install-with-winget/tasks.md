@@ -25,8 +25,8 @@
 
 ## 5. Workflows
 
-- [x] 5.1 `check.yml`: replace the nupkg install steps with unzipping the zip into a temp folder, then run the `--version` and smoke steps against that `vantage.exe`; upload the zip as the pull request's artefact. Verify a draft pull request's check passes with the zip.
-- [ ] 5.2 `release.yml`: attest and attach the zip for every release, stable or prerelease, and keep the stable release's notes and `--notes-start-tag`. Verify with the first prerelease from `main` that the Release carries the zip and `gh attestation verify` passes on it.
+- [x] 5.1 `pipeline.yml`: replace the nupkg install steps with unzipping the zip into a temp folder, then run the `--version` and smoke steps against that `vantage.exe`; upload the zip as the pull request's artefact. Verify a draft pull request's check passes with the zip.
+- [ ] 5.2 `pipeline.yml`'s release job: attest and attach the zip for every release, stable or prerelease, and keep the stable release's notes and `--notes-start-tag`. Verify with the first prerelease from `main` that the Release carries the zip and `gh attestation verify` passes on it.
 - [ ] 5.3 Add a stable-only job that runs `wingetcreate update` with the repository secret and a fork of winget-pkgs, and fails loudly when the pull request cannot be opened. Verify with a dry run on a test fork before the secret is real.
 - [x] 5.4 `Assert-ChangelogUpdated.ps1`: drop the 35,000-character limit, which only nuget.org's release notes needed. Verify it passes between `main` and the branch.
 

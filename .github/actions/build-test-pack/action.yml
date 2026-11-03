@@ -2,14 +2,14 @@ name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
   project against that build, checks whitespace formatting, then publishes the self-contained winget
-  build and zips it. Shared by check.yml and release.yml so the release never ships a build that the
-  check did not see.
+  build and zips it. Run by pipeline.yml's check job, whose zip on a release is the one the release job
+  publishes, so the release never ships a build that the check did not see.
 
 inputs:
   version-suffix:
     description: >-
       Prerelease suffix added to the csproj Version in the zip's name, e.g. ci.42. Empty names it with
-      the plain version. Check runs pass one so every run's zip is told apart from a release's.
+      the plain version. Every run but a release passes one so its zip is told apart from a release's.
     required: false
     default: ''
 
@@ -41,11 +41,13 @@ runs:
 
     # Whitespace only: EnforceCodeStyleInBuild and TreatWarningsAsErrors in Directory.Build.props already fail
     # the build on every style and analyser rule at warning, which is what dotnet format's style and analyzers
-    # passes check. Workspace mode, not --folder, so the generated files under obj are left out.
+    # passes check. Folder mode reads the same .editorconfig without loading an MSBuild workspace (about 2 s
+    # against 16 s on the runner) and skips the SDK's generated files under obj unless --include-generated is
+    # given. openspec is left out: its archive holds sample .cs files that are not part of the solution.
     # (https://learn.microsoft.com/dotnet/core/tools/dotnet-format)
     - name: Format (whitespace)
       shell: pwsh
-      run: dotnet format whitespace --verify-no-changes --no-restore
+      run: dotnet format whitespace --folder --verify-no-changes --exclude openspec
 
     # The self-contained single-file build winget installs (src\Source191.Vantage\README.md, The winget build). It builds
     # the program again for win-x64, so warnings are still errors; the assembly keeps the csproj Version.
