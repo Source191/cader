@@ -4,7 +4,7 @@
     Writes one version's section of CHANGELOG.md, without its heading, for a stable GitHub Release's notes.
 
 .DESCRIPTION
-    release.yml's build job runs it for every release and uploads the file with the package; the release job passes it
+    pipeline.yml's check job runs it for every release and uploads the file with the package; the release job passes it
     to gh release create only for a stable version, where it comes before the generated list of pull requests. For a
     prerelease the file is written empty. A stable version without a section fails, which Assert-ChangelogUpdated.ps1
     has already refused in its pull request.

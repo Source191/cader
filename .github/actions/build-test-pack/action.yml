@@ -1,15 +1,16 @@
 name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
-  project against that build, checks whitespace formatting, and packs the dotnet tool. Shared by
-  check.yml and release.yml so the release never ships a build that the check did not see.
+  project against that build, checks whitespace formatting, and packs the dotnet tool. Run by
+  pipeline.yml's check job, whose package on a release is the one the release job publishes, so the
+  release never ships a build that the check did not see.
 
 inputs:
   version-suffix:
     description: >-
       Prerelease suffix appended to the csproj Version when packing, e.g. ci.42. Empty packs the plain
-      version. Check runs pass one so every run's package is a distinct version: the dotnet tool cache
-      keeps the first package it sees for a version for ever.
+      version. Every run but a release passes one so its package is a distinct version: the dotnet tool
+      cache keeps the first package it sees for a version for ever.
     required: false
     default: ''
 
@@ -41,11 +42,13 @@ runs:
 
     # Whitespace only: EnforceCodeStyleInBuild and TreatWarningsAsErrors in Directory.Build.props already fail
     # the build on every style and analyser rule at warning, which is what dotnet format's style and analyzers
-    # passes check. Workspace mode, not --folder, so the generated files under obj are left out.
+    # passes check. Folder mode reads the same .editorconfig without loading an MSBuild workspace (about 2 s
+    # against 16 s on the runner) and skips the SDK's generated files under obj unless --include-generated is
+    # given. openspec is left out: its archive holds sample .cs files that are not part of the solution.
     # (https://learn.microsoft.com/dotnet/core/tools/dotnet-format)
     - name: Format (whitespace)
       shell: pwsh
-      run: dotnet format whitespace --verify-no-changes --no-restore
+      run: dotnet format whitespace --folder --verify-no-changes --exclude openspec
 
     - name: Pack
       shell: pwsh

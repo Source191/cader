@@ -5,7 +5,7 @@
     stable version has not turned Unreleased into that version's section, or when the changelog is too long for nuget.org.
 
 .DESCRIPTION
-    Compares two commits, as Assert-VersionBumped.ps1 does: check.yml passes the two parents of a pull request's merge
+    Compares two commits, as Assert-VersionBumped.ps1 does: pipeline.yml passes the two parents of a pull request's merge
     ref, so Base is the tip of the base branch and Head is what that branch would become. Run it locally with any two
     refs, for example -Base main -Head HEAD. The changelog is packed as the package's release notes, which nuget.org
     limits to 35,000 characters (https://learn.microsoft.com/nuget/reference/nuspec#releasenotes). Exit code 0 means
@@ -15,7 +15,7 @@
     .github\scripts\Assert-ChangelogUpdated.ps1 -Base main -Head HEAD
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '',
-    Justification = 'Workflow commands such as ::error:: go to the console, as in release.yml; Write-Output inside a function would become its return value.')]
+    Justification = 'Workflow commands such as ::error:: go to the console, as in pipeline.yml; Write-Output inside a function would become its return value.')]
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $Base,

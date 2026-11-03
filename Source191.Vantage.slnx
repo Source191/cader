@@ -5,8 +5,7 @@
     <File Path=".github/actions/build-test-pack/action.yml" />
   </Folder>
   <Folder Name="/pipelines/workflows/">
-    <File Path=".github/workflows/check.yml" />
-    <File Path=".github/workflows/release.yml" />
+    <File Path=".github/workflows/pipeline.yml" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
