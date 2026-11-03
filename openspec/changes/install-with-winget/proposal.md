@@ -30,7 +30,7 @@ Vantage is installed with `dotnet tool install -g Source191.Vantage`, which need
 
 - **Code:** `Source191.Vantage.Infrastructure` (a winget-pkgs and GitHub reader replaces `NuGetPackageVersions`), `Application\UpdateCheck`, `Application\TabScripts` (the update tab), `Wording`, and the tool project's publish settings (`PublishSingleFile`, `SelfContained`, `win-x64`) in place of its packaging.
 - **Workflows:** `release.yml` (zip, attestation, winget step), `check.yml` (smoke against the zip), `build-test-pack` (zip instead of nupkg), and `publish.yml`, which is removed.
-- **Docs:** README install and prerequisites, CONTRIBUTING, MAINTAINING (winget-pkgs token, first submission, retiring the nuget.org package and its publishing secrets), `.claude\rules\checks.md` and `windows.md`.
+- **Docs:** README install and prerequisites, CONTRIBUTING, MAINTAINING (winget-pkgs token, first submission); retiring the nuget.org package is a one-off owner step listed in the pull request, `.claude\rules\checks.md` and `windows.md`.
 - **Dependencies:** none added to the tool. The release workflow gains `wingetcreate` (or `komac`) and a repository secret.
 - **Size:** the download grows from a small framework-dependent package to about 34 MB zipped.
 

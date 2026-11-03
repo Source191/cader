@@ -1,6 +1,6 @@
 # Vantage
 
-A Terminal.Gui console for Claude Code sessions and git worktrees on Windows, installed with winget as the self-contained program `vantage` (`Source191.Vantage`); there is no NuGet package. The README is the user guide, `CONTRIBUTING.md` the contributor's guide (setting up, the OpenSpec stages, pull requests, CI, versions) and `MAINTAINING.md` the owner's (releases, winget, retiring nuget.org, secrets); `openspec/` holds the specifications and the changes made against them.
+A Terminal.Gui console for Claude Code sessions and git worktrees on Windows, installed with winget as the self-contained program `vantage` (`Source191.Vantage`); there is no NuGet package. The README is the user guide, `CONTRIBUTING.md` the contributor's guide (setting up, the OpenSpec stages, pull requests, CI, versions) and `MAINTAINING.md` the owner's (releases, winget, secrets); `openspec/` holds the specifications and the changes made against them.
 
 Facts that matter only in part of the code are path-scoped rules in `.claude\rules`, loaded when a matching file is read or edited. Read the one that applies before reasoning about its area from anywhere else:
 

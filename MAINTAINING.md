@@ -16,13 +16,6 @@ A stable release is installed with `winget install Source191.Vantage`: a portabl
 - **`WINGET_PKGS_TOKEN`:** a repository secret (Settings, Secrets and variables, Actions) holding a classic personal access token with the `public_repo` scope, from the account whose fork of winget-pkgs the pull requests come from (wingetcreate makes the fork if there is none). Without it, or when it has expired, the job fails and names it: replace the secret and rerun the job.
 - **When a submission waits:** winget-pkgs' validation can queue for hours, and its bot may ask for changes on the pull request. Nobody is offered the version meanwhile, because the update check reads only merged manifests. A version is removed only by a pull request to winget-pkgs; a bad release is superseded by a new version.
 
-## Retiring nuget.org
-
-Vantage was a dotnet tool on nuget.org before it was a winget package, and only previews were published there (0.16.2-preview.1 to 0.18.0-preview.3). The repository no longer packs or publishes a nupkg, and nothing moves a dotnet tool install across: a preview never checks for updates, so nothing could reach it. What is left is on nuget.org and in the repository settings, by hand:
-
-1. **Unlist every version:** nuget.org never deletes a package on its owner's request (only the NuGet team does, for abuse or copyright, through Contact support on the package page). On the package's Manage page, Listing, untick "List in search results" for each version and save, or run `dotnet nuget delete Source191.Vantage <version> --source https://api.nuget.org/v3/index.json --api-key <key>`, which on nuget.org unlists.
-2. **Deprecate it:** Manage page, Deprecation, select all versions, reason "Legacy", message "Install with winget: winget install Source191.Vantage". `dotnet tool` does not show the message, but the package page does.
-3. **Remove the publishing setup:** the Trusted Publishing policy on nuget.org (owner `Source191`, repository `vantage`, workflow `publish.yml`, environment `nuget`), the `NUGET_USER` repository secret, and the `nuget` environment under Settings, Environments.
 ## Reviews and merging
 
 The "Owner approves main" ruleset requires a code owner's approval, and `.github\CODEOWNERS` names the owner for every path, so a pull request opened by anyone else (an app or Dependabot included) waits for that review. The owner merges their own pull requests through the ruleset's bypass (`gh pr merge --admin`), so auto-merge does not fire for them.

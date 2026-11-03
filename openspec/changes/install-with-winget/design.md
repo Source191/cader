@@ -73,7 +73,7 @@ The nupkg, `PackAsTool`, `publish.yml` and the package icon are removed in this 
 
 1. Land this change (code, workflows, docs); a stable release is cut from `main` when the owner chooses.
 2. `release.yml` publishes the GitHub Release with the zip; submit the first manifest to winget-pkgs by hand; wait for the merge. Later stable releases are submitted by the `winget` job.
-3. Unlist and deprecate every nuget.org version, and remove the nuget.org publishing setup (MAINTAINING.md).
+3. Unlist and deprecate every nuget.org version, and remove the nuget.org publishing setup (a one-off owner step, listed in the pull request rather than MAINTAINING.md).
 - **Rollback:** a bad release is superseded by a new version (a winget-pkgs version is removed only by a pull request); the previous winget version stays installable by `--version` until then.
 ## Open Questions
 

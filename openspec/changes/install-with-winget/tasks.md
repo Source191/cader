@@ -37,14 +37,14 @@
 ## 7. Documentation
 
 - [ ] 7.1 README: install section is `winget install Source191.Vantage` and Claude Code's native installer line; the prerequisites list loses the .NET SDK and shrinks to Claude Code; add the GitHub Release zip as the fallback and the preview instructions. Verify every command runs as written on a clean machine or VM.
-- [x] 7.2 CONTRIBUTING (preview and local installs), MAINTAINING (the winget-pkgs token, the first submission, retiring the nuget.org package and its publishing setup) and `.claude\rules\checks.md` and `windows.md` (the release, check and update-tab facts). Verify `openspec validate install-with-winget --strict` and a read-through for stale `dotnet tool` and nuget.org wording.
+- [x] 7.2 CONTRIBUTING (preview and local installs), MAINTAINING (the winget-pkgs token and the first submission) and `.claude\rules\checks.md` and `windows.md` (the release, check and update-tab facts). Verify `openspec validate install-with-winget --strict` and a read-through for stale `dotnet tool` and nuget.org wording.
 - [x] 7.3 Raise `Version` in `src\Source191.Vantage\Source191.Vantage.csproj` and add the `CHANGELOG.md` entries: Added winget, Changed update, Removed nuget.org installs. Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` pass.
 
 ## 8. Integration checks (owner, on real machines)
 
 - [ ] 8.1 A clean Windows 11 VM with no .NET: `winget install Source191.Vantage`, `vantage` starts, Windows Terminal, PowerShell 7 and git were brought in, `vantage setup-terminal` works. Verify by the VM's `winget list`.
 - [ ] 8.2 Upgrade from the previous winget version with `U`: the tab waits, upgrades, restarts, and background sessions are still listed. Verify on the status of the sessions before and after.
-- [ ] 8.3 Retire nuget.org: unlist and deprecate every `Source191.Vantage` version, and remove the Trusted Publishing policy, the `NUGET_USER` secret and the `nuget` environment. Verify the package page shows no listed version.
+- [ ] 8.3 Retire nuget.org: unlist and deprecate every `Source191.Vantage` version, and remove the Trusted Publishing policy, the `NUGET_USER` secret and the `nuget` environment, as the pull request's description lists. Verify the package page shows no listed version.
 
 ## Workflow follow-up
 
