@@ -57,8 +57,6 @@ public static class SessionsView
     /// </summary>
     public static RowDecision Opening(SessionRow row)
     {
-        ArgumentNullException.ThrowIfNull(row);
-
         return row.Session switch
         {
             not Session.Background => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),

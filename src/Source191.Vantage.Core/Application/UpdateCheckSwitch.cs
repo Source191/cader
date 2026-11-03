@@ -8,8 +8,7 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class UpdateCheckSwitch(CurrentSettings settings, string optOutVariable)
 {
-    private readonly CurrentSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    private readonly bool optedOut = UpdateCheckOptOut.Applies(optOutVariable ?? throw new ArgumentNullException(nameof(optOutVariable)));
+    private readonly bool optedOut = UpdateCheckOptOut.Applies(optOutVariable);
 
     public bool IsOn() => settings.Value.CheckForUpdates && !optedOut;
 }

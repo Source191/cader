@@ -10,18 +10,12 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class CurrentSettings(Settings initial, IVantageConfig store)
 {
-    private readonly IVantageConfig store = store ?? throw new ArgumentNullException(nameof(store));
     private readonly SharedSnapshot<Settings> snapshot = new(initial);
 
     /// <summary>The settings now: an immutable snapshot, replaced whole on a save.</summary>
     public Settings Value => snapshot.Value;
 
-    public static async Task<CurrentSettings> LoadAsync(IVantageConfig store, FolderPath home)
-    {
-        ArgumentNullException.ThrowIfNull(store);
-
-        return new CurrentSettings(SettingsFile.From(await store.ReadConfigAsync(), home), store);
-    }
+    public static async Task<CurrentSettings> LoadAsync(IVantageConfig store, FolderPath home) => new(SettingsFile.From(await store.ReadConfigAsync(), home), store);
 
     /// <summary>Writes config.json, then makes the saved settings the current ones.</summary>
     public async Task SaveAsync(Settings settings)

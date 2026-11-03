@@ -12,8 +12,6 @@ public sealed record UpdateVantage : ViewEffect, IDialogEffect
     /// <summary>Show the newest release's notes since the running version when an update is available; otherwise refuse with the status message that says why there is nothing to update to.</summary>
     public static UpdateDecision Decide(UpdateStatus status, ReleaseNotes notes)
     {
-        ArgumentNullException.ThrowIfNull(notes);
-
         return status switch
         {
             UpdateStatus.Available available => new UpdateDecision.Ask(available.Current, available.Newest, notes.Between(available.Current, available.Newest)),

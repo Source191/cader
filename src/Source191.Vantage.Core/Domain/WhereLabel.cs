@@ -16,13 +16,7 @@ public abstract record WhereLabel
     /// <summary>The ellipsis, the separator and a character of the place.</summary>
     private const int LeastPlaced = 5;
 
-    public static WhereLabel For(string repositoryName, string folderLabel, bool inRepository)
-    {
-        ArgumentNullException.ThrowIfNull(repositoryName);
-        ArgumentNullException.ThrowIfNull(folderLabel);
-
-        return inRepository ? new Inside(repositoryName, PlaceOf(repositoryName, folderLabel)) : new Outside(folderLabel);
-    }
+    public static WhereLabel For(string repositoryName, string folderLabel, bool inRepository) => inRepository ? new Inside(repositoryName, PlaceOf(repositoryName, folderLabel)) : new Outside(folderLabel);
 
     public string Text => Fit(int.MaxValue);
 

@@ -51,8 +51,6 @@ public sealed class FakeProcessRegistry : IProcessRegistry
 
     public void Terminate(ConfirmedProcess process)
     {
-        ArgumentNullException.ThrowIfNull(process);
-
         Terminated.Add(process.Id);
         foreach (int id in DescendantsOf(process.Id).Append(process.Id))
         {
@@ -76,8 +74,6 @@ public sealed class FakeProcessRegistry : IProcessRegistry
 
     public void EndCleanly(ConfirmedProcess process)
     {
-        ArgumentNullException.ThrowIfNull(process);
-
         EndedCleanly.Add(process.Id);
         OnEndCleanly(process.Id);
         running.Remove(process.Id);

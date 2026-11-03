@@ -69,9 +69,6 @@ public sealed record EditorChoice
     /// </summary>
     public static EditorChoiceValidation Validate(string executable, IReadOnlyList<string> arguments, Func<string, bool> fileExists)
     {
-        ArgumentNullException.ThrowIfNull(executable);
-        ArgumentNullException.ThrowIfNull(arguments);
-        ArgumentNullException.ThrowIfNull(fileExists);
         string trimmed = executable.Trim();
 
         return trimmed switch

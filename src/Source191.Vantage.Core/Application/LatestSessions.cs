@@ -11,7 +11,6 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class LatestSessions(IClaudeCli claude)
 {
-    private readonly IClaudeCli claude = claude ?? throw new ArgumentNullException(nameof(claude));
     private readonly SharedSnapshot<IReadOnlyList<Session>> sessions = new([]);
 
     // Continuations run off the listing's thread, so a waiting scan never runs inline on the Sessions tab's load.

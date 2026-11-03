@@ -13,13 +13,6 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enricher, WorktreeInventory inventory, SetupFactsReader setup, CurrentSettings settings, RefreshCounts refreshes)
 {
-    private readonly LatestSessions sessions = sessions ?? throw new ArgumentNullException(nameof(sessions));
-    private readonly SessionRowEnricher enricher = enricher ?? throw new ArgumentNullException(nameof(enricher));
-    private readonly WorktreeInventory inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
-    private readonly SetupFactsReader setup = setup ?? throw new ArgumentNullException(nameof(setup));
-    private readonly CurrentSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    private readonly RefreshCounts refreshes = refreshes ?? throw new ArgumentNullException(nameof(refreshes));
-
     /// <summary>The Sessions tab's rows and the automated runs of the same listing.</summary>
     public async Task<ViewInput> LoadSessionsAsync(CancellationToken cancellationToken)
     {

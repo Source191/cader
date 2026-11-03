@@ -11,9 +11,6 @@ public sealed record ProcessTree(ProcessFacts Process, ProcessMeasure Usage, IRe
     /// <summary>The tree under a root, or <see cref="ProcessTreeLookup.NotMeasurable"/> when the root is not in the table or cannot be measured.</summary>
     public static ProcessTreeLookup Under(int rootId, IReadOnlyList<ProcessFacts> snapshot, Func<int, ProcessUsage?> usageOf)
     {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(usageOf);
-
         ProcessFacts? root = snapshot.FirstOrDefault(process => process.ProcessId == rootId);
         if (root is null || usageOf(rootId) is not { } usage)
         {

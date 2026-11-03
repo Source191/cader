@@ -12,11 +12,6 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class WhatsNewOnStart(ToolVersion running, ILastRunVersion lastRun, IPackagedReleaseNotes packaged, DiagnosticLog log)
 {
-    private readonly ToolVersion running = running ?? throw new ArgumentNullException(nameof(running));
-    private readonly ILastRunVersion lastRun = lastRun ?? throw new ArgumentNullException(nameof(lastRun));
-    private readonly IPackagedReleaseNotes packaged = packaged ?? throw new ArgumentNullException(nameof(packaged));
-    private readonly DiagnosticLog log = log ?? throw new ArgumentNullException(nameof(log));
-
     public async Task<WhatsNewAtStart> DecideAsync()
     {
         if (!ReleaseVersion.TryParse(running.Text, out ReleaseVersion? current) || current.IsPrerelease)

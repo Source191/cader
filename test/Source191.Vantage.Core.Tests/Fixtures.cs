@@ -15,8 +15,6 @@ internal static class Fixtures
     /// <summary>Builds a case by its one constructor that does not take the case itself, with a placeholder for each field.</summary>
     public static object Build(Type type)
     {
-        ArgumentNullException.ThrowIfNull(type);
-
         System.Reflection.ConstructorInfo constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().All(parameter => parameter.ParameterType != type));
 
         return constructor.Invoke([.. constructor.GetParameters().Select(parameter => Placeholder(parameter.ParameterType))]);

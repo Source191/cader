@@ -44,8 +44,6 @@ public sealed class RunningLoads
     /// <summary>The load, counted as running from the call until it completes or throws, taking a held reservation as it starts.</summary>
     public Func<CancellationToken, Task<T>> Track<T>(Func<CancellationToken, Task<T>> load)
     {
-        ArgumentNullException.ThrowIfNull(load);
-
         return async cancellationToken =>
         {
             Start();

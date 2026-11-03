@@ -17,7 +17,6 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
 
     public async Task<SessionDetail> SessionAsync(SessionRow row, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(row);
         DetailFact<WorktreeCounts> counts = row.Location is SessionLocation.Outside
             ? new DetailFact<WorktreeCounts>.NotApplicable()
             : await Read(row.Session.WorkingDirectory, () => inspector.CountAsync(row.Session.WorkingDirectory, cancellationToken));
@@ -30,7 +29,6 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
     /// <param name="cancellationToken">Cancels the git reads still running.</param>
     public async Task<WorktreeDetail> WorktreeAsync(WorktreeRow row, int listRows, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(row);
         WorktreeOrigin origin = await OriginAsync(row);
         DetailFact<MergeState> merge = row.Head is Head.OnBranch { Branch: BranchName branch } && row.OwnerExists
             ? await Read(row.Path, () => inspector.MergeStateAsync(row.Repository, branch, cancellationToken))

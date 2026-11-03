@@ -22,7 +22,6 @@ public static partial class Wording
     /// <summary>The Config counts beside the tabs: how many settings, then how much setup is left to do, in amber.</summary>
     public static IReadOnlyList<TextPart> ConfigCounts(IReadOnlyList<ConfigRow> rows)
     {
-        ArgumentNullException.ThrowIfNull(rows);
         int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading));
         int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp });
 
@@ -52,8 +51,6 @@ public static partial class Wording
     /// <summary>The sessions counts beside the tabs: a glyph, a count and a state word per state present, in attention order, then the automated runs and their memory while any run.</summary>
     public static IReadOnlyList<TextPart> SessionCounts(IReadOnlyList<SessionRow> rows, AutomatedRuns automated)
     {
-        ArgumentNullException.ThrowIfNull(rows);
-        ArgumentNullException.ThrowIfNull(automated);
         DisplayStateKind[] order = [DisplayStateKind.NeedsInput, DisplayStateKind.Working, DisplayStateKind.Idle, DisplayStateKind.Completed, DisplayStateKind.Failed, DisplayStateKind.Stopped, DisplayStateKind.Unknown];
 
         return [.. order
@@ -66,7 +63,6 @@ public static partial class Wording
     /// <summary>The worktrees counts beside the tabs: a count per health present, then how many have changes and unpushed commits.</summary>
     public static IReadOnlyList<TextPart> WorktreeCounts(IReadOnlyList<WorktreeRow> rows)
     {
-        ArgumentNullException.ThrowIfNull(rows);
         IEnumerable<TextPart> byHealth = Enum.GetValues<WorktreeHealthKind>()
             .Select(kind => (Kind: kind, Count: rows.Count(row => row.Health.Kind == kind)))
             .Where(group => group.Count > 0)
@@ -85,7 +81,6 @@ public static partial class Wording
     /// <summary>The sessions tab's key bar: the keys that act on the selected row, then the ones the listed rows call for, New session and Update; the folder and view keys below.</summary>
     public static KeyBar SessionsBar(SessionsViewState state, bool updateKnown)
     {
-        ArgumentNullException.ThrowIfNull(state);
         (IReadOnlyList<string> Keys, IReadOnlyList<BarWord> Words) forRow = state.Selected switch
         {
             null => ([], []),
