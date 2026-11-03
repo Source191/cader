@@ -59,8 +59,8 @@ The nupkg, `PackAsTool`, `publish.yml` and the package icon are removed in this 
 
 ## Risks / Trade-offs
 
-- **[The exe's path or base folder is wrong behind winget's link]** `TabScripts` is built from `Environment.ProcessPath`; `vantage.ico` and `CHANGELOG.md` are read from `AppContext.BaseDirectory`. → Spike task 1: install a local manifest, run it, print both, and move the two files into the bundle (embedded resources) if either lands in the links folder.
-- **[A zip that winget extracts only in part]** The schema says one nested installer file is run; whether the other files in the archive are kept is not stated. → The same spike checks that `libonigwrap.dll` and the notes sit beside the executable after install; if not, `IncludeNativeLibrariesForSelfExtract` and an embedded changelog replace them.
+- **[The exe's path or base folder is wrong behind winget's link]** `TabScripts` is built from `Environment.ProcessPath`; `vantage.ico` and `CHANGELOG.md` are read from `AppContext.BaseDirectory`. → Spike task 1 (3 November 2026): through the link both are the links folder, so `ProgramFolder.Of` follows the link to the package folder, where the files are; no embedding is needed.
+- **[A zip that winget extracts only in part]** The schema says one nested installer file is run; whether the other files in the archive are kept is not stated. → The spike found every file of the zip beside the executable after install.
 - **[Unsigned executable]** SmartScreen or a managed machine's policy may block it. → Out of scope here; a signing decision follows if reports arrive.
 - **[Download size]** about 34 MB against a small package. → Accepted; winget caches nothing but the download is once per upgrade.
 - **[winget-pkgs review delay]** The first submission is reviewed by a person, later ones are validated automatically but can wait in a queue. → The update check follows what is merged, so users are never offered an unmerged version; the cost is a delay, not a failure.

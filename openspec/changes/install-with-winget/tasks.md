@@ -2,7 +2,7 @@
 
 ## 1. Spike: what winget does with the build
 
-- [ ] 1.1 Publish the self-contained single-file build, write a local manifest (`winget settings --enable LocalManifestFiles`) for its zip with the portable alias `vantage`, run `winget install --manifest`, and record in `.claude\rules\windows.md` (dated, with the winget version): what `Environment.ProcessPath` and `AppContext.BaseDirectory` resolve to when run through the link, whether `libonigwrap.dll`, `CHANGELOG.md` and `vantage.ico` are extracted beside the executable, whether the install folder survives `winget upgrade`, and the exit code and message when the upgrade finds the executable locked. Verify by the recorded facts; if a path is wrong, add a task to group 2 to embed the file.
+- [x] 1.1 Publish the self-contained single-file build, write a local manifest (`winget settings --enable LocalManifestFiles`) for its zip with the portable alias `vantage`, run `winget install --manifest`, and record in `.claude\rules\windows.md` (dated, with the winget version): what `Environment.ProcessPath` and `AppContext.BaseDirectory` resolve to when run through the link, whether `libonigwrap.dll`, `CHANGELOG.md` and `vantage.ico` are extracted beside the executable, whether the install folder survives `winget upgrade`, and the exit code and message when the upgrade finds the executable locked. Verify by the recorded facts; if a path is wrong, add a task to group 2 to embed the file.
 - [x] 1.2 Run `dotnet run -- smoke <exe> Northwind.Smoke-smoke` from `tools\HeadlessTerminal` against the unzipped `vantage.exe` and verify exit 0.
 
 ## 2. The build
