@@ -49,8 +49,6 @@ public sealed record ConfirmedProcess
     /// </summary>
     public static bool TryConfirmParent(int parentId, DateTimeOffset? parentStartedAt, ConfirmedProcess child, [MaybeNullWhen(false)] out ConfirmedProcess parent)
     {
-        ArgumentNullException.ThrowIfNull(child);
-
         parent = parentStartedAt is DateTimeOffset started && started <= child.StartedAt ? new ConfirmedProcess(parentId, started) : null;
 
         return parent is not null;

@@ -14,7 +14,6 @@ public static class TextFit
     /// </summary>
     public static string ElideMiddle(string text, int width)
     {
-        ArgumentNullException.ThrowIfNull(text);
         ArgumentOutOfRangeException.ThrowIfNegative(width);
 
         if (text.Length <= width)
