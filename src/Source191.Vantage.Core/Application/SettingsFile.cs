@@ -11,7 +11,6 @@ public static class SettingsFile
 {
     public static Settings From(VantageConfig config, FolderPath home)
     {
-        ArgumentNullException.ThrowIfNull(config);
         IReadOnlyList<FolderPath> roots = [.. (config.RepositoryRoots ?? []).Parsed<FolderPath>()];
         WorktreeRootChoice worktreeRoot = FolderPath.TryParse(config.WorktreeRoot, out FolderPath? parsed) ? new WorktreeRootChoice.At(parsed) : new WorktreeRootChoice.BesideFirstRoot();
 
@@ -27,7 +26,6 @@ public static class SettingsFile
 
     public static VantageConfig ToConfig(Settings settings)
     {
-        ArgumentNullException.ThrowIfNull(settings);
         EditorChoice editor = settings.Editor;
         EditorSetting setting = editor.Preset == EditorPreset.Custom
             ? new EditorSetting(editor.Preset.ToString(), editor.Executable, editor.Arguments)

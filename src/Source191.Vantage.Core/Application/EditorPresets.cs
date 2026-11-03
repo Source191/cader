@@ -12,8 +12,6 @@ public sealed class EditorPresets(IEditorLocator locator)
 {
     private static readonly EditorPreset[] LookedFor = [EditorPreset.VsCode, EditorPreset.VisualStudio, EditorPreset.Rider];
 
-    private readonly IEditorLocator locator = locator ?? throw new ArgumentNullException(nameof(locator));
-
     public async Task<IReadOnlySet<EditorPreset>> MissingAsync(CancellationToken cancellationToken)
     {
         ProgramLocation[] locations = await Task.WhenAll(LookedFor.Select(preset => locator.LocateAsync(preset, cancellationToken)));

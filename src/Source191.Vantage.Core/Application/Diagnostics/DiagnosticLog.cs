@@ -15,7 +15,6 @@ public sealed class DiagnosticLog(TimeProvider clock, IReadOnlyList<IDiagnosticS
 
     public void Record(DiagnosticEvent diagnostic)
     {
-        ArgumentNullException.ThrowIfNull(diagnostic);
         TimedEvent timed = new(clock.GetUtcNow(), diagnostic);
         lock (gate)
         {

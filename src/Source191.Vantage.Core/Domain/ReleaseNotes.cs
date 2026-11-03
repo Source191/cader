@@ -51,9 +51,6 @@ public sealed record ReleaseNotes
     /// <summary>The released (never prerelease) sections after <paramref name="after"/> up to and including <paramref name="upTo"/>, newest first, without their Internal entries.</summary>
     public IReadOnlyList<ReleaseSection> Between(ReleaseVersion after, ReleaseVersion upTo)
     {
-        ArgumentNullException.ThrowIfNull(after);
-        ArgumentNullException.ThrowIfNull(upTo);
-
         return [.. Sections
             .Where(section => !section.Version.IsPrerelease && section.Version > after && section.Version <= upTo)
             .OrderByDescending(section => section.Version)

@@ -129,16 +129,6 @@ public sealed class WingetPackageVersionsShould
     }
 
     [Fact]
-    public void RefuseANullVersion()
-    {
-        using StubHandler handler = new(_ => Json("[]"));
-
-        ArgumentNullException refused = Should.Throw<ArgumentNullException>(() => new WingetPackageVersions(null!, handler));
-
-        refused.ParamName.ShouldBe("version");
-    }
-
-    [Fact]
     public void GiveUpAfterThreeSeconds()
     {
         WingetPackageVersions.Timeout.ShouldBe(TimeSpan.FromSeconds(3));

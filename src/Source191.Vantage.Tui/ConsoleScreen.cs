@@ -37,8 +37,8 @@ public sealed class ConsoleScreen(
 {
     private readonly Func<CancellationToken, Task<ViewInput>> loadSessions = loadSessions;
     private readonly Func<CancellationToken, Task<ViewInput>> scanWorktrees = scanWorktrees;
-    private readonly RunningLoads listings = listings ?? throw new ArgumentNullException(nameof(listings));
-    private readonly RunningLoads scans = scans ?? throw new ArgumentNullException(nameof(scans));
+    private readonly RunningLoads listings = listings;
+    private readonly RunningLoads scans = scans;
     private readonly Func<CancellationToken, Task<ViewInput>> readConfig = readConfig;
     private readonly Func<IReadOnlyList<ConfigRow>> settingRows = settingRows;
     private readonly StateTransitionNotifier notifier = notifier;

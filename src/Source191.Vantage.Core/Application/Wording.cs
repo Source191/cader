@@ -107,12 +107,7 @@ public static partial class Wording
     public static IReadOnlyList<string> ProblemReportButtons { get; } = ["Open in browser", "Copy text", "Cancel"];
 
     /// <summary>The title of a report whose title box was left blank.</summary>
-    public static string DefaultReportTitle(ToolVersion version)
-    {
-        ArgumentNullException.ThrowIfNull(version);
-
-        return $"Problem report from Vantage {version.Text}";
-    }
+    public static string DefaultReportTitle(ToolVersion version) => $"Problem report from Vantage {version.Text}";
 
     public static string Describe(StatusMessage message)
     {
@@ -236,8 +231,6 @@ public static partial class Wording
     /// <summary>A preset as the Open folder with dialog lists it, marked once the dialog has looked and could not find it; Explorer and Custom are never marked.</summary>
     public static string Describe(EditorPreset preset, PresetSearch search)
     {
-        ArgumentNullException.ThrowIfNull(search);
-
         return search switch
         {
             PresetSearch.Looked looked when preset is not (EditorPreset.Explorer or EditorPreset.Custom) && looked.Missing.Contains(preset) => $"{Describe(preset)} (not found)",
@@ -322,7 +315,6 @@ public static partial class Wording
     /// <summary>The breakdown dialog's text: Claude Code, each program with its subtree's memory, then the total with the process count, figures right-aligned.</summary>
     public static string MemoryBreakdownLines(MemoryBreakdown breakdown)
     {
-        ArgumentNullException.ThrowIfNull(breakdown);
         const string claudeCode = "Claude Code";
         const string total = "Total";
         const int figureWidth = 7;

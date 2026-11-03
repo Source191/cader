@@ -20,7 +20,7 @@ public sealed class WingetPackageVersions(ToolVersion version, HttpMessageHandle
     private static readonly Uri Manifests = new("https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/");
     private static readonly Uri Changelogs = new("https://raw.githubusercontent.com/Source191/vantage/");
 
-    private readonly HttpClient client = ClientFor(version ?? throw new ArgumentNullException(nameof(version)), handler);
+    private readonly HttpClient client = ClientFor(version, handler);
 
     /// <summary>The names of the package's version folders that read as stable versions; a prerelease or any other folder or file is left out.</summary>
     public async Task<VersionListing> ListAsync(string packageId, CancellationToken cancellationToken)
@@ -59,7 +59,6 @@ public sealed class WingetPackageVersions(ToolVersion version, HttpMessageHandle
     public async Task<PackageNotes> NotesAsync(string packageId, ReleaseVersion version, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
-        ArgumentNullException.ThrowIfNull(version);
         try
         {
             using HttpResponseMessage response = await client.GetAsync(new Uri(Changelogs, $"v{version}/CHANGELOG.md"), cancellationToken);

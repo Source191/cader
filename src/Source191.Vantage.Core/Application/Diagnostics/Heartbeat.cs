@@ -20,9 +20,6 @@ public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, Diagnostic
 
     public static readonly TimeSpan Sleep = TimeSpan.FromSeconds(30);
 
-    private readonly TimeProvider clock = clock ?? throw new ArgumentNullException(nameof(clock));
-    private readonly StallCounts stalls = stalls ?? throw new ArgumentNullException(nameof(stalls));
-    private readonly DiagnosticLog log = log ?? throw new ArgumentNullException(nameof(log));
     private long previous;
     private bool beaten;
 

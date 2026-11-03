@@ -13,8 +13,6 @@ public static class TestProcesses
     /// <summary>The process as the registry reports it running; the registry must know its start time.</summary>
     public static ConfirmedProcess Confirmed(IProcessRegistry processes, int processId)
     {
-        ArgumentNullException.ThrowIfNull(processes);
-
         return Confirmed(processId, processes.StartTimeOf(processId) ?? throw new InvalidOperationException($"Process {processId} is not running in the fake"));
     }
 }

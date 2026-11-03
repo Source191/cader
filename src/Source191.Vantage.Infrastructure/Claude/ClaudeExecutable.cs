@@ -17,8 +17,6 @@ public static class ClaudeExecutable
 
     public static ClaudeLocation Locate(IFolders folders, IReadOnlyList<string> pathFolders, string home)
     {
-        ArgumentNullException.ThrowIfNull(folders);
-        ArgumentNullException.ThrowIfNull(pathFolders);
         string native = Path.Combine(home, ".local", "bin", "claude.exe");
         if (folders.FileExists(native))
         {

@@ -47,10 +47,6 @@ public sealed record Settings
     /// </summary>
     public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates = ChecksForUpdatesWhenUnset, LaunchMode defaultPlace = PlaceWhenUnset)
     {
-        ArgumentNullException.ThrowIfNull(roots);
-        ArgumentNullException.ThrowIfNull(worktreeRoot);
-        ArgumentNullException.ThrowIfNull(editor);
-        ArgumentNullException.ThrowIfNull(home);
         IReadOnlyList<FolderPath> resolvedRoots = roots is { Count: > 0 } ? roots : [home.Combine(Path.Combine("source", "repos"))];
         FolderPath first = resolvedRoots[0];
         FolderPath resolvedWorktreeRoot = worktreeRoot switch
@@ -70,9 +66,6 @@ public sealed record Settings
     /// </summary>
     public static SettingsValidation Validate(SettingsText text, Func<string, bool> folderExists, Func<string, bool> fileExists)
     {
-        ArgumentNullException.ThrowIfNull(text);
-        ArgumentNullException.ThrowIfNull(folderExists);
-        ArgumentNullException.ThrowIfNull(fileExists);
         List<string> lines = [.. text.Roots.Split('\n').Select(line => line.Trim()).Where(line => line.Length > 0)];
         List<FolderPath> roots = [];
         foreach (string line in lines)

@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Source191.Vantage</RootNamespace>
     <AssemblyName>vantage</AssemblyName>
-    <Version>0.20.0-preview.31</Version>
+    <Version>0.20.0-preview.32</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>Simon Vane</Authors>
     <Description>Mission control for Claude Code sessions: every session in one tab, still there after a reboot.</Description>
