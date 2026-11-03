@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Says how Vantage reaches a machine: installed and upgraded with winget as a self-contained program, with the prerequisites winget can bring, previews tried from a zip, and a dotnet tool install moved across.
+Says how Vantage reaches a machine: installed and upgraded with winget as a self-contained program, with the prerequisites winget can bring, and previews tried from a zip.
 
 ## ADDED Requirements
 
@@ -68,18 +68,3 @@ A preview SHALL be installable from the zip of a pull request check's artefact o
 #### Scenario: A winget install is present
 - **WHEN** a winget-installed Vantage exists and a preview is installed locally
 - **THEN** the `vantage` command on the PATH still runs the winget-installed version
-
-### Requirement: A dotnet tool install offers to move to winget
-A Vantage installed as a dotnet tool SHALL say, in its header and on the update key, that Vantage is now installed with winget, and the update key SHALL after confirmation run `winget install Source191.Vantage`, then `dotnet tool uninstall -g Source191.Vantage` only when the install succeeded, then start the winget-installed Vantage. This applies only to the last release published to nuget.org.
-
-#### Scenario: Moving across
-- **WHEN** a dotnet tool Vantage runs, winget has Vantage 0.21.0, and the user presses U and confirms
-- **THEN** a tab opens, Vantage quits, the tab waits for it, installs the winget package, uninstalls the dotnet tool and starts the new Vantage
-
-#### Scenario: The winget install fails
-- **WHEN** `winget install Source191.Vantage` fails in the tab
-- **THEN** the dotnet tool is not uninstalled, the tab stays open showing winget's output and Vantage is not started again
-
-#### Scenario: Declined
-- **WHEN** the user presses U and chooses Later or presses Esc
-- **THEN** nothing is installed or uninstalled and Vantage stays on the same view and selection

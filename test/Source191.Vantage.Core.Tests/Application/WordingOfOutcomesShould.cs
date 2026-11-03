@@ -68,15 +68,9 @@ public sealed class WordingOfOutcomesShould
     }
 
     [Fact]
-    public void SayTheMoveToWingetStarted()
+    public void SayWingetIsMissingAndWhereToGetTheRelease()
     {
-        Wording.Describe(new MoveToWingetStartedOutcome("0.21.0")).ShouldBe("Moving to winget in a new tab; Vantage 0.21.0 starts there when it is done.");
-    }
-
-    [Fact]
-    public void SayWhichProgramTheUpdateNeedsAndWhereToGetTheRelease()
-    {
-        Wording.Describe(new UpdaterMissingOutcome("winget", "0.21.0")).ShouldBe("winget was not found on the PATH, so Vantage cannot install 0.21.0 itself: press U and choose Release page to download it.");
+        Wording.Describe(new WingetMissingOutcome("0.21.0")).ShouldBe("winget was not found on the PATH, so Vantage cannot install 0.21.0 itself: press U and choose Release page to download it.");
     }
 
     [Fact]

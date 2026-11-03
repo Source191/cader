@@ -43,19 +43,4 @@ public sealed class PowerShellQuotingShould
         result.ExitCode.ShouldBe(0, result.StandardError);
         result.StandardOutput.Trim().ShouldBe("0");
     }
-
-    /// <summary>The move tab's script is only parsed, never run: running it would install Vantage and uninstall the tool.</summary>
-    [Fact]
-    public async Task ParseTheMoveTabScriptWithoutErrors()
-    {
-        string move = TabScripts.Migrate(4242, Domain.FolderPath.From(@"C:\Users\O'Neill"), @"C:\Users\O'Neill\AppData\Local\Microsoft\WindowsApps\winget.exe", @"C:\Program Files\dotnet\dotnet.exe", Domain.FolderPath.From(@"C:\Users\O'Neill\AppData\Local"))
-            .Script;
-        string script = $"$errors = $null\n[void][System.Management.Automation.Language.Parser]::ParseInput({PowerShellScript.Quote(move)}, [ref]$null, [ref]$errors)\nWrite-Output $errors.Count";
-        ProcessRequest request = new("pwsh.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(script)], WorkingFolder.Inherit);
-
-        ProcessResult result = await new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(request, TestContext.Current.CancellationToken);
-
-        result.ExitCode.ShouldBe(0, result.StandardError);
-        result.StandardOutput.Trim().ShouldBe("0");
-    }
 }

@@ -2,21 +2,18 @@ name: release
 
 # Runs only on a push to main, never on a pull request: a release comes from a merge. It is a
 # no-op unless this push changed Version in src/Source191.Vantage/Source191.Vantage.csproj, so
-# bumping the version (already required because the tool cache keeps a version for ever) is the
-# same action that decides whether a release happens. Every release carries the winget build's zip and,
-# while nuget.org users are moved to winget, the nupkg. A stable release's zip is then submitted to the
-# winget community repository (the winget job); a prerelease never is. Publishing to nuget.org is never
-# done from here: publish.yml pushes a tested release's package by hand, for the one release that moves
-# dotnet tool users to winget, and verifies its provenance attestation before it pushes.
+# bumping the version (already required, because each merge that changes the program is a release) is the
+# same action that decides whether a release happens. Every release carries the winget build's zip; a stable
+# release's zip is then submitted to the winget community repository (the winget job), and a prerelease never is.
 on:
   push:
     branches: [main]
 
 jobs:
   # Builds and tests with read rights only, so the version check, the restore and the tests never hold a token that
-  # can write to the repository or sign anything. The package and the zip travel to the release job as an artefact.
+  # can write to the repository or sign anything. The zip travels to the release job as an artefact.
   build:
-    name: Build the package if the version changed
+    name: Build the zip if the version changed
     runs-on: windows-latest
     timeout-minutes: 20
     permissions:
@@ -70,40 +67,39 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         id: build
 
-      # A stable release's notes start with its CHANGELOG.md section, written beside the package so the artefact stays
-      # flat; a prerelease's file is empty and unused. The release job checks nothing out, so the notes travel with the package.
+      # A stable release's notes start with its CHANGELOG.md section, written beside the zip so the artefact stays
+      # flat; a prerelease's file is empty and unused. The release job checks nothing out, so the notes travel with the zip.
       - name: Write the release notes
         id: notes
         if: steps.check.outputs.changed == 'true'
         shell: pwsh
         env:
           VERSION: ${{ steps.check.outputs.version }}
-          PACKAGE: ${{ steps.build.outputs.package }}
+          ZIP: ${{ steps.build.outputs.zip }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $notes = Join-Path (Split-Path $env:PACKAGE) 'release-notes.md'
+          $notes = Join-Path (Split-Path $env:ZIP) 'release-notes.md'
           .github/scripts/Write-ReleaseNotes.ps1 -Version $env:VERSION -Destination $notes
           "path=$notes" >> $env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.check.outputs.changed == 'true'
         with:
-          name: package
+          name: release
           path: |
-            ${{ steps.build.outputs.package }}
             ${{ steps.build.outputs.zip }}
             ${{ steps.notes.outputs.path }}
           if-no-files-found: error
 
-  # Attests and publishes the package and the zip the build job made, and nothing else: it checks nothing out and runs
-  # no build, so the write and signing rights are held only by steps that download, attest and call gh.
+  # Attests and publishes the zip the build job made, and nothing else: it checks nothing out and runs no build, so the
+  # write and signing rights are held only by steps that download, attest and call gh.
   release:
     name: Publish the release
     needs: build
     if: needs.build.outputs.changed == 'true'
     runs-on: windows-latest
     timeout-minutes: 10
-    # contents to publish the release; id-token and attestations to sign the package's provenance.
+    # contents to publish the release; id-token and attestations to sign the zip's provenance.
     permissions:
       contents: write
       id-token: write
@@ -111,38 +107,27 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: package
-          path: package
+          name: release
+          path: release
 
-      # upload-artifact keeps the files' paths below their common folder, so the zip may sit in a subfolder.
-      - name: Find the package and the zip
-        id: package
+      - name: Find the zip
+        id: zip
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $packages = @(Get-ChildItem package -Recurse -Filter *.nupkg)
-          if ($packages.Count -ne 1) {
-              throw "Expected exactly one .nupkg in the build's artefact, found $($packages.Count)."
-          }
-          $zips = @(Get-ChildItem package -Recurse -Filter 'vantage_*_win-x64.zip')
+          $zips = @(Get-ChildItem release -Filter 'vantage_*_win-x64.zip')
           if ($zips.Count -ne 1) {
               throw "Expected exactly one vantage_<version>_win-x64.zip in the build's artefact, found $($zips.Count)."
           }
-          $notes = @(Get-ChildItem package -Recurse -Filter release-notes.md)
-          "path=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
-          "zip=$($zips[0].FullName)" >> $env:GITHUB_OUTPUT
-          "notes=$(if ($notes.Count -eq 1) { $notes[0].FullName })" >> $env:GITHUB_OUTPUT
+          "path=$($zips[0].FullName)" >> $env:GITHUB_OUTPUT
 
-      # Signed build provenance for the package and the zip: which commit and workflow built them, kept by GitHub.
-      # publish.yml checks the package's with gh attestation verify before it pushes anything to nuget.org, and anyone
-      # can check the zip's before an install. The attestation is made on the downloaded bytes, which are the ones released.
+      # Signed build provenance for the zip: which commit and workflow built it, kept by GitHub, so anyone can check it
+      # with gh attestation verify before an install. The attestation is made on the downloaded bytes, which are the ones released.
       # (https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds,
       # https://cli.github.com/manual/gh_attestation_verify)
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: |
-            ${{ steps.package.outputs.path }}
-            ${{ steps.package.outputs.zip }}
+          subject-path: ${{ steps.zip.outputs.path }}
 
       # gh is on the runner, so no third-party action is needed for the release itself. A version with a
       # prerelease label (0.16.2-preview.1; the csproj never carries build metadata) is published as a
@@ -155,17 +140,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
-          PACKAGE: ${{ steps.package.outputs.path }}
-          ZIP: ${{ steps.package.outputs.zip }}
-          NOTES: ${{ steps.package.outputs.notes }}
+          ZIP: ${{ steps.zip.outputs.path }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $arguments = @("v$env:VERSION", $env:PACKAGE, $env:ZIP, '--repo', $env:GITHUB_REPOSITORY, '--title', "v$env:VERSION", '--generate-notes', '--target', $env:GITHUB_SHA)
+          $arguments = @("v$env:VERSION", $env:ZIP, '--repo', $env:GITHUB_REPOSITORY, '--title', "v$env:VERSION", '--generate-notes', '--target', $env:GITHUB_SHA)
           if ($env:VERSION.Contains('-')) {
               $arguments += '--prerelease'
           }
           else {
-              $arguments += '--notes-file', $env:NOTES
+              $arguments += '--notes-file', (Join-Path (Split-Path $env:ZIP) 'release-notes.md')
               $previous = gh release list --repo $env:GITHUB_REPOSITORY --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName'
               if ($LASTEXITCODE -ne 0) {
                   throw "gh release list failed with exit code $LASTEXITCODE."

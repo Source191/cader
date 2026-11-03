@@ -28,7 +28,7 @@ dotnet run -- count drive-raw.txt "Not the same: you typed x." "Cancelled; nothi
 - A comma separates `drive` steps, so a comma key is written `\u002c`.
 - The pure parts (script parsing, query replies, command-line quoting, escape stripping, marker counting and matching, screen replay, the smoke script) are unit tested in `tools\HeadlessTerminal.Tests`, with the step runner and the pseudo-console driven against short `pwsh` children.
 
-Every Vantage the tool starts gets `VANTAGE_NO_UPDATE_CHECK=1`, so a run never contacts nuget.org or writes `update-check.json`.
+Every Vantage the tool starts gets `VANTAGE_NO_UPDATE_CHECK=1`, so a run never contacts GitHub or writes `update-check.json`.
 
 - **`AllowUnsafeBlocks`:** the `[LibraryImport]` source generator behind the ConPTY calls in `NativeMethods` refuses to run without it; the project writes no `unsafe` code of its own.
 - **`InvariantGlobalization`:** the tool runs in the invariant globalisation mode Vantage ships in; it ships nothing itself, so the setting only matches the tests' conditions to the tool's.

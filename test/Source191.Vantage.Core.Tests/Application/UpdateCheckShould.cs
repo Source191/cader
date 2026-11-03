@@ -140,7 +140,7 @@ public sealed class UpdateCheckShould
     {
         packages.Answer = new VersionListing.Listed(["0.10.0"]);
         bool enabled = true;
-        UpdateCheck check = new(Running, InstallChannel.Winget, () => enabled, state, packages, clock);
+        UpdateCheck check = new(Running, () => enabled, state, packages, clock);
         await check.RunAsync(TestContext.Current.CancellationToken);
 
         enabled = false;
@@ -293,46 +293,6 @@ public sealed class UpdateCheckShould
         await check.RunAsync(TestContext.Current.CancellationToken);
 
         check.Status.ShouldBe(new UpdateStatus.UpToDate(), customMessage: "a GitHub Release whose manifest is not merged is not in the listing, so 0.10.0 is never offered");
-        check.Offers.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task OfferADotnetToolInstallTheMoveOnceWingetHasItsVersion()
-    {
-        packages.Answer = new VersionListing.Listed(["0.9.0"]);
-        UpdateCheck check = Check(Running, channel: InstallChannel.DotnetTool);
-
-        await check.RunAsync(TestContext.Current.CancellationToken);
-
-        check.Status.ShouldBe(new UpdateStatus.MoveToWinget(Current, Current));
-        check.Offers.ShouldBeTrue();
-        packages.NotesAskedFor.ShouldBeEmpty();
-        check.TakeAnnouncement().ShouldBe(StatusMessage.None);
-    }
-
-    [Fact]
-    public async Task RecordTheNotesOfANewerReleaseWhenMoving()
-    {
-        packages.Answer = new VersionListing.Listed(["0.10.0"]);
-        packages.Notes["0.10.0"] = NewerNotes;
-        UpdateCheck check = Check(Running, channel: InstallChannel.DotnetTool);
-
-        await check.RunAsync(TestContext.Current.CancellationToken);
-
-        check.Status.ShouldBe(new UpdateStatus.MoveToWinget(Current, Newer));
-        packages.NotesAskedFor.ShouldBe([Newer]);
-        check.Notes.ShouldBe(Notes(NewerNotes));
-    }
-
-    [Fact]
-    public async Task OfferAnUpdate()
-    {
-        packages.Answer = new VersionListing.Listed(["0.10.0"]);
-        UpdateCheck check = Check(Running);
-
-        await check.RunAsync(TestContext.Current.CancellationToken);
-
-        check.Offers.ShouldBeTrue();
     }
 
     private static ReleaseNotes Notes(string text)
@@ -342,5 +302,5 @@ public sealed class UpdateCheckShould
         return notes;
     }
 
-    private UpdateCheck Check(ToolVersion running, bool enabled = true, InstallChannel channel = InstallChannel.Winget) => new(running, channel, () => enabled, state, packages, clock);
+    private UpdateCheck Check(ToolVersion running, bool enabled = true) => new(running, () => enabled, state, packages, clock);
 }

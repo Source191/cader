@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     The build goes to %LOCALAPPDATA%\Vantage\local, replacing whatever an earlier run put there. Nothing is added to the
-    PATH and no winget or dotnet tool install is touched, so the `vantage` command still runs the installed release; run
+    PATH and no winget install is touched, so the `vantage` command still runs the installed release; run
     the local build by the printed path.
 
     A local build is published as <Version>-local.<UTC timestamp>, a prerelease, so it never checks for updates or offers

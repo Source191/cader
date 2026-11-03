@@ -20,41 +20,6 @@ public sealed class WordingOfReleaseNotesShould
     }
 
     [Fact]
-    public void TitleTheMoveToWinget()
-    {
-        Wording.WhatsNewBeforeMoveTitle(ReleaseVersions.Version("0.21.0"), ReleaseVersions.Version("0.21.0")).ShouldBe("Move Vantage 0.21.0 to winget");
-        Wording.WhatsNewBeforeMoveTitle(ReleaseVersions.Version("0.21.0"), ReleaseVersions.Version("0.22.0")).ShouldBe("Move Vantage 0.21.0 to winget, 0.22.0");
-    }
-
-    [Fact]
-    public void NameTheMoveButton()
-    {
-        Wording.MoveNowButton.ShouldBe("Move now");
-    }
-
-    [Fact]
-    public void SayWhatTheMoveDoesWithNoNotesForTheSameVersion()
-    {
-        Wording.WhatsNewBeforeMove([]).ShouldBe(
-        [
-            "Vantage is now installed with winget, and this dotnet tool gets no more releases.",
-            string.Empty,
-            "Move now quits Vantage and, in a new tab, installs Vantage with winget, uninstalls the dotnet tool once that worked and starts the new Vantage; background sessions keep running.",
-        ]);
-    }
-
-    [Fact]
-    public void ListWhatChangedBeforeTheMoveToANewerRelease()
-    {
-        IReadOnlyList<ReleaseSection> sections = Sections(ReleaseVersions.Version("0.20.0"), ReleaseVersions.Version("0.21.0"));
-
-        IReadOnlyList<string> lines = Wording.WhatsNewBeforeMove(sections);
-
-        lines[0].ShouldBe("0.21.0");
-        lines[^3].ShouldBe("Vantage is now installed with winget, and this dotnet tool gets no more releases.");
-    }
-
-    [Fact]
     public void NameTheButtons()
     {
         Wording.UpdateNowButton.ShouldBe("Update now");

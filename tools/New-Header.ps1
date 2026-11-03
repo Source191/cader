@@ -22,7 +22,7 @@ $ErrorActionPreference = 'Stop'
 
 $title = 'Vantage'
 $tagline = 'Mission control for Claude Code sessions:', 'every session in one tab,', 'still there after a reboot.'
-$install = 'dotnet tool install -g Source191.Vantage'
+$install = 'winget install Source191.Vantage'
 
 function Get-FontFamily([string]$name) {
     # FontFamily throws for a family that is not installed, where Font would quietly substitute another.

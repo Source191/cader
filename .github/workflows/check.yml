@@ -103,9 +103,9 @@ jobs:
         shell: pwsh
         run: .github/scripts/Assert-VersionBumped.ps1 -Base HEAD^1 -Head HEAD
 
-      # The same comparison for CHANGELOG.md, the release notes the package carries: a change to the packaged tool adds a
-      # line under Unreleased, a change that raises Version to a stable version turns Unreleased into that version's
-      # section, and the file stays under nuget.org's 35,000 characters (CONTRIBUTING.md, Pull requests).
+      # The same comparison for CHANGELOG.md, the release notes the zip carries: a change to the packaged tool adds a
+      # line under Unreleased, and a change that raises Version to a stable version turns Unreleased into that version's
+      # section (CONTRIBUTING.md, Pull requests).
       - name: Check the changelog was updated
         if: github.event_name == 'pull_request' && steps.bump.outputs.pushed != 'true'
         shell: pwsh

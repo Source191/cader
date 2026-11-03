@@ -41,8 +41,7 @@ public static partial class Wording
             ProblemReportOutcome.NotOpened notOpened => $"Could not open the browser: {notOpened.Reason} Press ! and choose Copy text instead.",
             ProblemReportOutcome.Copied => "Copied the problem report to the clipboard.",
             UpdateStartedOutcome update => $"Updating to {update.Newest} in a new tab; Vantage starts again there when it is done.",
-            MoveToWingetStartedOutcome move => $"Moving to winget in a new tab; Vantage {move.Newest} starts there when it is done.",
-            UpdaterMissingOutcome missing => $"{missing.Program} was not found on the PATH, so Vantage cannot install {missing.Newest} itself: press U and choose Release page to download it.",
+            WingetMissingOutcome missing => $"winget was not found on the PATH, so Vantage cannot install {missing.Newest} itself: press U and choose Release page to download it.",
             _ => outcome.ToString(),
         };
     }
@@ -79,8 +78,7 @@ public static partial class Wording
             ProblemReportOutcome.NotOpened => StatusTone.Failure,
             ProblemReportOutcome.Copied => StatusTone.Success,
             UpdateStartedOutcome => StatusTone.Success,
-            MoveToWingetStartedOutcome => StatusTone.Success,
-            UpdaterMissingOutcome => StatusTone.Failure,
+            WingetMissingOutcome => StatusTone.Failure,
             _ => StatusTone.Notice,
         };
     }

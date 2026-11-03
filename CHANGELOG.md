@@ -29,7 +29,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Changed
 
-- U upgrades Vantage with winget, and the daily update check asks the winget community repository, so a release is offered only once winget can install it; a Vantage installed as a dotnet tool says it is now installed with winget, and U moves it there, removing the dotnet tool once winget has installed it (#206)
+- U upgrades Vantage with winget, and the daily update check asks the winget community repository, so a release is offered only once winget can install it (#206)
 - The Worktrees table's LAST COMMIT column is right-aligned, as AGE is on the Sessions tab, so the durations line up (#190)
 - Removing a worktree on a detached head, or whose head git could not name, deletes no branch and asks about none; the folder's name no longer stands in for a branch (#186)
 - The update notice in the settings row is amber (#180)
@@ -71,7 +71,7 @@ What changes in each release of Vantage, written for the people who use it. The 
 
 ### Removed
 
-- Installing Vantage and its previews from nuget.org: previews are the zip on each GitHub prerelease, which tools\install-local.ps1 -FromArtifact extracts (#206)
+- Vantage is no longer a dotnet tool on nuget.org: install it with winget, and try a preview from the zip on its GitHub prerelease, which tools\install-local.ps1 -FromArtifact extracts (#206)
 - The a key (native agent view); run claude agents in any shell instead (#95)
 - The w and , keys and the settings dialog, replaced by the Config tab (#117)
 - o on the Sessions tab, F6 in the wizard and starting a session without a tab (#128)

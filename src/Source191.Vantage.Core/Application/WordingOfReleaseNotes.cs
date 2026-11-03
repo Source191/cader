@@ -25,32 +25,6 @@ public static partial class Wording
     public static IReadOnlyList<string> WhatsNewBeforeUpdate(IReadOnlyList<ReleaseSection> sections) =>
         [.. WhatsNewLines(sections), string.Empty, "Update now quits Vantage and updates it in a new tab; background sessions keep running."];
 
-    /// <summary>The button that moves a dotnet tool install to winget, in Update now's place.</summary>
-    public static string MoveNowButton => "Move now";
-
-    /// <summary>The dialog's title before the move to winget: the running version, and winget's when it is newer.</summary>
-    public static string WhatsNewBeforeMoveTitle(ReleaseVersion current, ReleaseVersion newest)
-    {
-        ArgumentNullException.ThrowIfNull(newest);
-
-        return newest.IsHigherThan(current) ? $"Move Vantage {current} to winget, {newest}" : $"Move Vantage {current} to winget";
-    }
-
-    /// <summary>The dialog's lines before the move to winget: what changed when winget's release is newer, then why and what Move now does.</summary>
-    public static IReadOnlyList<string> WhatsNewBeforeMove(IReadOnlyList<ReleaseSection> sections)
-    {
-        ArgumentNullException.ThrowIfNull(sections);
-        IReadOnlyList<string> changes = sections.Count == 0 ? [] : [.. WhatsNewLines(sections), string.Empty];
-
-        return
-        [
-            .. changes,
-            "Vantage is now installed with winget, and this dotnet tool gets no more releases.",
-            string.Empty,
-            "Move now quits Vantage and, in a new tab, installs Vantage with winget, uninstalls the dotnet tool once that worked and starts the new Vantage; background sessions keep running.",
-        ];
-    }
-
     /// <summary>The dialog's lines on the first start of a new version: what changed, newest release first.</summary>
     public static IReadOnlyList<string> WhatsNewAfterUpdate(IReadOnlyList<ReleaseSection> sections) => WhatsNewLines(sections);
 

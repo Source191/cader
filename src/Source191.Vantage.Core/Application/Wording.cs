@@ -56,8 +56,6 @@ public static partial class Wording
 
     public static string UpdateTabTitle => "Update Vantage";
 
-    public static string MoveTabTitle => "Move Vantage to winget";
-
     public static string NotTheSame(string typed) => $"Not the same: you typed {typed}.";
 
     public static string CopiedToClipboard(string expected) => $"Copied {expected} to the clipboard; Ctrl+V pastes it into the box.";
@@ -295,9 +293,6 @@ public static partial class Wording
 
     /// <summary>What the update tab says when winget upgrade fails, under winget's own message.</summary>
     public static string UpdateFailedHint => "Vantage: the upgrade failed. If winget says a file is in use, quit every Vantage that is still open; if it found no newer package, winget may not have this release yet. Then press U in Vantage again.";
-
-    /// <summary>What the move tab says when winget install fails, under winget's own message; the dotnet tool is left as it was.</summary>
-    public static string MoveFailedHint => "Vantage: winget could not install Vantage, so the dotnet tool is still installed. Start vantage again and press U to retry.";
 
     public static string WizardTitle(WizardState wizard) => wizard.Origin switch
     {

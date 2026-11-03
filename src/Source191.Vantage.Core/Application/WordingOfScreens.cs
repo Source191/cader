@@ -55,20 +55,14 @@ public static partial class Wording
         _ => throw new UnreachableException(),
     };
 
-    /// <summary>
-    /// The settings row's Vantage value: the running version and its own process's memory, then, in amber inside the same
-    /// brackets, the newer release with the update key when one is known, or, for a dotnet tool install, the move to winget.
-    /// </summary>
+    /// <summary>The settings row's Vantage value: the running version and its own process's memory, then, in amber inside the same brackets, the newer release with the update key when one is known.</summary>
     private static IReadOnlyList<TextPart> VantageVersion(ToolVersion vantage, UpdateStatus update, MemorySize memory)
     {
         string version = $"{vantage.Text} ({Memory(memory)}";
 
-        return update switch
-        {
-            UpdateStatus.Available available => [Value($"{version}; "), new TextPart($"{available.Newest} available, U to update", TextTone.Amber), Value(")")],
-            UpdateStatus.MoveToWinget => [Value($"{version}; "), new TextPart("now installed with winget, U to move", TextTone.Amber), Value(")")],
-            _ => [Value($"{version})")],
-        };
+        return update is UpdateStatus.Available available
+            ? [Value($"{version}; "), new TextPart($"{available.Newest} available, U to update", TextTone.Amber), Value(")")]
+            : [Value($"{version})")];
     }
 
     /// <summary>The table's title: "7 sessions, selected: fix-123", or "2 of 7 sessions match "templates", selected: templates-sync" while a filter is set.</summary>

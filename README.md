@@ -39,7 +39,6 @@ winget installs Windows Terminal, PowerShell 7 and git first if any of them is m
 
 - **Without winget:** download `vantage_<version>_win-x64.zip` from the [latest release](https://github.com/Source191/vantage/releases/latest), check it with `gh attestation verify <zip> --repo Source191/vantage`, extract it to a folder of your own and add that folder to your PATH. Windows Terminal, PowerShell 7 and git are then yours to install, and `U` can only show what changed and the release page.
 - **Previews:** each preview is a [GitHub prerelease](https://github.com/Source191/vantage/releases) with the same zip; extract it to any folder and run `vantage.exe` from there. It never replaces the winget install, and previews never reach winget.
-- **From the dotnet tool:** a Vantage installed with `dotnet tool install` says in its header that it is now installed with winget; press `U` and choose Move now, which installs it with winget and then removes the dotnet tool.
 
 ## Quick start
 

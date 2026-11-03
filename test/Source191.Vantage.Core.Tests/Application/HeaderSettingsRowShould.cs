@@ -20,7 +20,7 @@ public sealed class HeaderSettingsRowShould
 
     public HeaderSettingsRowShould()
     {
-        updates = new UpdateCheck(Running, InstallChannel.Winget, () => true, state, new FakePackageVersions(["0.20.0"]), clock);
+        updates = new UpdateCheck(Running, () => true, state, new FakePackageVersions(["0.20.0"]), clock);
     }
 
     [Fact]
@@ -57,16 +57,5 @@ public sealed class HeaderSettingsRowShould
 
         before.ShouldBe(Wording.SettingsRow(Running, Claude, new UpdateStatus.UpToDate(), MemorySize.Zero));
         after.ShouldBe(Wording.SettingsRow(Running, Claude, new UpdateStatus.Available(ReleaseVersions.Version("0.20.0"), newer), MemorySize.Zero));
-    }
-
-    [Fact]
-    public async Task ShowTheMoveToWingetForADotnetToolInstallOnceWingetHasItsVersion()
-    {
-        UpdateCheck dotnetTool = new(Running, InstallChannel.DotnetTool, () => true, state, new FakePackageVersions(["0.20.0"]), clock);
-        HeaderSettingsRow header = new(Running, Claude, dotnetTool, processes, VantageProcess);
-
-        await dotnetTool.RunAsync(TestContext.Current.CancellationToken);
-
-        header.Rows(118).Single().Single(part => part.Tone == TextTone.Amber).Text.ShouldBe("now installed with winget, U to move");
     }
 }

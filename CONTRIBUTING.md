@@ -165,14 +165,14 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 
 `.github\workflows\check.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
 
-- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, packs the dotnet tool (kept for the release that moves its users to winget), publishes the self-contained winget build and zips it as `vantage_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `vantage.exe`.
+- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, publishes the self-contained winget build and zips it as `vantage_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `vantage.exe`.
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README, because `DocumentedMinimumShould` reads it.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
 
 ## Versions
 
-Every pull request that changes the packaged tool (anything under `src\`, or `Directory.Build.props`, `global.json` or `nuget.config`) raises `Version` in `src\Source191.Vantage\Source191.Vantage.csproj`, because the tool cache keeps a version for ever and each merge of one is a release. Versions follow [semantic versioning](https://semver.org/):
+Every pull request that changes the packaged tool (anything under `src\`, or `Directory.Build.props`, `global.json` or `nuget.config`) raises `Version` in `src\Source191.Vantage\Source191.Vantage.csproj`, because each merge of one is a release. Versions follow [semantic versioning](https://semver.org/):
 
 - **Patch:** fixes, refactors with no behaviour change, and changes to text.
 - **Minor:** a new key or a new behaviour that keeps existing keys working.
@@ -189,12 +189,11 @@ Releasing and publishing are the owner's; see [MAINTAINING.md](MAINTAINING.md).
 
 ## The changelog
 
-`CHANGELOG.md` is the one source of release notes: the zip carries it beside the program (and the nupkg as its release notes), Vantage reads a newer release's from the changelog at its tag, Vantage's What's new dialog shows it before an update and once after one, and a stable GitHub Release starts with its section. It is written for the people who use Vantage, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)'s shape, which Vantage reads line by line:
+`CHANGELOG.md` is the one source of release notes: the zip carries it beside the program, Vantage reads a newer release's from the changelog at its tag, Vantage's What's new dialog shows it before an update and once after one, and a stable GitHub Release starts with its section. It is written for the people who use Vantage, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)'s shape, which Vantage reads line by line:
 
 - **Where:** every pull request that changes the packaged tool adds one line under `## Unreleased`, below one of the headings `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Security` or `### Internal`, in that order. `Assert-ChangelogUpdated.ps1` fails the pull request otherwise; a change outside the tool needs no line.
 - **How:** one line starting `- `, saying what a user will notice in words they would use, ending with the pull request's number, `(#171)`. Nothing else on the line is read as Markdown, so no links, bold or tables; control characters are dropped.
 - **Internal:** a refactor, a test, tooling or anything else nobody using Vantage can see goes under Internal, which Vantage never shows. Dependabot's pull requests get theirs from `check.yml`, which raises `Version` and runs `Add-InternalChangelogEntry.ps1` with the pull request's title.
-- **Size:** while the nupkg is still packed for the move to winget, nuget.org keeps 35,000 characters of its release notes, and the check fails at that size; the oldest sections then move to `docs\CHANGELOG-earlier.md`, which is not shipped.
 
 ```powershell
 .github\scripts\Assert-ChangelogUpdated.ps1 -Base main -Head HEAD   # the check, locally

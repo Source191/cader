@@ -1,26 +1,22 @@
 name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
-  project against that build, checks whitespace formatting, packs the dotnet tool (kept only for the
-  release that moves nuget.org users to winget), and publishes and zips the self-contained winget
-  build. Shared by check.yml and release.yml so the release never ships a build that the check did not see.
+  project against that build, checks whitespace formatting, then publishes the self-contained winget
+  build and zips it. Shared by check.yml and release.yml so the release never ships a build that the
+  check did not see.
 
 inputs:
   version-suffix:
     description: >-
-      Prerelease suffix appended to the csproj Version when packing, e.g. ci.42. Empty packs the plain
-      version. Check runs pass one so every run's package is a distinct version: the dotnet tool cache
-      keeps the first package it sees for a version for ever.
+      Prerelease suffix added to the csproj Version in the zip's name, e.g. ci.42. Empty names it with
+      the plain version. Check runs pass one so every run's zip is told apart from a release's.
     required: false
     default: ''
 
 outputs:
   version:
-    description: The version the package was packed as (csproj Version plus any suffix).
-    value: ${{ steps.meta.outputs.version }}
-  package:
-    description: Path of the single .nupkg written to artifacts/packages.
-    value: ${{ steps.meta.outputs.package }}
+    description: The version the zip is named for (csproj Version plus any suffix).
+    value: ${{ steps.zip.outputs.version }}
   zip:
     description: Path of the winget build's zip, vantage_<version>_win-x64.zip, written to artifacts/winget.
     value: ${{ steps.zip.outputs.zip }}
@@ -51,48 +47,8 @@ runs:
       shell: pwsh
       run: dotnet format whitespace --verify-no-changes --no-restore
 
-    - name: Pack
-      shell: pwsh
-      env:
-        VERSION_SUFFIX: ${{ inputs.version-suffix }}
-      run: |
-        $ErrorActionPreference = 'Stop'
-        if ([string]::IsNullOrEmpty($env:VERSION_SUFFIX)) {
-            dotnet pack src\Source191.Vantage -c Release --no-build
-        }
-        else {
-            $base = (Select-Xml -Path src\Source191.Vantage\Source191.Vantage.csproj -XPath '//Version').Node.InnerText
-            dotnet pack src\Source191.Vantage -c Release --no-build -p:Version="$base-$env:VERSION_SUFFIX"
-        }
-        exit $LASTEXITCODE
-
-    - name: Read the version and find the package
-      id: meta
-      shell: pwsh
-      run: |
-        $ErrorActionPreference = 'Stop'
-        $packages = @(Get-ChildItem artifacts\packages -Filter *.nupkg)
-        if ($packages.Count -ne 1) {
-            throw "Expected exactly one .nupkg in artifacts\packages, found $($packages.Count)."
-        }
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        $archive = [System.IO.Compression.ZipFile]::OpenRead($packages[0].FullName)
-        try {
-            $foreign = @($archive.Entries.FullName | Where-Object { $_ -match '/runtimes/' -and $_ -notmatch '/runtimes/win' })
-        }
-        finally {
-            $archive.Dispose()
-        }
-        if ($foreign.Count -gt 0) {
-            throw "The package holds native assets for platforms other than Windows:`n$($foreign -join "`n")"
-        }
-        $version = $packages[0].BaseName.Substring('Source191.Vantage.'.Length)
-        "version=$version" >> $env:GITHUB_OUTPUT
-        "package=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
-        Write-Host "Packed $($packages[0].Name) (version $version)"
-
     # The self-contained single-file build winget installs (src\Source191.Vantage\README.md, The winget build). It builds
-    # the tool again for win-x64, so warnings are still errors; the assembly keeps the csproj Version, as the nupkg's does.
+    # the program again for win-x64, so warnings are still errors; the assembly keeps the csproj Version.
     - name: Publish the winget build
       shell: pwsh
       run: |
@@ -101,15 +57,19 @@ runs:
         dotnet publish src\Source191.Vantage -p:PublishProfile=win-x64
         exit $LASTEXITCODE
 
-    # Named with the packed version, so a check run's zip (-ci.<run>) never looks like a release's.
     - name: Zip the winget build
       id: zip
       shell: pwsh
       env:
-        VERSION: ${{ steps.meta.outputs.version }}
+        VERSION_SUFFIX: ${{ inputs.version-suffix }}
       run: |
         $ErrorActionPreference = 'Stop'
-        $zip = Join-Path (Get-Location) "artifacts\winget\vantage_$($env:VERSION)_win-x64.zip"
+        $version = (Select-Xml -Path src\Source191.Vantage\Source191.Vantage.csproj -XPath '//Version').Node.InnerText
+        if (-not [string]::IsNullOrEmpty($env:VERSION_SUFFIX)) {
+            $version = "$version-$env:VERSION_SUFFIX"
+        }
+        $zip = Join-Path (Get-Location) "artifacts\winget\vantage_$($version)_win-x64.zip"
         .github/scripts/Compress-WingetBuild.ps1 -PublishFolder artifacts\publish -Destination $zip
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        "version=$version" >> $env:GITHUB_OUTPUT
         "zip=$zip" >> $env:GITHUB_OUTPUT
