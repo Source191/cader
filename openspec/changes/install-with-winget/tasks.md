@@ -3,12 +3,12 @@
 ## 1. Spike: what winget does with the build
 
 - [ ] 1.1 Publish the self-contained single-file build, write a local manifest (`winget settings --enable LocalManifestFiles`) for its zip with the portable alias `vantage`, run `winget install --manifest`, and record in `.claude\rules\windows.md` (dated, with the winget version): what `Environment.ProcessPath` and `AppContext.BaseDirectory` resolve to when run through the link, whether `libonigwrap.dll`, `CHANGELOG.md` and `vantage.ico` are extracted beside the executable, whether the install folder survives `winget upgrade`, and the exit code and message when the upgrade finds the executable locked. Verify by the recorded facts; if a path is wrong, add a task to group 2 to embed the file.
-- [ ] 1.2 Run `dotnet run -- smoke <exe> Northwind.Smoke-smoke` from `tools\HeadlessTerminal` against the unzipped `vantage.exe` and verify exit 0.
+- [x] 1.2 Run `dotnet run -- smoke <exe> Northwind.Smoke-smoke` from `tools\HeadlessTerminal` against the unzipped `vantage.exe` and verify exit 0.
 
 ## 2. The build
 
 - [x] 2.1 Add `PublishSingleFile`, `SelfContained`, `RuntimeIdentifier win-x64` and `EnableCompressionInSingleFile` to `Source191.Vantage.csproj` and a publish step that leaves out the PDBs and XML documentation files; write each setting's reason in `src\Source191.Vantage\README.md` (no comments in the csproj). Verify `dotnet publish` gives a folder holding `vantage.exe` and its native library and `vantage --version` prints the csproj `Version`.
-- [ ] 2.2 Test then build the zip step in `build-test-pack`: a script test (or the check's existing format) asserting the zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt` and no `.pdb`. Verify the action outputs the zip path and the nupkg is still packed.
+- [x] 2.2 Test then build the zip step in `build-test-pack`: a script test (or the check's existing format) asserting the zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt` and no `.pdb`. Verify the action outputs the zip path and the nupkg is still packed.
 
 ## 3. The update source
 
@@ -26,7 +26,7 @@
 
 ## 5. Workflows
 
-- [ ] 5.1 `check.yml`: replace the nupkg install steps with unzipping the zip into a temp folder, then run the `--version` and smoke steps against that `vantage.exe`; upload the zip as the pull request's artefact. Verify a draft pull request's check passes with the zip.
+- [x] 5.1 `check.yml`: replace the nupkg install steps with unzipping the zip into a temp folder, then run the `--version` and smoke steps against that `vantage.exe`; upload the zip as the pull request's artefact. Verify a draft pull request's check passes with the zip.
 - [ ] 5.2 `release.yml`: attest and attach the zip (and still the nupkg) for every release, stable or prerelease, and keep the stable release's notes and `--notes-start-tag`. Verify with a prerelease from a throwaway branch that the Release carries both files and `gh attestation verify` passes on the zip.
 - [ ] 5.3 Add a stable-only job that runs `wingetcreate update` with the repository secret and a fork of winget-pkgs, and fails loudly when the pull request cannot be opened. Verify with `--what-if` style dry run on a test fork before the secret is real.
 - [x] 5.4 `Assert-ChangelogUpdated.ps1`: keep the 35,000-character limit only while the nupkg is still packed, and say so in its message. Verify its existing tests.
