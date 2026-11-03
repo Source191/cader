@@ -7,7 +7,7 @@
     Raises the trailing number of the prerelease label when there is one (0.17.0-preview.2 becomes 0.17.0-preview.3)
     and otherwise the patch (0.17.0 becomes 0.17.1). Only the Version text changes; the file stays UTF-8 without a
     byte order mark and keeps its line endings. A prerelease label with no trailing number is refused, so nothing
-    guesses. check.yml runs it for Dependabot pull requests that touch the tool; it works by hand as well.
+    guesses. pipeline.yml runs it for Dependabot pull requests that touch the tool; it works by hand as well.
 
 .EXAMPLE
     .github\scripts\Step-Version.ps1 -WhatIf
@@ -19,7 +19,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# The same regex Assert-VersionBumped.ps1 and release.yml use.
+# The same regex Assert-VersionBumped.ps1 and pipeline.yml use.
 $content = [System.IO.File]::ReadAllText((Resolve-Path $Csproj))
 $match = [regex]::Match($content, '<Version>\s*([^<]+?)\s*</Version>')
 if (-not $match.Success) {
