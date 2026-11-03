@@ -8,7 +8,6 @@ public static class SharedKeys
     /// <summary>The effect of a shared key; false for a key that is not one.</summary>
     public static bool TryFor(Key key, [MaybeNullWhen(false)] out ViewEffect effect)
     {
-        ArgumentNullException.ThrowIfNull(key);
         effect = key switch
         {
             { Name: KeyName.Character, Character: 'q' } => new Quit(),

@@ -20,7 +20,6 @@ public sealed record ExceptionSummary
 
     public static ExceptionSummary From(Exception exception)
     {
-        ArgumentNullException.ThrowIfNull(exception);
         List<string> parts = [];
         for (Exception? current = exception; current is not null && parts.Count <= DeepestInner; current = current.InnerException)
         {

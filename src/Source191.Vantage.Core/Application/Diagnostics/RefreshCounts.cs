@@ -10,13 +10,10 @@ public sealed class RefreshCounts(TimeProvider clock, DiagnosticLog log)
     /// <summary>Clearly worse than the listing's usual 1.6 to 2 seconds, and still under the 5-second Sessions cadence.</summary>
     public static readonly TimeSpan Slow = TimeSpan.FromSeconds(3);
 
-    private readonly TimeProvider clock = clock ?? throw new ArgumentNullException(nameof(clock));
-    private readonly DiagnosticLog log = log ?? throw new ArgumentNullException(nameof(log));
     private readonly DurationSample[] samples = [.. Enum.GetValues<RefreshPart>().Select(_ => new DurationSample())];
 
     public async Task<T> TimeAsync<T>(RefreshPart part, Func<Task<T>> run)
     {
-        ArgumentNullException.ThrowIfNull(run);
         long started = clock.GetTimestamp();
         T result = await run();
         Add(part, clock.GetElapsedTime(started));

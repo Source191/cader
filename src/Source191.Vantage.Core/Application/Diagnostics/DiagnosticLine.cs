@@ -13,25 +13,14 @@ public static class DiagnosticLine
 
     private static readonly string CrashMarker = $" {FailedWord} {FailureSite.Crash}";
 
-    public static string Render(TimedEvent timed)
-    {
-        ArgumentNullException.ThrowIfNull(timed);
-
-        return $"{Stamp(timed.At)} {Body(timed.Event)}";
-    }
+    public static string Render(TimedEvent timed) => $"{Stamp(timed.At)} {Body(timed.Event)}";
 
     /// <summary>The child program counts, one line per program, subcommand and exit code, each with the time it was written.</summary>
-    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at)
-    {
-        ArgumentNullException.ThrowIfNull(counts);
-
-        return [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
-    }
+    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at) => [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
 
     /// <summary>Every count, each line with the time it was written: the child programs, each refresh part that has run, and the UI thread's stalls even with none, so a file shows the heartbeat ran.</summary>
     public static IReadOnlyList<string> Render(PerformanceCounts counts, DateTimeOffset at)
     {
-        ArgumentNullException.ThrowIfNull(counts);
         IEnumerable<string> refreshes = counts.Refreshes.Snapshot().Select(count => $"{Stamp(at)} refreshes {Name(count.Part)}: {Figures(count.Durations, "run", "runs")}");
 
         string stalls = $"{Stamp(at)} stalls ui thread: {Figures(counts.Stalls.Figures(), "stall", "stalls")}";
@@ -42,7 +31,6 @@ public static class DiagnosticLine
     /// <summary>Whether a line is a crash: a failure at <see cref="FailureSite.Crash"/>, with or without a What after the site.</summary>
     public static bool IsCrashLine(string line)
     {
-        ArgumentNullException.ThrowIfNull(line);
         int start = line.IndexOf(CrashMarker, StringComparison.Ordinal);
         if (start < 0)
         {
@@ -55,12 +43,7 @@ public static class DiagnosticLine
     }
 
     /// <summary>The start facts without the time, as a problem report's environment line shows them.</summary>
-    public static string Environment(Started started)
-    {
-        ArgumentNullException.ThrowIfNull(started);
-
-        return $"Vantage {started.Vantage.Text}, Claude Code {started.ClaudeCode?.ToString() ?? "unknown"}, Windows {started.Windows}, .NET {started.Runtime}, terminal {started.Columns}x{started.Rows}";
-    }
+    public static string Environment(Started started) => $"Vantage {started.Vantage.Text}, Claude Code {started.ClaudeCode?.ToString() ?? "unknown"}, Windows {started.Windows}, .NET {started.Runtime}, terminal {started.Columns}x{started.Rows}";
 
     private static string Body(DiagnosticEvent diagnostic) => diagnostic switch
     {

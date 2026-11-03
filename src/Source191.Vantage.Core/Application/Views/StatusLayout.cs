@@ -28,7 +28,6 @@ public static class StatusLayout
 
     public static IReadOnlyList<string> Lines(string words, int width)
     {
-        ArgumentNullException.ThrowIfNull(words);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
 
         List<string> rows = [];

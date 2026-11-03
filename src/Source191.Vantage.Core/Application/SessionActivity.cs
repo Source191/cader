@@ -15,8 +15,6 @@ public sealed class SessionActivity(TimeProvider clock)
 
     public void Observe(IReadOnlyList<SessionRow> previous, IReadOnlyList<SessionRow> current)
     {
-        ArgumentNullException.ThrowIfNull(previous);
-        ArgumentNullException.ThrowIfNull(current);
         Dictionary<SessionId, DisplayStateKind> before = previous.ToDictionary(row => row.Session.SessionId, row => row.Session.State.Kind);
         DateTimeOffset now = clock.GetUtcNow();
         foreach (SessionRow row in current.Where(row => row.Session is Session.Background { State.Kind: DisplayStateKind.Working } && WasWaiting(before, row.Session.SessionId)))

@@ -13,13 +13,9 @@ namespace Source191.Vantage.Application;
 public sealed class SharedSnapshot<T>(T initial)
     where T : class
 {
-    private volatile T value = initial ?? throw new ArgumentNullException(nameof(initial));
+    private volatile T value = initial;
 
     public T Value => value;
 
-    public void Replace(T next)
-    {
-        ArgumentNullException.ThrowIfNull(next);
-        value = next;
-    }
+    public void Replace(T next) => value = next;
 }

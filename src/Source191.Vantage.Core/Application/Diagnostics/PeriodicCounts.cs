@@ -14,12 +14,5 @@ public sealed class PeriodicCounts(TimeProvider clock, DiagnosticLog log, Perfor
 
     public void Dispose() => timer.Dispose();
 
-    private static ITimer Start(TimeProvider clock, DiagnosticLog log, PerformanceCounts counts, TimeSpan period)
-    {
-        ArgumentNullException.ThrowIfNull(clock);
-        ArgumentNullException.ThrowIfNull(log);
-        ArgumentNullException.ThrowIfNull(counts);
-
-        return clock.CreateTimer(_ => log.WriteCounts(counts), null, period, period);
-    }
+    private static ITimer Start(TimeProvider clock, DiagnosticLog log, PerformanceCounts counts, TimeSpan period) => clock.CreateTimer(_ => log.WriteCounts(counts), null, period, period);
 }

@@ -13,8 +13,6 @@ public static class ConsoleView
 
     public static ConsoleState Apply(ConsoleState state, ISwitchesTab effect)
     {
-        ArgumentNullException.ThrowIfNull(state);
-
         return effect switch
         {
             SelectTab select => state with { Active = select.Tab },
@@ -30,9 +28,6 @@ public static class ConsoleView
     /// </summary>
     public static RowDecision OpenSession(ConsoleState state, OpenWorktreeSession open)
     {
-        ArgumentNullException.ThrowIfNull(state);
-        ArgumentNullException.ThrowIfNull(open);
-
         return state.Sessions.List.Rows.FirstOrDefault(row => row.Session.SessionId == open.SessionId) switch
         {
             null => new RowDecision.Explain(new StatusMessage.SessionNotListed(open.Name)),

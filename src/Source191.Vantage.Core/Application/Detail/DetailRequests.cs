@@ -17,7 +17,6 @@ public sealed class DetailRequests
     /// <summary>The selection moved to this row, the rows were refreshed, or its tab was shown again.</summary>
     public DetailRequest Ask(object key)
     {
-        ArgumentNullException.ThrowIfNull(key);
         if (!Equals(key, selected))
         {
             selected = key;
@@ -33,8 +32,6 @@ public sealed class DetailRequests
     /// <summary>What the pane does once this answer arrives: shows it, or drops it.</summary>
     public DetailAnswer Accept(DetailRequest request, DetailContent content)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(content);
         if (!Equals(request.Key, selected) || request.Number <= shown)
         {
             return new DetailAnswer.Dropped();
