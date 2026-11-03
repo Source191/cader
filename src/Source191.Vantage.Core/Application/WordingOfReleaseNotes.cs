@@ -34,7 +34,6 @@ public static partial class Wording
     /// </summary>
     private static IReadOnlyList<string> WhatsNewLines(IReadOnlyList<ReleaseSection> sections)
     {
-        ArgumentNullException.ThrowIfNull(sections);
         if (sections.Count == 0)
         {
             return ["The notes for this release could not be read; Release page shows them on GitHub."];

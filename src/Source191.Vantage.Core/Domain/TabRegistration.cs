@@ -45,8 +45,6 @@ public sealed record TabRegistration(
     /// </summary>
     public bool TryConfirmShell(IProcessRegistry processes, [MaybeNullWhen(false)] out ConfirmedProcess shell)
     {
-        ArgumentNullException.ThrowIfNull(processes);
-
         if (Claim is not TabClaim.Claimed claimed)
         {
             shell = null;

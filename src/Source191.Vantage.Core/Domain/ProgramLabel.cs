@@ -16,7 +16,6 @@ public static class ProgramLabel
     public static string From(string name, string commandLine)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(commandLine);
 
         // cmd.exe passes quotes through as ^" and wraps its command in quotes; neither says anything about the program.
         string[] tokens = commandLine.Replace("^", string.Empty, StringComparison.Ordinal).Replace("\"", string.Empty, StringComparison.Ordinal)

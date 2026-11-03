@@ -13,11 +13,6 @@ public static class Attempt
     /// <summary>As above, for the failures handles accepts; any other exception propagates unrecorded, as a cancellation should.</summary>
     public static async Task<T> RunAsync<T>(DiagnosticLog log, FailureSite site, CodeName what, Func<Task<T>> action, Func<Exception, bool> handles, Func<Exception, T> onFailure)
     {
-        ArgumentNullException.ThrowIfNull(log);
-        ArgumentNullException.ThrowIfNull(what);
-        ArgumentNullException.ThrowIfNull(action);
-        ArgumentNullException.ThrowIfNull(handles);
-        ArgumentNullException.ThrowIfNull(onFailure);
         try
         {
             return await action();

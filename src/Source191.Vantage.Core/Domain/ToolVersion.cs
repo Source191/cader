@@ -8,7 +8,6 @@ public sealed record ToolVersion(string Text)
 
     public static ToolVersion FromInformational(string informational)
     {
-        ArgumentNullException.ThrowIfNull(informational);
         string withoutCommit = informational.Split('+')[0].Trim();
         if (withoutCommit.Length == 0)
         {

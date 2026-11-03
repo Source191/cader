@@ -19,10 +19,5 @@ public static class ProblemReportAddress
     /// <summary>The address's length as sent, without building a <see cref="Uri"/>, for fitting the diagnostics.</summary>
     public static int Length(ReportTitle title, string diagnostics) => Text(title, diagnostics).Length;
 
-    private static string Text(ReportTitle title, string diagnostics)
-    {
-        ArgumentNullException.ThrowIfNull(title);
-
-        return $"{NewIssue}?template={TemplateFile}&title={Uri.EscapeDataString(title.Value)}&{DiagnosticsField}={Uri.EscapeDataString(diagnostics)}";
-    }
+    private static string Text(ReportTitle title, string diagnostics) => $"{NewIssue}?template={TemplateFile}&title={Uri.EscapeDataString(title.Value)}&{DiagnosticsField}={Uri.EscapeDataString(diagnostics)}";
 }

@@ -14,10 +14,6 @@ public sealed class OncePerFolder(DiagnosticLog log, FailureSite site, CodeName 
 
     public async Task<T> RunAsync<T>(FolderPath folder, Func<Task<T>> action, Func<Exception, bool> handles, Func<Exception, T> onFailure)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-        ArgumentNullException.ThrowIfNull(action);
-        ArgumentNullException.ThrowIfNull(handles);
-        ArgumentNullException.ThrowIfNull(onFailure);
         try
         {
             return await action();

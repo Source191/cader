@@ -10,8 +10,6 @@ public static class NumberAwareOrder
 {
     public static int Compare(string first, string second)
     {
-        ArgumentNullException.ThrowIfNull(first);
-        ArgumentNullException.ThrowIfNull(second);
         int byRuns = Compare(first.AsSpan(), second.AsSpan());
         int byLength = byRuns == 0 ? first.Length.CompareTo(second.Length) : byRuns;
 

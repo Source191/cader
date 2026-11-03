@@ -8,10 +8,5 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public static class ReleasePage
 {
-    public static Uri For(ReleaseVersion version)
-    {
-        ArgumentNullException.ThrowIfNull(version);
-
-        return new Uri($"https://github.com/Source191/vantage/releases/tag/v{version}");
-    }
+    public static Uri For(ReleaseVersion version) => new($"https://github.com/Source191/vantage/releases/tag/v{version}");
 }
