@@ -32,7 +32,6 @@ internal static class VantageIcon
     /// </summary>
     public static int Fit(ImageView icon, System.Drawing.Size cell)
     {
-        ArgumentNullException.ThrowIfNull(icon);
         icon.Visible = true;
         int width = cell.Width > 0 && cell.Height > 0 ? (int)Math.Round((double)Height * cell.Height / cell.Width) : DefaultWidth;
         int cells = Math.Clamp(width, 1, 3);
@@ -44,7 +43,6 @@ internal static class VantageIcon
     /// <summary>Hides the icon where the terminal draws no images, and answers the cells the settings row starts after: none.</summary>
     public static int Hide(ImageView icon)
     {
-        ArgumentNullException.ThrowIfNull(icon);
         icon.Visible = false;
 
         return 0;

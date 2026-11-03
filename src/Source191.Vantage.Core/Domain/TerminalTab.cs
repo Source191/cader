@@ -22,9 +22,6 @@ public static class TerminalTab
 
     private static (ConfirmedProcess Shell, int Terminal)? Walk(ConfirmedProcess process, IProcessRegistry processes)
     {
-        ArgumentNullException.ThrowIfNull(process);
-        ArgumentNullException.ThrowIfNull(processes);
-
         ConfirmedProcess current = process;
         for (int depth = 0; depth < MaxDepth; depth++)
         {

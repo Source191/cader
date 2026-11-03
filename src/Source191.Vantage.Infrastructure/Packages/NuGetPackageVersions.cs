@@ -17,7 +17,7 @@ public sealed class NuGetPackageVersions(ToolVersion version, HttpMessageHandler
 
     private static readonly Uri Index = new("https://api.nuget.org/v3-flatcontainer/");
 
-    private readonly HttpClient client = ClientFor(version ?? throw new ArgumentNullException(nameof(version)), handler);
+    private readonly HttpClient client = ClientFor(version, handler);
 
     public async Task<VersionListing> ListAsync(string packageId, CancellationToken cancellationToken)
     {
@@ -56,7 +56,6 @@ public sealed class NuGetPackageVersions(ToolVersion version, HttpMessageHandler
     public async Task<PackageNotes> NotesAsync(string packageId, ReleaseVersion version, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
-        ArgumentNullException.ThrowIfNull(version);
         string id = packageId.ToLowerInvariant();
         try
         {

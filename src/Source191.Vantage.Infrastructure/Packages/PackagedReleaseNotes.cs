@@ -10,7 +10,7 @@ public sealed class PackagedReleaseNotes(string folder) : IPackagedReleaseNotes
 {
     public const string FileName = "CHANGELOG.md";
 
-    private readonly string path = Path.Combine(folder ?? throw new ArgumentNullException(nameof(folder)), FileName);
+    private readonly string path = Path.Combine(folder, FileName);
 
     public async Task<PackageNotes> ReadAsync()
     {

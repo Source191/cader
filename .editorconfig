@@ -86,8 +86,10 @@ csharp_style_expression_bodied_local_functions = false:silent
 csharp_style_expression_bodied_methods = when_on_single_line:warning
 dotnet_diagnostic.IDE0022.severity = warning
 
-# Guard clauses use the throw helpers (ArgumentNullException.ThrowIfNull, ArgumentException.ThrowIfNullOrEmpty,
-# ArgumentOutOfRangeException.ThrowIfNegative and so on, ObjectDisposedException.ThrowIf) wherever one fits.
+# Guard clauses use the throw helpers (ArgumentException.ThrowIfNullOrWhiteSpace,
+# ArgumentOutOfRangeException.ThrowIfNegative and so on, ObjectDisposedException.ThrowIf) wherever one fits. Nothing
+# guards a parameter against null: nullable reference types carry it, src\BannedSymbols.txt bans ArgumentNullException,
+# and CA1062 stays off because it does not fit a tool with no outside callers.
 dotnet_diagnostic.CA1510.severity = warning
 dotnet_diagnostic.CA1511.severity = warning
 dotnet_diagnostic.CA1512.severity = warning

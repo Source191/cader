@@ -16,7 +16,6 @@ public static class TabShade
     /// <summary>The shade as <c>#RRGGBB</c>; a colour that is not <c>#</c> and six hex digits (a hand-edited state file) is answered as it is.</summary>
     public static string Unselected(TabColour colour)
     {
-        ArgumentNullException.ThrowIfNull(colour);
         if (colour.Hex is not ['#', _, _, _, _, _, _]
             || !int.TryParse(colour.Hex.AsSpan(1), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out int value))
         {

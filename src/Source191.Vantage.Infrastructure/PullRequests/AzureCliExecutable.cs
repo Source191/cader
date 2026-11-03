@@ -13,7 +13,6 @@ public static class AzureCliExecutable
     /// <summary>The first az.cmd in the PATH's folders, in order.</summary>
     public static ProgramLocation Locate(IReadOnlyList<string> pathFolders)
     {
-        ArgumentNullException.ThrowIfNull(pathFolders);
         string? found = PathFolders.Searchable(pathFolders)
             .Select(folder => Path.Combine(folder, "az.cmd"))
             .FirstOrDefault(File.Exists);

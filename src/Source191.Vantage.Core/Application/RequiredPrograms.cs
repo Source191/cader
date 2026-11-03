@@ -11,9 +11,6 @@ public abstract record RequiredPrograms
 {
     public static RequiredPrograms Check(ClaudeLocation claude, ProgramLocation git)
     {
-        ArgumentNullException.ThrowIfNull(claude);
-        ArgumentNullException.ThrowIfNull(git);
-
         // Claude Code's problem is said before git's, as the console has always said it.
         return (claude, git) switch
         {

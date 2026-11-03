@@ -13,17 +13,11 @@ public sealed record CodeName
 
     private CodeName(string text) => this.text = text;
 
-    public static CodeName For(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-
-        return new CodeName(TypeName(type));
-    }
+    public static CodeName For(Type type) => new(TypeName(type));
 
     /// <summary>Names a compiler-generated method (an async state machine's MoveNext, a lambda) by the method it was written in.</summary>
     public static CodeName For(MethodBase method)
     {
-        ArgumentNullException.ThrowIfNull(method);
         string methodName = Unmangled(method.Name);
         Type? type = method.DeclaringType;
         while (type is not null && IsGenerated(type.Name))

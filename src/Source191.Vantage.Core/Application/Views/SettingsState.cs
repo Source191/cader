@@ -11,13 +11,7 @@ namespace Source191.Vantage.Application.Views;
 public sealed record SettingsState(SettingsText Text, SettingsProblemLine Problem, SettingsField Focus, Func<string, bool> FolderExists, Func<string, bool> FileExists, SettingsScope Scope, PresetSearch Presets)
 {
     /// <summary>The dialog as it opens on one setting, showing it as saved.</summary>
-    public static SettingsState Open(Settings settings, SettingsScope scope, Func<string, bool> folderExists, Func<string, bool> fileExists)
-    {
-        ArgumentNullException.ThrowIfNull(settings);
-        ArgumentNullException.ThrowIfNull(scope);
-
-        return new SettingsState(settings.ToText(), new SettingsProblemLine.None(), scope.Field, folderExists, fileExists, scope, new PresetSearch.NotYetLooked());
-    }
+    public static SettingsState Open(Settings settings, SettingsScope scope, Func<string, bool> folderExists, Func<string, bool> fileExists) => new(settings.ToText(), new SettingsProblemLine.None(), scope.Field, folderExists, fileExists, scope, new PresetSearch.NotYetLooked());
 
     /// <summary>Whether the dialog's Browse opens a picker: the folder picker for several repository roots or the one worktree root, the file picker while a custom editor is chosen, or none.</summary>
     public SettingsBrowse Browses => Scope switch

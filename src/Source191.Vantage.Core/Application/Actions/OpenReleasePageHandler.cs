@@ -9,7 +9,6 @@ public sealed class OpenReleasePageHandler(IDesktop desktop) : IEffectHandler<Op
 {
     public async Task<Outcome> HandleAsync(OpenReleasePage effect, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(effect);
         try
         {
             await desktop.OpenAsync(ReleasePage.For(effect.Version).AbsoluteUri, cancellationToken);

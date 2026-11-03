@@ -20,7 +20,6 @@ public static partial class FileAssociations
     /// <summary>True only when Windows answers that nothing is associated with the extension (such as <c>.slnx</c>); any other answer, an error included, is false.</summary>
     public static bool NoneFor(string extension)
     {
-        ArgumentNullException.ThrowIfNull(extension);
         uint length = 0;
 
         return AssocQueryString(IgnoreUnknown, ProgId, extension, extra: null, output: nint.Zero, ref length) == NoAssociation;

@@ -21,19 +21,4 @@ public sealed class SharedSnapshotShould
 
         snapshot.Value.ShouldBe("second");
     }
-
-    [Fact]
-    public void RefuseANullFirstValue()
-    {
-        Should.Throw<ArgumentNullException>(() => new SharedSnapshot<string>(null!));
-    }
-
-    [Fact]
-    public void RefuseANullReplacement()
-    {
-        SharedSnapshot<string> snapshot = new("first");
-
-        Should.Throw<ArgumentNullException>(() => snapshot.Replace(null!));
-        snapshot.Value.ShouldBe("first");
-    }
 }

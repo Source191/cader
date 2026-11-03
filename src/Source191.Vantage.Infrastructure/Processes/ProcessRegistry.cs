@@ -20,8 +20,6 @@ public sealed partial class ProcessRegistry : IProcessRegistry
 
     public void Terminate(ConfirmedProcess process)
     {
-        ArgumentNullException.ThrowIfNull(process);
-
         WithProcess(process.Id, running =>
         {
             running.Kill(entireProcessTree: true);
@@ -33,8 +31,6 @@ public sealed partial class ProcessRegistry : IProcessRegistry
 
     public void EndCleanly(ConfirmedProcess process)
     {
-        ArgumentNullException.ThrowIfNull(process);
-
         WithProcess(process.Id, running =>
         {
             if (TerminateProcess(running.Handle, 0))

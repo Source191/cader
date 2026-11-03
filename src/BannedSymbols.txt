@@ -23,3 +23,4 @@ M:System.Diagnostics.Process.Start(System.String,System.String,System.String,Sys
 M:System.Diagnostics.Process.Start(System.String,System.String,System.String,System.Security.SecureString,System.String,System.String);Run a program by its located full path through ProcessRunner
 M:System.String.ToLower;Use ToLowerInvariant or an ordinal comparison
 M:System.Diagnostics.Process.Start(System.String,System.String,System.Security.SecureString,System.String);Run a program by its located full path through ProcessRunner
+T:System.ArgumentNullException;Guard nothing inside: nullable reference types carry null, and a null from outside is handled where it is received

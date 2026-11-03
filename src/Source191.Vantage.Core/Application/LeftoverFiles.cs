@@ -13,8 +13,6 @@ public static class LeftoverFiles
 {
     public static int Count(IFolders folders, FolderPath folder)
     {
-        ArgumentNullException.ThrowIfNull(folders);
-        ArgumentNullException.ThrowIfNull(folder);
         if (!folders.DirectoryExists(folder.Value))
         {
             return 0;

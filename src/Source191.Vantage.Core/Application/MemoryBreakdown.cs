@@ -11,8 +11,6 @@ public sealed record MemoryBreakdown(ListedName SessionName, MemorySize ClaudeCo
 {
     public static MemoryBreakdown Of(ListedName sessionName, ProcessTree tree)
     {
-        ArgumentNullException.ThrowIfNull(tree);
-
         IReadOnlyList<MemoryShare> programs =
         [
             .. tree.Children

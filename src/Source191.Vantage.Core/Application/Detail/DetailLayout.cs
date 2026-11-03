@@ -13,7 +13,6 @@ public static class DetailLayout
 
     public static IReadOnlyList<IReadOnlyList<TextPart>> Rows(DetailContent content, int width, int height)
     {
-        ArgumentNullException.ThrowIfNull(content);
         IReadOnlyList<IReadOnlyList<DetailLine>> facts = [.. content.Facts.Take(Math.Max(height, 0))];
         int[] labels = LabelWidths(content.Facts);
         int[] widths = ColumnWidths(content.Facts, labels, width);

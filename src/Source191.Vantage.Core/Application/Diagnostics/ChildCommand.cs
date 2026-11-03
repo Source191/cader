@@ -34,7 +34,6 @@ public sealed record ChildCommand
 
     public static ChildCommand For(ProcessRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request);
         ChildProgram program = Programs.GetValueOrDefault(Path.GetFileNameWithoutExtension(request.FileName), ChildProgram.Other);
         IReadOnlySet<string> listed = Words(program);
 

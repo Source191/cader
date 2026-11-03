@@ -10,12 +10,7 @@ namespace Source191.Vantage.Application.Views;
 public abstract record WizardOrigin
 {
     /// <summary>Fixed on a folder, the choice named after the folder itself.</summary>
-    public static WizardOrigin In(FolderPath folder)
-    {
-        ArgumentNullException.ThrowIfNull(folder);
-
-        return new Fixed(new RepositoryChoice(folder.Name, folder, IsRepository: true));
-    }
+    public static WizardOrigin In(FolderPath folder) => new Fixed(new RepositoryChoice(folder.Name, folder, IsRepository: true));
 
     public sealed record Anywhere : WizardOrigin;
 
