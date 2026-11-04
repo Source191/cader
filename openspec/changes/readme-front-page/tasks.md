@@ -2,7 +2,7 @@
 
 ## 1. Spikes
 
-- [ ] 1.1 From a throwaway console that composes `ConsoleScreen` with the TestDoubles fakes, open two tabs through the real `WindowsTerminal` adapter from a freshly created `wt -w new` window and confirm both land in that window, not an older one; record the result with its date and Windows Terminal version in `.claude\rules\windows.md`, and stop and re-plan with the owner if they land elsewhere
+- [x] 1.1 From a throwaway console that composes `ConsoleScreen` with the TestDoubles fakes, open two tabs through the real `WindowsTerminal` adapter from a freshly created `wt -w new` window and confirm both land in that window, not an older one; record the result with its date and Windows Terminal version in `.claude\rules\windows.md`, and stop and re-plan with the owner if they land elsewhere
 - [ ] 1.2 In the same throwaway console, drive the new-session wizard with `NewKeyDownEvent` (`n`, filter text, Tab, a name, F5) and confirm it reaches the scripted launch exactly as typed keys do; record the result in `.claude\rules\terminal-gui.md` (Terminal.Gui 2.5.0), and fall back to `WriteConsoleInput` after `AttachConsole` if it does not
 
 ## 2. Scene model (tools\ReadmeScene, test first)
