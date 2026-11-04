@@ -36,7 +36,7 @@ public static class Program
         await File.WriteAllTextAsync(folders.WindowFile, SceneWindow.Find(TimeSpan.FromSeconds(10)).ToString(CultureInfo.InvariantCulture));
         Scene scene = SceneFile.Read(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "scene.json")));
 
-                List<KeyStep> steps = [];
+                List<KeyStep> steps = [.. SceneKeys.OpenTabs(scene)];
         foreach (string script in scripts)
         {
             steps.AddRange(KeyScript.Parse(await File.ReadAllTextAsync(script)));
