@@ -43,6 +43,6 @@ None.
 - **Documentation:** `README.md` rewritten; new `docs\user-guide.md`; `CLAUDE.md` and `CONTRIBUTING.md` lines on where the user guide lives; `openspec\specs\needs-input-notification\spec.md` on archive.
 - **GitHub:** new `.github/FUNDING.yml`; the owner turns on monthly memberships in the Buy Me a Coffee account before merging.
 - **Assets:** new `assets\readme\sessions.png` and `assets\readme\new-session.gif`, referenced from the README by their raw GitHub URLs as the banner is.
-- **Tools:** new `tools\New-ReadmeScreenshot.ps1`, `tools\ReadmeScene` (the scene host, its scene file and key script) and `tools\ReadmeScene.Tests`, added to the solution; `ReadmeScene` references the three `src` libraries and `test\Source191.Vantage.TestDoubles`. The script needs ffmpeg for the GIF.
+- **Tools:** new `tools\New-ReadmeScreenshot.ps1`, `tools\ReadmeScene` (the scene host, its scene file and key script) and `tools\ReadmeScene.Tests`, added to the solution; `ReadmeScene` references the three `src` libraries, and its tests `test\Source191.Vantage.TestDoubles`. The script needs ffmpeg for the GIF.
 - **CI:** the new test project runs with the solution's tests; no workflow changes.
 - **Depends on:** PR #206 (install-with-winget), whose README this one rewrites; this branch stacks on it.
