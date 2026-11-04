@@ -44,6 +44,17 @@ public sealed class SceneProcessRunnerShould
     }
 
     [Fact]
+    public async Task NameEverySessionsTranscript()
+    {
+        SceneListing sceneListing = new(SceneFile.Read(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "scene.json"), TestContext.Current.CancellationToken)), new SceneLayout(Home), clock);
+        ClaudeCli sceneClaude = new(new SceneProcessRunner(sceneListing, new ScenePullRequests(SceneFile.Read("""{ "claudeVersion": "2.1.316" }"""), clock), Executables, others), Executables.Claude);
+
+        SessionListing listing = await sceneClaude.ListSessionsAsync(TestContext.Current.CancellationToken);
+
+        sceneListing.SessionIds().ShouldBe(listing.Sessions.Select(session => session.SessionId.Value), ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task AnswerTheClaudeVersion()
     {
         ClaudeVersionReport version = await claude.VersionAsync(TestContext.Current.CancellationToken);

@@ -80,6 +80,15 @@ public sealed class SceneListing
         }
     }
 
+    /// <summary>Every listed session's id, for the transcript files that let Enter open a tab for it.</summary>
+    public IReadOnlyList<string> SessionIds()
+    {
+        lock (gate)
+        {
+            return [.. sessions.Select(session => session.SessionId)];
+        }
+    }
+
     /// <summary>Every process id the scene holds.</summary>
     public IReadOnlyList<int> ProcessIds()
     {
