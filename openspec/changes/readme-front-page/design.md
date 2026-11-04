@@ -27,20 +27,30 @@ See proposal.md for why. Three facts shape the screenshot approach:
 
 The README becomes a front page in this order (draft wording, to be polished in the PR):
 
-1. **Banner and badges:** the banner and sponsor badge unchanged, with a "Built by Simon Vane" badge beside them (shields.io, LinkedIn logo) linking to `https://www.linkedin.com/in/simonvane/`. A badge rather than a plain line because it sits in the first screenful without pushing the problem down, and matches the sponsor badge beside it.
+1. **Banner, credit and support button:** the banner unchanged; under it the official Buy Me a Coffee button (`https://cdn.buymeacoffee.com/buttons/v2/default-orange.png`, about 40 px high, linking to `https://buymeacoffee.com/simonvane`) in place of today's shields.io sponsor badge, and a "Built by Simon Vane" badge (shields.io, LinkedIn logo) linking to `https://www.linkedin.com/in/simonvane/`. A badge for the credit because it sits in the first screenful without pushing the problem down.
 2. **The problem:** "Five Claude Code sessions. A dozen terminal tabs. One of them finished ten minutes ago, another has been waiting for your permission since lunch, and you cannot remember which tab is which." Then one sentence: "Vantage is mission control for Claude Code on Windows: one tab that lists every session on the machine, rings when one needs you, and opens any of them in its own coloured tab."
 3. **The screenshot:** `assets\readme\sessions.png`, with alt text describing what it shows.
 4. **What it does:** the six feature bullets trimmed to five, each one line.
 5. **Why I built it:** the current paragraph, shortened to three or four sentences, keeping Orca and Kepler, and signed "Built by [Simon Vane](https://www.linkedin.com/in/simonvane/)" so the credit is next to the story as well as at the top.
-6. **Support Vantage:** the "gaps between rate limits" line, the link and the QR code, directly after the story while the reader is warmest.
-7. **Install:** `winget install Source191.Vantage`, then the Claude Code installer lines, then `vantage`; one sentence on what winget brings. Without winget and previews become one line linking to the guide.
-8. **Getting started:** five short steps, the GIF beside the first:
+6. **Support Vantage:** directly after the story while the reader is warmest. The "gaps between rate limits" line, then a specific ask that says what the money buys: "If Vantage saves you ten minutes a day, a coffee now and then keeps it moving. Every one goes towards the Claude plan it is built with." Then the official button, a line that a small monthly membership is there for regular users, and the QR code.
+7. **Install** and **8. Getting started** follow (below); getting started ends with a one-line ask and the official button again ("Got your first session running? Buy me a sliver of a Claude Max plan."), because people give just after they have felt the value, not before they have seen the tool.
+9. **Install:** `winget install Source191.Vantage`, then the Claude Code installer lines, then `vantage`; one sentence on what winget brings. Without winget and previews become one line linking to the guide.
+10. **Getting started:** five short steps, the GIF beside the first, ending with the ask in 7:
    - **Create a session:** `n`, a repository, a name, an optional prompt, F5; it gets its own worktree and coloured tab.
    - **See your sessions:** the Sessions tab, what the states and the amber rows mean, Enter to switch to a session's tab.
    - **Run several:** `n` again for each piece of work, each in its own worktree; `vantage here` for a folder you are already in.
    - **Close the terminal, keep the sessions:** sessions run under Claude Code's supervisor, so closing Windows Terminal stops nothing; start Vantage again and every session is still listed, Enter reattaches; after a reboot they show stopped and `R` resumes them.
    - **Use the Vantage profiles:** `vantage setup-terminal` adds a "Vantage" profile (start Vantage from Windows Terminal's new-tab menu, or make it the startup profile) and a "Vantage session" profile for session tabs, each with its own bell, and turns on Claude Code's terminal bell.
-9. **Learn more:** the user guide first, then the existing in-tool help, changelog, privacy, security and contributing lines.
+11. **Learn more:** the user guide first, then the existing in-tool help, changelog, privacy, security and contributing lines.
+
+The numbering above is the order of the decisions, not of the page: the page runs 1 to 6, then Install, Getting started (with its closing ask) and Learn more.
+
+### Making support easy to find
+
+- **GitHub's Sponsor button:** `.github/FUNDING.yml` with `buy_me_a_coffee: simonvane` makes GitHub show a Sponsor button in the repository header on every page, which no README placement can match. One line, no workflow.
+- **The official button over a badge:** a shields.io badge looks like the status badges readers skim past; the official button is bigger, coloured and recognised, so it reads as an action and its destination is trusted. The "sliver of a Claude Max plan" joke stays as the text beside it, not on it.
+- **Three places, no more:** the top button, the Support section after the story and the ask at the end of getting started. More would read as nagging.
+- **Monthly memberships:** turned on in the Buy Me a Coffee account by the owner (a one-off step in the pull request description, not in any standing document), so the README's mention of them is true on the day it merges.
 
 The keys table, notifications detail, without-winget, previews, upgrade and uninstall paragraphs move to `docs\user-guide.md`, which is organised as: installing (winget, without winget, previews, upgrading, uninstalling), the console (tabs, columns, detail pane, status line), sessions (start, open, stop, delete, resume, rename, adopt, `vantage here`), worktrees, configuration, notifications and profiles, keys (the full table), privacy, and troubleshooting (the problem report, `last-crash.log`). The guide is written from the console's own `Wording` (key and column help), not invented, and links to nothing under `openspec`.
 

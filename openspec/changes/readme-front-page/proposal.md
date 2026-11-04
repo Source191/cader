@@ -15,7 +15,8 @@ The README is the first thing anyone sees when the repository goes public, and t
 - **A brief getting-started guide:** creating a session, seeing the sessions, creating several, finding them all still listed after closing and reopening the terminal (and resuming after a reboot), and the Vantage profiles that `vantage setup-terminal` adds.
 - **A user guide:** a new `docs\user-guide.md` holds the detail the README drops (every key, the columns and the detail pane, notifications and sounds, configuration, `vantage here`, without winget, previews, upgrading and uninstalling, privacy), linked from the README's getting started and first in Learn more.
 - **Credit for the author:** a "Built by Simon Vane" badge linking to https://www.linkedin.com/in/simonvane/ sits beside the sponsor badge under the banner, and "Why I built it" ends with the same linked name, so readers know who made Vantage and where to find him.
-- **Support and the story nearer the top:** "Why I built it" moves up beside the screenshot, and "Support Vantage" with its QR code follows it, ahead of the install, keeping the sponsor badge under the banner.
+- **Support and the story nearer the top:** "Why I built it" moves up beside the screenshot, and "Support Vantage" with its QR code follows it, ahead of the install.
+- **Support that is easier to give:** a `.github/FUNDING.yml` so GitHub shows a Sponsor button in the repository header; the official Buy Me a Coffee button in place of the shields.io badge; the ask placed under the banner, after the story and at the end of getting started, once the reader has seen Vantage work; a specific ask that says the money goes towards the Claude plan Vantage is built with; and a mention of monthly memberships for regular users.
 - **Docs that point at the guide:** `CLAUDE.md` and `CONTRIBUTING.md` stop calling the README the user guide.
 
 ## Capabilities
@@ -40,6 +41,7 @@ None.
 ## Impact
 
 - **Documentation:** `README.md` rewritten; new `docs\user-guide.md`; `CLAUDE.md` and `CONTRIBUTING.md` lines on where the user guide lives; `openspec\specs\needs-input-notification\spec.md` on archive.
+- **GitHub:** new `.github/FUNDING.yml`; the owner turns on monthly memberships in the Buy Me a Coffee account before merging.
 - **Assets:** new `assets\readme\sessions.png` and `assets\readme\new-session.gif`, referenced from the README by their raw GitHub URLs as the banner is.
 - **Tools:** new `tools\New-ReadmeScreenshot.ps1`, `tools\ReadmeScene` (the scene host, its scene file and key script) and `tools\ReadmeScene.Tests`, added to the solution; `ReadmeScene` references the three `src` libraries and `test\Source191.Vantage.TestDoubles`. The script needs ffmpeg for the GIF.
 - **CI:** the new test project runs with the solution's tests; no workflow changes.
