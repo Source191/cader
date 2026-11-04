@@ -35,6 +35,49 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool SetProcessDpiAwarenessContext(nint context);
 
+    public const int StandardInput = -10;
+    public const ushort KeyEvent = 1;
+    public const uint ShiftPressed = 0x0010;
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    public static partial nint GetStdHandle(int handle);
+
+    [LibraryImport("kernel32.dll", EntryPoint = "WriteConsoleInputW", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool WriteConsoleInput(nint input, [In] InputRecord[] records, uint count, out uint written);
+
+    [LibraryImport("user32.dll", EntryPoint = "VkKeyScanW")]
+    public static partial short VkKeyScan(ushort character);
+
+    [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
+    public static partial uint MapVirtualKey(uint code, uint mapType);
+
+    /// <summary>INPUT_RECORD holding a KEY_EVENT_RECORD, the only kind the scene writes.</summary>
+    [StructLayout(LayoutKind.Explicit, Size = 20)]
+    public struct InputRecord
+    {
+        [FieldOffset(0)]
+        public ushort EventType;
+
+        [FieldOffset(4)]
+        public int KeyDown;
+
+        [FieldOffset(8)]
+        public ushort RepeatCount;
+
+        [FieldOffset(10)]
+        public ushort VirtualKeyCode;
+
+        [FieldOffset(12)]
+        public ushort VirtualScanCode;
+
+        [FieldOffset(14)]
+        public ushort UnicodeChar;
+
+        [FieldOffset(16)]
+        public uint ControlKeyState;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct Rectangle
     {

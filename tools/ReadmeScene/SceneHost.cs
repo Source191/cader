@@ -28,7 +28,7 @@ namespace Source191.Vantage.ReadmeScene;
 /// processes in the process table, no update check and no log. Git, Windows Terminal and PowerShell are real.
 /// Untested wiring, like the tool project's composition root; keep it in step with <c>ConsoleComposition</c>.
 /// </summary>
-internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion version)
+internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion version, IReadOnlyList<KeyStep> keys)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken)
     {
@@ -119,7 +119,12 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);
         ScreenLoop loop = new(screen, ownTab, console, updates, whatsNew, log);
 
-        return await loop.RunAsync(Environment.ProcessId, cancellationToken);
+        string wt = programs.Locate("wt") is ProgramLocation.Found terminalFound ? terminalFound.Path : "wt";
+        Task keysPlayed = new KeyPlayer(folders, processes, wt).PlayAsync(keys, cancellationToken);
+        int exitCode = await loop.RunAsync(Environment.ProcessId, cancellationToken);
+        await keysPlayed;
+
+        return exitCode;
     }
 
     // Enter opens a tab only for a session with a transcript; an empty file is enough for ClaudeTranscripts.

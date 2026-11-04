@@ -67,7 +67,7 @@ function Stop-Scene {
         Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
         $handle = [int] (Get-Content $windowFile -Raw)
         try {
-            $window = [System.Windows.Automation.AutomationElement]::FromHandle([nint] $handle)
+            $window = [System.Windows.Automation.AutomationElement]::FromHandle([IntPtr] $handle)
             $window.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
         }
         catch {

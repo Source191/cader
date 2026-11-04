@@ -10,7 +10,7 @@ namespace Source191.Vantage.ReadmeScene;
 /// Makes the README's screenshot and animation: Vantage's real console screen over a made-up scene of Northwind.*
 /// repositories, with scripted Claude Code, gh and az answers, run by <c>tools\New-ReadmeScreenshot.ps1</c>.
 /// <code>
-///   readme-scene run &lt;scene-root&gt; &lt;vantage-version&gt;   the console over the scene, in the window it was started in
+///   readme-scene run &lt;scene-root&gt; &lt;vantage-version&gt; [key-script...]   the console over the scene, playing the key scripts in turn
 ///   readme-scene attach &lt;job-id&gt;                       what a session tab shows in place of claude attach
 ///   readme-scene claim-tab &lt;registration&gt; &lt;pid&gt;       what a session tab runs in place of vantage claim-tab
 ///   readme-scene capture &lt;scene-root&gt; &lt;png&gt;          the scene's window, as it looks now
@@ -23,20 +23,26 @@ public static class Program
 
     public static async Task<int> Main(string[] args) => args switch
     {
-        ["run", string root, string version] => await RunAsync(new SceneFolders(Path.GetFullPath(root)), ToolVersion.FromInformational(version)),
+        ["run", string root, string version, .. string[] scripts] => await RunAsync(new SceneFolders(Path.GetFullPath(root)), ToolVersion.FromInformational(version), scripts),
         ["attach", string jobId] => Attach(jobId),
         ["claim-tab", string registration, string processId] => await ClaimAsync(registration, processId),
         ["capture", string root, string file] when OperatingSystem.IsWindows() => Capture(new SceneFolders(Path.GetFullPath(root)), file),
         _ => Usage(),
     };
 
-    private static async Task<int> RunAsync(SceneFolders folders, ToolVersion version)
+    private static async Task<int> RunAsync(SceneFolders folders, ToolVersion version, IReadOnlyList<string> scripts)
     {
         Environment.SetEnvironmentVariable(RootVariable, folders.Root);
         await File.WriteAllTextAsync(folders.WindowFile, SceneWindow.Find(TimeSpan.FromSeconds(10)).ToString(CultureInfo.InvariantCulture));
         Scene scene = SceneFile.Read(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "scene.json")));
 
-        return await new SceneHost(folders, scene, version).RunAsync(CancellationToken.None);
+                List<KeyStep> steps = [];
+        foreach (string script in scripts)
+        {
+            steps.AddRange(KeyScript.Parse(await File.ReadAllTextAsync(script)));
+        }
+
+        return await new SceneHost(folders, scene, version, steps).RunAsync(CancellationToken.None);
     }
 
     private static int Attach(string jobId)
@@ -73,7 +79,7 @@ public static class Program
 
     private static int Usage()
     {
-        Console.Error.WriteLine("Usage: readme-scene run <scene-root> <vantage-version> | attach <job-id> | claim-tab <registration> <pid>");
+        Console.Error.WriteLine("Usage: readme-scene run <scene-root> <vantage-version> [key-script...] | attach <job-id> | claim-tab <registration> <pid>");
 
         return 2;
     }
