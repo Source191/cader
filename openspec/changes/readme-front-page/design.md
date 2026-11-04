@@ -27,11 +27,11 @@ See proposal.md for why. Three facts shape the screenshot approach:
 
 The README becomes a front page in this order (draft wording, to be polished in the PR):
 
-1. **Banner and sponsor badge:** unchanged.
+1. **Banner and badges:** the banner and sponsor badge unchanged, with a "Built by Simon Vane" badge beside them (shields.io, LinkedIn logo) linking to `https://www.linkedin.com/in/simonvane/`. A badge rather than a plain line because it sits in the first screenful without pushing the problem down, and matches the sponsor badge beside it.
 2. **The problem:** "Five Claude Code sessions. A dozen terminal tabs. One of them finished ten minutes ago, another has been waiting for your permission since lunch, and you cannot remember which tab is which." Then one sentence: "Vantage is mission control for Claude Code on Windows: one tab that lists every session on the machine, rings when one needs you, and opens any of them in its own coloured tab."
 3. **The screenshot:** `assets\readme\sessions.png`, with alt text describing what it shows.
 4. **What it does:** the six feature bullets trimmed to five, each one line.
-5. **Why I built it:** the current paragraph, shortened to three or four sentences, keeping Orca and Kepler.
+5. **Why I built it:** the current paragraph, shortened to three or four sentences, keeping Orca and Kepler, and signed "Built by [Simon Vane](https://www.linkedin.com/in/simonvane/)" so the credit is next to the story as well as at the top.
 6. **Support Vantage:** the "gaps between rate limits" line, the link and the QR code, directly after the story while the reader is warmest.
 7. **Install:** `winget install Source191.Vantage`, then the Claude Code installer lines, then `vantage`; one sentence on what winget brings. Without winget and previews become one line linking to the guide.
 8. **Getting started:** five short steps, the GIF beside the first:

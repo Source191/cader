@@ -14,6 +14,7 @@ The README is the first thing anyone sees when the repository goes public, and t
 - **Install that looks as simple as it is:** `winget install Source191.Vantage` first, then the one prerequisite winget cannot bring (Claude Code), then `vantage`. The without-winget zip and previews move to the user guide.
 - **A brief getting-started guide:** creating a session, seeing the sessions, creating several, finding them all still listed after closing and reopening the terminal (and resuming after a reboot), and the Vantage profiles that `vantage setup-terminal` adds.
 - **A user guide:** a new `docs\user-guide.md` holds the detail the README drops (every key, the columns and the detail pane, notifications and sounds, configuration, `vantage here`, without winget, previews, upgrading and uninstalling, privacy), linked from the README's getting started and first in Learn more.
+- **Credit for the author:** a "Built by Simon Vane" badge linking to https://www.linkedin.com/in/simonvane/ sits beside the sponsor badge under the banner, and "Why I built it" ends with the same linked name, so readers know who made Vantage and where to find him.
 - **Support and the story nearer the top:** "Why I built it" moves up beside the screenshot, and "Support Vantage" with its QR code follows it, ahead of the install, keeping the sponsor badge under the banner.
 - **Docs that point at the guide:** `CLAUDE.md` and `CONTRIBUTING.md` stop calling the README the user guide.
 

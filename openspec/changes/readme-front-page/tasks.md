@@ -51,7 +51,8 @@
 
 - [ ] 8.1 Rewrite `README.md` in the design's order: the problem, the screenshot, what it does, why I built it, support with the QR code, install (winget first, then Claude Code), getting started with the GIF and its five steps, learn more with the user guide first; verify the install section still names only `winget install Source191.Vantage` and Claude Code 2.1.309 or later (installation spec) and `DocumentedMinimumShould` passes
 - [ ] 8.2 Verify the getting started's profiles step names `vantage setup-terminal` and links to the guide's notifications section (spec: Reading the getting started), that `SpellBritish`-style British spelling holds by reading it through, and that no em dash appears
-- [ ] 8.3 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
+- [ ] 8.3 Add the "Built by Simon Vane" badge beside the sponsor badge and the signed line at the end of "Why I built it", both linking to `https://www.linkedin.com/in/simonvane/`; verify both render and open the profile on GitHub's preview
+- [ ] 8.4 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
 
 ## 9. Contributor docs
 
