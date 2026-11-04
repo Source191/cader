@@ -33,17 +33,14 @@ The README becomes a front page in this order (draft wording, to be polished in 
 4. **What it does:** the six feature bullets trimmed to five, each one line.
 5. **Why I built it:** the current paragraph, shortened to three or four sentences, keeping Orca and Kepler, and signed "Built by [Simon Vane](https://www.linkedin.com/in/simonvane/)" so the credit is next to the story as well as at the top.
 6. **Support Vantage:** directly after the story while the reader is warmest. The "gaps between rate limits" line, then a specific ask that says what the money buys: "If Vantage saves you ten minutes a day, a coffee now and then keeps it moving. Every one goes towards the Claude plan it is built with." Then the official button, a line that a small monthly membership is there for regular users, and the QR code.
-7. **Install** and **8. Getting started** follow (below); getting started ends with a one-line ask and the official button again ("Got your first session running? Buy me a sliver of a Claude Max plan."), because people give just after they have felt the value, not before they have seen the tool.
-9. **Install:** `winget install Source191.Vantage`, then the Claude Code installer lines, then `vantage`; one sentence on what winget brings. Without winget and previews become one line linking to the guide.
-10. **Getting started:** five short steps, the GIF beside the first, ending with the ask in 7:
+7. **Install:** `winget install Source191.Vantage`, then the Claude Code installer lines, then `vantage`; one sentence on what winget brings. Without winget and previews become one line linking to the guide.
+8. **Getting started:** five short steps, the GIF beside the first, then a one-line ask with the official button again ("Got your first session running? Buy me a sliver of a Claude Max plan."), because people give just after they have felt the value, not before they have seen the tool:
    - **Create a session:** `n`, a repository, a name, an optional prompt, F5; it gets its own worktree and coloured tab.
    - **See your sessions:** the Sessions tab, what the states and the amber rows mean, Enter to switch to a session's tab.
    - **Run several:** `n` again for each piece of work, each in its own worktree; `vantage here` for a folder you are already in.
    - **Close the terminal, keep the sessions:** sessions run under Claude Code's supervisor, so closing Windows Terminal stops nothing; start Vantage again and every session is still listed, Enter reattaches; after a reboot they show stopped and `R` resumes them.
    - **Use the Vantage profiles:** `vantage setup-terminal` adds a "Vantage" profile (start Vantage from Windows Terminal's new-tab menu, or make it the startup profile) and a "Vantage session" profile for session tabs, each with its own bell, and turns on Claude Code's terminal bell.
-11. **Learn more:** the user guide first, then the existing in-tool help, changelog, privacy, security and contributing lines.
-
-The numbering above is the order of the decisions, not of the page: the page runs 1 to 6, then Install, Getting started (with its closing ask) and Learn more.
+9. **Learn more:** the user guide first, then the existing in-tool help, changelog, privacy, security and contributing lines.
 
 ### Making support easy to find
 
