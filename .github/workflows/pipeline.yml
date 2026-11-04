@@ -10,8 +10,8 @@ name: pipeline
 # A push to main that changes Version in src/Source191.Vantage/Source191.Vantage.csproj is also a release: the check
 # job zips the winget build named for the plain Version, smoke-tests that zip, and the release job publishes it as a
 # GitHub Release, so each merge builds and tests once and a commit whose check failed is never released; a stable
-# release is then submitted to winget (the winget job). Bumping the version (already required, because each merge that
-# changes the program is a release) is the same action that decides whether a release happens.
+# release reaches winget only when the owner runs publish.yml for it. Bumping the version (already required, because
+# each merge that changes the program is a release) is the same action that decides whether a release happens.
 on:
   pull_request:
   push:
@@ -404,48 +404,6 @@ jobs:
               throw "gh release create failed with exit code $LASTEXITCODE."
           }
 
-  # A stable release becomes installable with winget once a pull request adding its manifest to microsoft/winget-pkgs is
-  # merged; the update check reads only merged manifests, so nobody is offered a version before winget can install it.
-  # wingetcreate (Microsoft's manifest tool, pinned to a release and its SHA-256) downloads the release's zip, hashes it,
-  # updates the manifest the owner first submitted by hand (MAINTAINING.md, winget) and opens the pull request from a
-  # fork owned by WINGET_PKGS_TOKEN's account: a classic personal access token with the public_repo scope, the only
-  # secret here. A prerelease is never submitted. With no token, or when the pull request cannot be opened, the job
-  # fails, so a release that winget never hears of is seen at once; rerun the job once the cause is fixed.
-  # (https://github.com/microsoft/winget-create/blob/v1.12.13.0/doc/update.md)
-  winget:
-    name: Submit the release to winget
-    needs: [check, release]
-    if: needs.check.outputs.changed == 'true' && !contains(needs.check.outputs.version, '-')
-    runs-on: windows-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - name: Submit the manifest to the winget community repository
-        shell: pwsh
-        env:
-          WINGET_PKGS_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
-          VERSION: ${{ needs.check.outputs.version }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          if ([string]::IsNullOrEmpty($env:WINGET_PKGS_TOKEN)) {
-              Write-Host '::error::WINGET_PKGS_TOKEN is not set, so this release was not submitted to winget. Add it (MAINTAINING.md, winget) and rerun this job.'
-              exit 1
-          }
-
-          $tool = Join-Path $env:RUNNER_TEMP 'wingetcreate.exe'
-          Invoke-WebRequest -Uri 'https://github.com/microsoft/winget-create/releases/download/v1.12.13.0/wingetcreate.exe' -OutFile $tool
-          $hash = (Get-FileHash -LiteralPath $tool -Algorithm SHA256).Hash
-          if ($hash -ne '24042BD37915805615E6CF969AC57C6439124C3FE85823327F5F3FB24BD9FFEA') {
-              throw "wingetcreate.exe has SHA-256 $hash, not the pinned release's."
-          }
-
-          $zip = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$env:VERSION/vantage_$($env:VERSION)_win-x64.zip"
-          & $tool update Source191.Vantage --version $env:VERSION --urls "$zip|x64" --submit --token $env:WINGET_PKGS_TOKEN
-          if ($LASTEXITCODE -ne 0) {
-              Write-Host "::error::wingetcreate update failed with exit code $LASTEXITCODE, so v$env:VERSION is not on its way to winget. Read its output above, fix the cause and rerun this job."
-              exit 1
-          }
   # The hand-off check against a real Claude session (.claude\rules\checks.md, "Hand-off check"): vantage here
   # starts a throwaway session with no prompt, attaches, and is detached with Ctrl+Z. Needs the
   # CLAUDE_CODE_OAUTH_TOKEN secret from `claude setup-token` (https://code.claude.com/docs/en/github-actions);

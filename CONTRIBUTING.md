@@ -169,6 +169,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README, because `DocumentedMinimumShould` reads it.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
+- **Owner-only workflows:** `publish.yml` submits a stable release to winget and `claude-contract.yml` checks each night's Claude Code CLI; [MAINTAINING.md](MAINTAINING.md) describes both.
 
 ## Versions
 
