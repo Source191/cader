@@ -1,6 +1,6 @@
 # Contributing to Vantage
 
-Thank you for wanting to make Vantage better. This guide holds what you need to develop it: how to propose a change, build and test it, how the code is organised, how every change goes through OpenSpec, and how to open a pull request. The [README](README.md) is the user guide; [CLAUDE.md](CLAUDE.md) and `.claude\rules` are the full rulebook and the verified facts about Claude Code, Terminal.Gui, Windows Terminal and Windows that Vantage depends on; [MAINTAINING.md](MAINTAINING.md) is the owner's guide to releasing.
+Thank you for wanting to make Vantage better. This guide holds what you need to develop it: how to propose a change, build and test it, how the code is organised, how every change goes through OpenSpec, and how to open a pull request. The [README](README.md) is the front page and [docs\user-guide.md](docs/user-guide.md) the user guide; [CLAUDE.md](CLAUDE.md) and `.claude\rules` are the full rulebook and the verified facts about Claude Code, Terminal.Gui, Windows Terminal and Windows that Vantage depends on; [MAINTAINING.md](MAINTAINING.md) is the owner's guide to releasing.
 
 ## Contents
 
@@ -8,6 +8,7 @@ Thank you for wanting to make Vantage better. This guide holds what you need to 
 - [Setting up](#setting-up)
 - [The build and test loop](#the-build-and-test-loop)
 - [Trying your build](#trying-your-build)
+- [The README's images](#the-readmes-images)
 - [How the code is organised](#how-the-code-is-organised)
 - [The code rules in brief](#the-code-rules-in-brief)
 - [OpenSpec: how every change is made](#openspec-how-every-change-is-made)
@@ -28,7 +29,7 @@ Thank you for wanting to make Vantage better. This guide holds what you need to 
 
 ## Setting up
 
-Vantage builds and runs on Windows 11 only. Install Claude Code as the README's [Prerequisites](README.md#prerequisites) say, and the tools a build needs that winget would otherwise bring with Vantage (skip a line for one you already have), then:
+Vantage builds and runs on Windows 11 only. Install Claude Code as the README's [Install](README.md#install) section says, and the tools a build needs that winget would otherwise bring with Vantage (skip a line for one you already have), then:
 
 ```powershell
 winget install --id Microsoft.WindowsTerminal --exact --source winget   # already part of Windows 11 22H2 and later
@@ -87,6 +88,19 @@ gh run download <run id> --name vantage-0.21.0-ci.42-win-x64 --dir .\downloaded
 
 A preview's GitHub prerelease carries the same zip, which `-FromArtifact` takes too. Remove a local build by deleting `%LOCALAPPDATA%\Vantage\local`.
 
+## The README's images
+
+The README's screenshot (`assets\readme\sessions.png`) and animation (`assets\readme\new-session.gif`) are Vantage's real console over a made-up scene of Northwind.* repositories, made by one script from an ordinary Windows Terminal tab:
+
+```powershell
+.\tools\New-ReadmeScreenshot.ps1                    # both images
+.\tools\New-ReadmeScreenshot.ps1 -Only Screenshot   # just the PNG
+```
+
+- **When to run it:** after a change that alters what the Sessions tab, the new-session wizard or the session tabs look like, so the README still shows Vantage as it is.
+- **What it needs:** Windows Terminal, git, and ffmpeg for the animation (`winget install Gyan.FFmpeg`). The window it opens must be left alone while it runs; the workstation may be locked.
+- **What it touches:** only the scene folder (`C:\VantageDemo` unless `-SceneRoot` says otherwise), which it deletes afterwards, and the two images. Your Vantage state, `~\.claude` and your sessions are never read or written, and every tab it opens stays in its own window.
+- **Changing what they show:** [tools\ReadmeScene](tools/ReadmeScene/README.md) says how: the sessions and pull requests are in `scene.json`, the animation's keys in `new-session.keys`. Only made-up repositories and Vantage itself are allowed in the scene.
 ## How the code is organised
 
 | Project | What it holds |
@@ -99,8 +113,9 @@ A preview's GitHub prerelease carries the same zip, which `-FromArtifact` takes 
 | [test\Source191.Vantage.Infrastructure.Tests](test/Source191.Vantage.Infrastructure.Tests/README.md) | The adapters against real git, processes and files, and the Claude Code contract tests |
 | [test\Source191.Vantage.TestDoubles](test/Source191.Vantage.TestDoubles/README.md) | The shared hand-written fakes, one per port, no test framework |
 | [tools\HeadlessTerminal](tools/HeadlessTerminal/README.md) and [its tests](tools/HeadlessTerminal.Tests/README.md) | Drives the built exe in a pseudo-console: the hand-off and smoke checks |
+| [tools\ReadmeScene](tools/ReadmeScene/README.md) and [its tests](tools/ReadmeScene.Tests/README.md) | Vantage's real console over a made-up scene, for the README's screenshot and animation |
 
-Each project's README holds what is worth knowing about it; a `.csproj` carries no comments (the two `Directory.Build.props` files, the root one and `src\Directory.Build.props`, keep their own beside their settings). `openspec\` holds the specifications and the changes made against them, `.github\` the workflows and their scripts, `assets\` the icon and artwork.
+Each project's README holds what is worth knowing about it; a `.csproj` carries no comments (the two `Directory.Build.props` files, the root one and `src\Directory.Build.props`, keep their own beside their settings). `openspec\` holds the specifications and the changes made against them, `.github\` the workflows and their scripts, `assets\` the icon, artwork and the README's images, `docs\` the user guide.
 
 ## The code rules in brief
 
@@ -144,7 +159,7 @@ Before asking for review, check that:
 - **The loop:** `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` pass, and the hand-off check exits 0 if you touched attach, `vantage here` or the pseudo-console.
 - **The version:** a pull request that changes the packaged tool raises `Version`; see [Versions](#versions).
 - **The changelog:** the same pull request adds its line to `CHANGELOG.md` under Unreleased; see [The changelog](#the-changelog).
-- **The documents:** the README stays a short getting-started guide, and the `?` help, tooltips and `openspec\specs` describe the behaviour a user will notice; any newly verified fact about Claude Code, Terminal.Gui, Windows Terminal or Windows is recorded in its `.claude\rules` file with the date and version; a project's README holds any fact worth knowing about it.
+- **The documents:** the README stays a short front page with a getting-started guide, `docs\user-guide.md` holds every key, column, setting and command a user meets, and the `?` help, tooltips and `openspec\specs` describe the behaviour a user will notice; any newly verified fact about Claude Code, Terminal.Gui, Windows Terminal or Windows is recorded in its `.claude\rules` file with the date and version; a project's README holds any fact worth knowing about it.
 - **Manual checks:** a change to how Vantage drives `wt.exe`, tabs or attach has been through the [manual checks](#manual-checks-for-tab-and-attach-changes).
 
 ## Manual checks for tab and attach changes
@@ -166,7 +181,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 `.github\workflows\pipeline.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
 
 - **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, publishes the self-contained winget build and zips it as `vantage_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `vantage.exe`.
-- **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README, because `DocumentedMinimumShould` reads it.
+- **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README or the user guide, because `DocumentedMinimumShould` reads both.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
 - **Owner-only workflows:** `publish.yml` submits a stable release to winget and `claude-contract.yml` checks each night's Claude Code CLI; [MAINTAINING.md](MAINTAINING.md) describes both.

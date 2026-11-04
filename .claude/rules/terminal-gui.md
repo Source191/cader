@@ -2,6 +2,7 @@
 paths:
   - "src/Source191.Vantage.Tui/**"
   - "tools/HeadlessTerminal/**"
+  - "tools/ReadmeScene/**"
   - "tools/New-IconPixels.ps1"
   - "assets/icon/**"
 ---
@@ -27,3 +28,4 @@ paths:
 - A table that cannot take focus draws its selected row with the scheme's Active role, which Terminal.Gui derives as a lighter shade when a scheme leaves it unset (black on cyan came out as bold dark grey on bright cyan, a red block as pink): `Palette.SelectedRow` names those colours and sets every role, and a cell that keeps its own colour there (the TAB block, `CellPaint.Fill`) is drawn with `Palette.SelectedRow(colour)`.
 - `SpinnerView.AutoSpin` is safe to set repeatedly and before the view has an `App` (`EndInit` adds the timeout later); the default style is Line, and `SpinnerStyle.Dots` renders in the headless capture.
 - `ImageView` (Terminal.Gui 2.5) takes a `Color[,]` and draws it through [Sixel](https://vt100.net/docs/vt3xx-gp/chapter14.html) or [Kitty](https://sw.kovidgoyal.net/kitty/graphics-protocol/) when the driver reports support (`app.Driver.SixelSupport`, detected at start-up; Windows Terminal draws Sixel), fitted to the view at `ZoomLevel` 1; without support it colours one cell per pixel, so `VantageIcon` stays hidden then. The icon's pixels are `assets\icon\vantage-48.rgba` (`*.rgba binary` in `.gitattributes`), written by `tools\New-IconPixels.ps1` (the icon from `VantageMark.ps1` with `-Outline`, an edge in the frames' grey drawn inside its dark tile, which otherwise vanished on the console's black; white was too stark and the mark without its tile, `-NoTile`, read worse; `VantageIcon.Fit` makes the view as many cells wide as its one row is tall in pixels, from the reported cell size, because a fixed width stretched the icon) and embedded in the Tui assembly; the headless terminal reports no image support, so its captures never show the icon.
+- A program that runs `ConsoleScreen` cannot reach its `IApplication` (`Run` creates it with `Application.Create().Init()`), so `NewKeyDownEvent` is not available from outside. Writing key events into the program's own console input with `WriteConsoleInputW` (each a KEY_EVENT record with the virtual key, scan code and character, down then up) is read by Terminal.Gui as typed keys: `/` then `stock` filtered the Sessions table (observed 4 November 2026, Terminal.Gui 2.5.0 in Windows Terminal 1.25.2733.0, from `tools\ReadmeScene`, with the window neither focused nor needing to be).

@@ -2,90 +2,71 @@
 
 ![Vantage: mission control for Claude Code sessions, every session in one tab, still there after a reboot. Beside it, the icon: two branches merging into one node, shaped as a V](https://raw.githubusercontent.com/Source191/vantage/main/assets/header/readme-banner.png)
 
-[![Buy me a sliver of a Claude Max plan](https://img.shields.io/badge/Buy_me_a_sliver_of_a-Claude_Max_plan-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/simonvane)
+<a href="https://buymeacoffee.com/simonvane"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy me a coffee" height="40"></a> &nbsp; [![Built by Simon Vane](https://img.shields.io/badge/Built_by-Simon_Vane-0A66C2?style=for-the-badge)](https://www.linkedin.com/in/simonvane/)
 
-Vantage is mission control for Claude Code on Windows: one Windows Terminal tab that shows every session on the machine, so you no longer have to remember which tab is doing what or which one is waiting for you.
+Five Claude Code sessions. A dozen terminal tabs. One of them finished ten minutes ago, another has been waiting for your permission since lunch, and you cannot remember which tab is which.
 
-- **See every session at once:** each one is listed with its state, repository, branch and pull request.
-- **Start in a fresh worktree:** a new session gets its own git worktree, so sessions never trip over each other's changes.
-- **Open a session in its own tab:** Enter opens it in a coloured tab named after it, or switches to that tab when it is already open.
-- **Hear when one needs you:** the terminal bell rings when a session finishes or pauses for you.
-- **Keep working when the terminal closes:** sessions run under Claude Code's own background supervisor, so they carry on with no terminal showing them and are still listed after a reboot.
-- **Tidy up with one key:** delete a session and its worktree together, unless that would lose uncommitted or unpushed work.
+**Vantage is mission control for Claude Code on Windows:** one tab that lists every session on the machine, rings when one needs you, and opens any of them in its own coloured tab.
 
-> **To do:** add a screenshot of the sessions view here before the repository is made public.
+![Vantage's Sessions tab in Windows Terminal, with five coloured session tabs beside it. Eight sessions are listed in Northwind repositories and Vantage's own: one needs input, two are working, two are idle, one completed, one failed and one stopped, with GitHub and Azure DevOps pull requests beside them. The detail pane shows that the selected session is waiting for permission to run dotnet test.](https://raw.githubusercontent.com/Source191/vantage/main/assets/readme/sessions.png)
 
-## Prerequisites
+- **See every session at once:** its state, repository and pull request, on GitHub or Azure DevOps, whether Vantage started it or not.
+- **Start each in a fresh worktree:** sessions never trip over each other's changes.
+- **One coloured tab per session:** Enter opens it, or switches to it when it is open.
+- **Hear when one needs you:** the bell rings and its row turns amber.
+- **Close the terminal, keep the sessions:** they run under Claude Code's own supervisor, so they carry on with no terminal showing them, are still listed after a reboot and resume with one key.
 
-Vantage runs on Windows 10 or 11 and needs one program you install yourself: Claude Code 2.1.309 or later, with its native installer (winget's own Claude Code package can be older than Vantage needs, and does not update itself):
+## Why I built it
 
-```powershell
-irm https://claude.ai/install.ps1 | iex   # Claude Code
-[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ";$HOME\.local\bin", 'User')   # puts claude on the PATH
-```
+I wanted a tool that worked the way I work. I tried [Orca](https://github.com/stablyai/orca) and [Kepler](https://gitkraken.com/kepler) first, and there is a lot I like about both, but I live in the terminal, I want to stay there, and both do a great deal I was not interested in. By all means try the others, but give Vantage a go too 😊
 
-Open a new terminal, run `claude` once to sign in, then check with `claude --version`. Vantage carries its own .NET runtime, and installing it with winget brings anything else it uses that is missing.
+Built by [Simon Vane](https://www.linkedin.com/in/simonvane/).
 
-Optional: the GitHub CLI (`gh auth login`) or the Azure CLI (`az extension add --name azure-devops`, `az login`) fills in the PR column.
+## Support Vantage
+
+Vantage is built in the gaps between rate limits. If it saves you ten minutes a day, a coffee now and then keeps it moving: every one goes towards the Claude plan it is built with, and if you use it every day, a small monthly membership is there too.
+
+<a href="https://buymeacoffee.com/simonvane"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy me a coffee" height="40"></a>
+
+<img src="https://raw.githubusercontent.com/Source191/vantage/main/assets/support/buy-me-a-coffee-qr.png" alt="QR code for buymeacoffee.com/simonvane" width="120">
 
 ## Install
 
 ```powershell
 winget install Source191.Vantage
-vantage setup-terminal   # optional but recommended: see Notifications below
 ```
 
-winget installs Windows Terminal, PowerShell 7 and git first if any of them is missing. A shell that was open before the install needs restarting to find `vantage`. Vantage tells you when a newer release is out; press `U` to see what changed and upgrade it with winget in a tab of its own (or run `winget upgrade Source191.Vantage` with no Vantage open). `winget uninstall Source191.Vantage` removes it and leaves your settings and Claude Code sessions alone.
+That brings Windows Terminal, PowerShell 7 and git if any of them is missing, and Vantage carries its own .NET. The one thing it cannot bring is Claude Code 2.1.309 or later, which comes from its own installer:
 
-- **Without winget:** download `vantage_<version>_win-x64.zip` from the [latest release](https://github.com/Source191/vantage/releases/latest), check it with `gh attestation verify <zip> --repo Source191/vantage`, extract it to a folder of your own and add that folder to your PATH. Windows Terminal, PowerShell 7 and git are then yours to install, and `U` can only show what changed and the release page.
-- **Previews:** each preview is a [GitHub prerelease](https://github.com/Source191/vantage/releases) with the same zip; extract it to any folder and run `vantage.exe` from there. It never replaces the winget install, and previews never reach winget.
+```powershell
+irm https://claude.ai/install.ps1 | iex
+[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ";$HOME\.local\bin", 'User')   # puts claude on the PATH
+```
 
-## Quick start
+Open a new terminal, run `claude` once to sign in, then `vantage`. Vantage tells you when a newer release is out, and `U` upgrades it. The [user guide](https://github.com/Source191/vantage/blob/main/docs/user-guide.md#installing) covers installing without winget, previews and uninstalling.
 
-1. **Start it:** run `vantage` in an ordinary Windows Terminal tab (not inside a Claude Code session, which turns colour off in the tabs it opens).
-2. **Point it at your repositories:** it looks under `~\source\repos`. If yours live elsewhere, press Right twice for the Config tab and Enter on Repository roots.
-3. **Start a session:** press `n`, choose a repository, type a name and, if you like, an opening prompt, then F5. The session gets its own worktree and opens in its own tab.
-4. **Come back to it:** Enter on its row switches to its tab. A row turns amber, and the Vantage tab rings, when a session needs you.
-5. **After a reboot:** sessions show as stopped; `R` resumes them all.
-6. **When the work is done:** `d` deletes the session and the worktree Vantage made for it, unless that would lose work.
+## Getting started
 
-Already in a folder? `vantage here` starts a supervised session there on the current branch, in the same tab, and lists it in Vantage.
+1. **Create a session:** run `vantage` in an ordinary Windows Terminal tab and press `n`. Choose a repository (Vantage looks under `~\source\repos`; change that on the Config tab), give the session a name and, if you like, an opening prompt, then press F5. It gets its own worktree and opens in a coloured tab named after it.
 
-## Everyday keys
+   ![Starting a session: n opens the new-session wizard, Northwind.Inventory is chosen, add-stock-alerts is typed as the name with an opening prompt, F5 opens the session in a purple tab, and back in Vantage the new session is listed as working.](https://raw.githubusercontent.com/Source191/vantage/main/assets/readme/new-session.gif)
 
-The key bar at the bottom shows the keys for the selected row, and `?` on any tab lists every key, column and detail line.
+2. **See your sessions:** the Sessions tab lists every session with what it is doing. Amber means it needs you, and the Vantage tab rings. Enter switches to a session's tab.
+3. **Run several:** press `n` again for each piece of work; each gets its own worktree and tab, all in the one list. Already in a folder? `vantage here` starts a session there.
+4. **Close the terminal; your sessions stay:** closing tabs, Vantage or Windows Terminal stops nothing. Start Vantage again and every session is still listed, and Enter takes you back. After a reboot they show as stopped, and `R` resumes them all.
+5. **Use the Vantage profiles:** run `vantage setup-terminal` and restart Windows Terminal. It adds a Vantage profile (open Vantage from the new-tab menu, or make it the startup profile) and a Vantage session profile for session tabs, each with its own bell, and turns on Claude Code's terminal bell, so you hear both when a session needs you. See [notifications and profiles](https://github.com/Source191/vantage/blob/main/docs/user-guide.md#notifications-and-profiles).
 
-| Key | Action |
-| --- | --- |
-| Left, Right | Show the Sessions, Worktrees or Config tab |
-| Enter | Open the session in its own tab, or switch to it |
-| n | New session |
-| x | Stop the session; it stays listed and can be resumed |
-| d | Delete the session (or, on the Worktrees tab, remove the worktree) when nothing would be lost |
-| R | Resume every stopped or failed session shown |
-| / | Filter the rows |
-| ? | Help |
-| ! | Report a problem, with privacy-safe diagnostics filled in |
-| q | Quit. Quitting Vantage never stops a session |
+`?` on any tab lists every key, and the key bar shows the ones for the selected row.
 
-## Notifications
+Got your first session running? Buy me a sliver of a Claude Max plan:
 
-`vantage setup-terminal` sets up the bells: it adds two Windows Terminal profiles so Vantage's own bell and a session's bell sound different, and turns on Claude Code's terminal bell (`preferredNotifChannel` in `~\.claude\settings.json`), so a session's tab rings when it finishes or needs you. Restart Windows Terminal afterwards. `vantage setup-terminal --help` shows the options, including your own sounds and `--remove`.
+<a href="https://buymeacoffee.com/simonvane"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy me a coffee" height="40"></a>
 
 ## Learn more
 
+- **User guide:** [docs/user-guide.md](https://github.com/Source191/vantage/blob/main/docs/user-guide.md), every key, column, setting and command.
 - **In the tool:** `?` on any tab, and a tooltip on every column header and key; `vantage --help` for the commands.
 - **What changed:** [CHANGELOG.md](https://github.com/Source191/vantage/blob/main/CHANGELOG.md).
 - **Privacy:** Vantage sends nothing but a daily, anonymous check of the winget community repository on GitHub for a newer release, and of that release's changelog (turn it off on the Config tab), and the problem reports you choose to submit. It stores no credential and records nothing personal.
 - **Security:** to report a vulnerability, see [SECURITY.md](https://github.com/Source191/vantage/blob/main/SECURITY.md).
 - **Contributing:** [CONTRIBUTING.md](https://github.com/Source191/vantage/blob/main/CONTRIBUTING.md).
-
-## Why I built it
-
-I built Vantage because I wanted a tool that worked the way I work. Before starting it I tried [Orca](https://github.com/stablyai/orca) and [Kepler](https://gitkraken.com/kepler), and there is a lot I like about both of them. But I live in the terminal and I want to stay in the terminal, and both of them also do a great deal that I was not interested in. Perhaps my mind will change over time; for now I wanted something that fits how I use Claude Code and nothing more. By all means try the others, but give Vantage a go too 😊
-
-## Support Vantage
-
-Vantage is built in the gaps between rate limits. Help close the gaps: [buy me a sliver of a Claude Max plan](https://buymeacoffee.com/simonvane).
-
-![QR code for buymeacoffee.com/simonvane](https://raw.githubusercontent.com/Source191/vantage/main/assets/support/buy-me-a-coffee-qr.png)

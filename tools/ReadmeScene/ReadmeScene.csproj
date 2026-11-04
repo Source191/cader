@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Source191.Vantage.ReadmeScene</RootNamespace>
+    <AssemblyName>readme-scene</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Source191.Vantage.Core\Source191.Vantage.Core.csproj" />
+    <ProjectReference Include="..\..\src\Source191.Vantage.Infrastructure\Source191.Vantage.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Source191.Vantage.Tui\Source191.Vantage.Tui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="scene.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="new-session.keys" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Source191.Vantage.ReadmeScene.Tests" />
+  </ItemGroup>
+
+</Project>

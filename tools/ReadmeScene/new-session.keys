@@ -1,0 +1,13 @@
+# Starting a session with n, for assets\readme\new-session.gif. Each line waits its delay in milliseconds, then acts.
+# The wizard's fields in order, each left with Enter: repository (type to filter), name, where, worktree base, opening prompt.
+1500 press n
+900 type Inventory
+700 press Enter
+700 type add-stock-alerts
+600 press Enter
+600 press Enter
+600 press Enter
+1200 type Email the buyer when stock runs low
+1000 press F5
+2000 focus
+4500 mark done

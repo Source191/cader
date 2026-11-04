@@ -7,6 +7,7 @@ public sealed class DocumentedMinimumShould
 {
     [Theory]
     [InlineData("README.md")]
+    [InlineData(@"docs\user-guide.md")]
     [InlineData(@"openspec\config.yaml")]
     public void StateTheMinimumClaudeCodeVersion(string document)
     {
