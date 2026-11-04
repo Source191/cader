@@ -24,7 +24,7 @@
 
 ## 4. Keys and frames (test first)
 
-- [ ] 4.1 Test `KeyScriptShould.ReadDelaysKeysAndText`, then `KeyScript` reading `new-session.keys`; verify it passes
+- [x] 4.1 Test `KeyScriptShould.ReadDelaysKeysAndText`, then `KeyScript` reading `new-session.keys`; verify it passes
 - [ ] 4.2 Test `FrameScheduleShould.TakeAFrameEveryHundredMilliseconds` and `StopAfterTheLastKeyAndHold`, then `FrameSchedule`; verify it passes
 - [ ] 4.3 Write `new-session.keys` (filter to Northwind.Inventory, name `add-stock-alerts`, a short prompt, F5, a pause on the new tab, back to Vantage) and verify `KeyScriptShould.ReadTheShippedScript` loads it
 

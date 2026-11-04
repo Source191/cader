@@ -60,10 +60,34 @@ function Add-Commit {
     Invoke-Git $Folder @('commit', '--quiet', '-m', $Message) -MinutesAgo $MinutesAgo
 }
 
+# Closes the scene's window and ends its processes, so the folder can go: only programs run from the scene's own bin.
+function Stop-Scene {
+    $windowFile = Join-Path $SceneRoot 'window.txt'
+    if (Test-Path $windowFile) {
+        Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+        $handle = [int] (Get-Content $windowFile -Raw)
+        try {
+            $window = [System.Windows.Automation.AutomationElement]::FromHandle([nint] $handle)
+            $window.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
+        }
+        catch {
+            Write-Verbose "The scene's window had already gone: $_"
+        }
+    }
+
+    $bin = Join-Path $SceneRoot 'bin'
+    Get-Process -Name 'readme-scene' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -and $_.Path.StartsWith($bin, [StringComparison]::OrdinalIgnoreCase) } |
+        Stop-Process -Force
+    Start-Sleep -Milliseconds 500
+}
+
 function Remove-Scene {
     if (-not (Test-Path $SceneRoot)) {
         return
     }
+
+    Stop-Scene
 
     if (-not (Test-Path (Join-Path $SceneRoot $marker))) {
         throw "$SceneRoot exists but was not made by this script, so it is left alone. Choose another -SceneRoot."

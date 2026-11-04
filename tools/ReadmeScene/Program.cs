@@ -13,6 +13,7 @@ namespace Source191.Vantage.ReadmeScene;
 ///   readme-scene run &lt;scene-root&gt; &lt;vantage-version&gt;   the console over the scene, in the window it was started in
 ///   readme-scene attach &lt;job-id&gt;                       what a session tab shows in place of claude attach
 ///   readme-scene claim-tab &lt;registration&gt; &lt;pid&gt;       what a session tab runs in place of vantage claim-tab
+///   readme-scene capture &lt;scene-root&gt; &lt;png&gt;          the scene's window, as it looks now
 /// </code>
 /// </summary>
 public static class Program
@@ -25,12 +26,14 @@ public static class Program
         ["run", string root, string version] => await RunAsync(new SceneFolders(Path.GetFullPath(root)), ToolVersion.FromInformational(version)),
         ["attach", string jobId] => Attach(jobId),
         ["claim-tab", string registration, string processId] => await ClaimAsync(registration, processId),
+        ["capture", string root, string file] when OperatingSystem.IsWindows() => Capture(new SceneFolders(Path.GetFullPath(root)), file),
         _ => Usage(),
     };
 
     private static async Task<int> RunAsync(SceneFolders folders, ToolVersion version)
     {
         Environment.SetEnvironmentVariable(RootVariable, folders.Root);
+        await File.WriteAllTextAsync(folders.WindowFile, SceneWindow.Find(TimeSpan.FromSeconds(10)).ToString(CultureInfo.InvariantCulture));
         Scene scene = SceneFile.Read(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "scene.json")));
 
         return await new SceneHost(folders, scene, version).RunAsync(CancellationToken.None);
@@ -56,6 +59,14 @@ public static class Program
         }
 
         await new TabClaimer(new JsonFileStore(new SceneFolders(root).State, TimeProvider.System), new ProcessRegistry()).ClaimAsync(id, shell);
+
+        return 0;
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static int Capture(SceneFolders folders, string file)
+    {
+        WindowCapture.ToPng(nint.Parse(File.ReadAllText(folders.WindowFile), CultureInfo.InvariantCulture), Path.GetFullPath(file));
 
         return 0;
     }

@@ -14,4 +14,7 @@ public sealed record SceneFolders(string Root)
     public string ClaudeHome => Path.Combine(Root, "claude");
 
     public string Bin => Path.Combine(Root, "bin");
+
+    /// <summary>The handle of the scene's Windows Terminal window, written by the running console for the captures.</summary>
+    public string WindowFile => Path.Combine(Root, "window.txt");
 }
