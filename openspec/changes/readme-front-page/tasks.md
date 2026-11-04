@@ -44,8 +44,8 @@
 
 ## 7. User guide
 
-- [ ] 7.1 Write `docs\user-guide.md` with the sections the design lists, taking the keys table, notifications and profiles, without winget, previews, upgrading and uninstalling from the README and the key and column lines from `Wording`; verify every key in `Wording.SessionsKeys`, `WorktreesKeys` and `ConfigKeys` appears in it
-- [ ] 7.2 Verify the notifications section names `vantage setup-terminal` as the one step for both bells (spec: Reading the notifications section)
+- [x] 7.1 Write `docs\user-guide.md` with the sections the design lists, taking the keys table, notifications and profiles, without winget, previews, upgrading and uninstalling from the README and the key and column lines from `Wording`; verify every key in `Wording.SessionsKeys`, `WorktreesKeys` and `ConfigKeys` appears in it
+- [x] 7.2 Verify the notifications section names `vantage setup-terminal` as the one step for both bells (spec: Reading the notifications section)
 
 ## 8. README
 
