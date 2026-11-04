@@ -7,7 +7,7 @@
 
 ## 2. Scene model (tools\ReadmeScene, test first)
 
-- [ ] 2.1 Create `tools\ReadmeScene` and `tools\ReadmeScene.Tests` (xunit.v3, Shouldly, invariant globalisation, referencing Core, Infrastructure, Tui and TestDoubles), add both to the solution and verify `dotnet build -c Debug` passes with warnings as errors
+- [x] 2.1 Create `tools\ReadmeScene` and `tools\ReadmeScene.Tests` (xunit.v3, Shouldly, invariant globalisation, referencing Core, Infrastructure, Tui and TestDoubles), add both to the solution and verify `dotnet build -c Debug` passes with warnings as errors
 - [ ] 2.2 Test `SceneFileShould.ReadTheRepositoriesSessionsAndPullRequests`, then write `SceneFile` reading `scene.json`; verify the test passes
 - [ ] 2.3 Test `SceneFileShould.PlaceEachStartTimeMinutesBeforeNow` against a fixed `FakeTimeProvider`, then the relative-time rule; verify it passes
 - [ ] 2.4 Test `SceneFileShould.RefuseARealLookingPath` (any path outside the scene root, or a repository name other than Northwind.* and `vantage`), then the check; verify it passes
