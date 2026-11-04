@@ -15,12 +15,12 @@
 
 ## 3. Scripted programs (test first)
 
-- [ ] 3.1 Test `SceneProcessRunnerShould.AnswerTheAgentsListing` (the JSON `ClaudeAgentsListing` reads back into the scene's rows through the real `ClaudeCli`), then `SceneProcessRunner`'s listing rule; verify it passes
-- [ ] 3.2 Test `SceneProcessRunnerShould.AnswerTheClaudeVersion`, then the rule; verify it passes
-- [ ] 3.3 Test `SceneProcessRunnerShould.ListAStartedSessionNextTime` (a `--bg -n` start appears in the next listing as starting, then working), then the rule; verify it passes
-- [ ] 3.4 Test `SceneProcessRunnerShould.AnswerGitHubPullRequests` through the real `GitHubPullRequests`, then the `gh pr list` rule; verify it passes
-- [ ] 3.5 Test `SceneProcessRunnerShould.AnswerAzureDevOpsPullRequests` through the real `AzureDevOpsPullRequests`, then the `az repos pr list` rule; verify it passes
-- [ ] 3.6 Test `SceneProcessRunnerShould.RefuseAnythingElse` (stop, rm, attach and any other program exit non-zero and are never run), then the refusal; verify it passes
+- [x] 3.1 Test `SceneProcessRunnerShould.AnswerTheAgentsListing` (the JSON `ClaudeAgentsListing` reads back into the scene's rows through the real `ClaudeCli`), then `SceneProcessRunner`'s listing rule; verify it passes
+- [x] 3.2 Test `SceneProcessRunnerShould.AnswerTheClaudeVersion`, then the rule; verify it passes
+- [x] 3.3 Test `SceneProcessRunnerShould.ListAStartedSessionNextTime` (a `--bg -n` start appears in the next listing as starting, then working), then the rule; verify it passes
+- [x] 3.4 Test `SceneProcessRunnerShould.AnswerGitHubPullRequests` through the real `GitHubPullRequests`, then the `gh pr list` rule; verify it passes
+- [x] 3.5 Test `SceneProcessRunnerShould.AnswerAzureDevOpsPullRequests` through the real `AzureDevOpsPullRequests`, then the `az repos pr list` rule; verify it passes
+- [x] 3.6 Test `SceneProcessRunnerShould.RefuseEveryOtherClaudeCommand` (stop, rm and attach fail and reach no real program) and `HandEveryOtherProgramToTheRealRunner` (git, wt and pwsh run for real), then the rules; verify they pass
 
 ## 4. Keys and frames (test first)
 

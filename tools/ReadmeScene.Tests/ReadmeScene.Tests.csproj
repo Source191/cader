@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReadmeScene\ReadmeScene.csproj" />
+    <ProjectReference Include="..\..\test\Source191.Vantage.TestDoubles\Source191.Vantage.TestDoubles.csproj" />
   </ItemGroup>
 
 </Project>
