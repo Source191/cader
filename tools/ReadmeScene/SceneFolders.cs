@@ -17,4 +17,7 @@ public sealed record SceneFolders(string Root)
 
     /// <summary>The handle of the scene's Windows Terminal window, written by the running console for the captures.</summary>
     public string WindowFile => Path.Combine(Root, "window.txt");
+
+    /// <summary>Written by the script when it is done: the console quits and every session tab ends cleanly, which closes the window.</summary>
+    public string CloseFile => Path.Combine(Root, "close.mark");
 }

@@ -60,28 +60,29 @@ function Add-Commit {
     Invoke-Git $Folder @('commit', '--quiet', '-m', $Message) -MinutesAgo $MinutesAgo
 }
 
-# Closes the scene's window and ends its processes, so the folder can go: only programs run from the scene's own bin.
+# Asks the scene to close (the console quits and its session tabs end cleanly, which closes the window), then ends
+# anything of the scene's that is still running: only programs run from the scene's own bin.
 function Stop-Scene {
-    $windowFile = Join-Path $SceneRoot 'window.txt'
-    if (Test-Path $windowFile) {
-        Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
-        $handle = [int] (Get-Content $windowFile -Raw)
-        try {
-            $window = [System.Windows.Automation.AutomationElement]::FromHandle([IntPtr] $handle)
-            $window.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
-        }
-        catch {
-            Write-Verbose "The scene's window had already gone: $_"
-        }
+    $bin = Join-Path $SceneRoot 'bin'
+    $running = { @(Get-Process -Name 'readme-scene' -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($bin, [StringComparison]::OrdinalIgnoreCase) }) }
+    if ((& $running).Count -eq 0) {
+        return
     }
 
-    $bin = Join-Path $SceneRoot 'bin'
-    Get-Process -Name 'readme-scene' -ErrorAction SilentlyContinue |
-        Where-Object { $_.Path -and $_.Path.StartsWith($bin, [StringComparison]::OrdinalIgnoreCase) } |
-        Stop-Process -Force
-    Start-Sleep -Milliseconds 500
-}
+    New-Item -ItemType File -Force -Path (Join-Path $SceneRoot 'close.mark') | Out-Null
+    $deadline = (Get-Date).AddSeconds(15)
+    while ((& $running).Count -gt 0 -and (Get-Date) -lt $deadline) {
+        Start-Sleep -Milliseconds 250
+    }
 
+    $left = & $running
+    if ($left.Count -gt 0) {
+        $left | Stop-Process -Force
+        Write-Warning 'The scene did not close by itself; close its Windows Terminal window by hand.'
+    }
+
+    Remove-Item (Join-Path $SceneRoot 'close.mark') -ErrorAction SilentlyContinue
+}
 function Remove-Scene {
     if (-not (Test-Path $SceneRoot)) {
         return
@@ -204,4 +205,63 @@ New-Scene $scene $sceneHome
 
 Clear-ClaudeEnvironment
 $sceneExe = Join-Path $bin 'readme-scene.exe'
-wt -w readme-scene --size 140,30 new-tab --startingDirectory $sceneHome $sceneExe run $SceneRoot $version
+$assets = Join-Path $repositoryRoot 'assets\readme'
+New-Item -ItemType Directory -Force -Path $assets | Out-Null
+
+# Opens the scene's window and starts the console, which opens the session tabs and writes <mark>.mark when it is done.
+function Start-SceneRun {
+    param([string] $Mark, [string[]] $Extra)
+
+    Remove-Item (Join-Path $SceneRoot '*.mark') -ErrorAction SilentlyContinue
+    wt -w readme-scene --size 140,30 new-tab --startingDirectory $sceneHome $sceneExe run $SceneRoot $version @Extra
+    $markFile = Join-Path $SceneRoot "$Mark.mark"
+    $deadline = (Get-Date).AddMinutes(3)
+    while (-not (Test-Path $markFile)) {
+        if ((Get-Date) -gt $deadline) {
+            throw "The scene never wrote $Mark.mark; look at its window, then run again."
+        }
+
+        Start-Sleep -Milliseconds 500
+    }
+}
+
+if ($Only -in 'Both', 'Screenshot') {
+    Write-Host 'Taking the screenshot'
+    Start-SceneRun -Mark 'ready'
+    & $sceneExe capture $SceneRoot (Join-Path $assets 'sessions.png')
+    Stop-Scene
+}
+
+if ($Only -in 'Both', 'Animation') {
+    $ffmpeg = Get-Command ffmpeg -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $ffmpeg) {
+        Write-Warning 'ffmpeg is not on the PATH, so no animation was made: winget install Gyan.FFmpeg, open a new terminal and run again with -Only Animation.'
+    }
+    else {
+        Write-Host 'Recording the animation'
+        $frames = Join-Path $SceneRoot 'frames'
+        Start-SceneRun -Mark 'done' -Extra @('--frames', $frames, (Join-Path $bin 'new-session.keys'))
+        Stop-Scene
+        $gif = Join-Path $assets 'new-session.gif'
+        $filter = 'fps=10,scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle'
+        & $ffmpeg.Source -y -loglevel error -framerate 10 -i (Join-Path $frames 'frame-%05d.png') -vf $filter -loop 0 $gif
+        if ($LASTEXITCODE -ne 0) {
+            throw 'ffmpeg could not make the animation.'
+        }
+
+        Write-Host ("new-session.gif is {0:N1} MB" -f ((Get-Item $gif).Length / 1MB))
+    }
+}
+
+if ($Only -eq 'None') {
+    Write-Host 'Starting the scene and leaving it running'
+    Start-SceneRun -Mark 'ready'
+    return
+}
+
+if (-not $KeepScene) {
+    Stop-Scene
+    Remove-Scene
+}
+
+Write-Host "Done: see $assets"

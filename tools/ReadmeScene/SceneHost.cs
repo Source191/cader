@@ -28,7 +28,7 @@ namespace Source191.Vantage.ReadmeScene;
 /// processes in the process table, no update check and no log. Git, Windows Terminal and PowerShell are real.
 /// Untested wiring, like the tool project's composition root; keep it in step with <c>ConsoleComposition</c>.
 /// </summary>
-internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion version, IReadOnlyList<KeyStep> keys)
+internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion version, ScenePlay play)
 {
     /// <summary>The name <c>tools\New-ReadmeScreenshot.ps1</c> gives the scene's window with <c>wt -w</c>.</summary>
     public const string WindowName = "readme-scene";
@@ -123,11 +123,43 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);
         ScreenLoop loop = new(screen, ownTab, console, updates, whatsNew, log);
 
-        Task keysPlayed = new KeyPlayer(folders, processes, executables).PlayAsync(keys, cancellationToken);
+        Task keysPlayed = PlayAsync(new KeyPlayer(folders, processes, executables), cancellationToken);
+        Task closed = QuitWhenAskedAsync(cancellationToken);
         int exitCode = await loop.RunAsync(Environment.ProcessId, cancellationToken);
         await keysPlayed;
+        await closed;
 
         return exitCode;
+    }
+
+    // Esc closes anything open, then q quits Vantage; the tab's process exits 0 and Windows Terminal closes the tab.
+    private async Task QuitWhenAskedAsync(CancellationToken cancellationToken)
+    {
+        while (!File.Exists(folders.CloseFile))
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
+        }
+
+        ConsoleKeys.Press(NamedKey.Esc);
+        await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
+        ConsoleKeys.Press(NamedKey.Esc);
+        await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
+        ConsoleKeys.Type('q');
+    }
+
+    private async Task PlayAsync(KeyPlayer player, CancellationToken cancellationToken)
+    {
+        await player.PlayAsync(play.Setup, cancellationToken);
+        if (play.FramesFolder.Length == 0 || !OperatingSystem.IsWindows())
+        {
+            await player.PlayAsync(play.Recorded, cancellationToken);
+            return;
+        }
+
+        nint window = nint.Parse(await File.ReadAllTextAsync(folders.WindowFile, cancellationToken), System.Globalization.CultureInfo.InvariantCulture);
+        Task recording = FrameRecorder.RecordAsync(window, play.FramesFolder, FrameSchedule.Animation.Offsets(KeyScript.Duration(play.Recorded)), cancellationToken);
+        await player.PlayAsync(play.Recorded, cancellationToken);
+        await recording;
     }
 
     // Enter opens a tab only for a session with a transcript; an empty file is enough for ClaudeTranscripts.
