@@ -3,7 +3,7 @@ using Source191.Vantage.Ports;
 namespace Source191.Vantage.ReadmeScene;
 
 /// <summary>Plays a key script into the scene's console: keys through <see cref="ConsoleKeys"/>, focus through <c>wt focus-tab</c>, marks as files.</summary>
-internal sealed class KeyPlayer(SceneFolders folders, IProcessRunner processes, string wt)
+internal sealed class KeyPlayer(SceneFolders folders, IProcessRunner processes, SceneExecutables executables)
 {
     public async Task PlayAsync(IReadOnlyList<KeyStep> steps, CancellationToken cancellationToken)
     {
@@ -30,8 +30,8 @@ internal sealed class KeyPlayer(SceneFolders folders, IProcessRunner processes, 
                 ConsoleKeys.Press(press.Key);
                 break;
             case KeyStep.FocusVantage:
-                // Vantage's own tab is the scene window's first, and the window is the one used last.
-                await processes.RunAsync(new ProcessRequest(wt, ["-w", "0", "focus-tab", "--target", "0"], WorkingFolder.Inherit), cancellationToken);
+                // Vantage's own tab is the first in the scene's window.
+                await processes.RunAsync(new ProcessRequest(executables.Terminal, ["-w", executables.WindowName, "focus-tab", "--target", "0"], WorkingFolder.Inherit), cancellationToken);
                 break;
             case KeyStep.Mark mark:
                 await File.WriteAllTextAsync(Path.Combine(folders.Root, $"{mark.Name}.mark"), string.Empty, cancellationToken);

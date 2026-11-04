@@ -30,11 +30,16 @@ namespace Source191.Vantage.ReadmeScene;
 /// </summary>
 internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion version, IReadOnlyList<KeyStep> keys)
 {
+    /// <summary>The name <c>tools\New-ReadmeScreenshot.ps1</c> gives the scene's window with <c>wt -w</c>.</summary>
+    public const string WindowName = "readme-scene";
+
     public async Task<int> RunAsync(CancellationToken cancellationToken)
     {
         TimeProvider clock = TimeProvider.System;
         string ownPath = Environment.ProcessPath ?? throw new InvalidOperationException("The scene host cannot find its own path.");
-        SceneExecutables executables = new(ownPath, Path.Combine(folders.Bin, "gh.exe"), Path.Combine(folders.Bin, "az.cmd"));
+                ProgramLocator programs = ProgramLocator.ForCurrentUser();
+        string wt = programs.Locate("wt") is ProgramLocation.Found terminalFound ? terminalFound.Path : throw new InvalidOperationException("Windows Terminal (wt.exe) is not on the PATH.");
+        SceneExecutables executables = new(ownPath, Path.Combine(folders.Bin, "gh.exe"), Path.Combine(folders.Bin, "az.cmd"), wt, WindowName);
         SceneLayout layout = new(folders.Home);
         SceneListing listing = new(scene, layout, clock);
         WriteTranscripts(listing);
@@ -46,7 +51,6 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         PerformanceCounts counts = new(processCounts, new RefreshCounts(clock, log), new StallCounts());
         RecordedProcessRunner realProcesses = new(new ProcessRunner(TimeSpan.FromSeconds(60)), log, processCounts, clock);
         SceneProcessRunner processes = new(listing, new ScenePullRequests(scene, clock), executables, realProcesses);
-        ProgramLocator programs = ProgramLocator.ForCurrentUser();
         string git = programs.Locate("git") is ProgramLocation.Found found ? found.Path : throw new InvalidOperationException("git is not on the PATH.");
         TerminalFragment fragment = TerminalFragment.ForCurrentUser(Path.Combine(folders.Bin, "vantage.ico"));
         CrashFile crashFile = new(folders.State);
@@ -119,8 +123,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);
         ScreenLoop loop = new(screen, ownTab, console, updates, whatsNew, log);
 
-        string wt = programs.Locate("wt") is ProgramLocation.Found terminalFound ? terminalFound.Path : "wt";
-        Task keysPlayed = new KeyPlayer(folders, processes, wt).PlayAsync(keys, cancellationToken);
+        Task keysPlayed = new KeyPlayer(folders, processes, executables).PlayAsync(keys, cancellationToken);
         int exitCode = await loop.RunAsync(Environment.ProcessId, cancellationToken);
         await keysPlayed;
 

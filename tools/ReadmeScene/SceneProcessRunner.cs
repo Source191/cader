@@ -3,8 +3,9 @@ using Source191.Vantage.Ports;
 namespace Source191.Vantage.ReadmeScene;
 
 /// <summary>
-/// Answers Claude Code, gh and az from the scene and hands every other program (git, wt, pwsh) to the real runner.
-/// Nothing the scene does not script is ever run as Claude Code: stop, rm, attach and the rest fail with exit code 1.
+/// Answers Claude Code, gh and az from the scene and hands every other program (git, wt, pwsh) to the real runner,
+/// sending Windows Terminal's tabs to the scene's own window. Nothing the scene does not script is ever run as Claude Code:
+/// stop, rm, attach and the rest fail with exit code 1.
 /// </summary>
 public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests pullRequests, SceneExecutables executables, IProcessRunner others) : IProcessRunner
 {
@@ -27,7 +28,7 @@ public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests p
             return Task.FromResult(AzureDevOps(request.Arguments));
         }
 
-        return others.RunAsync(request, cancellationToken);
+        return others.RunAsync(Is(request, executables.Terminal) ? InSceneWindow(request) : request, cancellationToken);
     }
 
     public Task<int> RunInteractiveAsync(ProcessRequest request, CancellationToken cancellationToken) =>
@@ -54,6 +55,13 @@ public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests p
         ["repos", "pr", "list", "--org", string organisation, "--project", string project, "--repository", string name, "--source-branch", string branch, ..] =>
             Answer(pullRequests.AzureDevOpsJson(organisation[(organisation.LastIndexOf('/') + 1)..], project, name, branch)),
         _ => Refuse(arguments),
+    };
+
+    // Vantage opens tabs in the window used last (-w 0), which need not be the scene's while someone works elsewhere.
+    private ProcessRequest InSceneWindow(ProcessRequest request) => request.Arguments switch
+    {
+        ["-w", "0", ..] => request with { Arguments = ["-w", executables.WindowName, .. request.Arguments.Skip(2)] },
+        _ => request,
     };
 
     private static bool Is(ProcessRequest request, string executable) => string.Equals(request.FileName, executable, StringComparison.OrdinalIgnoreCase);

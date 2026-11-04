@@ -10,8 +10,8 @@ public static class SceneKeys
     public const string ReadyMark = "ready";
 
     private static readonly TimeSpan FirstListing = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan Beat = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan TabOpening = TimeSpan.FromMilliseconds(2500);
+    private static readonly TimeSpan Beat = TimeSpan.FromMilliseconds(800);
+    private static readonly TimeSpan TabOpening = TimeSpan.FromMilliseconds(3500);
     private static readonly TimeSpan Settling = TimeSpan.FromSeconds(3);
 
     public static IReadOnlyList<KeyStep> OpenTabs(Scene scene)

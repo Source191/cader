@@ -10,7 +10,7 @@ namespace Source191.Vantage.ReadmeScene.Tests;
 public sealed class SceneProcessRunnerShould
 {
     private const string Home = @"C:\VantageDemo\me";
-    private static readonly SceneExecutables Executables = new(@"C:\VantageDemo\bin\readme-scene.exe", @"C:\VantageDemo\bin\gh.exe", @"C:\VantageDemo\bin\az.cmd");
+    private static readonly SceneExecutables Executables = new(@"C:\VantageDemo\bin\readme-scene.exe", @"C:\VantageDemo\bin\gh.exe", @"C:\VantageDemo\bin\az.cmd", @"C:\Users\me\AppData\Local\Microsoft\WindowsApps\wt.exe", "readme-scene");
 
     private readonly FakeTimeProvider clock = new(new DateTimeOffset(2026, 11, 4, 12, 0, 0, TimeSpan.Zero));
     private readonly FakeProcessRunner others = new();
@@ -121,6 +121,16 @@ public sealed class SceneProcessRunnerShould
 
         others.CapturedRequests.ShouldBeEmpty();
         others.InteractiveRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SendEveryTabToTheScenesOwnWindow()
+    {
+        ProcessRequest newTab = new(Executables.Terminal, ["-w", "0", "new-tab", "--title", "stock-alerts"], WorkingFolder.Inherit);
+
+        await runner.RunAsync(newTab, TestContext.Current.CancellationToken);
+
+        others.CapturedRequests.ShouldHaveSingleItem().Arguments.ShouldBe(["-w", Executables.WindowName, "new-tab", "--title", "stock-alerts"]);
     }
 
     [Fact]

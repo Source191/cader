@@ -204,4 +204,4 @@ New-Scene $scene $sceneHome
 
 Clear-ClaudeEnvironment
 $sceneExe = Join-Path $bin 'readme-scene.exe'
-wt -w new --size 160,40 new-tab --startingDirectory $sceneHome $sceneExe run $SceneRoot $version
+wt -w readme-scene --size 140,30 new-tab --startingDirectory $sceneHome $sceneExe run $SceneRoot $version
