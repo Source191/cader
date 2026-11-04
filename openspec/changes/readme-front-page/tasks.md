@@ -25,8 +25,8 @@
 ## 4. Keys and frames (test first)
 
 - [x] 4.1 Test `KeyScriptShould.ReadDelaysKeysAndText`, then `KeyScript` reading `new-session.keys`; verify it passes
-- [ ] 4.2 Test `FrameScheduleShould.TakeAFrameEveryHundredMilliseconds` and `StopAfterTheLastKeyAndHold`, then `FrameSchedule`; verify it passes
-- [ ] 4.3 Write `new-session.keys` (filter to Northwind.Inventory, name `add-stock-alerts`, a short prompt, F5, a pause on the new tab, back to Vantage) and verify `KeyScriptShould.ReadTheShippedScript` loads it
+- [x] 4.2 Test `FrameScheduleShould.TakeAFrameEveryHundredMilliseconds` and `StopAfterTheLastKeyAndHold`, then `FrameSchedule`; verify it passes
+- [x] 4.3 Write `new-session.keys` (filter to Northwind.Inventory, name `add-stock-alerts`, a short prompt, F5, a pause on the new tab, back to Vantage) and verify `KeyScriptShould.ReadTheShippedScript` loads it
 
 ## 5. The host and capture (untested wiring)
 
@@ -34,7 +34,7 @@
 - [x] 5.2 Write the `attach` placeholder and the no-op `claim-tab`; verify a session tab opened by the host shows the placeholder and its colour matches the row's TAB swatch
 - [x] 5.3 Write the start-up sequence (open the scene's tabs, focus Vantage's tab with `FocusTabAsync`, select the waiting row, write the ready marker); verify the marker appears and the detail pane shows the waiting reason
 - [x] 5.4 Write the `capture` command (`PrintWindow` with `PW_RENDERFULLCONTENT`, one PNG or a frame series on `FrameSchedule`); verify a single capture of the host's window matches what is on screen, with the workstation locked
-- [ ] 5.5 Write the key player that feeds `KeyScript` through the mechanism chosen in 1.2 while frames are taken; verify the frames show the wizard and the new tab
+- [x] 5.5 Write the key player that feeds `KeyScript` through the mechanism chosen in 1.2 while frames are taken; verify the frames show the wizard and the new tab
 - [ ] 5.6 Write `tools\ReadmeScene\README.md` (what it is, what it never touches, the untested wiring and why, how to change the scene) and verify `OneTypePerFileShould` and `dotnet format --verify-no-changes` pass
 
 ## 6. The script and the images
