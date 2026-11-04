@@ -1,102 +1,124 @@
 name: publish
 
-# Run by hand (Actions, "publish", Run workflow) once a release is tested: it pushes the .nupkg
-# already attached to a GitHub Release to nuget.org, so what is published is exactly what was
-# built, tested and released from main. It never builds. nuget.org versions cannot be replaced
-# (only unlisted), which is why this is not part of pipeline.yml's release job: that publishes a GitHub
-# Release on every merge that raises Version, before anyone has tried the package by hand.
+# Run by hand (Actions, "publish", Run workflow) once a stable release is tried: it submits the zip already attached to
+# a GitHub Release to the winget community repository, so what reaches winget is exactly what pipeline.yml built,
+# tested and released from main. It never builds. A version merged into winget-pkgs reaches every user's update check
+# and can only be superseded, never recalled, which is why this is not part of pipeline.yml: that publishes a GitHub
+# Release on every merge that raises Version, before anyone has tried the zip by hand.
 #
-# No API key is stored. NuGet/login exchanges this run's GitHub identity for a short-lived key
-# through a Trusted Publishing policy on nuget.org (owner Source191, repository vantage, workflow
-# publish.yml, environment nuget). Only the nuget.org profile name is a secret (NUGET_USER).
-# Trusted Publishing: https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
-# NuGet/login: https://github.com/NuGet/login
+# The winget environment is what keeps WINGET_PKGS_TOKEN safe: the run waits for the owner's approval, the environment
+# accepts only runs started from main, and the token is an environment secret, so a copy of this workflow on a branch,
+# or a run an app starts, never sees it (MAINTAINING.md, winget).
+# wingetcreate: https://github.com/microsoft/winget-create/blob/v1.12.13.0/doc/update.md
+# Environments: https://docs.github.com/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: The GitHub Release tag to publish, e.g. v0.5.0
+        description: The stable GitHub Release tag to submit to winget, e.g. v0.21.0
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
-  publish:
-    name: Push a release's package to nuget.org
+  winget:
+    name: Submit a release to winget
     runs-on: windows-latest
-    timeout-minutes: 10
-    # The nuget environment is what makes the Trusted Publishing key safe: the run waits for the
-    # owner's approval, the environment accepts only runs started from main, and the nuget.org policy
-    # names this environment, so a copy of this workflow on a branch, or a run an app starts, gets no key.
-    environment: nuget
+    timeout-minutes: 15
+    environment: winget
     permissions:
       contents: read
-      id-token: write
       attestations: read
     steps:
-      # The tag is typed by a person and ends up in a command, so it is checked first and then only
-      # ever read from an environment variable, never interpolated into the script.
+      # The tag is typed by a person and ends up in commands, so it is checked first and then only ever read from an
+      # environment variable, never interpolated into a script. A prerelease is never submitted, so a label fails here.
       - name: Check the tag
         shell: pwsh
         env:
           TAG: ${{ inputs.tag }}
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:TAG -notmatch '^v\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
-              throw "'$env:TAG' is not a release tag such as v0.5.0."
+          if ($env:TAG -notmatch '^v\d+\.\d+\.\d+$') {
+              throw "'$env:TAG' is not a stable release tag such as v0.21.0; prereleases are never submitted to winget."
           }
 
-      # gh is on the runner. The release's one .nupkg is downloaded; nothing is checked out or built.
-      - name: Download the release's package
+      # gh is on the runner. The release's one zip is downloaded; nothing is checked out or built.
+      - name: Download the release's zip
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
         run: |
           $ErrorActionPreference = 'Stop'
-          gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern '*.nupkg' --dir package
+          $version = $env:TAG.Substring(1)
+          gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern "vantage_$($version)_win-x64.zip" --dir release
           if ($LASTEXITCODE -ne 0) {
-              throw "gh release download failed with exit code $LASTEXITCODE."
+              throw "gh release download failed with exit code $LASTEXITCODE: is $env:TAG a published release with its zip?"
           }
-          $packages = @(Get-ChildItem package -Filter *.nupkg)
-          if ($packages.Count -ne 1) {
-              throw "Expected exactly one .nupkg on release $env:TAG, found $($packages.Count)."
-          }
-          Write-Host "Publishing $($packages[0].Name)"
 
-      # Only what pipeline.yml's release job built from main is pushed: the package must carry the provenance attestation
-      # that job signed for this repository, from main. Releases made by the old release.yml (up to v0.20.0-preview.30)
-      # are never published, so they fail here too. A package swapped on the release after it was made, or attested by
-      # any other workflow or ref, fails here and nothing reaches nuget.org.
-      # (https://cli.github.com/manual/gh_attestation_verify)
-      - name: Verify the package's provenance
+      # Only what pipeline.yml's release job built from main is submitted: the zip must carry the provenance attestation
+      # that job signed for this repository, from main. A zip swapped on the release after it was made, or attested by
+      # any other workflow or ref, fails here and nothing reaches winget. wingetcreate downloads the same URL again and
+      # hashes what it gets. (https://cli.github.com/manual/gh_attestation_verify)
+      - name: Verify the zip's provenance
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $package = (Get-ChildItem package -Filter *.nupkg).FullName
-          gh attestation verify $package --repo Source191/vantage --signer-workflow Source191/vantage/.github/workflows/pipeline.yml --source-ref refs/heads/main
+          $zip = (Get-ChildItem release -Filter 'vantage_*_win-x64.zip').FullName
+          gh attestation verify $zip --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/pipeline.yml" --source-ref refs/heads/main
           if ($LASTEXITCODE -ne 0) {
-              throw "gh attestation verify failed with exit code $LASTEXITCODE: the package is not the one pipeline.yml built from main."
+              throw "gh attestation verify failed with exit code $LASTEXITCODE: the zip is not the one pipeline.yml built from main."
           }
 
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          dotnet-version: 10.0.x
-
-      # A one-hour API key for the Trusted Publishing policy; it is masked in the log.
-      - name: Get a short-lived nuget.org key
-        id: login
-        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
-        with:
-          user: ${{ secrets.NUGET_USER }}
-
-      - name: Push to nuget.org
+      # wingetcreate update changes a manifest that already exists, so until the first one, submitted by hand
+      # (MAINTAINING.md, winget), is merged into winget-pkgs there is nothing to update and this run fails saying so.
+      - name: Check Source191.Vantage is in winget-pkgs
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $package = (Get-ChildItem package -Filter *.nupkg).FullName
-          dotnet nuget push $package --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
-          exit $LASTEXITCODE
+          $lookup = @{
+              Uri = 'https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/s/Source191/Vantage'
+              Headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json' }
+              SkipHttpErrorCheck = $true
+          }
+          $status = (Invoke-WebRequest @lookup).StatusCode
+          if ($status -eq 404) {
+              throw 'Source191.Vantage is not in winget-pkgs yet: submit the first version by hand (MAINTAINING.md, winget).'
+          }
+          if ($status -ne 200) {
+              throw "Looking up Source191.Vantage in winget-pkgs answered HTTP $status; rerun this workflow."
+          }
+
+      # wingetcreate (Microsoft's manifest tool, pinned to a release and its SHA-256) downloads the release's zip, hashes
+      # it, updates the manifest and opens the pull request from a fork owned by WINGET_PKGS_TOKEN's account: a classic
+      # personal access token with the public_repo scope, held as a secret of the winget environment.
+      - name: Submit the manifest to the winget community repository
+        shell: pwsh
+        env:
+          WINGET_PKGS_TOKEN: ${{ secrets.WINGET_PKGS_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrEmpty($env:WINGET_PKGS_TOKEN)) {
+              throw 'WINGET_PKGS_TOKEN is not set on the winget environment, so nothing was submitted. Add it (MAINTAINING.md, winget) and run this again.'
+          }
+
+          $tool = Join-Path $env:RUNNER_TEMP 'wingetcreate.exe'
+          Invoke-WebRequest -Uri 'https://github.com/microsoft/winget-create/releases/download/v1.12.13.0/wingetcreate.exe' -OutFile $tool
+          $hash = (Get-FileHash -LiteralPath $tool -Algorithm SHA256).Hash
+          if ($hash -ne '24042BD37915805615E6CF969AC57C6439124C3FE85823327F5F3FB24BD9FFEA') {
+              throw "wingetcreate.exe has SHA-256 $hash, not the pinned release's."
+          }
+
+          $version = $env:TAG.Substring(1)
+          $zip = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/vantage_$($version)_win-x64.zip"
+          & $tool update Source191.Vantage --version $version --urls "$zip|x64" --submit --token $env:WINGET_PKGS_TOKEN
+          if ($LASTEXITCODE -ne 0) {
+              throw "wingetcreate update failed with exit code $LASTEXITCODE, so $env:TAG is not on its way to winget. Read its output above, fix the cause and run this again."
+          }

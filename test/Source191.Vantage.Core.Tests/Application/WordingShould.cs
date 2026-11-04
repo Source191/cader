@@ -1012,6 +1012,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void HintWhatToDoWhenTheUpgradeFails()
+    {
+        Wording.UpdateFailedHint.ShouldBe("Vantage: the upgrade failed. If winget says a file is in use, quit every Vantage that is still open; if it found no newer package, winget may not have this release yet. Then press U in Vantage again.");
+    }
+
+    [Fact]
     public void NameEveryDialogAndItsButtons()
     {
         Wording.KeysTitle.ShouldBe("Keys");

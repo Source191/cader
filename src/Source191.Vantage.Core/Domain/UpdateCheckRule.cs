@@ -1,6 +1,6 @@
 namespace Source191.Vantage.Domain;
 
-/// <summary>When Vantage asks nuget.org for its newest release, which answer counts, and whether it is worth offering.</summary>
+/// <summary>When Vantage asks the winget community repository for its newest release, which answer counts, and whether it is worth offering.</summary>
 public static class UpdateCheckRule
 {
     public static readonly TimeSpan Interval = TimeSpan.FromHours(24);

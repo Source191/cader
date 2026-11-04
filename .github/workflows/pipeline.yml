@@ -8,9 +8,10 @@ name: pipeline
 # (ConPTY: https://learn.microsoft.com/windows/console/creating-a-pseudoconsole-session)
 #
 # A push to main that changes Version in src/Source191.Vantage/Source191.Vantage.csproj is also a release: the check
-# job packs the plain Version, smoke-tests that package, and the release job publishes it as a GitHub Release, so each
-# merge builds and tests once and a commit whose check failed is never released. Bumping the version (already required,
-# because the tool cache keeps a version for ever) is the same action that decides whether a release happens.
+# job zips the winget build named for the plain Version, smoke-tests that zip, and the release job publishes it as a
+# GitHub Release, so each merge builds and tests once and a commit whose check failed is never released; a stable
+# release reaches winget only when the owner runs publish.yml for it. Bumping the version (already required, because
+# each merge that changes the program is a release) is the same action that decides whether a release happens.
 on:
   pull_request:
   push:
@@ -118,9 +119,9 @@ jobs:
         shell: pwsh
         run: .github/scripts/Assert-VersionBumped.ps1 -Base HEAD^1 -Head HEAD
 
-      # The same comparison for CHANGELOG.md, the release notes the package carries: a change to the packaged tool adds a
-      # line under Unreleased, a change that raises Version to a stable version turns Unreleased into that version's
-      # section, and the file stays under nuget.org's 35,000 characters (CONTRIBUTING.md, Pull requests).
+      # The same comparison for CHANGELOG.md, the release notes the zip carries: a change to the packaged tool adds a
+      # line under Unreleased, and a change that raises Version to a stable version turns Unreleased into that version's
+      # section (CONTRIBUTING.md, Pull requests).
       - name: Check the changelog was updated
         if: github.event_name == 'pull_request' && steps.bump.outputs.pushed != 'true'
         shell: pwsh
@@ -129,7 +130,7 @@ jobs:
       # A pull request that changes only documentation (openspec\, or .md files outside .github\) passes here
       # without building: nothing it changes is compiled, tested or run. Every later step checks the output, so the
       # job still runs and reports `check`, which branch protection requires (a workflow-level paths-ignore would
-      # leave that check pending for ever). Pushes to main always run every step, and pack README.md there.
+      # leave that check pending for ever). Pushes to main always run every step.
       - name: Skip the build for a documentation-only change
         id: documentation
         if: github.event_name == 'pull_request'
@@ -137,7 +138,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           if (.github/scripts/Test-DocumentationOnly.ps1 -Base HEAD^1 -Head HEAD) {
-              Write-Host '::notice::Documentation-only change: the build, tests, pack and smoke check were skipped.'
+              Write-Host '::notice::Documentation-only change: the build, tests, zip and smoke check were skipped.'
               'skip=true' >> $env:GITHUB_OUTPUT
           }
 
@@ -165,13 +166,13 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props', 'nuget.config', 'global.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      # A push to main that changes Version is a release: it packs the plain Version, and the smoke check below
-      # installs that very package, which the release job then publishes. Every other run packs
-      # <Version>-ci.<run number>, a distinct version per run, so installing it never collides with a version the
-      # tool cache already holds. The suffix is worked out here because an expression such as `changed && '' || x`
-      # always gives x. The pushed commit is compared with its first parent, which for the merge and squash commits
-      # this repository uses is the previous tip of main, so a whole pull request is in view.
-      - name: Decide the package version
+      # A push to main that changes Version is a release: its zip is named for the plain Version, and the smoke check
+      # below runs that very zip, which the release job then publishes. Every other run names its zip
+      # <Version>-ci.<run number>, so it is never taken for a release's. The suffix is worked out here because an
+      # expression such as `changed && '' || x` always gives x. The pushed commit is compared with its first parent,
+      # which for the merge and squash commits this repository uses is the previous tip of main, so a whole pull
+      # request is in view.
+      - name: Decide the release version
         id: package
         if: steps.documentation.outputs.skip != 'true'
         shell: pwsh
@@ -207,7 +208,7 @@ jobs:
               "suffix=$suffix" >> $env:GITHUB_OUTPUT
               exit 0
           }
-          Write-Host "Version changed: $before -> $after; packing it for the release."
+          Write-Host "Version changed: $before -> $after; zipping it for the release."
           "changed=true" >> $env:GITHUB_OUTPUT
           "version=$after" >> $env:GITHUB_OUTPUT
           "suffix=" >> $env:GITHUB_OUTPUT
@@ -218,16 +219,16 @@ jobs:
         with:
           version-suffix: ${{ steps.package.outputs.suffix }}
 
-      # The packed tool from any commit, installable with
-      # tools\install-local.ps1 -FromArtifact <downloaded folder>.
+      # The winget build from any commit, the way a preview is tried: tools\install-local.ps1 -FromArtifact <downloaded
+      # folder> extracts it. The zip is uploaded as it is, so the artefact holds the zip a release would attach.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.documentation.outputs.skip != 'true'
         with:
-          name: Source191.Vantage-${{ steps.build.outputs.version }}
-          path: ${{ steps.build.outputs.package }}
+          name: vantage-${{ steps.build.outputs.version }}-win-x64
+          path: ${{ steps.build.outputs.zip }}
           if-no-files-found: error
 
-      # The smoke check (.claude\rules\checks.md, "Smoke check of the packed tool") runs the package a user would install, so a
+      # The smoke check (.claude\rules\checks.md, "Smoke check of the packed tool") runs the zip a user would install, so a
       # missing DLL or a screen that no longer opens fails the pull request. Vantage needs the Claude Code CLI to
       # start; signed out, `claude agents --json` prints [] and the sessions view is simply empty. No workspace
       # trust is seeded: the smoke check never starts a session. If the background install is not there, it is run
@@ -268,27 +269,26 @@ jobs:
           git -C $repository -c user.name=Smoke -c user.email=smoke@example.invalid commit -m 'First commit'
           git -C $repository worktree add -b smoke (Join-Path $env:USERPROFILE 'source\worktrees\Northwind.Smoke-smoke')
 
-      # Into a tool path of its own, so the runner's global tools are untouched and the exe is the packed one.
-      - name: Install the packed tool
+      # Into a folder of its own, as winget extracts a portable zip, so the exe that runs is the one in the zip with
+      # only the zip's files beside it.
+      - name: Unzip the winget build
         if: steps.documentation.outputs.skip != 'true'
         shell: pwsh
         env:
-          PACKAGE: ${{ steps.build.outputs.package }}
-          VERSION: ${{ steps.build.outputs.version }}
+          ZIP: ${{ steps.build.outputs.zip }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $true
-          dotnet tool install Source191.Vantage --tool-path "$env:RUNNER_TEMP\vantage-tool" --add-source (Split-Path $env:PACKAGE) --version $env:VERSION
+          Expand-Archive -LiteralPath $env:ZIP -DestinationPath "$env:RUNNER_TEMP\vantage"
 
-      # `vantage --version` prints exactly the csproj Version, with no commit after it: what a release's package
-      # shows on nuget.org. A check run packs as Version-ci.<run> with --no-build, so the assembly keeps Version.
-      - name: Check the installed tool's version
+      # `vantage --version` prints exactly the csproj Version, with no commit after it: what a release shows on GitHub
+      # and in winget. A check run names its zip Version-ci.<run>, but the assembly keeps Version.
+      - name: Check the unzipped build's version
         if: steps.documentation.outputs.skip != 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $expected = (Select-Xml -Path src\Source191.Vantage\Source191.Vantage.csproj -XPath '//Version').Node.InnerText
-          $printed = (& "$env:RUNNER_TEMP\vantage-tool\vantage.exe" --version | Out-String).Trim()
+          $printed = (& "$env:RUNNER_TEMP\vantage\vantage.exe" --version | Out-String).Trim()
           if ($LASTEXITCODE -ne 0 -or $printed -ne $expected) {
               throw "vantage --version printed '$printed' (exit $LASTEXITCODE); expected '$expected'."
           }
@@ -297,7 +297,7 @@ jobs:
         if: steps.documentation.outputs.skip != 'true'
         shell: pwsh
         working-directory: tools\HeadlessTerminal
-        run: dotnet run --project . -c Release --no-build -- smoke "$env:RUNNER_TEMP\vantage-tool\vantage.exe" Northwind.Smoke-smoke
+        run: dotnet run --project . -c Release --no-build -- smoke "$env:RUNNER_TEMP\vantage\vantage.exe" Northwind.Smoke-smoke
 
       # Read it with the tool's `grid drive-raw.txt <marker>` or `count`; the failed step is named in the log.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -307,42 +307,41 @@ jobs:
           path: tools\HeadlessTerminal\drive-raw.txt
           if-no-files-found: ignore
 
-      # A stable release's notes start with its CHANGELOG.md section, written beside the package so the artefact stays
+      # A stable release's notes start with its CHANGELOG.md section, written beside the zip so the artefact stays
       # flat; a prerelease's file is empty and unused. The release job checks nothing out, so the notes travel with the
-      # package. After the smoke check, so a package that failed it is never handed to the release job.
+      # zip. After the smoke check, so a zip that failed it is never handed to the release job.
       - name: Write the release notes
         id: notes
         if: steps.package.outputs.changed == 'true'
         shell: pwsh
         env:
           VERSION: ${{ steps.package.outputs.version }}
-          PACKAGE: ${{ steps.build.outputs.package }}
+          ZIP: ${{ steps.build.outputs.zip }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $notes = Join-Path (Split-Path $env:PACKAGE) 'release-notes.md'
+          $notes = Join-Path (Split-Path $env:ZIP) 'release-notes.md'
           .github/scripts/Write-ReleaseNotes.ps1 -Version $env:VERSION -Destination $notes
           "path=$notes" >> $env:GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.package.outputs.changed == 'true'
         with:
-          name: package
+          name: release
           path: |
-            ${{ steps.build.outputs.package }}
+            ${{ steps.build.outputs.zip }}
             ${{ steps.notes.outputs.path }}
           if-no-files-found: error
 
-  # Attests and publishes the package the check job built, tested and smoke-checked, and nothing else: it checks nothing
-  # out and runs no build, so the write and signing rights are held only by steps that download, attest and call gh.
-  # Only a push to main that changed Version gets this far; publishing to nuget.org is publish.yml, run by hand, because
-  # nuget.org versions cannot be replaced.
+  # Attests and publishes the zip the check job built, tested and smoke-checked, and nothing else: it checks nothing out
+  # and runs no build, so the write and signing rights are held only by steps that download, attest and call gh. Only a
+  # push to main that changed Version gets this far.
   release:
     name: Publish the release
     needs: check
     if: needs.check.outputs.changed == 'true'
     runs-on: windows-latest
     timeout-minutes: 10
-    # contents to publish the release; id-token and attestations to sign the package's provenance.
+    # contents to publish the release; id-token and attestations to sign the zip's provenance.
     permissions:
       contents: write
       id-token: write
@@ -350,28 +349,27 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: package
-          path: package
+          name: release
+          path: release
 
-      - name: Find the package
-        id: package
+      - name: Find the zip
+        id: zip
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $packages = @(Get-ChildItem package -Filter *.nupkg)
-          if ($packages.Count -ne 1) {
-              throw "Expected exactly one .nupkg in the check job's artefact, found $($packages.Count)."
+          $zips = @(Get-ChildItem release -Filter 'vantage_*_win-x64.zip')
+          if ($zips.Count -ne 1) {
+              throw "Expected exactly one vantage_<version>_win-x64.zip in the check job's artefact, found $($zips.Count)."
           }
-          "path=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
+          "path=$($zips[0].FullName)" >> $env:GITHUB_OUTPUT
 
-      # Signed build provenance for the package: which commit and workflow built it, kept by GitHub. publish.yml
-      # checks it with gh attestation verify before it pushes anything to nuget.org, and anyone can before an install.
-      # The attestation is made on the downloaded bytes, which are the ones released.
+      # Signed build provenance for the zip: which commit and workflow built it, kept by GitHub, so anyone can check it
+      # with gh attestation verify before an install. The attestation is made on the downloaded bytes, which are the ones released.
       # (https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds,
       # https://cli.github.com/manual/gh_attestation_verify)
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: ${{ steps.package.outputs.path }}
+          subject-path: ${{ steps.zip.outputs.path }}
 
       # gh is on the runner, so no third-party action is needed for the release itself. A version with a
       # prerelease label (0.16.2-preview.1; the csproj never carries build metadata) is published as a
@@ -384,15 +382,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.check.outputs.version }}
-          PACKAGE: ${{ steps.package.outputs.path }}
+          ZIP: ${{ steps.zip.outputs.path }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $arguments = @("v$env:VERSION", $env:PACKAGE, '--repo', $env:GITHUB_REPOSITORY, '--title', "v$env:VERSION", '--generate-notes', '--target', $env:GITHUB_SHA)
+          $arguments = @("v$env:VERSION", $env:ZIP, '--repo', $env:GITHUB_REPOSITORY, '--title', "v$env:VERSION", '--generate-notes', '--target', $env:GITHUB_SHA)
           if ($env:VERSION.Contains('-')) {
               $arguments += '--prerelease'
           }
           else {
-              $arguments += '--notes-file', (Join-Path (Split-Path $env:PACKAGE) 'release-notes.md')
+              $arguments += '--notes-file', (Join-Path (Split-Path $env:ZIP) 'release-notes.md')
               $previous = gh release list --repo $env:GITHUB_REPOSITORY --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName'
               if ($LASTEXITCODE -ne 0) {
                   throw "gh release list failed with exit code $LASTEXITCODE."

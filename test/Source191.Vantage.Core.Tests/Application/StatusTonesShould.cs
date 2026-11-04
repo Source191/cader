@@ -94,6 +94,8 @@ public sealed class StatusTonesShould
         [typeof(ProblemReportOutcome.NotOpened)] = StatusTone.Failure,
         [typeof(ProblemReportOutcome.Copied)] = StatusTone.Success,
         [typeof(UpdateStartedOutcome)] = StatusTone.Success,
+        [typeof(WingetMissingOutcome)] = StatusTone.Failure,
+
         [typeof(OpenReleasePageOutcome.Opened)] = StatusTone.Success,
         [typeof(OpenReleasePageOutcome.NotOpened)] = StatusTone.Failure,
     };

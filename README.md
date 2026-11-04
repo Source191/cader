@@ -17,29 +17,28 @@ Vantage is mission control for Claude Code on Windows: one Windows Terminal tab 
 
 ## Prerequisites
 
-Windows 11 with Windows Terminal, PowerShell 7, the .NET 10 SDK, git and Claude Code 2.1.309 or later. Skip a line for a tool you already have:
+Vantage runs on Windows 10 or 11 and needs one program you install yourself: Claude Code 2.1.309 or later, with its native installer (winget's own Claude Code package can be older than Vantage needs, and does not update itself):
 
 ```powershell
-winget install --id Microsoft.WindowsTerminal --exact --source winget   # already part of Windows 11 22H2 and later
-winget install --id Microsoft.PowerShell --exact --source winget
-winget install --id Microsoft.DotNet.SDK.10 --exact --source winget
-winget install --id Git.Git --exact --source winget
 irm https://claude.ai/install.ps1 | iex   # Claude Code
 [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ";$HOME\.local\bin", 'User')   # puts claude on the PATH
 ```
 
-Open a new terminal, run `claude` once to sign in, then check: `pwsh --version; dotnet --list-sdks; git --version; claude --version`.
+Open a new terminal, run `claude` once to sign in, then check with `claude --version`. Vantage carries its own .NET runtime, and installing it with winget brings anything else it uses that is missing.
 
 Optional: the GitHub CLI (`gh auth login`) or the Azure CLI (`az extension add --name azure-devops`, `az login`) fills in the PR column.
 
 ## Install
 
 ```powershell
-dotnet tool install -g Source191.Vantage
+winget install Source191.Vantage
 vantage setup-terminal   # optional but recommended: see Notifications below
 ```
 
-A shell that was open before the install needs restarting to find `vantage`. Vantage tells you when a newer release is out; press `U` to see what changed and update.
+winget installs Windows Terminal, PowerShell 7 and git first if any of them is missing. A shell that was open before the install needs restarting to find `vantage`. Vantage tells you when a newer release is out; press `U` to see what changed and upgrade it with winget in a tab of its own (or run `winget upgrade Source191.Vantage` with no Vantage open). `winget uninstall Source191.Vantage` removes it and leaves your settings and Claude Code sessions alone.
+
+- **Without winget:** download `vantage_<version>_win-x64.zip` from the [latest release](https://github.com/Source191/vantage/releases/latest), check it with `gh attestation verify <zip> --repo Source191/vantage`, extract it to a folder of your own and add that folder to your PATH. Windows Terminal, PowerShell 7 and git are then yours to install, and `U` can only show what changed and the release page.
+- **Previews:** each preview is a [GitHub prerelease](https://github.com/Source191/vantage/releases) with the same zip; extract it to any folder and run `vantage.exe` from there. It never replaces the winget install, and previews never reach winget.
 
 ## Quick start
 
@@ -77,7 +76,7 @@ The key bar at the bottom shows the keys for the selected row, and `?` on any ta
 
 - **In the tool:** `?` on any tab, and a tooltip on every column header and key; `vantage --help` for the commands.
 - **What changed:** [CHANGELOG.md](https://github.com/Source191/vantage/blob/main/CHANGELOG.md).
-- **Privacy:** Vantage sends nothing but a daily, anonymous check of nuget.org for a newer release (turn it off on the Config tab) and the problem reports you choose to submit. It stores no credential and records nothing personal.
+- **Privacy:** Vantage sends nothing but a daily, anonymous check of the winget community repository on GitHub for a newer release, and of that release's changelog (turn it off on the Config tab), and the problem reports you choose to submit. It stores no credential and records nothing personal.
 - **Security:** to report a vulnerability, see [SECURITY.md](https://github.com/Source191/vantage/blob/main/SECURITY.md).
 - **Contributing:** [CONTRIBUTING.md](https://github.com/Source191/vantage/blob/main/CONTRIBUTING.md).
 

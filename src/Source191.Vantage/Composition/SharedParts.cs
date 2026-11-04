@@ -1,4 +1,5 @@
 using Source191.Vantage.Adapters.Diagnostics;
+using Source191.Vantage.Adapters.Files;
 using Source191.Vantage.Adapters.Processes;
 using Source191.Vantage.Adapters.State;
 using Source191.Vantage.Adapters.Terminal;
@@ -13,7 +14,9 @@ internal sealed record SharedParts(
     JsonFileStore Store,
     ProcessRegistry ProcessRegistry,
     ToolVersion Version,
+
     string VantageExecutable,
+    string OwnFolder,
     TerminalFragment TerminalFragment,
     ProgramLocator Programs,
     DiagnosticLogSetting LogSetting,
@@ -29,8 +32,10 @@ internal sealed record SharedParts(
         JsonFileStore store = new(stateFolder, TimeProvider.System);
         ProcessRegistry processRegistry = new();
         ToolVersion version = ToolVersion.FromInformational(Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? string.Empty);
+
         string vantageExecutable = Environment.ProcessPath ?? "vantage";
-        TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(AppContext.BaseDirectory, "vantage.ico"));
+        string ownFolder = ProgramFolder.Of(AppContext.BaseDirectory, Environment.ProcessPath);
+        TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "vantage.ico"));
 
         // Every program Vantage starts is found on the PATH once and run by its full path, never by a bare name that Windows
         // would look for in the folder Vantage was started from first
@@ -48,7 +53,7 @@ internal sealed record SharedParts(
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
-        return new SharedParts(store, processRegistry, version, vantageExecutable, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
+        return new SharedParts(store, processRegistry, version, vantageExecutable, ownFolder, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.

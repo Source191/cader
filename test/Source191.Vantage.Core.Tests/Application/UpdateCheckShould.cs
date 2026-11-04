@@ -284,6 +284,17 @@ public sealed class UpdateCheckShould
         check.TakeAnnouncement().ShouldBe(StatusMessage.None);
     }
 
+    [Fact]
+    public async Task NotFindAReleaseWingetDoesNotListYet()
+    {
+        packages.Answer = new VersionListing.Listed(["0.9.0"]);
+        UpdateCheck check = Check(Running);
+
+        await check.RunAsync(TestContext.Current.CancellationToken);
+
+        check.Status.ShouldBe(new UpdateStatus.UpToDate(), customMessage: "a GitHub Release whose manifest is not merged is not in the listing, so 0.10.0 is never offered");
+    }
+
     private static ReleaseNotes Notes(string text)
     {
         ReleaseNotes.TryParse(text, out ReleaseNotes? notes).ShouldBeTrue();

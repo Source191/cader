@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Source191.Vantage.Application;
 
 /// <summary>
-/// The newest release Vantage knows of and its notes: read from the record at start, then asked of the package registry
+/// The newest release Vantage knows of and its notes: read from the record at start, then asked of the winget community repository
 /// at most once a day, the notes only when that release is newer than the running one and none are recorded for it.
 /// <see cref="ScreenLoop"/> runs <see cref="RunAsync"/> on a pool thread as the console opens; the settings row, the
 /// update key and the screen read <see cref="Status"/>, <see cref="Notes"/> and <see cref="TakeAnnouncement"/>, which
@@ -14,10 +14,11 @@ namespace Source191.Vantage.Application;
 /// </summary>
 public sealed class UpdateCheck(ToolVersion running, Func<bool> enabled, IUpdateCheckRecords records, IPackageVersions packages, TimeProvider clock)
 {
+    /// <summary>The winget package the check looks up and the update tab upgrades.</summary>
     public const string PackageId = "Source191.Vantage";
 
-    /// <summary>The feed the check consults, and the only one the update tab installs from, whatever else the machine has configured.</summary>
-    public const string Source = "https://api.nuget.org/v3/index.json";
+    /// <summary>The winget source the check follows, and the only one the update tab upgrades from, whatever else the machine has configured.</summary>
+    public const string Source = "winget";
 
     private readonly SharedSnapshot<KnownRelease> known = new(new KnownRelease(new NewestRelease.None(), ReleaseNotes.None));
     private readonly SharedSnapshot<StatusMessage> announcement = new(StatusMessage.None);

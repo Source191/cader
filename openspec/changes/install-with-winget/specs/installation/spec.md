@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Says how Vantage reaches a machine: installed and upgraded with winget as a self-contained program, with the prerequisites winget can bring, previews tried from a zip, and a dotnet tool install moved across.
+Says how Vantage reaches a machine: installed and upgraded with winget as a self-contained program, with the prerequisites winget can bring, and previews tried from a zip.
 
 ## ADDED Requirements
 
@@ -48,15 +48,26 @@ Every release published by the release workflow, stable or prerelease, SHALL att
 - **THEN** the GitHub prerelease v0.21.0-preview.3 carries the same kind of zip, and nothing is submitted to the winget community repository
 
 ### Requirement: Stable releases reach the winget community repository
-After a stable GitHub Release is published, its manifest SHALL be submitted to the winget community repository as a pull request that names the release's zip and its SHA-256, so that the version becomes installable once that pull request is merged. A prerelease SHALL never be submitted.
+A stable GitHub Release SHALL reach the winget community repository only when the owner runs the publish workflow for its tag and approves the run; its manifest SHALL then be submitted as a pull request that names the release's zip and its SHA-256, so that the version becomes installable once that pull request is merged. A prerelease SHALL never be submitted, nor a zip whose provenance attestation was not signed by the release workflow from main.
 
 #### Scenario: A stable release is published
 - **WHEN** the release workflow publishes v0.21.0
+- **THEN** no pull request is made to the winget community repository until the owner runs the publish workflow for v0.21.0
+
+#### Scenario: The owner submits a stable release
+- **WHEN** the owner runs the publish workflow for v0.21.0 and approves the run
 - **THEN** a pull request to the winget community repository adds 0.21.0 of Source191.Vantage, whose installer URL is the release's zip and whose SHA-256 is the zip's
 
-#### Scenario: A prerelease is published
-- **WHEN** the release workflow publishes v0.21.0-preview.3
-- **THEN** no pull request is made to the winget community repository
+#### Scenario: A prerelease tag is given
+- **WHEN** the owner runs the publish workflow for v0.21.0-preview.3
+- **THEN** the run fails and no pull request is made to the winget community repository
+
+### Requirement: The first winget version is submitted by hand
+While the winget community repository holds no Source191.Vantage, the publish workflow SHALL submit nothing and SHALL fail saying that the first version must be submitted by hand.
+
+#### Scenario: The first stable release
+- **WHEN** the owner runs the publish workflow for v0.21.0 and the winget community repository has no Source191.Vantage yet
+- **THEN** no pull request is made, and the run fails saying to submit the first version by hand
 
 ### Requirement: Previews are tried from the zip
 A preview SHALL be installable from the zip of a pull request check's artefact or of a GitHub prerelease, extracted to a folder the user chooses, and `tools\install-local.ps1` SHALL do the extraction and report the path of the executable. A preview SHALL NOT replace or alter an installed winget package.
@@ -68,18 +79,3 @@ A preview SHALL be installable from the zip of a pull request check's artefact o
 #### Scenario: A winget install is present
 - **WHEN** a winget-installed Vantage exists and a preview is installed locally
 - **THEN** the `vantage` command on the PATH still runs the winget-installed version
-
-### Requirement: A dotnet tool install offers to move to winget
-A Vantage installed as a dotnet tool SHALL say, in its header and on the update key, that Vantage is now installed with winget, and the update key SHALL after confirmation run `winget install Source191.Vantage`, then `dotnet tool uninstall -g Source191.Vantage` only when the install succeeded, then start the winget-installed Vantage. This applies only to the last release published to nuget.org.
-
-#### Scenario: Moving across
-- **WHEN** a dotnet tool Vantage runs, winget has Vantage 0.21.0, and the user presses U and confirms
-- **THEN** a tab opens, Vantage quits, the tab waits for it, installs the winget package, uninstalls the dotnet tool and starts the new Vantage
-
-#### Scenario: The winget install fails
-- **WHEN** `winget install Source191.Vantage` fails in the tab
-- **THEN** the dotnet tool is not uninstalled, the tab stays open showing winget's output and Vantage is not started again
-
-#### Scenario: Declined
-- **WHEN** the user presses U and chooses Later or presses Esc
-- **THEN** nothing is installed or uninstalled and Vantage stays on the same view and selection

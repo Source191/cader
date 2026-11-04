@@ -36,11 +36,12 @@ public static partial class Wording
             OpenTabOutcome tab => Describe(tab),
             StartSessionOutcome start => Describe(start),
             SaveSettingsOutcome => "Settings saved.",
-            ToggleUpdateCheckOutcome toggled => toggled.On ? "The update check is on: Vantage asks nuget.org at most once a day." : "The update check is off.",
+            ToggleUpdateCheckOutcome toggled => toggled.On ? "The update check is on: Vantage asks the winget community repository at most once a day." : "The update check is off.",
             ProblemReportOutcome.Opened => "Opened a problem report in your browser; describe the problem there and submit it.",
             ProblemReportOutcome.NotOpened notOpened => $"Could not open the browser: {notOpened.Reason} Press ! and choose Copy text instead.",
             ProblemReportOutcome.Copied => "Copied the problem report to the clipboard.",
             UpdateStartedOutcome update => $"Updating to {update.Newest} in a new tab; Vantage starts again there when it is done.",
+            WingetMissingOutcome missing => $"winget was not found on the PATH, so Vantage cannot install {missing.Newest} itself: press U and choose Release page to download it.",
             _ => outcome.ToString(),
         };
     }
@@ -77,6 +78,7 @@ public static partial class Wording
             ProblemReportOutcome.NotOpened => StatusTone.Failure,
             ProblemReportOutcome.Copied => StatusTone.Success,
             UpdateStartedOutcome => StatusTone.Success,
+            WingetMissingOutcome => StatusTone.Failure,
             _ => StatusTone.Notice,
         };
     }

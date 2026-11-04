@@ -68,6 +68,12 @@ public sealed class WordingOfOutcomesShould
     }
 
     [Fact]
+    public void SayWingetIsMissingAndWhereToGetTheRelease()
+    {
+        Wording.Describe(new WingetMissingOutcome("0.21.0")).ShouldBe("winget was not found on the PATH, so Vantage cannot install 0.21.0 itself: press U and choose Release page to download it.");
+    }
+
+    [Fact]
     public void SaySettingsSaved()
     {
         Wording.Describe(new SaveSettingsOutcome()).ShouldBe("Settings saved.");
@@ -76,7 +82,7 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayWhetherTheUpdateCheckIsOn()
     {
-        Wording.Describe(new ToggleUpdateCheckOutcome(On: true)).ShouldBe("The update check is on: Vantage asks nuget.org at most once a day.");
+        Wording.Describe(new ToggleUpdateCheckOutcome(On: true)).ShouldBe("The update check is on: Vantage asks the winget community repository at most once a day.");
         Wording.Describe(new ToggleUpdateCheckOutcome(On: false)).ShouldBe("The update check is off.");
     }
 

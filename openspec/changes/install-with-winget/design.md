@@ -18,18 +18,17 @@ See proposal.md for why.
 **Goals:**
 - One install command and one upgrade command for a stable release, with no SDK.
 - The update check never offers a version `winget upgrade` cannot yet install.
-- Existing dotnet tool users have a one-key way across.
 - The pull request check still smoke-tests the exact bytes that ship.
 
 **Non-Goals:**
 - Reducing the download size (no trimming, no AOT: Terminal.Gui and System.CommandLine use reflection the trimmer would need annotating for).
 - Any change to what Vantage does with sessions, worktrees or tabs.
-- Keeping two update paths for ever: the dotnet tool path exists only for the migration release.
+- Moving existing dotnet tool installs across: nuget.org has only previews, which never check for updates.
 
 ## Decisions
 
 ### The build: self-contained, single file, not trimmed, x64 only
-`PublishSingleFile`, `SelfContained`, `RuntimeIdentifier win-x64`, `EnableCompressionInSingleFile`, with `InvariantGlobalization` unchanged. The zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt`; the PDBs and XML documentation files the publish also writes are left out. A project's `.csproj` carries no comments, so the reasons go in `src\Source191.Vantage\README.md`.
+`PublishSingleFile`, `SelfContained`, `RuntimeIdentifier win-x64`, `EnableCompressionInSingleFile`, with `InvariantGlobalization` unchanged. The zip holds `vantage.exe`, `libonigwrap.dll`, `CHANGELOG.md`, `vantage.ico` and `THIRD-PARTY-NOTICES.txt`; the PDBs and XML documentation files the publish also writes are left out. The settings live in a publish profile, `Properties\PublishProfiles\win-x64.pubxml`, rather than the `.csproj`, so `dotnet build` keeps its output folder (the hand-off check runs `bin\Release\net10.0\vantage.exe`) and the test projects can still reference a framework-dependent program. A project's `.csproj` carries no comments, so the reasons go in `src\Source191.Vantage\README.md`.
 - **Alternative: framework-dependent zip plus a .NET runtime dependency:** `Microsoft.DotNet.Runtime.10` is a winget package, so the zip would be about 1 MB. Rejected because winget would install a shared runtime the user did not ask for, and a runtime-only machine is a second prerequisite state to test.
 - **Alternative: `win-arm64` too:** deferred; x64 runs under emulation, and a second runner and smoke run is a later change.
 - **Alternative: native AOT:** rejected, see Non-Goals.
@@ -48,41 +47,34 @@ The check lists the version folders of `manifests/s/Source191/Vantage` in `micro
 ### The update tab: `winget upgrade`, same shape as today
 `TabScripts.Update` keeps its shape: `Wait-Process` on this Vantage, then `winget upgrade --id Source191.Vantage --exact --source winget`, then start Vantage only when `$LASTEXITCODE` is 0. Every value still goes through `PowerShellScript.Quote`; `winget` is found once by `ProgramLocator` like every program Vantage starts. A portable package keeps one install folder across versions, so the recorded executable path is still right after an upgrade (to be confirmed by the spike below).
 
-### Telling the two installs apart: is the program a single-file bundle
-A single-file build has no assembly location on disk; a dotnet tool does. One `InstallChannel` fact, read once in `SharedParts`, decides whether `U` runs the winget upgrade or the migration. Matching on the `~\.dotnet\tools\.store` path was the alternative; the bundle test does not depend on where a user's tools live. This is the only place the two are told apart, and it goes in the change that retires the dotnet tool.
-
-### Migration: one last nuget.org release that carries the new code
-The release that introduces winget is published to both: the zip to GitHub and winget, and, by hand through the existing `publish.yml`, the nupkg to nuget.org. Run as a dotnet tool it reads the winget-pkgs listing (so it offers the move only once winget has the same version), says in the header that Vantage is now installed with winget, and its `U` runs `winget install`, then `dotnet tool uninstall -g`, then starts the new executable. After it, the nuget.org package is deprecated with a pointer to winget (owner's step, in MAINTAINING). Removing the nupkg build and `publish.yml` is a separate change.
-- **Alternative: leave dotnet tool users to find winget:** they would never see another release; the update notice is the only channel they read.
-
+### No migration from the dotnet tool
+The nupkg, `PackAsTool`, `publish.yml`'s nuget.org push and the package icon are removed in this change, and nothing in Vantage tells a dotnet tool install apart or moves it. nuget.org has only previews of Vantage (0.16.2-preview.1 to 0.18.0-preview.3, 247 downloads in all on 3 November 2026), and a prerelease build never checks for updates, so a migration release could reach no installed copy. The owner unlists and deprecates the nuget.org package by hand (nuget.org never deletes a package on request) and removes the Trusted Publishing policy, the `NUGET_USER` secret and the `nuget` environment.
+- **Alternative: one last nuget.org release that moves dotnet tool users:** designed first (an install-channel fact, a move tab running `winget install` then `dotnet tool uninstall`), and dropped by the owner for a simpler repository once it was clear it would reach nobody.
 ### Previews: the same zip, never winget
 `pipeline.yml`'s release job already publishes a GitHub prerelease for each merge that raises `Version`; it now attaches the zip. `pipeline.yml` uploads the zip as the pull request's artefact. `tools\install-local.ps1` stops packing and installing a tool: it publishes the self-contained build to a fixed folder under `%LOCALAPPDATA%\Vantage\local`, prints the executable's full path and never touches the PATH, so it cannot replace a winget install; `-FromArtifact <folder>` extracts a check artefact's zip to the same place.
 - **Assumption to confirm with the owner:** prereleases also keep their GitHub prerelease with the zip attached, in addition to the CI artefact (artefacts expire after 90 days). Drop the attachment if only CI artefacts are wanted.
 
 ### The release workflow: build once, test the zip that ships
-`build-test-pack` publishes the self-contained build, zips it and outputs the zip's path; the nupkg is still packed beside it while migration is live. The `check` job's smoke step runs the headless smoke check against the unzipped `vantage.exe` instead of an installed tool, and the `--version` check reads it the same way. `pipeline.yml`'s release job attests the zip (not only the nupkg) and attaches both. A final job, only for a stable version, runs `wingetcreate update Source191.Vantage --version <v> --urls <zip> --submit` with a repository secret holding a GitHub token that can open pull requests on a fork of `microsoft/winget-pkgs`. The first version is submitted by hand with `wingetcreate new`, which also creates the manifest the later runs update; nothing in the repository holds a manifest.
+`build-test-pack` publishes the self-contained build, zips it and outputs the zip's path; it packs no nupkg. The `check` job's smoke step runs the headless smoke check against the unzipped `vantage.exe` instead of an installed tool, and the `--version` check reads it the same way. `pipeline.yml`'s release job attests and attaches the zip. `publish.yml` keeps its place as the hand-run gate between a release and users, now for winget: the owner tries a stable release's zip, then runs it with the release's tag. It refuses a prerelease tag, verifies the zip's attestation was signed by `pipeline.yml` from `main`, and runs `wingetcreate update Source191.Vantage --version <v> --urls <zip> --submit` with a GitHub token that can open pull requests on a fork of `microsoft/winget-pkgs`. The token is a secret of a `winget` environment whose required reviewer is the owner and which accepts only `main`, so only an approved run from `main` can read it. A separate hand-run workflow was chosen over an approval-gated job in `pipeline.yml` because it reads more plainly and can submit any release at any time; the attestation check makes up for the tag being typed. The first version is submitted by hand with `wingetcreate new`, which also creates the manifest the later runs update; nothing in the repository holds a manifest. Until that manifest is merged, `publish.yml` finds no `manifests/s/Source191/Vantage` in winget-pkgs and fails saying so.
 
 ## Risks / Trade-offs
 
-- **[The exe's path or base folder is wrong behind winget's link]** `TabScripts` is built from `Environment.ProcessPath`; `vantage.ico` and `CHANGELOG.md` are read from `AppContext.BaseDirectory`. → Spike task 1: install a local manifest, run it, print both, and move the two files into the bundle (embedded resources) if either lands in the links folder.
-- **[A zip that winget extracts only in part]** The schema says one nested installer file is run; whether the other files in the archive are kept is not stated. → The same spike checks that `libonigwrap.dll` and the notes sit beside the executable after install; if not, `IncludeNativeLibrariesForSelfExtract` and an embedded changelog replace them.
+- **[The exe's path or base folder is wrong behind winget's link]** `TabScripts` is built from `Environment.ProcessPath`; `vantage.ico` and `CHANGELOG.md` are read from `AppContext.BaseDirectory`. → Spike task 1 (3 November 2026): through the link both are the links folder, so `ProgramFolder.Of` follows the link to the package folder, where the files are; no embedding is needed.
+- **[A zip that winget extracts only in part]** The schema says one nested installer file is run; whether the other files in the archive are kept is not stated. → The spike found every file of the zip beside the executable after install.
 - **[Unsigned executable]** SmartScreen or a managed machine's policy may block it. → Out of scope here; a signing decision follows if reports arrive.
 - **[Download size]** about 34 MB against a small package. → Accepted; winget caches nothing but the download is once per upgrade.
 - **[winget-pkgs review delay]** The first submission is reviewed by a person, later ones are validated automatically but can wait in a queue. → The update check follows what is merged, so users are never offered an unmerged version; the cost is a delay, not a failure.
 - **[Rate limit]** The contents API allows 60 anonymous requests an hour per address. → One request a day; a failure is silent and retried at the next start, like every other check failure.
 - **[Machines without winget]** Server and LTSC builds. → The GitHub Release zip is the documented fallback; `U` there only shows the notice and the release page.
 - **[The locked executable]** `winget upgrade --all` fails while a Vantage runs, as `dotnet tool update` did. → Unchanged: the update tab waits first, and a failure leaves the tab open with winget's message.
-- **[Two installs on one PATH during migration]** The shim in `~\.dotnet\tools` and winget's link may both exist until the tool is uninstalled. → The migration uninstalls the tool only after the winget install succeeds, and its tab starts the winget executable by full path.
+- **[A dotnet tool preview stays installed]** Someone who installed a preview from nuget.org keeps it, and it never offers an update. → Accepted: they are a handful of testers; the deprecation message on nuget.org names winget.
 
 ## Migration Plan
 
-1. Land this change (code, workflows, docs) with a minor version bump; a stable release is cut from `main`.
-2. `pipeline.yml`'s release job publishes the GitHub Release with the zip; submit the first manifest to winget-pkgs by hand; wait for the merge.
-3. Run `publish.yml` on that tag, once, so dotnet tool users get the migrating build.
-4. Deprecate the nuget.org package; point the README at winget alone.
-5. Later, in its own change: remove `PackAsTool`, the nupkg packing, `publish.yml`, the migration code and `InstallChannel`.
-- **Rollback:** a bad release is superseded by a new version in both places (nuget.org versions cannot be replaced, and a winget-pkgs version is removed only by a pull request); the previous winget version stays installable by `--version` until then.
-
+1. Land this change (code, workflows, docs); a stable release is cut from `main` when the owner chooses.
+2. `pipeline.yml`'s release job publishes the GitHub Release with the zip; submit the first manifest to winget-pkgs by hand; wait for the merge. Later stable releases are submitted by running `publish.yml`.
+3. Unlist and deprecate every nuget.org version, and remove the nuget.org publishing setup (a one-off owner step, listed in the pull request rather than MAINTAINING.md).
+- **Rollback:** a bad release is superseded by a new version (a winget-pkgs version is removed only by a pull request); the previous winget version stays installable by `--version` until then.
 ## Open Questions
 
 - Whether the manifest's `ReleaseNotesUrl` should point at the GitHub Release page or the changelog at the tag; either works without changing the specs.

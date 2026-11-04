@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Source191.Vantage.Domain;
 
 /// <summary>
-/// The release notes Vantage shows, read from the changelog as it travels in the package (its nuspec release notes on
-/// nuget.org, and the file beside the installed tool): a narrow
+/// The release notes Vantage shows, read from the changelog (at a release's tag on GitHub, and the file beside the
+/// installed program): a narrow
 /// <see href="https://keepachangelog.com/">Keep a Changelog</see> of <c>## 0.21.0</c> sections (a <c> - date</c> after
 /// the version is allowed), <c>### Added</c> and the other <see cref="ChangeKind"/> headings, and one-line <c>- </c>
 /// entries. It is text from outside Vantage, so <see cref="TryParse"/> drops every control character as it reads each

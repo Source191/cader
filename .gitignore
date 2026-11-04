@@ -193,6 +193,8 @@ publish/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+# The winget build's publish profile holds no secrets.
+!src/Source191.Vantage/Properties/PublishProfiles/win-x64.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -208,7 +210,7 @@ PublishScripts/
 **/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
-# except the adapter folder that holds the nuget.org version check
+# except the adapter folder that holds the update check
 !src/Source191.Vantage.Infrastructure/Packages/*
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config

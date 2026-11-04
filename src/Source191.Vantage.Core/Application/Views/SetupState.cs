@@ -27,6 +27,6 @@ public abstract record SetupState
 
     public sealed record Never : SetupState;
 
-    /// <summary>When Vantage last asked nuget.org, and the newest release it found or recorded.</summary>
+    /// <summary>When Vantage last asked the winget community repository, and the newest release it found or recorded.</summary>
     public sealed record Checked(DateTimeOffset When, NewestRelease Newest) : SetupState;
 }

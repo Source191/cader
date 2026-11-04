@@ -4,7 +4,6 @@ Draws the Vantage icon (two worktree branches merging into one node, shaped as a
 .DESCRIPTION
 Writes assets\icon\vantage-<size>.png for each size and assets\icon\vantage.ico (PNG-compressed entries, up to 256 px: the format cannot hold 512), then checks
 every file. The output is committed, so a build never needs this script; run it to change the drawing.
-src\Source191.Vantage\icon.png is the 128 px file and is copied by hand (a test keeps the two in step).
 #>
 [CmdletBinding()]
 param(

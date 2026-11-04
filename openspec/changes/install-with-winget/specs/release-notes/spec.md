@@ -6,7 +6,7 @@
 Every release's zip SHALL hold the changelog as a file beside the executable, and Vantage SHALL read its own release notes from it. Notes for a newer release SHALL be read from the changelog at that release's tag on GitHub. Vantage SHALL never show the Unreleased section or Internal entries from either.
 
 #### Scenario: Notes on nuget.org
-- **WHEN** 0.21.0 is the newest release, whichever channel the running Vantage came from
+- **WHEN** 0.21.0 is the newest release
 - **THEN** the notes Vantage records for it are read from the changelog at tag v0.21.0, with the 0.21.0 section and the sections before it
 
 #### Scenario: Internal entries stay hidden

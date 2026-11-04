@@ -284,8 +284,8 @@ public static partial class Wording
         };
     }
 
-    /// <summary>What the update tab says when dotnet tool update fails, under dotnet's own message.</summary>
-    public static string UpdateFailedHint => "Vantage: the update failed. Quit every Vantage that is still open, then press U in Vantage again.";
+    /// <summary>What the update tab says when winget upgrade fails, under winget's own message.</summary>
+    public static string UpdateFailedHint => "Vantage: the upgrade failed. If winget says a file is in use, quit every Vantage that is still open; if it found no newer package, winget may not have this release yet. Then press U in Vantage again.";
 
     public static string WizardTitle(WizardState wizard) => wizard.Origin switch
     {

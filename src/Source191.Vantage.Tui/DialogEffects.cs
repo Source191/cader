@@ -124,6 +124,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         }
     }
 
+    /// <summary>Asks before the update, then opens its tab; only a tab that opened makes the screen quit, so a missing winget leaves Vantage running with the reason on the status line.</summary>
     private static void AskToUpdate(IEffectContext context, UpdateDecision.Ask ask)
     {
         string title = Wording.WhatsNewBeforeUpdateTitle(ask.Current, ask.Newest);
@@ -134,7 +135,11 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
 
         context.Dispatch(new StartUpdate(ask.Newest), outcome =>
         {
-            context.Reduce(new UpdateTabOpened());
+            if (outcome is UpdateStartedOutcome)
+            {
+                context.Reduce(new UpdateTabOpened());
+            }
+
             return new StatusMessage.Reported(outcome);
         });
     }
