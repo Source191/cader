@@ -30,10 +30,10 @@
 
 ## 5. The host and capture (untested wiring)
 
-- [ ] 5.1 Write the `run` command composing `ConsoleScreen` and `ScreenLoop` as the design says (scene runner, real git, `InMemoryState` seeded, `FakeTranscripts`, `FakeProcessRegistry`, real `WindowsTerminal` and `TabScripts` with `ReadmeScene.exe` as both executables, update check off, no log); verify by running it in a `wt -w new --size 160,40` window against a hand-built demo folder and seeing every scene row
-- [ ] 5.2 Write the `attach` placeholder and the no-op `claim-tab`; verify a session tab opened by the host shows the placeholder and its colour matches the row's TAB swatch
-- [ ] 5.3 Write the start-up sequence (open the scene's tabs, focus Vantage's tab with `FocusTabAsync`, select the waiting row, write the ready marker); verify the marker appears and the detail pane shows the waiting reason
-- [ ] 5.4 Write the `capture` command (`PrintWindow` with `PW_RENDERFULLCONTENT`, one PNG or a frame series on `FrameSchedule`); verify a single capture of the host's window matches what is on screen, with the workstation locked
+- [x] 5.1 Write the `run` command composing `ConsoleScreen` and `ScreenLoop` as the design says (scene runner, real git, `InMemoryState` seeded, `FakeTranscripts`, `FakeProcessRegistry`, real `WindowsTerminal` and `TabScripts` with `ReadmeScene.exe` as both executables, update check off, no log); verify by running it in a `wt -w new --size 160,40` window against a hand-built demo folder and seeing every scene row
+- [x] 5.2 Write the `attach` placeholder and the no-op `claim-tab`; verify a session tab opened by the host shows the placeholder and its colour matches the row's TAB swatch
+- [x] 5.3 Write the start-up sequence (open the scene's tabs, focus Vantage's tab with `FocusTabAsync`, select the waiting row, write the ready marker); verify the marker appears and the detail pane shows the waiting reason
+- [x] 5.4 Write the `capture` command (`PrintWindow` with `PW_RENDERFULLCONTENT`, one PNG or a frame series on `FrameSchedule`); verify a single capture of the host's window matches what is on screen, with the workstation locked
 - [ ] 5.5 Write the key player that feeds `KeyScript` through the mechanism chosen in 1.2 while frames are taken; verify the frames show the wizard and the new tab
 - [ ] 5.6 Write `tools\ReadmeScene\README.md` (what it is, what it never touches, the untested wiring and why, how to change the scene) and verify `OneTypePerFileShould` and `dotnet format --verify-no-changes` pass
 
