@@ -37,7 +37,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
     {
         TimeProvider clock = TimeProvider.System;
         string ownPath = Environment.ProcessPath ?? throw new InvalidOperationException("The scene host cannot find its own path.");
-                ProgramLocator programs = ProgramLocator.ForCurrentUser();
+        ProgramLocator programs = ProgramLocator.ForCurrentUser();
         string wt = programs.Locate("wt") is ProgramLocation.Found terminalFound ? terminalFound.Path : throw new InvalidOperationException("Windows Terminal (wt.exe) is not on the PATH.");
         SceneExecutables executables = new(ownPath, Path.Combine(folders.Bin, "gh.exe"), Path.Combine(folders.Bin, "az.cmd"), wt, WindowName);
         SceneLayout layout = new(folders.Home);

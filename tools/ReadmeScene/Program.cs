@@ -38,7 +38,7 @@ public static class Program
         await File.WriteAllTextAsync(folders.WindowFile, SceneWindow.Find(TimeSpan.FromSeconds(10)).ToString(CultureInfo.InvariantCulture));
         Scene scene = SceneFile.Read(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "scene.json")));
 
-                List<KeyStep> recorded = [];
+        List<KeyStep> recorded = [];
         foreach (string script in scripts)
         {
             recorded.AddRange(KeyScript.Parse(await File.ReadAllTextAsync(script)));

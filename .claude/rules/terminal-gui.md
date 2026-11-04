@@ -2,6 +2,7 @@
 paths:
   - "src/Source191.Vantage.Tui/**"
   - "tools/HeadlessTerminal/**"
+  - "tools/ReadmeScene/**"
   - "tools/New-IconPixels.ps1"
   - "assets/icon/**"
 ---

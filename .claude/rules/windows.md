@@ -10,6 +10,8 @@ paths:
   - "**/TabShade*.cs"
   - "**/TerminalTab*.cs"
   - "**/TerminalWindow*.cs"
+  - "tools/ReadmeScene/**"
+  - "tools/New-ReadmeScreenshot.ps1"
   - "**/TabRegistration*.cs"
   - "**/TabScripts*.cs"
   - "**/TabEscapes*.cs"

@@ -35,7 +35,7 @@
 - [x] 5.3 Write the start-up sequence (open the scene's tabs, focus Vantage's tab with `FocusTabAsync`, select the waiting row, write the ready marker); verify the marker appears and the detail pane shows the waiting reason
 - [x] 5.4 Write the `capture` command (`PrintWindow` with `PW_RENDERFULLCONTENT`, one PNG or a frame series on `FrameSchedule`); verify a single capture of the host's window matches what is on screen, with the workstation locked
 - [x] 5.5 Write the key player that feeds `KeyScript` through the mechanism chosen in 1.2 while frames are taken; verify the frames show the wizard and the new tab
-- [ ] 5.6 Write `tools\ReadmeScene\README.md` (what it is, what it never touches, the untested wiring and why, how to change the scene) and verify `OneTypePerFileShould` and `dotnet format --verify-no-changes` pass
+- [x] 5.6 Write `tools\ReadmeScene\README.md` (what it is, what it never touches, the untested wiring and why, how to change the scene) and verify `OneTypePerFileShould` and `dotnet format --verify-no-changes` pass
 
 ## 6. The script and the images
 
