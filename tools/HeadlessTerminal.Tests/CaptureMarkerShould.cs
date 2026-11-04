@@ -1,30 +1,30 @@
-namespace Source191.Vantage.HeadlessTerminal.Tests;
+namespace Source191.Cader.HeadlessTerminal.Tests;
 
 public sealed class CaptureMarkerShould
 {
     // \u escapes are fixed length; \x07V would be read as one character.
-    private const string Capture = "\u001b]0;Vantage\u0007\u001b[2J\u001b[1;1HNAME\u001b[31m STATE\u001b[0m\u001b]0;Vantage (Keys)\u0007Keys\u001b]2;Vantage\u001b\\";
+    private const string Capture = "\u001b]0;Cader\u0007\u001b[2J\u001b[1;1HNAME\u001b[31m STATE\u001b[0m\u001b]0;Cader (Keys)\u0007Keys\u001b]2;Cader\u001b\\";
 
     [Fact]
     public void MatchATitleOnlyWhenItIsTheWholeTitle()
     {
-        CaptureMarker keys = new CaptureMarker.Title("Vantage (Keys)");
-        CaptureMarker vantage = new CaptureMarker.Title("Vantage");
+        CaptureMarker keys = new CaptureMarker.Title("Cader (Keys)");
+        CaptureMarker cader = new CaptureMarker.Title("Cader");
 
         int afterKeys = keys.FindAfter(Capture, 0) ?? -1;
 
-        Capture[..afterKeys].ShouldEndWith("Vantage (Keys)\u0007");
-        vantage.FindAfter(Capture, afterKeys).ShouldBe(Capture.Length);
+        Capture[..afterKeys].ShouldEndWith("Cader (Keys)\u0007");
+        cader.FindAfter(Capture, afterKeys).ShouldBe(Capture.Length);
         keys.FindAfter(Capture, afterKeys).ShouldBeNull();
     }
 
     [Fact]
     public void MatchAnOsc0OrOsc2TitleEndedByBelOrStringTerminator()
     {
-        CaptureMarker vantage = new CaptureMarker.Title("Vantage");
+        CaptureMarker cader = new CaptureMarker.Title("Cader");
 
-        vantage.FindAfter(Capture, 0).ShouldBe("\u001b]0;Vantage\u0007".Length);
-        vantage.FindAfter(Capture, 1).ShouldBe(Capture.Length);
+        cader.FindAfter(Capture, 0).ShouldBe("\u001b]0;Cader\u0007".Length);
+        cader.FindAfter(Capture, 1).ShouldBe(Capture.Length);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public sealed class CaptureMarkerShould
     [Fact]
     public void NeverMatchScreenTextInsideATitle()
     {
-        CaptureMarker keys = new CaptureMarker.ScreenText("Vantage (Keys)");
+        CaptureMarker keys = new CaptureMarker.ScreenText("Cader (Keys)");
 
         keys.FindAfter(Capture, 0).ShouldBeNull();
     }
@@ -63,7 +63,7 @@ public sealed class CaptureMarkerShould
     [Fact]
     public void DescribeItselfForAFailedStep()
     {
-        new CaptureMarker.Title("Vantage (Keys)").ToString().ShouldBe("the title \"Vantage (Keys)\"");
+        new CaptureMarker.Title("Cader (Keys)").ToString().ShouldBe("the title \"Cader (Keys)\"");
         new CaptureMarker.ScreenText("DIRTY").ToString().ShouldBe("the text \"DIRTY\"");
         CaptureMarker.Nothing.ToString().ShouldBe("nothing");
     }

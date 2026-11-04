@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Source191.Vantage.HeadlessTerminal</RootNamespace>
+    <RootNamespace>Source191.Cader.HeadlessTerminal</RootNamespace>
     <AssemblyName>headless-terminal</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
@@ -13,11 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Source191.Vantage.Core\Source191.Vantage.Core.csproj" />
+    <ProjectReference Include="..\..\src\Source191.Cader.Core\Source191.Cader.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Source191.Vantage.HeadlessTerminal.Tests" />
+    <InternalsVisibleTo Include="Source191.Cader.HeadlessTerminal.Tests" />
   </ItemGroup>
 
 </Project>

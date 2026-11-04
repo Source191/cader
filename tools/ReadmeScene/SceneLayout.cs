@@ -1,8 +1,8 @@
-namespace Source191.Vantage.ReadmeScene;
+namespace Source191.Cader.ReadmeScene;
 
 /// <summary>
-/// Where the scene's folders are under its home: repositories in <c>source\repos</c>, Vantage's default root, and
-/// worktrees as <c>&lt;repository&gt;-&lt;slug&gt;</c> in <c>source\worktrees</c>, Vantage's default worktree root beside it.
+/// Where the scene's folders are under its home: repositories in <c>source\repos</c>, Cader's default root, and
+/// worktrees as <c>&lt;repository&gt;-&lt;slug&gt;</c> in <c>source\worktrees</c>, Cader's default worktree root beside it.
 /// </summary>
 public sealed record SceneLayout(string Home)
 {

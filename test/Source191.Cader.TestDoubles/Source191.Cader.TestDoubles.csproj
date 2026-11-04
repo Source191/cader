@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Source191.Cader.TestDoubles</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Source191.Cader.Core\Source191.Cader.Core.csproj" />
+    <ProjectReference Include="..\..\src\Source191.Cader.Infrastructure\Source191.Cader.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

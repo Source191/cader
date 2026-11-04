@@ -1,0 +1,206 @@
+using Source191.Cader.Adapters.Terminal;
+using Source191.Cader.Ports;
+using System.Text.Json.Nodes;
+
+namespace Source191.Cader.Infrastructure.Tests;
+
+/// <summary>The real file system behind ITerminalFragment, on a throwaway folder standing in for Windows Terminal's Fragments root.</summary>
+[Trait("Category", "Integration")]
+public sealed class TerminalFragmentShould : IDisposable
+{
+    private readonly string root = Path.Combine(Path.GetTempPath(), "cader-fragments-" + Guid.NewGuid().ToString("N"));
+    private readonly TerminalFragment fragment;
+
+    public TerminalFragmentShould()
+    {
+        fragment = new TerminalFragment(root, Path.Combine(root, "tool", "absent.ico"));
+    }
+
+    private static TerminalProfiles Profiles => new(@"C:\Users\me\.dotnet\tools\cader.exe", new BellSound.File(@"C:\Windows\Media\Windows Notify Messaging.wav"), new BellSound.File(@"C:\Windows\Media\Windows Proximity Notification.wav"));
+
+    private JsonArray WrittenProfiles => JsonNode.Parse(File.ReadAllText(fragment.Location))!["profiles"]!.AsArray();
+
+    [Fact]
+    public async Task WriteBothProfilesAsUtf8WithoutABom()
+    {
+        await fragment.WriteAsync(Profiles, CancellationToken.None);
+
+        byte[] bytes = await File.ReadAllBytesAsync(fragment.Location, TestContext.Current.CancellationToken);
+        bytes.Take(3).ShouldNotBe([(byte)0xEF, (byte)0xBB, (byte)0xBF]);
+        fragment.Location.ShouldBe(Path.Combine(root, "Cader", "cader.json"));
+        JsonArray profiles = WrittenProfiles;
+        profiles.Count.ShouldBe(2);
+        profiles[0]!["name"]!.GetValue<string>().ShouldBe("Cader");
+        profiles[0]!["commandline"]!.GetValue<string>().ShouldBe("\"C:\\Users\\me\\.dotnet\\tools\\cader.exe\"");
+        profiles[0]!["bellSound"]!.GetValue<string>().ShouldBe(@"C:\Windows\Media\Windows Notify Messaging.wav");
+        profiles[1]!["name"]!.GetValue<string>().ShouldBe("Cader session");
+        profiles[1]!["commandline"]!.GetValue<string>().ShouldBe("pwsh.exe -NoLogo");
+        profiles[1]!["bellSound"]!.GetValue<string>().ShouldBe(@"C:\Windows\Media\Windows Proximity Notification.wav");
+        foreach (JsonNode? profile in profiles)
+        {
+            profile!["bellStyle"]!.AsArray().Select(style => style!.GetValue<string>()).ShouldBe(["audible", "window", "taskbar"]);
+        }
+    }
+
+    [Fact]
+    public async Task LeaveOutTheSoundOfAProfileOnTheTerminalsOwnBell()
+    {
+        await fragment.WriteAsync(Profiles with { CaderSound = new BellSound.TerminalDefault() }, CancellationToken.None);
+
+        JsonArray profiles = WrittenProfiles;
+        profiles[0]!.AsObject().ContainsKey("bellSound").ShouldBeFalse();
+        profiles[1]!.AsObject().ContainsKey("bellSound").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task WriteTheFragmentTextExactly()
+    {
+        await fragment.WriteAsync(Profiles with { SessionSound = new BellSound.TerminalDefault() }, CancellationToken.None);
+
+        (await File.ReadAllTextAsync(fragment.Location, TestContext.Current.CancellationToken)).ShouldBe("""
+            {
+              "profiles": [
+                {
+                  "name": "Cader",
+                  "commandline": "\"C:\\Users\\me\\.dotnet\\tools\\cader.exe\"",
+                  "bellStyle": [
+                    "audible",
+                    "window",
+                    "taskbar"
+                  ],
+                  "bellSound": "C:\\Windows\\Media\\Windows Notify Messaging.wav"
+                },
+                {
+                  "name": "Cader session",
+                  "commandline": "pwsh.exe -NoLogo",
+                  "bellStyle": [
+                    "audible",
+                    "window",
+                    "taskbar"
+                  ]
+                }
+              ]
+            }
+            """.ReplaceLineEndings(Environment.NewLine));
+    }
+
+    [Fact]
+    public async Task GiveTheCaderProfileNoTabColourAndNoFixedTitle()
+    {
+        await fragment.WriteAsync(Profiles, CancellationToken.None);
+
+        JsonObject cader = WrittenProfiles[0]!.AsObject();
+        cader.ContainsKey("tabColor").ShouldBeFalse();
+        cader.ContainsKey("suppressApplicationTitle").ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ReplaceAnExistingFragment()
+    {
+        await fragment.WriteAsync(Profiles, CancellationToken.None);
+
+        await fragment.WriteAsync(Profiles with { CaderSound = new BellSound.File(@"C:\Windows\Media\chimes.wav"), SessionSound = new BellSound.TerminalDefault() }, CancellationToken.None);
+
+        JsonArray profiles = WrittenProfiles;
+        profiles.Count.ShouldBe(2);
+        profiles[0]!["bellSound"]!.GetValue<string>().ShouldBe(@"C:\Windows\Media\chimes.wav");
+        profiles[1]!.AsObject().ContainsKey("bellSound").ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ReportExistsOnlyWhenTheFileIsThere()
+    {
+        fragment.Exists.ShouldBeFalse();
+
+        await fragment.WriteAsync(Profiles, CancellationToken.None);
+
+        fragment.Exists.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RemoveOnlyTheCaderFolder()
+    {
+        await fragment.WriteAsync(Profiles, CancellationToken.None);
+        string other = Path.Combine(root, "Other", "other.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(other)!);
+        await File.WriteAllTextAsync(other, "{}", TestContext.Current.CancellationToken);
+
+        bool removed = await fragment.RemoveAsync(CancellationToken.None);
+
+        removed.ShouldBeTrue();
+        Directory.Exists(Path.Combine(root, "Cader")).ShouldBeFalse();
+        File.Exists(other).ShouldBeTrue();
+        fragment.Exists.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ReportNothingToRemove()
+    {
+        bool removed = await fragment.RemoveAsync(CancellationToken.None);
+
+        removed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GiveBothProfilesTheCopiedIcon()
+    {
+        string source = ToolIcon([1, 2, 3]);
+        TerminalFragment withIcon = new(root, source);
+
+        await withIcon.WriteAsync(Profiles, CancellationToken.None);
+
+        string copy = Path.Combine(root, "Cader", "cader.ico");
+        (await File.ReadAllBytesAsync(copy, TestContext.Current.CancellationToken)).ShouldBe([1, 2, 3]);
+        foreach (JsonNode? profile in WrittenProfiles)
+        {
+            profile!["icon"]!.GetValue<string>().ShouldBe(copy);
+        }
+    }
+
+    [Theory]
+    [InlineData("missing.ico")]
+    [InlineData(@"no-such-folder\cader.ico")]
+    public async Task WriteNoIconWhenTheToolHasNone(string source)
+    {
+        TerminalFragment withoutIcon = new(root, Path.Combine(root, source));
+
+        await withoutIcon.WriteAsync(Profiles, CancellationToken.None);
+
+        foreach (JsonNode? profile in WrittenProfiles)
+        {
+            profile!.AsObject().ContainsKey("icon").ShouldBeFalse();
+        }
+
+        File.Exists(Path.Combine(root, "Cader", "cader.ico")).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveTheIconWithTheFragment()
+    {
+        string source = ToolIcon([1]);
+        TerminalFragment withIcon = new(root, source);
+        await withIcon.WriteAsync(Profiles, CancellationToken.None);
+
+        await withIcon.RemoveAsync(CancellationToken.None);
+
+        File.Exists(Path.Combine(root, "Cader", "cader.ico")).ShouldBeFalse();
+        File.Exists(source).ShouldBeTrue();
+    }
+
+    private string ToolIcon(byte[] bytes)
+    {
+        string source = Path.Combine(root, "tool", "cader.ico");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        File.WriteAllBytes(source, bytes);
+
+        return source;
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+}

@@ -1,17 +1,17 @@
-using Source191.Vantage.Adapters.Terminal;
+using Source191.Cader.Adapters.Terminal;
 
-namespace Source191.Vantage.HeadlessTerminal.Tests;
+namespace Source191.Cader.HeadlessTerminal.Tests;
 
 public sealed class EscapeSequencesShould
 {
     [Fact]
-    public void StripVantagesTabReset()
+    public void StripCadersTabReset()
     {
         EscapeSequences.Strip(TabEscapes.ResetBackground).ShouldBe(string.Empty);
     }
 
     [Fact]
-    public void KeepTheTextAroundVantagesTabReset()
+    public void KeepTheTextAroundCadersTabReset()
     {
         EscapeSequences.Strip("before" + TabEscapes.ResetBackground + "after").ShouldBe("beforeafter");
     }

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Source191.Vantage.HeadlessTerminal;
+namespace Source191.Cader.HeadlessTerminal;
 
 /// <summary>
 /// Builds a Windows command line the

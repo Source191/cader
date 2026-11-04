@@ -1,0 +1,51 @@
+using Source191.Cader.Adapters.Terminal;
+using Source191.Cader.Domain;
+
+namespace Source191.Cader.Infrastructure.Tests;
+
+public sealed class TerminalConsoleShould : IDisposable
+{
+    private readonly StringWriter writer = new();
+
+    [Fact]
+    public void WriteTheOwnTabTitleAndColourAndClearThemAgain()
+    {
+        TerminalConsole console = new(writer, "Cader");
+
+        console.ShowOwnTab(TabPalette.Green);
+        console.ShowOwnTab();
+        console.ClearOwnTab();
+
+        writer.ToString().ShouldBe(
+            TabEscapes.Title("Cader") + TabEscapes.Background(TabPalette.Green)
+            + TabEscapes.Title("Cader")
+            + TabEscapes.ClearTitle + TabEscapes.ResetBackground);
+    }
+
+    [Fact]
+    public void WriteTheReturnHintOnItsOwnLineAndEraseItAgain()
+    {
+        TerminalConsole console = new(writer, "Cader");
+
+        console.ShowReturnHint("Ctrl+Z detaches; the session keeps running.");
+        console.RemoveReturnHint();
+
+        writer.ToString().ShouldBe("Ctrl+Z detaches; the session keeps running." + Environment.NewLine + "\u001b[1A\u001b[2K");
+        ConsoleRecovery.EraseLineAbove.ShouldBe("\u001b[1A\u001b[2K");
+    }
+
+    [Fact]
+    public void WriteTheTitleItWasGiven()
+    {
+        TerminalConsole console = new(writer, "Northwind title");
+
+        console.ShowOwnTab();
+
+        writer.ToString().ShouldBe(TabEscapes.Title("Northwind title"));
+    }
+
+    public void Dispose()
+    {
+        writer.Dispose();
+    }
+}
