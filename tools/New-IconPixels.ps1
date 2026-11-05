@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Writes the console's icon as raw pixels: assets\icon\cader-48.rgba, the Cader icon with an edge round its tile in the console's frame grey.
+Writes the console's icon as raw pixels: assets\icon\logo-48.rgba, the Cader icon with an edge round its tile in the console's frame grey.
 .DESCRIPTION
 The console draws the icon through Terminal.Gui's ImageView, which takes pixels and has no image decoder, so the
 pixels are committed beside the PNGs and embedded in the Tui assembly. The dark tile vanished against the console's
@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'CaderMark.ps1')
 
 $master = 512
-$target = Join-Path $IconFolder "cader-$Size.rgba"
+$target = Join-Path $IconFolder "logo-$Size.rgba"
 $large = [System.Drawing.Bitmap]::new($master, $master)
 $small = [System.Drawing.Bitmap]::new($Size, $Size)
 try {

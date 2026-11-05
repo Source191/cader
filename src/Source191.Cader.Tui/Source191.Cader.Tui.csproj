@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\assets\icon\cader-48.rgba" LogicalName="Source191.Cader.Tui.cader-48.rgba" />
+    <EmbeddedResource Include="..\..\assets\icon\logo-48.rgba" LogicalName="Source191.Cader.Tui.logo-48.rgba" />
   </ItemGroup>
 
 </Project>

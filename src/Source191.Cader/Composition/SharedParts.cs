@@ -35,7 +35,7 @@ internal sealed record SharedParts(
 
         string caderExecutable = Environment.ProcessPath ?? "cader";
         string ownFolder = ProgramFolder.Of(AppContext.BaseDirectory, Environment.ProcessPath);
-        TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "cader.ico"));
+        TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "logo.ico"));
 
         // Every program Cader starts is found on the PATH once and run by its full path, never by a bare name that Windows
         // would look for in the folder Cader was started from first

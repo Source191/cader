@@ -27,7 +27,7 @@ public sealed class TerminalFragment(string fragmentsRoot, string iconSource) : 
 
     public string Location => Path.Combine(FragmentFolder, "cader.json");
 
-    private string IconCopy => Path.Combine(FragmentFolder, "cader.ico");
+    private string IconCopy => Path.Combine(FragmentFolder, "logo.ico");
 
     public bool Exists => File.Exists(Location);
 

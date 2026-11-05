@@ -41,7 +41,7 @@ Every release published by the release workflow, stable or prerelease, SHALL att
 
 #### Scenario: A stable release
 - **WHEN** a push to main raises `Version` to 0.21.0
-- **THEN** the GitHub Release v0.21.0 carries `cader_0.21.0_win-x64.zip` with a provenance attestation, and the zip holds `cader.exe`, `CHANGELOG.md` and `cader.ico`
+- **THEN** the GitHub Release v0.21.0 carries `cader_0.21.0_win-x64.zip` with a provenance attestation, and the zip holds `cader.exe`, `CHANGELOG.md` and `logo.ico`
 
 #### Scenario: A prerelease
 - **WHEN** a push to main raises `Version` to 0.21.0-preview.3
