@@ -3,7 +3,7 @@ using Source191.Cader.Domain;
 namespace Source191.Cader.Application.Views;
 
 /// <summary>
-/// A row of the Config tab: a setting Cader keeps in config.json, or a piece of setup it reads but does not edit.
+/// A row of the Config tab: a setting kept in config.json, or a piece of setup it reads but does not edit.
 /// Each case carries the facts its words are made from; <c>Wording</c> names the row and says its value.
 /// </summary>
 /// <param name="Key">The selection key, stable across a save so the row just edited stays selected.</param>
