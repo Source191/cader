@@ -10,7 +10,7 @@ namespace Source191.Cader.Application.Effects;
 /// </summary>
 public static class Composition
 {
-    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, CaderProcess cader, DiagnosticLog log)
+    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, OwnProcess cader, DiagnosticLog log)
     {
         OpenTabHandler tabs = new(ports.Tabs, ports.Processes, ports.Terminal, ports.Clock, scripts);
         SessionTabs sessionTabs = new(ports.Tabs, ports.Processes);

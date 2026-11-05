@@ -49,12 +49,12 @@ public sealed class TabScripts(string claudeExecutable, string caderExecutable)
     /// winget package from the winget source alone (the one the check followed), then starts Cader again only when the
     /// upgrade succeeded; otherwise winget's output stays on screen with a hint.
     /// </summary>
-    public TabLaunch Update(int caderProcessId, FolderPath startingDirectory, string winget) => new(
+    public TabLaunch Update(int ownProcessId, FolderPath startingDirectory, string winget) => new(
         Wording.UpdateTabTitle,
         ShellColour,
         startingDirectory,
         string.Join('\n',
-            WaitFor(caderProcessId),
+            WaitFor(ownProcessId),
             PowerShellScript.Invoke(winget, ["upgrade", .. WingetPackage]),
             $"if ($LASTEXITCODE -eq 0) {{ {PowerShellScript.Invoke(caderExecutable, [])} }} else {{ Write-Host {PowerShellScript.Quote(Wording.UpdateFailedHint)} -ForegroundColor Yellow }}"));
 

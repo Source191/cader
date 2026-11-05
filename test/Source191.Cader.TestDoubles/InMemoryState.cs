@@ -7,7 +7,7 @@ namespace Source191.Cader.TestDoubles;
 /// Every state port in memory, with the same rules as the file store: recent repositories most recent first and
 /// capped at ten, one created-worktree record per path.
 /// </summary>
-public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, ICaderConfig, IUpdateCheckRecords, ILastRunVersion
+public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion
 {
     private const int RecentLimit = 10;
 
@@ -16,7 +16,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     private readonly List<FolderPath> recent = [];
     private readonly List<CreatedWorktree> created = [];
     private UpdateCheckRecord updateCheck = new UpdateCheckRecord.Never();
-    private CaderConfig config = CaderConfig.Missing;
+    private UserConfig config = UserConfig.Missing;
     private LastRun lastRun = new LastRun.Never();
     private Exception? nextRecordFailure;
 
@@ -112,12 +112,12 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
         return Task.CompletedTask;
     }
 
-    public Task<CaderConfig> ReadConfigAsync()
+    public Task<UserConfig> ReadConfigAsync()
     {
         return Task.FromResult(config);
     }
 
-    public Task WriteConfigAsync(CaderConfig config)
+    public Task WriteConfigAsync(UserConfig config)
     {
         this.config = config;
         return Task.CompletedTask;

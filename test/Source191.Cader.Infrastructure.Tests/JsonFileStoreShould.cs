@@ -77,7 +77,7 @@ public sealed class JsonFileStoreShould : IDisposable
         }
         """;
 
-    /// <summary>config.json exactly as the store wrote it before a missing file read as CaderConfig.Missing: every member named.</summary>
+    /// <summary>config.json exactly as the store wrote it before a missing file read as UserConfig.Missing: every member named.</summary>
     private const string ConfigJson = """
         {
           "repositoryRoots": [
@@ -96,7 +96,7 @@ public sealed class JsonFileStoreShould : IDisposable
         }
         """;
 
-    private static readonly CaderConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "cader-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
@@ -333,7 +333,7 @@ public sealed class JsonFileStoreShould : IDisposable
 
         try
         {
-            (await Store.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+            (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
         }
         finally
         {
@@ -348,7 +348,7 @@ public sealed class JsonFileStoreShould : IDisposable
         Directory.CreateDirectory(folder);
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "defaultBase": 7 }""", TestContext.Current.CancellationToken);
 
-        (await Store.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public sealed class JsonFileStoreShould : IDisposable
         Directory.CreateDirectory(folder);
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "defaultPlace": 7 }""", TestContext.Current.CancellationToken);
 
-        (await Store.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
     }
 
     [Fact]
@@ -486,7 +486,7 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task RoundTripTheConfiguration()
     {
-        CaderConfig saved = new([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"D:\worktrees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]));
+        UserConfig saved = new([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"D:\worktrees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]));
 
         await Store.WriteConfigAsync(saved);
 
@@ -500,15 +500,15 @@ public sealed class JsonFileStoreShould : IDisposable
         string configFile = Path.Combine(folder, "config.json");
         await File.WriteAllTextAsync(configFile, """{ "repositoryRoots": ["D:\\work"], "defaultBase": "Head" }""", TestContext.Current.CancellationToken);
 
-        CaderConfig read = (await Store.ReadConfigAsync());
+        UserConfig read = (await Store.ReadConfigAsync());
 
-        read.ShouldBe(new CaderConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null));
+        read.ShouldBe(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null));
     }
 
     [Fact]
     public async Task WriteCheckForUpdates()
     {
-        CaderConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: false);
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: false);
 
         await Store.WriteConfigAsync(saved);
 
@@ -532,7 +532,7 @@ public sealed class JsonFileStoreShould : IDisposable
         string configFile = Path.Combine(folder, "config.json");
         await File.WriteAllTextAsync(configFile, """{ "repositoryRoots": ["C:\\repos"], "defaultBase": "Head" }""", TestContext.Current.CancellationToken);
 
-        CaderConfig read = (await Store.ReadConfigAsync());
+        UserConfig read = (await Store.ReadConfigAsync());
         await Store.WriteConfigAsync(read);
 
         read.DefaultBase.ShouldBe(WorktreeBase.Head);
@@ -546,7 +546,7 @@ public sealed class JsonFileStoreShould : IDisposable
         string configFile = Path.Combine(folder, "config.json");
         await File.WriteAllTextAsync(configFile, """{ "repositoryRoots": ["C:\\repos"], "defaultPlace": "CurrentBranch" }""", TestContext.Current.CancellationToken);
 
-        CaderConfig read = (await Store.ReadConfigAsync());
+        UserConfig read = (await Store.ReadConfigAsync());
         await Store.WriteConfigAsync(read);
 
         read.DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
@@ -565,7 +565,7 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task NameTheSettingsFileItWrites()
     {
-        await Store.WriteConfigAsync(new CaderConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null)));
+        await Store.WriteConfigAsync(new UserConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null)));
 
         Store.ConfigFile.ShouldBe(Path.Combine(folder, "config.json"));
         File.Exists(Store.ConfigFile).ShouldBeTrue();
@@ -574,7 +574,7 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task WriteTheEditorAsAPresetObject()
     {
-        await Store.WriteConfigAsync(new CaderConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null)));
+        await Store.WriteConfigAsync(new UserConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null)));
 
         string written = await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken);
 
@@ -588,7 +588,7 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task WriteACustomEditorWithItsArgumentList()
     {
-        await Store.WriteConfigAsync(new CaderConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"])));
+        await Store.WriteConfigAsync(new UserConfig([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"])));
 
         string written = await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken);
 
@@ -600,12 +600,12 @@ public sealed class JsonFileStoreShould : IDisposable
     [Fact]
     public async Task ReadAMissingOrCorruptConfigAsMissing()
     {
-        (await Store.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
 
         Directory.CreateDirectory(folder);
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), "nope", TestContext.Current.CancellationToken);
 
-        (await Store.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
     }
 
     [Fact]

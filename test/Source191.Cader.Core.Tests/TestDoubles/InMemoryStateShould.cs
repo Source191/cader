@@ -50,13 +50,13 @@ public sealed class InMemoryStateShould
     [Fact]
     public async Task StartWithAMissingConfiguration()
     {
-        (await state.ReadConfigAsync()).ShouldBe(CaderConfig.Missing);
+        (await state.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
     }
 
     [Fact]
     public async Task KeepTheConfiguration()
     {
-        await state.WriteConfigAsync(new CaderConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null));
+        await state.WriteConfigAsync(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null));
 
         (await state.ReadConfigAsync()).DefaultBase.ShouldBe(WorktreeBase.Head);
     }
