@@ -5,9 +5,9 @@ namespace Source191.Cader.Ports;
 /// is PowerShell and, once the fragment exists, the profile every tab Cader opens asks for. Each has its bell sound,
 /// a file or Windows Terminal's own.
 /// </summary>
-public sealed record TerminalProfiles(string CaderExecutable, BellSound CaderSound, BellSound SessionSound)
+public sealed record TerminalProfiles(string ConsoleExecutable, BellSound ConsoleSound, BellSound SessionSound)
 {
-    public const string CaderProfileName = "Cader";
+    public const string ConsoleProfileName = "Cader";
 
     public const string SessionProfileName = "Cader session";
 

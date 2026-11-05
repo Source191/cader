@@ -15,7 +15,7 @@ internal sealed record SharedParts(
     ProcessRegistry ProcessRegistry,
     ToolVersion Version,
 
-    string CaderExecutable,
+    string ConsoleExecutable,
     string OwnFolder,
     TerminalFragment TerminalFragment,
     ProgramLocator Programs,
@@ -33,7 +33,7 @@ internal sealed record SharedParts(
         ProcessRegistry processRegistry = new();
         ToolVersion version = ToolVersion.FromInformational(Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? string.Empty);
 
-        string caderExecutable = Environment.ProcessPath ?? "cader";
+        string consoleExecutable = Environment.ProcessPath ?? "cader";
         string ownFolder = ProgramFolder.Of(AppContext.BaseDirectory, Environment.ProcessPath);
         TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "logo.ico"));
 
@@ -53,7 +53,7 @@ internal sealed record SharedParts(
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
-        return new SharedParts(store, processRegistry, version, caderExecutable, ownFolder, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
+        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.

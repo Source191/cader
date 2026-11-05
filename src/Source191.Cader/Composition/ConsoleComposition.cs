@@ -81,10 +81,10 @@ internal static class ConsoleComposition
         EffectPorts ports = new(
             launch.Claude, launch.Git, parts.ProcessRegistry, transcripts, terminal, parts.Store,
             TimeProvider.System, clipboard, desktop, editors, folders, parts.CrashFile);
-        TabScripts tabScripts = new(launch.Programs.Claude, parts.CaderExecutable);
-        OwnProcess cader = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
+        TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
+        OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, cader, parts.Log);
+        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, own, parts.Log);
     }
 
     private static DialogEffects Dialogs(

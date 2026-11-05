@@ -117,7 +117,7 @@ public sealed class WordingOfKeysAndColumnsShould
     }
 
     [Fact]
-    public void SayTheTabBlockMatchesTheTabAsItLooksFromCader()
+    public void SayTheTabBlockMatchesTheTabAsItLooksFromTheConsole()
     {
         Wording.SessionsColumns.Single(column => column.Name == "TAB").Meaning
             .ShouldStartWith("a block in the tab's colour, faded as the tab looks from Cader's own tab,\nwhile a Cader tab shows the session;");

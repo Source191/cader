@@ -52,7 +52,7 @@ public static partial class Wording
             [new("Branch", BranchLine(row.Head, detail.Merge), Span: 2), new("PR", PullRequestLine(row.PullRequest))],
             [
                 new("Folder", row.Path.Value, Span: 2),
-                new("Created", detail.Created is WorktreeOrigin.CreatedByCader created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader"),
+                new("Created", detail.Created is WorktreeOrigin.CreatedHere created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader"),
             ],
             [new("Changes", $"{Count(row.DirtyFiles, "changed file")} · {Count(row.UnpushedCommits, "unpushed commit")}", row.DirtyFiles + row.UnpushedCommits > 0 ? TextTone.Amber : TextTone.Plain, Span: 3)],
         ];

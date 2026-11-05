@@ -5,13 +5,13 @@ namespace Source191.Cader.HeadlessTerminal.Tests;
 public sealed class EscapeSequencesShould
 {
     [Fact]
-    public void StripCadersTabReset()
+    public void StripTheConsolesTabReset()
     {
         EscapeSequences.Strip(TabEscapes.ResetBackground).ShouldBe(string.Empty);
     }
 
     [Fact]
-    public void KeepTheTextAroundCadersTabReset()
+    public void KeepTheTextAroundTheConsolesTabReset()
     {
         EscapeSequences.Strip("before" + TabEscapes.ResetBackground + "after").ShouldBe("beforeafter");
     }

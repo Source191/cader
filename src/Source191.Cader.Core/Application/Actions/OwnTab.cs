@@ -4,7 +4,7 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Actions;
 
 /// <summary>
-/// Cader's own tab: registered like a session tab, owned by <see cref="TabOwner.Cader"/> and claimed by Cader's own process, so the
+/// Cader's own tab: registered like a session tab, owned by <see cref="TabOwner.Console"/> and claimed by Cader's own process, so the
 /// colour it takes (green when free) is skipped by session tabs and the registration goes stale with the process.
 /// </summary>
 public sealed class OwnTab(ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock)
@@ -25,7 +25,7 @@ public sealed class OwnTab(ITabRegistry tabs, IProcessRegistry processes, TimePr
         DateTimeOffset now = clock.GetUtcNow();
         IReadOnlyList<TabRegistration> live = new TabRegistrations(await tabs.ReadTabsAsync()).Live(now, processes);
         ColourChoice choice = colours.Choose([.. live.Select(registration => registration.Colour)], Preferred);
-        await tabs.WriteTabAsync(TabRegistration.Pending(TabOwner.Cader, choice.Colour, now).ClaimedBy(processId, startedAt.Value));
+        await tabs.WriteTabAsync(TabRegistration.Pending(TabOwner.Console, choice.Colour, now).ClaimedBy(processId, startedAt.Value));
 
         return new OwnTabClaim.Claimed(choice.Colour);
     }

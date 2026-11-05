@@ -10,7 +10,7 @@ namespace Source191.Cader.Core.Tests.Application.Actions;
 
 public sealed class StartUpdateHandlerShould
 {
-    private const string Cader = @"C:\Users\me\AppData\Local\Microsoft\WinGet\Links\cader.exe";
+    private const string OwnExecutable = @"C:\Users\me\AppData\Local\Microsoft\WinGet\Links\cader.exe";
     private const string Winget = @"C:\Users\me\AppData\Local\Microsoft\WindowsApps\winget.exe";
     private static readonly FolderPath Home = FolderPath.From(@"C:\Users\me");
 
@@ -44,6 +44,6 @@ public sealed class StartUpdateHandlerShould
 
     private StartUpdateHandler Handler(ProgramLocation winget)
     {
-        return new StartUpdateHandler(terminal, new TabScripts(@"C:\Users\me\.local\bin\claude.exe", Cader), new OwnProcess(4242, Home, winget));
+        return new StartUpdateHandler(terminal, new TabScripts(@"C:\Users\me\.local\bin\claude.exe", OwnExecutable), new OwnProcess(4242, Home, winget));
     }
 }

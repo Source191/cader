@@ -56,9 +56,9 @@ public static partial class Wording
     };
 
     /// <summary>The settings row's Cader value: the running version and its own process's memory, then, in amber inside the same brackets, the newer release with the update key when one is known.</summary>
-    private static IReadOnlyList<TextPart> CaderVersion(ToolVersion cader, UpdateStatus update, MemorySize memory)
+    private static IReadOnlyList<TextPart> OwnVersion(ToolVersion tool, UpdateStatus update, MemorySize memory)
     {
-        string version = $"{cader.Text} ({Memory(memory)}";
+        string version = $"{tool.Text} ({Memory(memory)}";
 
         return update is UpdateStatus.Available available
             ? [Value($"{version}; "), new TextPart($"{available.Newest} available, U to update", TextTone.Amber), Value(")")]

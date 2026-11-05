@@ -11,7 +11,7 @@ public sealed record WorktreeRemovalFacts(
     int DirtyFileCount,
     int UnpushedCommitCount,
     WorktreeSession Session,
-    bool BranchCreatedByCader,
+    bool BranchCreatedHere,
     bool BranchMerged,
     int LeftoverFileCount)
 {

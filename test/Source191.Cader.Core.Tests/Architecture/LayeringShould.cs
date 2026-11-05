@@ -11,12 +11,12 @@ public sealed class LayeringShould
 {
     private const string Root = "Source191.Cader";
 
-    private static Types Cader => Types.InAssemblies([typeof(Session).Assembly, typeof(Source191.Cader.Adapters.Files.Folders).Assembly, typeof(Source191.Cader.Tui.ConsoleScreen).Assembly]);
+    private static Types Solution => Types.InAssemblies([typeof(Session).Assembly, typeof(Source191.Cader.Adapters.Files.Folders).Assembly, typeof(Source191.Cader.Tui.ConsoleScreen).Assembly]);
 
     [Fact]
     public void KeepDomainFreeOfEverythingElse()
     {
-        Cader.That().ResideInNamespace($"{Root}.Domain")
+        Solution.That().ResideInNamespace($"{Root}.Domain")
             .ShouldNot().HaveDependencyOnAny($"{Root}.Ports", $"{Root}.Application", $"{Root}.Adapters", $"{Root}.Tui", "Terminal.Gui", "System.IO.File", "System.IO.Directory", "System.Diagnostics.Process")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -24,7 +24,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepTerminalGuiInsideTui()
     {
-        Cader.That().ResideInNamespaceStartingWith(Root).And().DoNotResideInNamespaceStartingWith($"{Root}.Tui")
+        Solution.That().ResideInNamespaceStartingWith(Root).And().DoNotResideInNamespaceStartingWith($"{Root}.Tui")
             .ShouldNot().HaveDependencyOn("Terminal.Gui")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -32,7 +32,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepFileSystemAndProcessesInsideAdapters()
     {
-        Cader.That().ResideInNamespaceStartingWith(Root).And().DoNotResideInNamespaceStartingWith($"{Root}.Adapters")
+        Solution.That().ResideInNamespaceStartingWith(Root).And().DoNotResideInNamespaceStartingWith($"{Root}.Adapters")
             .ShouldNot().HaveDependencyOnAny("System.IO.File", "System.IO.Directory", "System.Diagnostics.Process")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -40,7 +40,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepApplicationFreeOfAdaptersAndTui()
     {
-        Cader.That().ResideInNamespaceStartingWith($"{Root}.Application")
+        Solution.That().ResideInNamespaceStartingWith($"{Root}.Application")
             .ShouldNot().HaveDependencyOnAny($"{Root}.Adapters", $"{Root}.Tui")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -48,7 +48,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepAdaptersFreeOfApplicationAndTui()
     {
-        Cader.That().ResideInNamespaceStartingWith($"{Root}.Adapters")
+        Solution.That().ResideInNamespaceStartingWith($"{Root}.Adapters")
             .ShouldNot().HaveDependencyOnAny($"{Root}.Application", $"{Root}.Tui")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -56,7 +56,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepPortsFreeOfApplication()
     {
-        Cader.That().ResideInNamespaceStartingWith($"{Root}.Ports")
+        Solution.That().ResideInNamespaceStartingWith($"{Root}.Ports")
             .ShouldNot().HaveDependencyOn($"{Root}.Application")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }
@@ -92,7 +92,7 @@ public sealed class LayeringShould
     [Fact]
     public void KeepSystemCommandLineInsideCommandLine()
     {
-        Cader.That().ResideInNamespaceStartingWith(Root).And().DoNotHaveNameStartingWith("CommandLine")
+        Solution.That().ResideInNamespaceStartingWith(Root).And().DoNotHaveNameStartingWith("CommandLine")
             .ShouldNot().HaveDependencyOn("System.CommandLine")
             .GetResult().FailingTypeNames.ShouldBeNull();
     }

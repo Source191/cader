@@ -64,7 +64,7 @@ public sealed class TabColourSelectionShould
     }
 
     [Fact]
-    public void GiveFiveSessionTabsBesideCadersGreenFiveDistinctColours()
+    public void GiveFiveSessionTabsBesideTheConsolesGreenFiveDistinctColours()
     {
         List<TabColour> inUse = [TabPalette.Green];
         List<string> given = [];

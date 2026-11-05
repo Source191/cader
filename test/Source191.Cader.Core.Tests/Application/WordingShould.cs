@@ -117,9 +117,9 @@ public sealed class WordingShould
     }
 
     [Fact]
-    public void SayABackgroundSessionIsAlreadyUnderCader()
+    public void SayABackgroundSessionIsAlreadyInTheBackground()
     {
-        Wording.Describe(new StatusMessage.AlreadyUnderCader(Listed.As("fix-123"))).ShouldBe("fix-123 already runs in the background under Cader.");
+        Wording.Describe(new StatusMessage.AlreadyInBackground(Listed.As("fix-123"))).ShouldBe("fix-123 already runs in the background under Cader.");
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public sealed class WordingShould
     // Dialogs and the screen.
 
     [Fact]
-    public void SayCaderIsUpToDate()
+    public void SayItIsUpToDate()
     {
         Wording.Describe(new StatusMessage.UpToDate()).ShouldBe("Cader is up to date.");
     }
@@ -383,15 +383,15 @@ public sealed class WordingShould
     }
 
     [Fact]
-    public void AskBeforeDeletingAnUnmergedBranchCaderCreated()
+    public void AskBeforeDeletingAnUnmergedBranchCreatedHere()
     {
-        Wording.DeleteBranchQuestion("fix-123", createdByCader: true).ShouldBe("Branch fix-123 is not merged. Delete it anyway?");
+        Wording.DeleteBranchQuestion("fix-123", createdHere: true).ShouldBe("Branch fix-123 is not merged. Delete it anyway?");
     }
 
     [Fact]
-    public void AskBeforeDeletingABranchCaderDidNotCreate()
+    public void AskBeforeDeletingABranchNotCreatedHere()
     {
-        Wording.DeleteBranchQuestion("fix-123", createdByCader: false).ShouldBe("Branch fix-123 was not created by Cader. Delete it anyway?");
+        Wording.DeleteBranchQuestion("fix-123", createdHere: false).ShouldBe("Branch fix-123 was not created by Cader. Delete it anyway?");
     }
 
     [Fact]
@@ -422,7 +422,7 @@ public sealed class WordingShould
     }
 
     [Fact]
-    public void SayWhereToSupportCader()
+    public void SayWhereToSupportIt()
     {
         Wording.SupportLine.ShouldBe("Buy me a sliver of a Claude Max plan: https://buymeacoffee.com/simonvane");
     }

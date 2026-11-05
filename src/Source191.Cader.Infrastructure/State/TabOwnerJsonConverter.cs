@@ -11,11 +11,11 @@ namespace Source191.Cader.Adapters.State;
 /// </summary>
 public sealed class TabOwnerJsonConverter : JsonConverter<TabOwner>
 {
-    private const string Cader = "cader";
+    private const string ConsoleWord = "cader";
 
     public override TabOwner Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => reader.GetString() switch
     {
-        Cader => TabOwner.Cader,
+        ConsoleWord => TabOwner.Console,
         string text when SessionId.TryParse(text, out SessionId? id) => new TabOwner.ForSession(id),
         _ => throw new JsonException("A tab file has no owner."),
     };
@@ -23,7 +23,7 @@ public sealed class TabOwnerJsonConverter : JsonConverter<TabOwner>
     public override void Write(Utf8JsonWriter writer, TabOwner value, JsonSerializerOptions options) => writer.WriteStringValue(value switch
     {
         TabOwner.ForSession session => session.Id.Value,
-        TabOwner.ForCader => Cader,
+        TabOwner.ForConsole => ConsoleWord,
         _ => throw new UnreachableException(),
     });
 }

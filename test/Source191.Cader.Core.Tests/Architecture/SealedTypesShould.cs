@@ -13,7 +13,7 @@ namespace Source191.Cader.Core.Tests.Architecture;
 /// </summary>
 public sealed class SealedTypesShould
 {
-    private static readonly Assembly[] Cader = [typeof(Session).Assembly, typeof(Source191.Cader.Adapters.Files.Folders).Assembly, typeof(Source191.Cader.Tui.ConsoleScreen).Assembly, typeof(InMemoryState).Assembly];
+    private static readonly Assembly[] Solution = [typeof(Session).Assembly, typeof(Source191.Cader.Adapters.Files.Folders).Assembly, typeof(Source191.Cader.Tui.ConsoleScreen).Assembly, typeof(InMemoryState).Assembly];
 
     [Fact]
     public void FindOnlyTheOpenLeaf()
@@ -26,7 +26,7 @@ public sealed class SealedTypesShould
     [Fact]
     public void LeaveNoClassOpen()
     {
-        OpenClassesIn(Cader.SelectMany(assembly => assembly.GetTypes())).ShouldBeEmpty();
+        OpenClassesIn(Solution.SelectMany(assembly => assembly.GetTypes())).ShouldBeEmpty();
     }
 
     private static IEnumerable<string?> OpenClassesIn(IEnumerable<Type> types)

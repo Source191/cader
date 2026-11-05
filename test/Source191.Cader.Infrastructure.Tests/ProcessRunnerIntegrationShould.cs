@@ -86,7 +86,7 @@ public sealed class ProcessRunnerIntegrationShould
     }
 
     [Fact]
-    public async Task RunAnInheritingChildInCadersOwnFolder()
+    public async Task RunAnInheritingChildInItsOwnFolder()
     {
         ProcessRequest request = new("cmd.exe", ["/c", "cd"], WorkingFolder.Inherit);
 

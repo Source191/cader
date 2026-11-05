@@ -12,13 +12,13 @@ public sealed class TerminalSetupRunner(
     IFolders folders,
     ITerminalFragment fragment,
     IClaudeSettings claudeSettings,
-    string caderExecutable,
+    string consoleExecutable,
     string windowsMediaFolder,
     TextReader input,
     TextWriter output,
     TextWriter error)
 {
-    private const string CaderDefaultSound = "Windows Notify Messaging.wav";
+    private const string ConsoleDefaultSound = "Windows Notify Messaging.wav";
     private const string SessionDefaultSound = "Windows Proximity Notification.wav";
 
     private enum Step
@@ -102,10 +102,10 @@ public sealed class TerminalSetupRunner(
 
     private async Task<TerminalProfiles> ChooseProfilesAsync(TerminalSetupRequest request)
     {
-        BellSound caderSound = await SoundOrDefaultAsync(request.Sound, CaderDefaultSound, TerminalProfiles.CaderProfileName);
+        BellSound consoleSound = await SoundOrDefaultAsync(request.Sound, ConsoleDefaultSound, TerminalProfiles.ConsoleProfileName);
         BellSound sessionSound = await SoundOrDefaultAsync(request.SessionSound, SessionDefaultSound, TerminalProfiles.SessionProfileName);
 
-        return new TerminalProfiles(caderExecutable, caderSound, sessionSound);
+        return new TerminalProfiles(consoleExecutable, consoleSound, sessionSound);
     }
 
     /// <summary>The sound given, else the Windows media default, else Windows Terminal's own after saying so.</summary>
