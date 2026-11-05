@@ -7,11 +7,11 @@ namespace Source191.Cader.Adapters.State;
 
 /// <summary>
 /// Writes a tab's <see cref="TabOwner"/> as the string tab files have always held: the session id, or the word
-/// "cader" for Cader's own tab. No session id can be that word, since the CLI's ids are GUIDs.
+/// "console" for the console's own tab. No session id can be that word, since the CLI's ids are GUIDs.
 /// </summary>
 public sealed class TabOwnerJsonConverter : JsonConverter<TabOwner>
 {
-    private const string ConsoleWord = "cader";
+    private const string ConsoleWord = "console";
 
     public override TabOwner Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => reader.GetString() switch
     {
