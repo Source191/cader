@@ -8,7 +8,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 [Trait("Category", "Integration")]
 public sealed class ClaudeSettingsShould : IDisposable
 {
-    private readonly string home = Path.Combine(Path.GetTempPath(), "cader-claude-" + Guid.NewGuid().ToString("N"));
+    private readonly string home = Path.Combine(Path.GetTempPath(), "test-claude-" + Guid.NewGuid().ToString("N"));
     private readonly ClaudeSettings settings;
 
     public ClaudeSettingsShould()

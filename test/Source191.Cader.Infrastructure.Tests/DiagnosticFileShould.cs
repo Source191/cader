@@ -4,7 +4,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 
 public sealed class DiagnosticFileShould : IDisposable
 {
-    private readonly string path = Path.Combine(Path.GetTempPath(), $"cader-log-{Guid.NewGuid():N}.log");
+    private readonly string path = Path.Combine(Path.GetTempPath(), $"test-log-{Guid.NewGuid():N}.log");
 
     public void Dispose()
     {

@@ -8,7 +8,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 [Trait("Category", "Integration")]
 public sealed class TerminalFragmentShould : IDisposable
 {
-    private readonly string root = Path.Combine(Path.GetTempPath(), "cader-fragments-" + Guid.NewGuid().ToString("N"));
+    private readonly string root = Path.Combine(Path.GetTempPath(), "test-fragments-" + Guid.NewGuid().ToString("N"));
     private readonly TerminalFragment fragment;
 
     public TerminalFragmentShould()

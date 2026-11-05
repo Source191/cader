@@ -5,7 +5,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 
 public sealed class ClaudeTranscriptsShould : IDisposable
 {
-    private readonly string home = Path.Combine(Path.GetTempPath(), "cader-transcripts-" + Guid.NewGuid().ToString("N"));
+    private readonly string home = Path.Combine(Path.GetTempPath(), "test-transcripts-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
     public void FindASessionsTranscriptInAnyProjectFolder()

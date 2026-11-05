@@ -5,7 +5,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 
 public sealed class CrashFileShould : IDisposable
 {
-    private readonly string folder = Path.Combine(Path.GetTempPath(), $"cader-state-{Guid.NewGuid():N}");
+    private readonly string folder = Path.Combine(Path.GetTempPath(), $"test-state-{Guid.NewGuid():N}");
 
     public void Dispose()
     {
