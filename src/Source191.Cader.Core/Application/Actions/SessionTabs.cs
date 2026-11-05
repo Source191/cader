@@ -4,7 +4,7 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Actions;
 
 /// <summary>
-/// The one place that closes a session's tabs: ends the shell of every live tab Cader opened for the session (Windows
+/// The one place that closes a session's tabs: ends the shell of every live tab the console opened for the session (Windows
 /// Terminal closes a tab whose root shell exits with 0) and forgets every registration for it, a pending one too.
 /// </summary>
 public sealed class SessionTabs(ITabRegistry tabs, IProcessRegistry processes)

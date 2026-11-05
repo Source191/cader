@@ -2,7 +2,7 @@ using Source191.Cader.Application.Reporting;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
-/// <summary>The issue form and the address Cader opens it with are two halves of one fact; they must name the same file and field.</summary>
+/// <summary>The issue form and the address the console opens it with are two halves of one fact; they must name the same file and field.</summary>
 public sealed class ProblemReportTemplateShould
 {
     private static string Template => Path.Combine(RepositoryFolder.Root(), ".github", "ISSUE_TEMPLATE", ProblemReportAddress.TemplateFile);

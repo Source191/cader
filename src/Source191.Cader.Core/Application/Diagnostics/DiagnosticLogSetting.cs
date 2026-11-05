@@ -1,7 +1,7 @@
 namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
-/// What <c>CADER_LOG</c> asks of the diagnostic log, read once as Cader starts: off, so the log is kept in memory
+/// What <c>CADER_LOG</c> asks of the diagnostic log, read once as the console starts: off, so the log is kept in memory
 /// only, or also written to the file it names.
 /// </summary>
 public abstract record DiagnosticLogSetting

@@ -5,7 +5,7 @@ using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application;
 
-/// <summary>Every tab Cader opens: what it runs, where, under what title and in which colour.</summary>
+/// <summary>Every tab the console opens: what it runs, where, under what title and in which colour.</summary>
 public sealed class TabScriptsShould
 {
     private const string Claude = @"C:\Users\me\.local\bin\claude.exe";

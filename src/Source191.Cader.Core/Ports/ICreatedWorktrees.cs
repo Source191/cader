@@ -2,7 +2,7 @@ using Source191.Cader.Domain;
 
 namespace Source191.Cader.Ports;
 
-/// <summary>The worktrees and branches Cader created, which decide the branch-deletion rules.</summary>
+/// <summary>The worktrees and branches the console created, which decide the branch-deletion rules.</summary>
 public interface ICreatedWorktrees
 {
     Task<IReadOnlyList<CreatedWorktree>> ReadCreatedWorktreesAsync();

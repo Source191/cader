@@ -7,7 +7,7 @@ namespace Source191.Cader.Core.Tests.Application;
 /// <summary>
 /// A program is found in the PATH folders and started by its full path, so
 /// <see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw">Windows
-/// never resolves a bare name against the folder Cader was started from</see>, and never a batch file.
+/// never resolves a bare name against the folder the console was started from</see>, and never a batch file.
 /// </summary>
 public sealed class ProgramLocatorShould
 {

@@ -3,7 +3,7 @@ using Source191.Cader.Ports;
 
 namespace Source191.Cader.TestDoubles;
 
-/// <summary>Records what the loop asks of the terminal Cader runs in.</summary>
+/// <summary>Records what the loop asks of the terminal the console runs in.</summary>
 public sealed class FakeTerminalConsole : ITerminalConsole
 {
     /// <summary>The colour of each time the own tab was shown coloured.</summary>

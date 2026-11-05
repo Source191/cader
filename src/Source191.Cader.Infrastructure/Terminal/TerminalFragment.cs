@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 namespace Source191.Cader.Adapters.Terminal;
 
 /// <summary>
-/// Cader's <see href="https://learn.microsoft.com/windows/terminal/json-fragment-extensions">Windows Terminal JSON
+/// The console's <see href="https://learn.microsoft.com/windows/terminal/json-fragment-extensions">Windows Terminal JSON
 /// fragment</see> at <c>&lt;Fragments root&gt;\Cader\cader.json</c>. Windows Terminal reads every fragment at
 /// start-up and adds the profiles in it; the user's own settings file is never opened. Written as
 /// UTF-8 without a byte order mark, as fragments must be.

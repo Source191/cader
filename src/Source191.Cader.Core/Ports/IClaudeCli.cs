@@ -3,8 +3,8 @@ using Source191.Cader.Domain;
 namespace Source191.Cader.Ports;
 
 /// <summary>
-/// The <see href="https://code.claude.com/docs/en/cli-reference">documented Claude Code CLI surface</see> Cader
-/// depends on. The files Cader reads, such as transcripts and settings.json, have their own ports.
+/// The <see href="https://code.claude.com/docs/en/cli-reference">documented Claude Code CLI surface</see> the console
+/// depends on. The files the console reads, such as transcripts and settings.json, have their own ports.
 /// The convention: ListSessionsAsync, StopAsync and RemoveAsync throw <see cref="ClaudeCliException"/> with claude's own
 /// words when claude exits with an error; StartBackgroundAsync and ResumeBackgroundAsync answer a result in every case;
 /// VersionAsync answers NotRead; AttachAsync answers the exit code.

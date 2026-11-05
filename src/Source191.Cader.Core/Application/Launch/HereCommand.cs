@@ -5,7 +5,7 @@ namespace Source191.Cader.Application.Launch;
 
 /// <summary>
 /// <c>cader here [name] [-p prompt]</c>: a supervised session in the current folder, on its current
-/// branch, attached in the same tab. Sessions started this way are Cader-managed from the outset.
+/// branch, attached in the same tab. Sessions started this way are managed by the console from the outset.
 /// </summary>
 public static class HereCommand
 {

@@ -2,7 +2,7 @@ using Source191.Cader.Domain;
 
 namespace Source191.Cader.Ports;
 
-/// <summary>The Windows Terminal operations Cader needs: open a tab, and select one by title.</summary>
+/// <summary>The Windows Terminal operations the console needs: open a tab, and select one by title.</summary>
 public interface IWindowsTerminal
 {
     Task OpenTabAsync(TabLaunch launch, CancellationToken cancellationToken);

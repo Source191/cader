@@ -3,7 +3,7 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
-/// Counts every child program Cader runs and records a line for one that is slow or cannot be started. It wraps the
+/// Counts every child program the console runs and records a line for one that is slow or cannot be started. It wraps the
 /// one process runner, so every adapter is covered. An interactive run is a hand-off and is never called slow.
 /// </summary>
 public sealed class RecordedProcessRunner(IProcessRunner inner, DiagnosticLog log, ProcessCounts counts, TimeProvider clock) : IProcessRunner

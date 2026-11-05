@@ -4,7 +4,7 @@ using Source191.Cader.Ports;
 
 namespace Source191.Cader.Application.Actions;
 
-/// <summary>Opens a solution file with the application Windows associates with its type; a type with none is an outcome in Cader's words.</summary>
+/// <summary>Opens a solution file with the application Windows associates with its type; a type with none is an outcome in the program's words.</summary>
 public sealed class OpenSolutionHandler(IDesktop desktop) : IEffectHandler<OpenSolution>
 {
     public async Task<Outcome> HandleAsync(OpenSolution effect, CancellationToken cancellationToken)

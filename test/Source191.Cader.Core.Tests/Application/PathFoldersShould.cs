@@ -3,7 +3,7 @@ using Source191.Cader.Adapters.Processes;
 namespace Source191.Cader.Core.Tests.Application;
 
 /// <summary>
-/// A relative PATH entry would be searched against the folder Cader was started from, which a cloned repository can
+/// A relative PATH entry would be searched against the folder the console was started from, which a cloned repository can
 /// plant a program in, so only full paths are kept.
 /// </summary>
 public sealed class PathFoldersShould

@@ -1,6 +1,6 @@
 namespace Source191.Cader.Domain;
 
-/// <summary>Fits text into a cell's width. Widths are UTF-16 characters, as everywhere in Cader's cells.</summary>
+/// <summary>Fits text into a cell's width. Widths are UTF-16 characters, as everywhere in the console's cells.</summary>
 public static class TextFit
 {
     public const string Ellipsis = "…";

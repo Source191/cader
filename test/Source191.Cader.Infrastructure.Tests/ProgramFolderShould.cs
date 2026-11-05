@@ -2,7 +2,7 @@ using Source191.Cader.Adapters.Files;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
-/// <summary>Where Cader's own files are read from, with real files and, where Windows allows one, a real symbolic link.</summary>
+/// <summary>Where the console's own files are read from, with real files and, where Windows allows one, a real symbolic link.</summary>
 public sealed class ProgramFolderShould : IDisposable
 {
     private readonly string folder = Path.Combine(Path.GetTempPath(), $"cader-program-{Guid.NewGuid():N}");

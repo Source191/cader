@@ -4,7 +4,7 @@ using Source191.Cader.Ports;
 
 namespace Source191.Cader.Application.Actions;
 
-/// <summary>Stops the background job, then closes a Cader tab showing it, if one is open. A stop claude refuses leaves the tab open.</summary>
+/// <summary>Stops the background job, then closes a session tab showing it, if one is open. A stop claude refuses leaves the tab open.</summary>
 public sealed class StopSessionHandler(IClaudeCli claude, SessionTabs tabs) : IEffectHandler<StopSession>
 {
     public async Task<Outcome> HandleAsync(StopSession effect, CancellationToken cancellationToken)

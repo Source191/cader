@@ -5,8 +5,8 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Actions;
 
 /// <summary>
-/// Deletes a session, closes the Cader tab showing it (waiting for its shell, so nothing holds the folder) and, when
-/// it lived in a worktree Cader created, removes that worktree under the removal rules through the same remover as
+/// Deletes a session, closes the session tab showing it (waiting for its shell, so nothing holds the folder) and, when
+/// it lived in a worktree created here, removes that worktree under the removal rules through the same remover as
 /// the worktrees view. Not a dispatcher handler: the screen confirms first and may ask about the branch afterwards.
 /// </summary>
 public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWorktrees createdWorktrees, SessionTabs tabs, IFolders folders, WorktreeRemover remover)

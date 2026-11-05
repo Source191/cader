@@ -1,6 +1,6 @@
 namespace Source191.Cader.Ports;
 
-/// <summary>The one setting Cader reads and writes in <c>~\.claude\settings.json</c>.</summary>
+/// <summary>The one setting the console reads and writes in <c>~\.claude\settings.json</c>.</summary>
 public interface IClaudeSettings
 {
     /// <summary>The settings file's full path.</summary>

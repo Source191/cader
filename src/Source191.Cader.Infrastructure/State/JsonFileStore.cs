@@ -9,8 +9,8 @@ using System.Text.Json.Serialization;
 namespace Source191.Cader.Adapters.State;
 
 /// <summary>
-/// The only state Cader owns, under one folder: tab registrations, recent repositories and worktrees Cader
-/// created (one file each, so two Cader processes writing at once cannot lose each other's records), config, the
+/// The only state the console owns, under one folder: tab registrations, recent repositories and worktrees the console
+/// created (one file each, so two console processes writing at once cannot lose each other's records), config, the
 /// last update check and the last version run. A missing, corrupt or unreadable file reads as empty. Every write goes
 /// beside the file and is moved over it. The single-file recent.json of earlier versions is imported once and
 /// removed; the created.json, the descriptions\ folder and sessions.json of earlier versions are no longer read.
@@ -177,7 +177,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     }
 
     /// <summary>
-    /// Reads one record. Another Cader process may be replacing or deleting the file at the same moment, so the
+    /// Reads one record. Another console process may be replacing or deleting the file at the same moment, so the
     /// stream allows sharing and a file that is locked, gone or half-written reads as absent rather than failing the
     /// whole read; the next refresh sees the finished file.
     /// </summary>
@@ -204,7 +204,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     /// <summary>
     /// Writes one record beside its file and moves it over, so a crash, a kill or a full disc leaves the previous file
     /// and no reader sees a half-written one. Readers open with delete sharing, which is what lets the move replace a
-    /// file another Cader process has open. The temporary name is unique because a tab file has two writers.
+    /// file another console process has open. The temporary name is unique because a tab file has two writers.
     /// </summary>
     private static async Task WriteJsonAsync<T>(string file, T value)
     {

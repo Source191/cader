@@ -3,7 +3,7 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
-/// Leaves the diagnostic log behind when an exception ends Cader: the events, the counts and the crash
+/// Leaves the diagnostic log behind when an exception ends the console: the events, the counts and the crash
 /// itself go to the crash file, and the exception carries on so the command line reports it. A normal return
 /// writes the counts to the log's sinks instead. Nothing here may hide the original exception.
 /// </summary>

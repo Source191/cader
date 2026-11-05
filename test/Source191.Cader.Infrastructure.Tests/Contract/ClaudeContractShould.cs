@@ -11,7 +11,7 @@ using System.Text.Json.Nodes;
 namespace Source191.Cader.Infrastructure.Tests.Contract;
 
 /// <summary>
-/// Cader's own Claude adapters against the installed CLI: what fails here is what Cader would get wrong. Each
+/// The console's own Claude adapters against the installed CLI: what fails here is what the console would get wrong. Each
 /// session is started with no prompt, so no model call is made, in this repository (which the nightly workflow
 /// trusts), and is stopped and removed by job id, since stop and rm take only ids.
 /// </summary>
@@ -80,7 +80,7 @@ public sealed class ClaudeContractShould
         }
     }
 
-    /// <summary>Cader skips a row whose session id is not letters, digits and hyphens, a letter or digit first; a CLI that changed its ids would hide every row.</summary>
+    /// <summary>The console skips a row whose session id is not letters, digits and hyphens, a letter or digit first; a CLI that changed its ids would hide every row.</summary>
     [Fact]
     public async Task ListOnlySessionIdsInTheAcceptedShape()
     {

@@ -4,7 +4,7 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application;
 
 /// <summary>
-/// Between config.json's record and <see cref="Settings"/>: whatever the file leaves out, or holds in a form Cader
+/// Between config.json's record and <see cref="Settings"/>: whatever the file leaves out, or holds in a form the console
 /// cannot use, reads as its default; a saved file names every property, so it is complete and readable by hand.
 /// </summary>
 public static class SettingsFile

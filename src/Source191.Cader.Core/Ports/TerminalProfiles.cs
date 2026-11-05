@@ -1,8 +1,8 @@
 namespace Source191.Cader.Ports;
 
 /// <summary>
-/// The two Windows Terminal profiles Cader adds, named once: "Cader" runs the installed Cader, "Cader session"
-/// is PowerShell and, once the fragment exists, the profile every tab Cader opens asks for. Each has its bell sound,
+/// The two Windows Terminal profiles the console adds, named once: "Cader" runs the installed program, "Cader session"
+/// is PowerShell and, once the fragment exists, the profile every tab the console opens asks for. Each has its bell sound,
 /// a file or Windows Terminal's own.
 /// </summary>
 public sealed record TerminalProfiles(string ConsoleExecutable, BellSound ConsoleSound, BellSound SessionSound)

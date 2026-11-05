@@ -6,7 +6,7 @@ namespace Source191.Cader.Application.Actions;
 
 /// <summary>
 /// Opens the update tab: a running cader.exe locks its own files, so the upgrade runs in a tab that waits for this
-/// process to exit first. <see cref="TabScripts.Update"/> says what it runs. Without winget no tab opens and Cader stays.
+/// process to exit first. <see cref="TabScripts.Update"/> says what it runs. Without winget no tab opens and the console stays.
 /// </summary>
 public sealed class StartUpdateHandler(IWindowsTerminal terminal, TabScripts scripts, OwnProcess own) : IEffectHandler<StartUpdate>
 {
