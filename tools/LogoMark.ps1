@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-The mark (two worktree branches meeting in the bar of a T, a tower, over a stem to one node, on a rounded tile), drawn once for every script that needs it.
+The mark (two worktree branches curving from one node into a C, with a star in its opening, on a rounded tile), drawn once for every script that needs it.
 .DESCRIPTION
 Dot-source it: New-Icon.ps1 draws the icon with it, New-Header.ps1 draws the mark on the header images, and New-IconPixels.ps1
 draws it without its tile (-NoTile) for the console's black background, where the dark tile disappeared. The mark is laid out on a
@@ -36,6 +36,16 @@ function Add-Node([System.Drawing.Graphics]$graphics, [float]$x, [float]$y, [flo
     $graphics.DrawEllipse((New-Pen $ring ($radius * 0.55)), $x - $inner, $y - $inner, 2 * $inner, 2 * $inner)
 }
 
+function Add-Star([System.Drawing.Graphics]$graphics, [float]$x, [float]$y, [float]$radius, [string]$hex) {
+    # A four-pointed star: long points up, down, left and right, pinched between them.
+    $points = for ($index = 0; $index -lt 8; $index++) {
+        $angle = [Math]::PI / 4 * $index - [Math]::PI / 2
+        $length = ($index % 2 -eq 0) ? $radius : $radius * 0.32
+        PointOf ($x + $length * [Math]::Cos($angle)) ($y + $length * [Math]::Sin($angle))
+    }
+    $graphics.FillPolygon([System.Drawing.SolidBrush]::new((ColourOf $hex)), [System.Drawing.PointF[]]$points)
+}
+
 function Add-LogoMark([System.Drawing.Graphics]$graphics, [float]$x, [float]$y, [float]$size, [switch]$NoTile, [string]$NodeCentre = '#0F172A', [string]$Outline) {
     $layout = 512
     $state = $graphics.Save()
@@ -58,13 +68,13 @@ function Add-LogoMark([System.Drawing.Graphics]$graphics, [float]$x, [float]$y, 
         }
     }
 
-    # A T: the branches run level from the top corners and meet at the centre, over a stem down to one node. The stem is
-    # drawn first so the branches' round ends cover its top and the join is clean.
-    $graphics.DrawLine((New-Pen '#FFFFFF' 40), 256, 120, 256, 392)
-    $graphics.DrawLine((New-Pen '#2DD4BF' 40), 112, 120, 256, 120)
-    $graphics.DrawLine((New-Pen '#A78BFA' 40), 400, 120, 256, 120)
-    Add-Node $graphics 112 120 46 '#2DD4BF' $NodeCentre
-    Add-Node $graphics 400 120 46 '#A78BFA' $NodeCentre
-    Add-Node $graphics 256 392 46 '#FFFFFF' $NodeCentre
+    # A C: from one node on the left, a teal branch curves up and round to the top right and a purple one down to the bottom
+    # right, both on one circle; the star sits in the opening, for Cadair Idris, where the giant sat to watch the stars.
+    $graphics.DrawArc((New-Pen '#2DD4BF' 40), 104, 116, 280, 280, 180, 125)
+    $graphics.DrawArc((New-Pen '#A78BFA' 40), 104, 116, 280, 280, 55, 125)
+    Add-Node $graphics 104 256 46 '#FFFFFF' $NodeCentre
+    Add-Node $graphics 324 141 46 '#2DD4BF' $NodeCentre
+    Add-Node $graphics 324 371 46 '#A78BFA' $NodeCentre
+    Add-Star $graphics 372 256 54 '#FFFFFF'
     $graphics.Restore($state)
 }
