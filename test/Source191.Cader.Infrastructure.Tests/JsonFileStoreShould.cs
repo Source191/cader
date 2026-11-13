@@ -3,6 +3,7 @@ using Source191.Cader.Adapters.State;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
@@ -773,6 +774,40 @@ public sealed class JsonFileStoreShould : IDisposable
         (await Store.ReadCreatedWorktreesAsync()).Select(worktree => worktree.Path.Value).ShouldBe([@"C:\Users\me\source\repos\Northwind.Orders-fix-123"]);
     }
 
+    [Fact]
+    public async Task SkipATabFileWithoutAColour()
+    {
+        await WriteRawAsync(@"tabs\full.json", SessionTabJson);
+        await WriteRawAsync(@"tabs\no-colour.json", Regex.Replace(OwnTabJson, "\"colour\": \\{[^}]*\\},\\s*", string.Empty));
+
+        (await Store.ReadTabsAsync()).ShouldBe([SessionTab]);
+    }
+
+    [Fact]
+    public async Task SkipATabFileWhoseOwnerIsNull()
+    {
+        await WriteRawAsync(@"tabs\full.json", SessionTabJson);
+        await WriteRawAsync(@"tabs\null-owner.json", OwnTabJson.Replace("\"sessionId\": \"console\"", "\"sessionId\": null", StringComparison.Ordinal));
+
+        (await Store.ReadTabsAsync()).ShouldBe([SessionTab]);
+    }
+
+    [Fact]
+    public async Task SkipARecentRepositoryWhosePathIsNull()
+    {
+        await WriteRawAsync(@"recent\full.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Billing", "usedAt": "2026-10-23T12:00:00+00:00" }""");
+        await WriteRawAsync(@"recent\null-path.json", """{ "path": null, "usedAt": "2027-01-01T00:00:00+00:00" }""");
+
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")]);
+    }
+
+    [Fact]
+    public async Task ReadAnUpdateCheckWithoutCheckedAtAsNever()
+    {
+        await WriteRawAsync("update-check.json", """{ "newest": "0.21.0" }""");
+
+        (await Store.ReadUpdateCheckAsync()).ShouldBe(new UpdateCheckRecord.Never());
+    }
     /// <summary>The created-worktree record for Northwind.Billing-invoice-pdf, its branch member written as the JSON given, or left out when null.</summary>
     private static string CreatedRecordWith(string? branch)
     {
