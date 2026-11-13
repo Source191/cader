@@ -8,6 +8,10 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93)
 
+### Changed
+
+- A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
+
 ## 0.21.1 - 2026-11-13
 
 ### Internal

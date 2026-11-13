@@ -11,7 +11,7 @@ namespace Source191.Cader.Adapters.State;
 /// <summary>
 /// The only state the console owns, under one folder: tab registrations, recent repositories and worktrees the console
 /// created (one file each, so two console processes writing at once cannot lose each other's records), config, the
-/// last update check and the last version run. A missing, corrupt or unreadable file reads as empty. Every write goes
+/// last update check and the last version run. A missing, corrupt or unreadable file reads as empty, and so does one that holds null for a value it must have, leaves one out or names a key twice. Every write goes
 /// beside the file and is moved over it. The single-file recent.json of earlier versions is imported once and
 /// removed; the created.json, the descriptions\ folder and sessions.json of earlier versions are no longer read.
 /// </summary>
@@ -21,10 +21,17 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     // Enums are written as their names, so config.json keeps reading "RemoteDefault" and "Head", and a number where a
     // name belongs is a corrupt file rather than an undefined value; paths, branch names and tab owners are written as
-    // the plain strings earlier versions wrote.
+    // the plain strings earlier versions wrote. A member that is not nullable is required: null for it, or leaving it
+    // out, is a JsonException (RespectNullableAnnotations, RespectRequiredConstructorParameters), and so is naming a key
+    // twice (AllowDuplicateProperties), each read as a corrupt file; a nullable member has an explicit null default.
+    // Unknown properties and other letter cases stay accepted, which JsonSerializerDefaults.Strict would refuse: a
+    // config.json from a newer or older Cader would then read as missing and the next save would overwrite its settings.
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
+        RespectNullableAnnotations = true,
+        RespectRequiredConstructorParameters = true,
+        AllowDuplicateProperties = false,
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false), new TextValueJsonConverter<FolderPath>(), new TextValueJsonConverter<BranchName>(), new TabOwnerJsonConverter() },
     };
 
@@ -263,8 +270,8 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     private sealed record RecentRepository(FolderPath Path, DateTimeOffset UsedAt);
 
     /// <summary>update-check.json as written, <c>{"checkedAt": ..., "newest": "0.10.0"}</c> or <c>"newest": null</c>, and <c>"notes"</c> (the newest release's notes as read) only when there are some, so without them it is the same file every earlier version wrote.</summary>
-    private sealed record UpdateCheckFile(DateTimeOffset CheckedAt, string? Newest, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Notes = null);
+    private sealed record UpdateCheckFile(DateTimeOffset CheckedAt, string? Newest = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Notes = null);
 
     /// <summary>last-run.json, <c>{"version": "0.21.0"}</c>: the released version that last ran.</summary>
-    private sealed record LastRunFile(string? Version);
+    private sealed record LastRunFile(string? Version = null);
 }
