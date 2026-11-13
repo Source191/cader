@@ -27,6 +27,7 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
         WriteIndented = true,
         RespectNullableAnnotations = true,
         RespectRequiredConstructorParameters = true,
+        AllowDuplicateProperties = false,
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false), new TextValueJsonConverter<FolderPath>(), new TextValueJsonConverter<BranchName>(), new TabOwnerJsonConverter() },
     };
 
