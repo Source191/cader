@@ -7,7 +7,7 @@ namespace Source191.Cader.Adapters.State;
 /// A tab registration as its file holds it: the owner under the "sessionId" key it has always had, and the claiming
 /// process and its start time, both null while the tab is pending. A file holding only one of the two reads as pending.
 /// </summary>
-internal sealed record TabFile(Guid Id, TabOwner SessionId, TabColour Colour, DateTimeOffset CreatedAt, int? ProcessId, DateTimeOffset? ProcessStartedAt)
+internal sealed record TabFile(Guid Id, TabOwner SessionId, TabColour Colour, DateTimeOffset CreatedAt, int? ProcessId = null, DateTimeOffset? ProcessStartedAt = null)
 {
     public static TabFile From(TabRegistration registration) => registration.Claim switch
     {

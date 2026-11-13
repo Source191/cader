@@ -1,7 +1,7 @@
 namespace Source191.Cader.Ports;
 
-/// <summary>The editor as config.json holds it: <c>{ "preset": "VsCode" }</c>, or a custom executable and its argument list.</summary>
-public sealed record EditorSetting(string? Preset, string? Executable, IReadOnlyList<string>? Arguments)
+/// <summary>The editor as config.json holds it: <c>{ "preset": "VsCode" }</c>, or a custom executable and its argument list; every member is optional.</summary>
+public sealed record EditorSetting(string? Preset = null, string? Executable = null, IReadOnlyList<string>? Arguments = null)
 {
     public bool Equals(EditorSetting? other)
     {
