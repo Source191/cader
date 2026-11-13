@@ -13,7 +13,7 @@
 
 ## 3. Workflows
 
-- [ ] 3.1 `pipeline.yml`'s check job: a matrix of `windows-latest` and `windows-11-arm`, each building, unzipping, checking `--version` and running the smoke step on its own zip; the tests and format check on the x64 leg only. Verify a draft pull request passes on both legs and uploads two artefacts.
+- [x] 3.1 `pipeline.yml`'s check job: a matrix of `windows-latest` and `windows-11-arm`, each building, unzipping, checking `--version` and running the smoke step on its own zip; the tests and format check on the x64 leg only. Verify a draft pull request passes on both legs and uploads two artefacts.
 - [ ] 3.2 `pipeline.yml`'s release job: wait for both legs, find exactly one zip per architecture, attest and attach both. Verify with the next prerelease from `main` that the Release carries both zips and `gh attestation verify` passes on each.
 - [ ] 3.3 `publish.yml`: download and verify both zips, pass both `--urls` to `wingetcreate update`, and fail naming the architecture when either is missing. Verify with a dry run on a test fork.
 
