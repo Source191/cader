@@ -25,7 +25,7 @@ Each task is one red-green-refactor cycle (or smaller), with the test named befo
 
 ## 5. Whole-solution check
 
-- [x] 5.1 `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate stricter-state-files --strict` all pass; record the totals here.
+- [x] 5.1 `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate stricter-state-files --strict` all pass; totals: 2917 tests, 2908 passed, 0 failed, 9 skipped (the Claude contract tests); `openspec validate --all` 26 of 26.
 
 ## Workflow follow-up
 
