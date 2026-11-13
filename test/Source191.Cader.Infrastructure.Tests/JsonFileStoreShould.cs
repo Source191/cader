@@ -824,6 +824,37 @@ public sealed class JsonFileStoreShould : IDisposable
 
         (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")]);
     }
+    [Fact]
+    public async Task ReadAConfigHoldingAnUnknownPropertyAsItsKnownSettings()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "theme": "dark" }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadAConfigWhoseNamesAreInAnotherCase()
+    {
+        await WriteRawAsync("config.json", """{ "RepositoryRoots": ["D:\\work"] }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadANullWorktreeRootAsMissing()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "worktreeRoot": null }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadACreatedWorktreeHoldingAnUnknownKey()
+    {
+        await WriteRawAsync(@"created\note.json", CreatedRecordJson.Replace("\"createdAt\"", "\"note\": \"by hand\",\"createdAt\"", StringComparison.Ordinal));
+
+        (await Store.ReadCreatedWorktreesAsync()).Single().Branch.ShouldBe(BranchName.From("fix-123"));
+    }
     /// <summary>The created-worktree record for Northwind.Billing-invoice-pdf, its branch member written as the JSON given, or left out when null.</summary>
     private static string CreatedRecordWith(string? branch)
     {
