@@ -29,7 +29,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
-- Vantage is now Cader: run cader, cader here and cader setup-terminal; install with winget install Source191.Cader; settings and state live in %LOCALAPPDATA%\Cader, the Windows Terminal profiles are Cader and Cader session, the variables are CADER_LOG and CADER_NO_UPDATE_CHECK, and the icon is a T. Nothing is carried over from %LOCALAPPDATA%\Vantage (#219)
+- Vantage is now Cader: run cader, cader here and cader setup-terminal; install with winget install Source191.Cader; settings and state live in %LOCALAPPDATA%\Cader, the Windows Terminal profiles are Cader and Cader session, the variables are CADER_LOG and CADER_NO_UPDATE_CHECK, and the icon is a C with a star. Nothing is carried over from %LOCALAPPDATA%\Vantage (#219)
 - U upgrades with winget, and the daily update check asks the winget community repository, so a release is offered only once winget can install it (#206)
 - The Worktrees table's LAST COMMIT column is right-aligned, as AGE is on the Sessions tab, so the durations line up (#190)
 - Removing a worktree on a detached head, or whose head git could not name, deletes no branch and asks about none; the folder's name no longer stands in for a branch (#186)

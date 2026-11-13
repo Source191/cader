@@ -1,8 +1,10 @@
 # Cader
 
-![Cader: every agent session in one tab, still there after a reboot. Beside it, the icon: two branches meeting in the bar of a T, over a stem to one node](https://raw.githubusercontent.com/Source191/cader/main/assets/header/readme-banner.png)
+![Cader: every agent session in one tab, still there after a reboot. Beside it, the icon: two branches curving from one node into a C, with a star in its opening](https://raw.githubusercontent.com/Source191/cader/main/assets/header/readme-banner.png)
 
 <a href="https://buymeacoffee.com/simonvane"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy me a coffee" height="40"></a> &nbsp; [![Built by Simon Vane](https://img.shields.io/badge/Built_by-Simon_Vane-0A66C2?style=for-the-badge)](https://www.linkedin.com/in/simonvane/)
+
+Cader is said KAY-der. It is named after Cader Idris, the mountain where the giant Idris sat to watch the stars.
 
 Five Claude Code sessions. A dozen terminal tabs. One of them finished ten minutes ago, another has been waiting for your permission since lunch, and you cannot remember which tab is which.
 
