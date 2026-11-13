@@ -16,16 +16,18 @@ public static class OpenFileScript
     {
         string encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(target));
 
-        return string.Join('\n',
-            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
-            "try {",
-            $"    $target = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{encoded}'))",
-            "    $info = [System.Diagnostics.ProcessStartInfo]::new($target)",
-            "    $info.UseShellExecute = $true",
-            "    [System.Diagnostics.Process]::Start($info) | Out-Null",
-            "} catch {",
-            "    [Console]::Error.WriteLine($_.Exception.Message)",
-            "    exit 1",
-            "}");
+        // The literal's line breaks are the source file's (CRLF), so they are made \n, as the script has always used.
+        return $$"""
+            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+            try {
+                $target = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{{encoded}}'))
+                $info = [System.Diagnostics.ProcessStartInfo]::new($target)
+                $info.UseShellExecute = $true
+                [System.Diagnostics.Process]::Start($info) | Out-Null
+            } catch {
+                [Console]::Error.WriteLine($_.Exception.Message)
+                exit 1
+            }
+            """.ReplaceLineEndings("\n");
     }
 }

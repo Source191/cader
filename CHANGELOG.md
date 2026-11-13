@@ -8,6 +8,10 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
+### Fixed
+
+- Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
+
 ## 0.21.1 - 2026-11-13
 
 ### Internal
