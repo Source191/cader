@@ -44,7 +44,7 @@ internal sealed record SharedParts(
 
         // The diagnostic log is always kept in memory; CADER_LOG=<file> also writes it to that file.
         DiagnosticLogSetting logSetting = DiagnosticLogSetting.Read(Environment.GetEnvironmentVariable("CADER_LOG"));
-        DiagnosticLog log = new(TimeProvider.System, logSetting is DiagnosticLogSetting.File logFile ? [new DiagnosticFile(logFile.Path)] : []);
+        DiagnosticLog log = new(TimeProvider.System, logSetting is DiagnosticLogSetting.File logFile ? [new DiagnosticFile(logFile.Path, () => true)] : []);
         ProcessCounts processCounts = new();
         PerformanceCounts counts = new(processCounts, new RefreshCounts(TimeProvider.System, log), new StallCounts());
         // How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.
