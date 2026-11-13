@@ -4,29 +4,6 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ## Unreleased
 
-### Added
-
-- Installs with winget install Source191.Cader as a self-contained program, with no .NET to install first; winget brings Windows Terminal, PowerShell 7 and git when they are missing, and every release carries the zip for a machine without winget (#206)
-- U opens a What's new dialog listing the changes in every release since the running one, with Update now, Release page and Later; a newly found release is announced once in the status line, and the first start after an update shows what changed, once (#180)
-- Sessions, Worktrees and Config are tabs of one screen, each title carrying its count with the state counts and glyphs beside it, and a two-line key bar at the bottom (#114)
-- A Config tab lists every setting and the setup it reads (settings file, terminal profiles, Claude's bell, diagnostic log, last update check); Enter edits a setting in a small dialog and saves at once, and setup that needs attention says what to run (#117)
-- Left and Right, or a click on a title, move between the tabs; Esc on Worktrees or Config with no filter returns to Sessions (#117, #183)
-- A detail pane under the Sessions and Worktrees tables shows the selected row's facts: what a session is waiting for, when it started and was last prompted, folder, session id, worktree, branch, tab, changed files, unpushed commits, last commit, memory and health with its reason (#119)
-- The Config tab describes the selected setting, and a Setup heading separates the settings from the setup rows (#165)
-- Browse (F3) in the repository roots and worktree root dialogs opens a folder picker inside the terminal (#125)
-- A Default place setting, New worktree or Current branch, chooses where the new-session wizard starts (#125)
-- m on a running session opens a breakdown of its memory: Claude Code, then each program it started (MCP servers, shells), largest first (#106)
-- ! opens Report a problem: a preview of privacy-safe diagnostics that can be opened as a pre-filled GitHub issue in the browser or copied; nothing is sent automatically (#101)
-- Recent diagnostic events are kept in memory and written to last-crash.log in %LOCALAPPDATA%\Cader after a crash (#100)
-- Automated Claude runs (claude -p, the Agent SDK) are kept out of the Sessions table and shown in grey in its counts with their memory (#121)
-- Every key and column has a tooltip, the help dialog scrolls, and < and > scroll a wide table sideways so every column can be reached (#98)
-- The STATE column shows a glyph beside each state, and the TAB column a swatch in the tab's colour (solid for a session tab, hollow for a plain claude) (#113)
-- The Worktrees table gains a HEALTH column with a glyph and word per health, and an unknown session state reads ? so it differs from stopped by shape (#164)
-- The Worktrees tab is scanned as the console opens and rescanned quietly each time it is shown, so its rows are usually ready at once (#139)
-- cader --help carries a support line (#88)
-- Rider installed by JetBrains Toolbox 2.x is found; presets that cannot be found are marked (not found) in the Open folder with dialog; F3 there browses for a Custom editor executable (#178)
-- With CADER_LOG set, the log records refresh timing by part, UI stall counts, and typical durations and counts every 10 minutes (#179)
-
 ### Changed
 
 - Vantage is now Cader: run cader, cader here and cader setup-terminal; install with winget install Source191.Cader; settings and state live in %LOCALAPPDATA%\Cader, the Windows Terminal profiles are Cader and Cader session, the variables are CADER_LOG and CADER_NO_UPDATE_CHECK, and the icon is a C with a star. Nothing is carried over from %LOCALAPPDATA%\Vantage (#219)
@@ -53,6 +30,29 @@ What changes in each release of Cader, written for the people who use it. The fo
 - A missing editor or solution application is reported in plain words and points to the Config tab (#178)
 - cader --version prints exactly the package version, without the commit (#86)
 - The package holds only Windows native assets and English resources (#92)
+
+### Added
+
+- Installs with winget install Source191.Cader as a self-contained program, with no .NET to install first; winget brings Windows Terminal, PowerShell 7 and git when they are missing, and every release carries the zip for a machine without winget (#206)
+- U opens a What's new dialog listing the changes in every release since the running one, with Update now, Release page and Later; a newly found release is announced once in the status line, and the first start after an update shows what changed, once (#180)
+- Sessions, Worktrees and Config are tabs of one screen, each title carrying its count with the state counts and glyphs beside it, and a two-line key bar at the bottom (#114)
+- A Config tab lists every setting and the setup it reads (settings file, terminal profiles, Claude's bell, diagnostic log, last update check); Enter edits a setting in a small dialog and saves at once, and setup that needs attention says what to run (#117)
+- Left and Right, or a click on a title, move between the tabs; Esc on Worktrees or Config with no filter returns to Sessions (#117, #183)
+- A detail pane under the Sessions and Worktrees tables shows the selected row's facts: what a session is waiting for, when it started and was last prompted, folder, session id, worktree, branch, tab, changed files, unpushed commits, last commit, memory and health with its reason (#119)
+- The Config tab describes the selected setting, and a Setup heading separates the settings from the setup rows (#165)
+- Browse (F3) in the repository roots and worktree root dialogs opens a folder picker inside the terminal (#125)
+- A Default place setting, New worktree or Current branch, chooses where the new-session wizard starts (#125)
+- m on a running session opens a breakdown of its memory: Claude Code, then each program it started (MCP servers, shells), largest first (#106)
+- ! opens Report a problem: a preview of privacy-safe diagnostics that can be opened as a pre-filled GitHub issue in the browser or copied; nothing is sent automatically (#101)
+- Recent diagnostic events are kept in memory and written to last-crash.log in %LOCALAPPDATA%\Cader after a crash (#100)
+- Automated Claude runs (claude -p, the Agent SDK) are kept out of the Sessions table and shown in grey in its counts with their memory (#121)
+- Every key and column has a tooltip, the help dialog scrolls, and < and > scroll a wide table sideways so every column can be reached (#98)
+- The STATE column shows a glyph beside each state, and the TAB column a swatch in the tab's colour (solid for a session tab, hollow for a plain claude) (#113)
+- The Worktrees table gains a HEALTH column with a glyph and word per health, and an unknown session state reads ? so it differs from stopped by shape (#164)
+- The Worktrees tab is scanned as the console opens and rescanned quietly each time it is shown, so its rows are usually ready at once (#139)
+- cader --help carries a support line (#88)
+- Rider installed by JetBrains Toolbox 2.x is found; presets that cannot be found are marked (not found) in the Open folder with dialog; F3 there browses for a Custom editor executable (#178)
+- With CADER_LOG set, the log records refresh timing by part, UI stall counts, and typical durations and counts every 10 minutes (#179)
 
 ### Fixed
 
