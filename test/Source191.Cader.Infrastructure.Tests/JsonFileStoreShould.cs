@@ -3,9 +3,9 @@ using Source191.Cader.Adapters.State;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Runtime.Versioning;
-using System.Text.RegularExpressions;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
