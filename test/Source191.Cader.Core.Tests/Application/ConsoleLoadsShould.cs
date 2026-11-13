@@ -77,11 +77,11 @@ public sealed class ConsoleLoadsShould : IDisposable
     [Fact]
     public async Task ReadTheConfigRowsWithTheSetupFacts()
     {
-        SetupFacts nothingSetUp = new(new SetupState.At(SettingsFile), new SetupState.NotSetUp(), new SetupState.NotSetUp(), new SetupState.Disabled(), new SetupState.Never());
+        SetupFacts nothingSetUp = new(new SetupState.At(SettingsFile), new SetupState.NotSetUp(), new SetupState.NotSetUp(), new SetupState.Never());
 
         ViewInput read = await Loads().ReadConfigAsync(TestContext.Current.CancellationToken);
 
-        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp));
+        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp, TestSettings.DiagnosticLogFile));
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public sealed class ConsoleLoadsShould : IDisposable
         await settings.SaveAsync(settings.Value.WithUpdateCheckToggled());
         IReadOnlyList<ConfigRow> after = loads.ConfigRowsWhileReading();
 
-        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading));
-        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading));
+        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading, TestSettings.DiagnosticLogFile));
+        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading, TestSettings.DiagnosticLogFile));
         after.ShouldNotBe(before);
     }
 
@@ -145,9 +145,9 @@ public sealed class ConsoleLoadsShould : IDisposable
         GitCli git = new(gitRuns, "git");
         SessionRowEnricher enricher = new(git, store, registry, clock, new FakeTranscripts(), catalogue);
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
-        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, SettingsFile, new DiagnosticLogSetting.Off(), log);
+        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, SettingsFile, log);
 
-        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, refreshes);
+        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, refreshes, TestSettings.DiagnosticLogFile);
     }
 
     public void Dispose()

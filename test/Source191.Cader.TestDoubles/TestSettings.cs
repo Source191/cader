@@ -6,6 +6,8 @@ namespace Source191.Cader.TestDoubles;
 /// <summary>Settings for tests: the given roots with every other setting at its default, held in memory.</summary>
 public static class TestSettings
 {
+    public const string DiagnosticLogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
+
     public static FolderPath Home { get; } = FolderPath.From(@"C:\Users\me");
 
     public static Settings For(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);

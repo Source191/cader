@@ -14,10 +14,9 @@ public sealed class ConfigViewShould
         new SetupState.At(SettingsFile),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),
-        new SetupState.Disabled(),
         new SetupState.Never());
 
-    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts))).State;
+    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, TestSettings.DiagnosticLogFile))).State;
 
     [Fact]
     public void LoadTheRowsWithTheFirstSelected()
@@ -55,11 +54,16 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(At("check-for-updates"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new ToggleUpdateCheck()]);
     }
 
+    [Fact]
+    public void ToggleTheDiagnosticLogOnEnter()
+    {
+        ConfigView.Reduce(At("diagnostic-log"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new ToggleDiagnosticLog()]);
+    }
+
     [Theory]
     [InlineData(SetupItem.SettingsFile)]
     [InlineData(SetupItem.TerminalProfiles)]
     [InlineData(SetupItem.ClaudeBell)]
-    [InlineData(SetupItem.DiagnosticLog)]
     [InlineData(SetupItem.LastUpdateCheck)]
     public void AdviseOnASetupRowOnEnter(SetupItem item)
     {
@@ -167,7 +171,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState state = At("worktree-root");
 
-        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts))).State;
+        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts, TestSettings.DiagnosticLogFile))).State;
 
         reloaded.Selected.ShouldBe(new ConfigRow.WorktreeRoot(FolderPath.From(@"E:\trees")));
     }
@@ -179,7 +183,7 @@ public sealed class ConfigViewShould
 
         ConfigViewState moved = Press(advised, Key.Down);
 
-        moved.Selected.ShouldNotBeNull().Key.ShouldBe("setup:DiagnosticLog");
+        moved.Selected.ShouldNotBeNull().Key.ShouldBe("setup:LastUpdateCheck");
         moved.Message.ShouldBe(StatusMessage.None);
     }
 
@@ -212,7 +216,7 @@ public sealed class ConfigViewShould
     [Fact]
     public void StepOverTheSetupHeadingOnDown()
     {
-        ConfigViewState down = ConfigView.Reduce(At("check-for-updates"), new KeyPressed(Key.Down)).State;
+        ConfigViewState down = ConfigView.Reduce(At("diagnostic-log"), new KeyPressed(Key.Down)).State;
 
         down.Selected.ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
     }
@@ -222,7 +226,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState up = ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Up)).State;
 
-        up.Selected.ShouldBe(new ConfigRow.CheckForUpdates(On: true));
+        up.Selected.ShouldBe(new ConfigRow.DiagnosticLog(On: false, File: TestSettings.DiagnosticLogFile));
     }
 
     [Fact]
@@ -237,7 +241,7 @@ public sealed class ConfigViewShould
     [Fact]
     public void LeaveTheSetupHeadingOutOfTheTitle()
     {
-        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts))).State;
+        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, TestSettings.DiagnosticLogFile))).State;
 
         oneRoot.Title.Shown.ShouldBe(11);
         oneRoot.Title.Total.ShouldBe(11);

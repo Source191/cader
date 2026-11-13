@@ -30,8 +30,6 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.NotSetUp()), "Claude bell", "not set, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.OtherChannel("iterm2")), "Claude bell", "iterm2, not the terminal bell" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Unreadable()), "Claude bell", "could not be read" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLog, new SetupState.Disabled()), "Diagnostic log", "off" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLog, new SetupState.Reading()), "Diagnostic log", "reading…" },
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Checked(new DateTimeOffset(2026, 10, 30, 9, 12, 0, TimeSpan.Zero), new NewestRelease.Found(ReleaseVersions.Version("0.18.0")))), "Last update check", "09:12 today, newest 0.18.0" },
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Checked(new DateTimeOffset(2026, 10, 30, 9, 12, 0, TimeSpan.Zero), new NewestRelease.Unreadable("rubbish"))), "Last update check", "09:12 today, newest rubbish" },
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Checked(new DateTimeOffset(2026, 10, 28, 18, 5, 0, TimeSpan.Zero), new NewestRelease.None())), "Last update check", "28 October 2026 18:05" },
@@ -95,7 +93,6 @@ public sealed class WordingOfConfigShould
     public void SayHowEachPieceOfSetupIsChanged()
     {
         Wording.Describe(SetupItem.TerminalProfiles).ShouldBe("Run cader setup-terminal, then restart Windows Terminal, to add the profiles.");
-        Wording.Describe(new StatusMessage.SetupAdvice(SetupItem.DiagnosticLog)).ShouldBe("Set the CADER_LOG environment variable to a file path, then start again, to keep a diagnostic log.");
         Enum.GetValues<SetupItem>().Select(Wording.Describe).Distinct().Count().ShouldBe(Enum.GetValues<SetupItem>().Length);
     }
 
