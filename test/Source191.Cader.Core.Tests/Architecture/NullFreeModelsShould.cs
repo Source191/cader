@@ -47,6 +47,7 @@ public sealed class NullFreeModelsShould
         new(typeof(UserConfig), "Editor", "config.json may leave the property out"),
         new(typeof(UserConfig), "CheckForUpdates", "config.json may leave the property out"),
         new(typeof(UserConfig), "DefaultPlace", "config.json may leave the property out"),
+        new(typeof(UserConfig), "DiagnosticLog", "config.json may leave the property out"),
         new(typeof(EditorSetting), "Preset", "config.json may leave the property out"),
         new(typeof(EditorSetting), "Executable", "config.json may leave the property out"),
         new(typeof(EditorSetting), "Arguments", "config.json may leave the property out"),
