@@ -64,10 +64,18 @@ public sealed class WordingOfConfigShould
     [Fact]
     public void NameTheLogFileInTheTooltipWhetherTheSettingIsOnOrOff()
     {
-        string expected = $"Writes diagnostic events and counts to {LogFile}; Enter turns it on or off.";
+        string expected = $"Writes the diagnostic log to {LogFile}; Enter turns it on or off.";
 
         Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: true, File: LogFile)).ShouldBe(expected);
         Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: LogFile)).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void KeepTheLogTooltipWithinTheLimitForARealisticUserProfile()
+    {
+        string longerPath = @"C:\Users\alexandra.northwind\AppData\Local\Cader\cader.log";
+
+        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: longerPath)).Length.ShouldBeLessThanOrEqualTo(110);
     }
 
     [Fact]
