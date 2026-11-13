@@ -3,11 +3,11 @@
 ## MODIFIED Requirements
 
 ### Requirement: The Config tab lists the settings
-The console SHALL have a third tab, titled Config, whose table has the columns SETTING and VALUE and a row per setting in this order: one row per repository root, the first labelled Repository roots and the others with SETTING blank, then Worktree root, Open folder with, Default base, Check for updates and Diagnostic log. Each value SHALL be shown whole where it fits and elided in the middle where it does not.
+The console SHALL have a third tab, titled Config, whose table has the columns SETTING and VALUE and a row per setting in this order: one row per repository root, the first labelled Repository roots and the others with SETTING blank, then Worktree root, Open folder with, Default base, Default place, Check for updates and Diagnostic log. Each value SHALL be shown whole where it fits and elided in the middle where it does not.
 
 #### Scenario: Default settings
 - **WHEN** `config.json` does not exist and the user shows the Config tab
-- **THEN** the rows read Repository roots C:\Users\me\source\repos, Worktree root C:\Users\me\source\worktrees, Open folder with VS Code, Default base origin's default branch, Check for updates on and Diagnostic log off
+- **THEN** the rows read Repository roots C:\Users\me\source\repos, Worktree root C:\Users\me\source\worktrees, Open folder with VS Code, Default base origin's default branch, Default place New worktree, Check for updates on and Diagnostic log off
 
 #### Scenario: Two roots
 - **WHEN** the roots are C:\Users\me\source\repos and D:\work
@@ -21,7 +21,7 @@ The console SHALL have a third tab, titled Config, whose table has the columns S
 After the settings, under the Setup heading row, the table SHALL have a grey row for each piece of setup Cader reads but does not edit: Settings file (the full path of `config.json`), Windows Terminal profiles (installed, with the fragment's path, or not set up), Claude bell (on, the other channel named, or not set) and Last update check (when, and the newest release found, or never, or off).
 
 #### Scenario: Everything set up
-- **WHEN** the fragment exists, Claude's settings say terminal_bell and nuget.org was asked at 09:12 today and named 0.18.0
+- **WHEN** the fragment exists, Claude's settings say terminal_bell and the update source was asked at 09:12 today and named 0.18.0
 - **THEN** the setup rows read the settings file's path, installed with the fragment's path, on and 09:12 today, newest 0.18.0
 
 #### Scenario: Nothing set up

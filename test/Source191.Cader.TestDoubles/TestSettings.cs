@@ -8,6 +8,9 @@ public static class TestSettings
 {
     public static FolderPath Home { get; } = FolderPath.From(@"C:\Users\me");
 
+    /// <summary>Where the diagnostic log is written in the tests' made-up state folder.</summary>
+    public static string DiagnosticLogFile { get; } = Home.Combine(Path.Combine("AppData", "Local", "Cader", "cader.log")).Value;
+
     public static Settings For(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);
 
     public static Settings For(string[] roots, string worktreeRoot, WorktreeBase defaultBase = WorktreeBase.RemoteDefault) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.At(FolderPath.From(worktreeRoot)), EditorChoice.VsCode, defaultBase, Home);

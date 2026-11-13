@@ -290,7 +290,7 @@ public sealed class SettingsViewShould
     [InlineData("root:0")]
     public void ScopeEveryRootRowToAllTheRoots(string key)
     {
-        ConfigRow row = ConfigRows.For(TwoRoots, SetupFacts.Reading).Single(candidate => candidate.Key == key);
+        ConfigRow row = ConfigRows.For(TwoRoots, SetupFacts.Reading, TestSettings.DiagnosticLogFile).Single(candidate => candidate.Key == key);
 
         SettingsScope.For(row).ShouldBe(new SettingsScope.Roots());
     }
@@ -298,7 +298,7 @@ public sealed class SettingsViewShould
     [Fact]
     public void ScopeEachSettingRow()
     {
-        IReadOnlyList<ConfigRow> rows = ConfigRows.For(TwoRoots, SetupFacts.Reading);
+        IReadOnlyList<ConfigRow> rows = ConfigRows.For(TwoRoots, SetupFacts.Reading, TestSettings.DiagnosticLogFile);
 
         SettingsScope.For(rows.OfType<ConfigRow.WorktreeRoot>().Single()).ShouldBe(new SettingsScope.WorktreeRoot());
         SettingsScope.For(rows.OfType<ConfigRow.OpenFolderWith>().Single()).ShouldBe(new SettingsScope.Editor());

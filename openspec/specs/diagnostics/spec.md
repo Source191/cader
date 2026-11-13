@@ -6,7 +6,7 @@ Records what Cader itself did, so a maintainer can diagnose a problem, while gua
 ## Requirements
 
 ### Requirement: Nothing personal is ever recorded
-Every diagnostic record, in memory, in the `CADER_LOG` file and in the crash file, SHALL hold only facts defined in Cader's own code (kinds, fixed program and subcommand names, exit codes, durations, counts, versions, exception summaries). No record SHALL hold a path, a repository, branch, worktree or session name, an id, a prompt, pull-request detail, a file name, any program's output, a user or machine name, or anything typed.
+Every diagnostic record, in memory, in the log file and in the crash file, SHALL hold only facts defined in Cader's own code (kinds, fixed program and subcommand names, exit codes, durations, counts, versions, exception summaries). No record SHALL hold a path, a repository, branch, worktree or session name, an id, a prompt, pull-request detail, a file name, any program's output, a user or machine name, or anything typed.
 
 #### Scenario: A session is attached
 - **WHEN** the user opens the session "Fix flaky tests" (job 81cdb0f9) running in C:\Users\me\source\worktrees\Northwind.Orders-fix-123 in its own tab
@@ -78,26 +78,15 @@ When an effect, a view's load, a dialog flow, the update check or a background t
 - **THEN** the frame reads with the method name and `GitCli.cs` and its line, and "C:\Users\me" does not appear
 
 ### Requirement: The log is always on and bounded
-Cader SHALL keep the most recent 500 diagnostic events in memory from start to exit, whether or not `CADER_LOG` is set, dropping the oldest first. Each event SHALL carry its UTC time. The in-memory log SHALL never be written to disc except as the crash file or through `CADER_LOG`.
+Cader SHALL keep the most recent 500 diagnostic events in memory from start to exit, whether or not the Diagnostic log setting is on, dropping the oldest first. Each event SHALL carry its UTC time. The in-memory log SHALL never be written to disc except as the crash file or as the log file while the Diagnostic log setting is on.
 
 #### Scenario: More events than the log holds
 - **WHEN** Cader records its 501st event
 - **THEN** the in-memory log holds the latest 500 and the first is gone
 
-#### Scenario: No log variable
-- **WHEN** Cader runs without `CADER_LOG`
+#### Scenario: Setting off
+- **WHEN** Cader runs with the Diagnostic log setting off
 - **THEN** it writes no log file and still keeps the in-memory log
-
-### Requirement: CADER_LOG writes the same events to a file
-When `CADER_LOG` names a file, Cader SHALL append each diagnostic event to it as one line as it is recorded, with exactly the text the in-memory log holds for that event.
-
-#### Scenario: Log variable set
-- **WHEN** Cader runs with `CADER_LOG` set to %TEMP%\cader.log and the user opens a session in its tab and quits
-- **THEN** the file gains the start line and the line naming the open-in-tab effect, each with a UTC time, and the child program, refresh and stall counts when Cader exits, each count line with the UTC time it was written
-
-#### Scenario: Cader runs for a working day
-- **WHEN** Cader runs with `CADER_LOG` set from 09:00 to 17:30 UTC and is then ended by closing its tab
-- **THEN** the file holds the counts written at 09:10, 09:20 and every 10 minutes until 17:30, so the figures up to the last 10 minutes survive without an exit
 
 ### Requirement: A crash leaves a crash file
 When an exception ends Cader, it SHALL write the in-memory log followed by the crash's exception summary to `%LOCALAPPDATA%\Cader\last-crash.log`, replacing any earlier crash file, before it exits. A failure to write the crash file SHALL NOT hide the original exception.
@@ -141,12 +130,50 @@ Cader SHALL measure how late the UI thread runs a regular heartbeat. A beat more
 - **THEN** no stall is counted and no line is recorded
 
 ### Requirement: Counts are written while Cader runs
-When `CADER_LOG` names a file, Cader SHALL write the child program, refresh and stall counts to it every 10 minutes while it runs, as well as when it exits, each count line carrying the UTC time it was written. The counts SHALL NOT be kept as events in the in-memory log, and nothing SHALL be written when `CADER_LOG` is not set.
+While the Diagnostic log setting is on, Cader SHALL write the child program, refresh and stall counts to the log file every 10 minutes, and when it exits, each count line carrying the UTC time it was written. The counts SHALL NOT be kept as events in the in-memory log, and nothing SHALL be written while the setting is off.
 
 #### Scenario: Ten minutes pass
-- **WHEN** Cader has run for 10 minutes with `CADER_LOG` set
+- **WHEN** Cader has run for 10 minutes with the Diagnostic log setting on
 - **THEN** the file gains every count line with that moment's UTC time, and the in-memory log holds no count line
 
-#### Scenario: No log variable
-- **WHEN** Cader runs for an hour without `CADER_LOG`
+#### Scenario: Setting off
+- **WHEN** Cader runs for an hour with the Diagnostic log setting off
 - **THEN** no file is written and the counts are still kept for the crash file
+
+#### Scenario: Turned on part way
+- **WHEN** Cader has run for 25 minutes with the setting off and the user then turns it on
+- **THEN** the next count lines are written at the next 10-minute mark, and none of the earlier marks is written late
+
+### Requirement: The Diagnostic log setting writes the same events to a file
+While the Diagnostic log setting is on, Cader SHALL append each diagnostic event to `%LOCALAPPDATA%\Cader\cader.log` as one line as it is recorded, with exactly the text the in-memory log holds for that event. Turning the setting on or off SHALL take effect from the next event, without a restart.
+
+#### Scenario: Setting on
+- **WHEN** the Diagnostic log setting is on and the user opens a session in its tab and quits
+- **THEN** `cader.log` gains the line naming the open-in-tab effect with its UTC time, and the counts when Cader exits, each count line with the UTC time it was written
+
+#### Scenario: Turned on while Cader runs
+- **WHEN** Cader runs with the setting off, and the user turns it on and then stops a session
+- **THEN** `cader.log` gains the line naming the stop effect, and holds no line for anything recorded before the setting was turned on
+
+#### Scenario: Turned off while Cader runs
+- **WHEN** the setting is on, the user turns it off and then stops a session
+- **THEN** `cader.log` gains no line for the stop, and the in-memory log still holds it
+
+#### Scenario: A file that cannot be written
+- **WHEN** the setting is on and `cader.log` is locked by another program
+- **THEN** Cader carries on, the line stays in the in-memory log, and nothing on the screen changes
+
+#### Scenario: CADER_LOG left in the environment
+- **WHEN** Cader starts with `CADER_LOG` set to `%TEMP%\old.log` and the setting off
+- **THEN** no file is written, neither `%TEMP%\old.log` nor `cader.log`
+
+### Requirement: The log file is capped
+When appending a line would take `cader.log` past 10 MB (10,485,760 bytes), Cader SHALL first rename it to `cader.log.1`, replacing any earlier `cader.log.1`, and write the line to a new `cader.log`, so that no more than the two files are ever kept.
+
+#### Scenario: The file reaches its size
+- **WHEN** `cader.log` holds 10,485,700 bytes and the next line is 100 bytes long
+- **THEN** the old file is `cader.log.1` and `cader.log` holds only the new line
+
+#### Scenario: An older rollover exists
+- **WHEN** `cader.log.1` already exists and `cader.log` reaches its size again
+- **THEN** the earlier `cader.log.1` is replaced, and only `cader.log` and one `cader.log.1` remain

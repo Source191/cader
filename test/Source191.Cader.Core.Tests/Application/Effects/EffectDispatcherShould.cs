@@ -16,6 +16,8 @@ namespace Source191.Cader.Core.Tests.Application.Effects;
 
 public sealed class EffectDispatcherShould
 {
+    private const string DiagnosticLogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
+
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly DiagnosticLog log;
@@ -76,7 +78,7 @@ public sealed class EffectDispatcherShould
         ClaudeCli claude = new(processes, Claude);
         LaunchService launches = new(claude, git, store, store, new WorktreeIncludeCopier(git), clock);
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile());
-        EffectDispatcher dispatcher = Composition.Handlers(ports, launches, new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"), TestSettings.Current(), new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log);
+        EffectDispatcher dispatcher = Composition.Handlers(ports, launches, new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"), TestSettings.Current(), new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
         // A dialog effect that is dispatched itself once its dialog has been answered.
         Type[] dispatchedAfterTheirDialog = [typeof(CloseEmptyTerminals)];
 

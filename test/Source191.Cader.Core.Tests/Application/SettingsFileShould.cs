@@ -38,6 +38,23 @@ public sealed class SettingsFileShould
     }
 
     [Fact]
+    public void LeaveTheDiagnosticLogOffWhenTheFileSaysNothing()
+    {
+        SettingsFile.From(UserConfig.Missing, Home).DiagnosticLog.ShouldBeFalse();
+        SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null), Home).DiagnosticLog.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReadAndWriteTheDiagnosticLogTurnedOn()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null, DiagnosticLog: true), Home);
+
+        settings.DiagnosticLog.ShouldBeTrue();
+        SettingsFile.ToConfig(settings).DiagnosticLog.ShouldBe(true);
+        SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home)).DiagnosticLog.ShouldBe(false);
+    }
+
+    [Fact]
     public void ResolveAFileFromAnEarlierVersion()
     {
         Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null), Home);
@@ -133,7 +150,7 @@ public sealed class SettingsFileShould
 
         UserConfig config = SettingsFile.ToConfig(settings);
 
-        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch));
+        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false));
         SettingsFile.From(config, Home).ShouldBe(settings);
     }
 

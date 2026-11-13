@@ -36,6 +36,7 @@ public static partial class Wording
             ConfigRow.DefaultBase => "Default base",
             ConfigRow.DefaultPlace => "Default place",
             ConfigRow.CheckForUpdates => "Check for updates",
+            ConfigRow.DiagnosticLog => "Diagnostic log",
             ConfigRow.Setup setup => ConfigSetting(setup.Item),
             ConfigRow.Heading => "Setup",
             _ => row.ToString(),
@@ -51,6 +52,7 @@ public static partial class Wording
         ConfigRow.DefaultBase => "New worktrees branch from origin's default branch as of your last git fetch (no fetch is made), or from HEAD.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
+        ConfigRow.DiagnosticLog log => $"Writes the diagnostic log to {log.File}; Enter turns it on or off.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
         _ => string.Empty,
     };
@@ -66,6 +68,7 @@ public static partial class Wording
             ConfigRow.DefaultBase defaultBase => Describe(defaultBase.Base),
             ConfigRow.DefaultPlace place => Describe(place.Place),
             ConfigRow.CheckForUpdates check => check.On ? "on" : "off",
+            ConfigRow.DiagnosticLog log => log.On ? "on" : "off",
             ConfigRow.Setup setup => SetupValue(setup.Item, setup.State, now, zone),
             ConfigRow.Heading => string.Empty,
             _ => row.ToString(),
@@ -114,7 +117,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "This tab writes the settings file: edit a setting above to change it.",
             SetupItem.TerminalProfiles => "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.",
             SetupItem.ClaudeBell => "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.",
-            SetupItem.DiagnosticLog => "Set the CADER_LOG environment variable to a file path, then start again, to keep a diagnostic log.",
             SetupItem.LastUpdateCheck => "The winget community repository is asked at most once a day; turn the check on or off with Check for updates.",
         };
     }
@@ -126,7 +128,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "The file the settings above are kept in; f opens the folder holding it.",
             SetupItem.TerminalProfiles => "Windows Terminal profiles that give the console's tabs a bell and the icon.",
             SetupItem.ClaudeBell => "Claude's terminal bell, which rings when a session finishes or needs permission while you are away.",
-            SetupItem.DiagnosticLog => "The file CADER_LOG names, where the diagnostic log is written as it runs.",
             SetupItem.LastUpdateCheck => "When the winget community repository was last asked for a newer release, and the newest it found.",
         };
     }
@@ -138,7 +139,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "Settings file",
             SetupItem.TerminalProfiles => "Windows Terminal profiles",
             SetupItem.ClaudeBell => "Claude bell",
-            SetupItem.DiagnosticLog => "Diagnostic log",
             SetupItem.LastUpdateCheck => "Last update check",
         };
     }

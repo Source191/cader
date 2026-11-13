@@ -7,8 +7,6 @@ namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 
 public sealed class PeriodicCountsShould
 {
-    private static readonly DiagnosticLogSetting LogFile = new DiagnosticLogSetting.File(@"C:\Users\me\AppData\Local\Temp\cader.log");
-
     private readonly FakeTimeProvider clock = new(new DateTimeOffset(2026, 11, 1, 9, 0, 0, TimeSpan.Zero));
     private readonly RecordingSink sink = new();
     private readonly DiagnosticLog log;
@@ -25,7 +23,7 @@ public sealed class PeriodicCountsShould
     [Fact]
     public void WriteTheCountsEveryTenMinutes()
     {
-        using PeriodicCounts periodic = new(clock, log, counts, LogFile);
+        using PeriodicCounts periodic = new(clock, log, counts);
 
         AdvanceMinutes(25);
 
@@ -41,21 +39,11 @@ public sealed class PeriodicCountsShould
     [Fact]
     public void StopWritingOnceDisposed()
     {
-        PeriodicCounts periodic = new(clock, log, counts, LogFile);
+        PeriodicCounts periodic = new(clock, log, counts);
         AdvanceMinutes(5);
 
         periodic.Dispose();
         AdvanceMinutes(20);
-
-        sink.Lines.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void WriteNothingWhenTheLogIsOff()
-    {
-        using PeriodicCounts periodic = new(clock, log, counts, new DiagnosticLogSetting.Off());
-
-        AdvanceMinutes(25);
 
         sink.Lines.ShouldBeEmpty();
     }

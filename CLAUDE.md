@@ -59,7 +59,7 @@ Facts that matter only in part of the code are path-scoped rules in `.claude\rul
 
 ### One home per fact
 
-- The settings (roots, worktree root, editor, default base, default place, update check) live in `Application\CurrentSettings`, read per scan, wizard, dialog and Config tab read so a save applies without a restart, with `SettingsFile` resolving config.json's missing properties to defaults.
+- The settings (roots, worktree root, editor, default base, default place, update check, diagnostic log) live in `Application\CurrentSettings`, read per scan, wizard, dialog and Config tab read so a save applies without a restart, with `SettingsFile` resolving config.json's missing properties to defaults.
 - Git's worktree facts come from `Application\WorktreeInspector`; every tab's script, title, folder and colour from `Application\TabScripts` (the only holder of the claude and cader executable paths outside the tool project's wiring).
 - The Claude CLI's words (busy, waiting, idle, working, blocked, done, failed) are read in `Adapters\Claude\ClaudeStates`, never in `Domain`, and the `gh` and `az` words only in `Adapters\PullRequests\GitHubPullRequests` and `AzureDevOpsPullRequests`; pull requests reach the rows only through `Application\PullRequestCatalogue`, which never makes a row wait.
 - `IGit`'s commands throw `GitException` when git fails or answers with something unreadable, its nullable queries answer null, and `IsMerged` answers false; each method says which.

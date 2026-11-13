@@ -4,8 +4,13 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ## Unreleased
 
+### Added
+
+- A Diagnostic log setting on the Config tab: Enter turns the log file on or off at once, and its tooltip names %LOCALAPPDATA%\Cader\cader.log, which becomes cader.log.1 at 10 MB so at most about 20 MB is kept (#254)
+
 ### Changed
 
+- CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
 ### Fixed

@@ -23,7 +23,7 @@
 - **Alternative: rebuild the log's sinks when the setting changes.** This needs a mutable sink list shared between threads, where the switch is one read per line. Rejected.
 - **Alternative: read the setting once as Cader starts.** This is simpler, but you chose "at once", and every other setting applies without a restart. Rejected.
 
-The switch is an `Application` type (for example `DiagnosticLogSwitch`, holding a `SharedSnapshot<Func<bool>>` that starts at "off"), so its default and its rebinding are tested in Core. `DiagnosticFile` stays the only thing that touches the file.
+The switch is an `Application` type (for example `DiagnosticLogSwitch`, holding a `SharedSnapshot<Func<bool>>` that starts at "off"), so its default and its rebinding are tested in Core. `DiagnosticFile` stays the only thing that touches the file, and takes the switch's `IsOn` as a `Func<bool>` because Adapters may not depend on Application; each command binds the switch with `PointAt`.
 
 ### The rollover lives in the file sink
 Before each append, `DiagnosticFile` compares the file's length plus the line's UTF-8 byte count with 10,485,760. When it would pass that, it moves `cader.log` to `cader.log.1` (`File.Move` with overwrite), then appends. As today, every `IOException` and `UnauthorizedAccessException` is swallowed, so a log never takes Cader down; a failed move just means the line goes to the old file.

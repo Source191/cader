@@ -4,7 +4,7 @@ namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
 /// The diagnostic log: the latest 500 events in memory for the life of the process, each also written as a line to
-/// every sink (the <c>CADER_LOG</c> file when it is set). Events arrive from the UI thread and from pool threads.
+/// every sink (the log file while the Diagnostic log setting is on). Events arrive from the UI thread and from pool threads.
 /// </summary>
 public sealed class DiagnosticLog(TimeProvider clock, IReadOnlyList<IDiagnosticSink> sinks)
 {

@@ -8,7 +8,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public sealed record Settings
 {
-    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace)
+    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog)
     {
         RepositoryRoots = repositoryRoots;
         WorktreeRoot = worktreeRoot;
@@ -16,6 +16,7 @@ public sealed record Settings
         DefaultBase = defaultBase;
         CheckForUpdates = checkForUpdates;
         DefaultPlace = defaultPlace;
+        DiagnosticLog = diagnosticLog;
     }
 
     public IReadOnlyList<FolderPath> RepositoryRoots { get; }
@@ -32,6 +33,9 @@ public sealed record Settings
     /// <summary>Where the wizard opened with n starts a new session: a new worktree, or the repository's current branch.</summary>
     public LaunchMode DefaultPlace { get; }
 
+    /// <summary>Whether every diagnostic event and the counts are appended to the log file in the state folder.</summary>
+    public bool DiagnosticLog { get; }
+
     /// <summary>The base a file without one branches from: origin's default branch.</summary>
     public const WorktreeBase BaseWhenUnset = WorktreeBase.RemoteDefault;
 
@@ -41,11 +45,14 @@ public sealed record Settings
     /// <summary>A file without a place starts new sessions in a new worktree.</summary>
     public const LaunchMode PlaceWhenUnset = LaunchMode.NewWorktree;
 
+    /// <summary>A file without the setting writes no log file.</summary>
+    public const bool DiagnosticLogWhenUnset = false;
+
     /// <summary>
     /// Fills in what is missing: no roots means <c>&lt;home&gt;\source\repos</c>; <see cref="WorktreeRootChoice.BesideFirstRoot"/> means <c>worktrees</c>
     /// beside the first root (inside it when it has no parent, such as <c>D:\</c>). A file's missing base, update setting and place are <see cref="BaseWhenUnset"/>, <see cref="ChecksForUpdatesWhenUnset"/> and <see cref="PlaceWhenUnset"/>.
     /// </summary>
-    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates = ChecksForUpdatesWhenUnset, LaunchMode defaultPlace = PlaceWhenUnset)
+    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates = ChecksForUpdatesWhenUnset, LaunchMode defaultPlace = PlaceWhenUnset, bool diagnosticLog = DiagnosticLogWhenUnset)
     {
         IReadOnlyList<FolderPath> resolvedRoots = roots is { Count: > 0 } ? roots : [home.Combine(Path.Combine("source", "repos"))];
         FolderPath first = resolvedRoots[0];
@@ -56,7 +63,7 @@ public sealed record Settings
             _ => throw new UnreachableException(),
         };
 
-        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace);
+        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace, diagnosticLog);
     }
 
     /// <summary>
@@ -98,11 +105,15 @@ public sealed record Settings
             CommandArguments.Join(Editor.Arguments),
             DefaultBase,
             CheckForUpdates,
-            DefaultPlace);
+            DefaultPlace,
+            DiagnosticLog);
     }
 
     /// <summary>These settings with the update check turned the other way.</summary>
-    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace);
+    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog);
+
+    /// <summary>These settings with the diagnostic log turned the other way.</summary>
+    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog);
 
     public bool Equals(Settings? other)
     {
@@ -112,7 +123,8 @@ public sealed record Settings
             && Editor.Equals(other.Editor)
             && DefaultBase == other.DefaultBase
             && CheckForUpdates == other.CheckForUpdates
-            && DefaultPlace == other.DefaultPlace;
+            && DefaultPlace == other.DefaultPlace
+            && DiagnosticLog == other.DiagnosticLog;
     }
 
     public override int GetHashCode() => HashCode.Combine(RepositoryRoots.Count, WorktreeRoot, Editor, DefaultBase);
@@ -126,14 +138,14 @@ public sealed record Settings
 
         if (text.Preset != EditorPreset.Custom)
         {
-            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place));
+            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog));
         }
 
         IReadOnlyList<string> arguments = CommandArguments.Split(text.Arguments);
 
         return EditorChoice.Validate(text.Executable, arguments, fileExists) switch
         {
-            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place)),
+            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog)),
             EditorChoiceValidation.Refused refused => Refused(refused.Problem),
             _ => throw new UnreachableException(),
         };

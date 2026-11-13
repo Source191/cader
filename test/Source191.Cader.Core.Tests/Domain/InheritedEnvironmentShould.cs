@@ -21,7 +21,6 @@ public sealed class InheritedEnvironmentShould
     [InlineData("PATH")]
     [InlineData("WT_SESSION")]
     [InlineData("USERPROFILE")]
-    [InlineData("CADER_LOG")]
     [InlineData("CLAUDE_CONFIG_DIR")]
     public void KeepEverythingElseIncludingTheConfigDirectoryThatSelectsAnAccount(string name)
     {

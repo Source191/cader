@@ -77,6 +77,7 @@ public static class ConfigView
         return row switch
         {
             ConfigRow.CheckForUpdates => new RowDecision.Act(new ToggleUpdateCheck()),
+            ConfigRow.DiagnosticLog => new RowDecision.Act(new ToggleDiagnosticLog()),
             ConfigRow.Setup setup => new RowDecision.Explain(new StatusMessage.SetupAdvice(setup.Item)),
             _ => new RowDecision.Act(new EditSetting(SettingsScope.For(row))),
         };

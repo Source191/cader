@@ -11,7 +11,7 @@ namespace Source191.Cader.Application;
 /// runs none of its own. The listing, the enrichment and the scan are each timed as a refresh part; the scan's wait for the
 /// first listing is not part of its time.
 /// </summary>
-public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enricher, WorktreeInventory inventory, SetupFactsReader setup, CurrentSettings settings, RefreshCounts refreshes)
+public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enricher, WorktreeInventory inventory, SetupFactsReader setup, CurrentSettings settings, RefreshCounts refreshes, string diagnosticLogFile)
 {
     /// <summary>The Sessions tab's rows and the automated runs of the same listing.</summary>
     public async Task<ViewInput> LoadSessionsAsync(CancellationToken cancellationToken)
@@ -32,8 +32,8 @@ public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enr
 
     /// <summary>The Config tab's rows with the setup read now.</summary>
     public async Task<ViewInput> ReadConfigAsync(CancellationToken cancellationToken) =>
-        new ConfigRowsLoaded(ConfigRows.For(settings.Value, await setup.ReadAsync(cancellationToken)));
+        new ConfigRowsLoaded(ConfigRows.For(settings.Value, await setup.ReadAsync(cancellationToken), diagnosticLogFile));
 
     /// <summary>The Config tab's rows before the setup has been read, with the settings as they are now.</summary>
-    public IReadOnlyList<ConfigRow> ConfigRowsWhileReading() => ConfigRows.For(settings.Value, SetupFacts.Reading);
+    public IReadOnlyList<ConfigRow> ConfigRowsWhileReading() => ConfigRows.For(settings.Value, SetupFacts.Reading, diagnosticLogFile);
 }
