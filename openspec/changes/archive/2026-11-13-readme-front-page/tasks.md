@@ -54,7 +54,7 @@
 - [x] 8.3 Add the "Built by Simon Vane" badge beside the support button and the signed line at the end of "Why I built it", both linking to `https://www.linkedin.com/in/simonvane/`; verify both render and open the profile on GitHub's preview
 - [x] 8.4 Replace the shields.io sponsor badge with the official Buy Me a Coffee button under the banner, and add it again in "Support Cader" (with the specific ask, the monthly membership line and the QR code) and in the one-line ask at the end of getting started; verify there are exactly three support placements and each opens `https://buymeacoffee.com/simonvane`
 - [ ] 8.5 Add `.github/FUNDING.yml` with `buy_me_a_coffee: simonvane`; verify once pushed that the Sponsor button appears in the repository header and opens the page
-- [ ] 8.6 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
+- [x] 8.6 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
 
 ## 9. Contributor docs
 
