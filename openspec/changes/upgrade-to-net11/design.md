@@ -1,0 +1,97 @@
+# Design
+
+## Context
+
+See proposal.md for why. Today (13 November 2026): every project targets `net10.0`; `global.json` pins SDK 10.0.301 (`latestMinor`); `AnalysisLevel` is `10.0-recommended`; `LangVersion` is `latest`, so C# 15 applies as soon as the target moves. The machine has SDK 11.0.100 installed, so every check can be run before CI has it. The winget build is self-contained, so the runtime moves for every user.
+
+Facts below are marked **verified** (read on Microsoft Learn on 13 November 2026), **observed** (found in this repository) or **unverified** (to be confirmed by the first task that needs it; do not rely on the issue's wording).
+
+## Goals / Non-Goals
+
+- **Goal:** a green build, test run and every check on `net11.0` first (phase 1 is a gate), then the adoptions one by one, each its own commit, so a regression is easy to place.
+- **Goal:** every item the issue lists ends as adopted, declined with a reason, or shown not to apply, in the coverage tables below, which the apply phase fills in as it goes.
+- **Non-goal:** any change a user can see, apart from the runtime itself. State files keep their on-disk format.
+
+## Decisions
+
+### 1. One change, two gates
+
+Phase 1 retargets and fixes what breaks, with no adoption. It must pass: `dotnet build -c Debug`, the Core and full test suites, `dotnet format whitespace --folder --verify-no-changes --exclude openspec`, the hand-off check, the smoke check, and a mutation run, all also run **before** (on `net10.0`) so a difference in behaviour or score is visible. Later phases adopt features, each ending with the suite green. Alternative: split into a retarget change and follow-ups (the issue's suggestion); the owner chose one change, so the phases and their commits do that job instead.
+
+### 2. Breaking changes: coverage
+
+| Item | Status | Finding |
+| --- | --- | --- |
+| `Environment.GetCommandLineArgs()[0]` keeps the apphost invocation name | Observed: does not apply | No use of `GetCommandLineArgs`. `SharedParts` reads `Environment.ProcessPath` (and `AppContext.BaseDirectory`), which this change does not touch. Confirm in task 1.4 by running the installed build's `here` and tab scripts. |
+| `DateOnly` and `TimeOnly` `TryParse` throw for invalid input | Observed: does not apply | No use of either type in `src`. Re-grep at apply time. |
+| Restore does not search the global packages folder for a higher version | Unverified effect | The `pipeline.yml` cache is keyed on project files and `global.json`, so it changes on the retarget; check a cold and a warm restore in CI and that no package restores lower than pinned. |
+| Minimum hardware: x86-64-v2 baseline for x86/x64, R2R target x86-64-v3 on Windows (**verified**) | Applies | .NET fails to start on x86/x64 CPUs without `CX16`, `POPCNT`, `SSE3`, `SSSE3`, `SSE4.1`, `SSE4.2`; Microsoft says Windows 11 requires this already and all CPUs supported on Windows 10 have it. Cader supports Windows 11 only, so no user is newly excluded. Record it in the README requirements as one sentence anyway. The Windows Arm64 minimum is unchanged. |
+| Roslyn: `closed` and `union` become contextual keywords | Observed: no clash | No type, field or alias is named either; a local `closed` in `CloseEmptyTerminalsHandler.cs` is a variable, not a type. Re-check against the SDK's actual compiler break list in task 1.2. |
+| Other .NET 11 core-library items (Zip, Tar, Cbor, Math.Round, Tensor, Unix-only items) | Observed: none used | Cader reads none of those APIs. The `Extensions` items (configuration, DI, host) do not apply: Cader has no host or container. |
+| SDK items (`dnx` scripts bypass `global.json`, VSTest drops Newtonsoft.Json, restore) | Unverified effect | `docs\performance-monitoring.md` uses `dnx dotnet-counters`; check it still runs on the pinned SDK. Tests use Microsoft.Testing.Platform, not VSTest. |
+| Analyzer and compiler diagnostics (warnings are errors) | Unverified | Expected new CA, IDE and Sonar diagnostics; fixed in code, never suppressed. |
+
+### 3. Packages: coverage
+
+For each, the apply phase records the version chosen and how .NET 11 support was established (a `net11.0` target or tested-on statement, else a clean build and full run with no new warning). Nothing below is confirmed yet.
+
+- Terminal.Gui 2.5.0: check releases and issues first; run the hand-off and smoke checks; re-verify and re-date `.claude\rules\terminal-gui.md`.
+- System.CommandLine 2.0.14, Microsoft.Extensions.Logging.Abstractions, FileSystemGlobbing and TimeProvider.Testing (10.11.0 today): move to 11.0.x if released. `System.Drawing.Common` is already 11.0.0 in `tools\ReadmeScene`.
+- Interop.UIAutomationClient 10.19041.0: check it loads; re-verify the UI Automation tab facts in `.claude\rules\windows.md`.
+- Microsoft.CodeAnalysis.CSharp 5.9.0 (test project): `SourceConventionsShould` and `OneTypePerFileShould` parse `src`; it must parse C# 15 (`closed`, `union`, `with(...)`, labelled jumps). Add a probe test that parses a sample using each keyword before any adoption.
+- BannedApiAnalyzers 5.6.0, SonarAnalyzer.CSharp 10.35.0.4138, xunit.v3 4.0.2, Shouldly 4.3.0, NetArchTest.Rules 1.3.2: confirm each under Microsoft.Testing.Platform on `net11.0`.
+- Stryker.NET: confirm `--test-runner mtp` works on `net11.0` (workflow from `mutation-testing-in-ci`); keep the before and after scores.
+- The `nuget-package-updates` skill may do the sweep. A held or replaced package is explained here.
+
+### 4. Process APIs: coverage
+
+**Verified** to exist in .NET 11 (Learn, what's new in libraries): `Process.Run`/`RunAsync`, `RunAndCaptureText`/`RunAndCaptureTextAsync`, `ReadAllLines`/`ReadAllLinesAsync` with `ProcessOutputLine`, `Process.StartAndForget`, `ProcessStartInfo.StartDetached`, `ProcessStartInfo.KillOnParentExit` (Windows only), `Process.TryGetProcessById`, `SafeProcessHandle.Open`/`TryOpen`. **Unverified:** signatures, how timeouts and cancellation behave, whether `KillOnParentExit` reaches grandchildren, whether the standard-handle properties and `File.OpenNullHandle` ship as the issue says, and the overlapped-I/O change. The first task of each adoption reads the API reference and writes a spike test against the real behaviour before any production change.
+
+Constraints every adoption carries (otherwise declined): `ProgramLocator` full paths; `InheritedEnvironment` drop; UTF-8 output decoding; the timeout that ends the child and its tree (`ProcessRunner`); no console window for a captured child; `ConfirmedProcess` untouched.
+
+| Candidate | Where | Decision rule |
+| --- | --- | --- |
+| `RunAsync` / `RunAndCaptureTextAsync` | `ProcessRunner.RunAsync` | Adopt only if timeout plus tree kill, cancellation and the UTF-8 decoding stay as tested in `ProcessRunnerShould`; the existing tests are the spec and must pass unchanged. |
+| `ReadAllLinesAsync` | git and Claude CLI adapters | Adopt only where an adapter parses lines today; the Claude listing is one JSON document, so likely declined. |
+| `StartAndForget`, `StartDetached`, standard-handle properties, `File.OpenNullHandle` | `Desktop.StartAsync`, `OpenFileScript`, the PowerShell hop in `Desktop.OpenAsync` | `quiet-editor-start` lands first and fixes the editor key with a cleaned PowerShell child. Revisit afterwards: a direct start with output discarded may replace that child. ShellExecute still cannot take an environment, so the hop in `OpenAsync` likely stays; record the answer either way. The `DesktopShould` facts of `quiet-editor-start` must pass unchanged. |
+| `TryGetProcessById`, `SafeProcessHandle.TryOpen` | `ProcessRegistry.WithProcess`, `ProcessRegistryNative` | Adopt to drop the `catch (ArgumentException)` there, then remove that place from `SourceConventionsShould.CatchArgumentExceptionOnlyWhereNamed` and the matching sentence in `CLAUDE.md`. |
+| `KillOnParentExit` | captured short-lived children only (`claude agents`, git, `gh`, `az`) | Never on `claude --bg`, `wt.exe`, editors, solutions or any tab (they must outlive the console). Adopt only if a spike shows it ends the child tree when the console is killed, and costs nothing measurable. |
+| Overlapped I/O for redirected output | none (free) | Measure the refresh timings from `docs\performance-monitoring.md` before and after; record the result. |
+
+### 5. C# 15 and language: coverage
+
+- **Closed hierarchies (verified):** `closed` makes a class abstract and fixes its direct descendants to the declaring assembly; a `switch` over every direct descendant needs no default arm. Apply to the two-case Domain and Ports hierarchies named in `CLAUDE.md` (`SessionNameValidation`, `LaunchPlanResult`, `NewestRelease`, `ProgramLocation`, plus any other hierarchy `ClosedHierarchiesShould` already treats as closed). Remove their `UnreachableException` discard arms. Open hierarchies (`StatusMessage`, `Outcome`, `LaunchProblem`, `WizardProblem`, `WizardInput`, `DiagnosticEvent`) keep their fallback arms, because the reflection facts rely on them. Derivation is not transitive, so a nested sealed case is fine. `ClosedHierarchiesShould` changes from "abstract record with nested sealed cases" to "carries `closed`"; update the switch rule in `CLAUDE.md`. Confirm first that `closed` works with `abstract record` (the Learn example uses `closed record class`) and with the nested-case layout, and that `SealedTypesShould`, CA1852 and Sonar accept it.
+- **Union types (verified syntax):** `public union Pet(Cat, Dog, Bird);` with exhaustive switches. Candidates: `Session.Background`/`Session.Interactive` and outcome shapes. Decline wherever a union would break the one-top-level-type-per-file rule, the nested-case convention, the JSON converters, or `NullFreeModelsShould`; decide per type in a spike. Union support in System.Text.Json is **unverified**; no state file may change format.
+- **Collection expression arguments (verified):** `[with(StringComparer.Ordinal), ...]` for the `HashSet` and `Dictionary` initialisations in `ChildCommandWords`, `ChildCommand` and `PullRequestCatalogue`; keep the ordinal rule in `locale.md`. Adopt where it replaces a constructor argument, nowhere else.
+- **Extension indexers, labelled `break`/`continue` (verified):** adopt only where a nested loop or a flag variable exists today (IDE0410 will name them); expect few or none, and record "declined, no site" if so.
+- **Runtime async (unverified):** on by default for `net11.0` per the issue. Check crash reports and `ExceptionSummary` still read well, and that the diagnostic tests that read stack text pass.
+- **System.Text.Json (JSON Lines verified to exist):** adopt a new option only where `JsonFileStore`, `ClaudeAgentsListing`, `TerminalFragment` and `WingetPackageVersions` benefit and the bytes written stay identical. Overlaps `stricter-state-files`, which lands first. Source generation is declined unless it measurably cuts start-up time.
+- **`EqualityComparer<T>.Create`:** adopt only if a hand-written comparer exists only to compare one key; the current code compares through `FolderPath`, `StringComparer` and `ITextValue`, so likely none.
+- **House style:** `.editorconfig` gains `warning` rules for each adopted feature that has an IDE rule (for example IDE0410); `CLAUDE.md`'s C# idioms section names them; reflection or source facts added where checkable (for example "no `UnreachableException` arm in a switch over a closed type"). Existing code is brought into line in the same change.
+
+### 6. Build, CI, release, support
+
+- `global.json` to the 11.0.x SDK (`rollForward` unchanged). Check whether `windows-latest` has the 11.0 SDK; if not, add `actions/setup-dotnet` pinned by commit like the other actions in `pipeline.yml`, `claude-contract.yml` and `codeql.yml` (CodeQL runs on `ubuntu-latest` with build mode none), and note it in `.claude\rules\checks.md`.
+- `publish.yml`: **observed** to hold no `dotnet-version` line (only `windows-latest`), so the issue's item does not apply today; recheck the file at apply time.
+- `.github\actions\build-test-pack\action.yml` comments name `global.json (10.0.301...)`; update the wording and the `net10.0` output paths (`claude-contract.yml`, `pipeline.yml`, `HandoffCheck.cs`, `src\Source191.Cader\README.md`).
+- NuGet cache key already includes `global.json` and every `*.csproj`; keep.
+- winget build: re-measure the self-contained single-file size, zipped size and start-up time against the 1 November 2026 figures (about 40 MB, 34 MB zipped on 10.0.403) in `install-with-winget`, and run the smoke check on the zip's `cader.exe`. Record before and after in `src\Source191.Cader\README.md`.
+- Version: minor bump of `Version` in `src\Source191.Cader\Source191.Cader.csproj` (0.21.0-preview.1 today, so the next minor) and a `CHANGELOG.md` line; `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` must pass.
+- Support date: .NET 11 is a Standard Term Support release; its end-of-support date is **unverified** here and is recorded from the .NET support policy page in task 6.3 before the change is archived, with a note for planning the move to .NET 12.
+
+## Risks / Trade-offs
+
+- [Terminal.Gui does not support .NET 11 yet] → Hold the retarget until it does or the hand-off and smoke checks pass on `net11.0`; record the evidence. Do not retarget on hope.
+- [A dependency (Stryker, Sonar, Roslyn) lags C# 15] → The probe test in decision 3 finds it early; keep a held package at its current version with the reason, never suppress the analyser.
+- [`closed` or unions fight the repository's conventions] → Spike per type; declining is an allowed outcome and is recorded.
+- [Collision with in-progress changes] → The order in the proposal; rebase on `main` after each merges.
+- [One change grows too large to review] → Each phase is its own commit series and ends green, so review can go phase by phase.
+- [A different runtime changes timing] → Before and after measurements of refresh timings, size and start-up.
+
+## Migration Plan
+
+Work on a branch from `main` after the changes in the proposal's Order have merged. Phase 1 lands green first; later phases follow in the same pull request. Rollback is reverting the pull request: nothing on disk (state files, settings, fragments) changes format, so a user can go back to the previous winget version.
+
+## Open Questions
+
+- Whether `actions/setup-dotnet` is needed depends on the runner image on the day; answered by the first CI run.
