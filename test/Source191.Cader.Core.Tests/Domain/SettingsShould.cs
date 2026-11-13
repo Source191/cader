@@ -242,6 +242,18 @@ public sealed class SettingsShould
     }
 
     [Fact]
+    public void TurnTheDiagnosticLogOnAndOff()
+    {
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false, defaultPlace: LaunchMode.CurrentBranch);
+
+        settings.WithDiagnosticLogToggled().DiagnosticLog.ShouldBeTrue();
+        settings.WithDiagnosticLogToggled().WithDiagnosticLogToggled().ShouldBe(settings);
+        settings.WithDiagnosticLogToggled().CheckForUpdates.ShouldBeFalse();
+        settings.WithDiagnosticLogToggled().DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
+        settings.WithUpdateCheckToggled().WithDiagnosticLogToggled().WithUpdateCheckToggled().DiagnosticLog.ShouldBeTrue();
+    }
+
+    [Fact]
     public void KeepTheDiagnosticLogThroughAValidatedDialog()
     {
         Settings.Validate(Typed with { DiagnosticLog = true }, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.DiagnosticLog.ShouldBeTrue();
