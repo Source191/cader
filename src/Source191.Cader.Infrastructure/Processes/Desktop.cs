@@ -1,6 +1,5 @@
 using Source191.Cader.Adapters.Terminal;
 using Source191.Cader.Ports;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Source191.Cader.Adapters.Processes;
@@ -44,24 +43,24 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
     }
 
     /// <summary>
-    /// Starts the program detached. A <see cref="Win32Exception"/> (Windows refused the start: access denied, not a program,
-    /// a broken install) becomes <see cref="ProgramNotStartedException"/> with Windows' sentence for its error code alone,
-    /// since .NET's own message also names the path and the working folder. The start happens before the task is returned,
-    /// so a refusal is thrown at the call site, nothing is cancelled, and the returned task is always complete.
+    /// Starts the program detached, through ShellExecute from the cleaned PowerShell child (see
+    /// <see cref="StartProgramScript"/>), so it inherits none of the console's handles; the call waits only for that child.
     /// </summary>
-    public Task StartAsync(ProcessRequest request, CancellationToken cancellationToken)
+    public async Task StartAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
-        ProcessStartInfo startInfo = ProcessRunner.StartInfo(request, capture: false);
-        startInfo.CreateNoWindow = true;
-        try
+        string executable = powerShell switch
         {
-            using Process? process = Process.Start(startInfo);
-        }
-        catch (Win32Exception refused)
-        {
-            throw new ProgramNotStartedException(new Win32Exception(refused.NativeErrorCode).Message);
-        }
+            ProgramLocation.Found found => found.Path,
+            ProgramLocation.Missing => throw new ProgramNotStartedException("PowerShell 7 (pwsh.exe) was not found on the PATH, so nothing can be opened."),
+            _ => throw new UnreachableException(),
+        };
 
-        return Task.CompletedTask;
+        ProcessRequest child = new(executable, ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(StartProgramScript.For(request.FileName, request.Arguments))], request.WorkingDirectory);
+        ProcessResult result = await processes.RunAsync(child, cancellationToken);
+        if (result.ExitCode != 0)
+        {
+            string reason = result.StandardError.Trim();
+            throw new ProgramNotStartedException(reason.Length > 0 ? reason : $"PowerShell stopped with exit code {result.ExitCode} before Windows started it.");
+        }
     }
 }
