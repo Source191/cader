@@ -25,6 +25,8 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
+        RespectNullableAnnotations = true,
+        RespectRequiredConstructorParameters = true,
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false), new TextValueJsonConverter<FolderPath>(), new TextValueJsonConverter<BranchName>(), new TabOwnerJsonConverter() },
     };
 
@@ -263,8 +265,8 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     private sealed record RecentRepository(FolderPath Path, DateTimeOffset UsedAt);
 
     /// <summary>update-check.json as written, <c>{"checkedAt": ..., "newest": "0.10.0"}</c> or <c>"newest": null</c>, and <c>"notes"</c> (the newest release's notes as read) only when there are some, so without them it is the same file every earlier version wrote.</summary>
-    private sealed record UpdateCheckFile(DateTimeOffset CheckedAt, string? Newest, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Notes = null);
+    private sealed record UpdateCheckFile(DateTimeOffset CheckedAt, string? Newest = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Notes = null);
 
     /// <summary>last-run.json, <c>{"version": "0.21.0"}</c>: the released version that last ran.</summary>
-    private sealed record LastRunFile(string? Version);
+    private sealed record LastRunFile(string? Version = null);
 }
