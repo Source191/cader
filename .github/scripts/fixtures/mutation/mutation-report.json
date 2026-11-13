@@ -1,0 +1,479 @@
+{
+  "schemaVersion": "2",
+  "thresholds": {
+    "high": 90,
+    "low": 75
+  },
+  "projectRoot": "C:\\Users\\me\\source\\repos\\cader\\src\\Source191.Cader.Core",
+  "files": {
+    "C:\\Users\\me\\source\\repos\\cader\\src\\Source191.Cader.Core\\Domain\\NumberAwareOrder.cs": {
+      "language": "csharp",
+      "mutants": [
+        {
+          "id": "3166",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 12,
+              "column": 5
+            },
+            "end": {
+              "line": 17,
+              "column": 6
+            }
+          },
+          "status": "Ignored"
+        },
+        {
+          "id": "3167",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?first.Length.CompareTo(second.Length) :byRuns)",
+          "location": {
+            "start": {
+              "line": 14,
+              "column": 24
+            },
+            "end": {
+              "line": 14,
+              "column": 84
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3168",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?first.Length.CompareTo(second.Length) :byRuns)",
+          "location": {
+            "start": {
+              "line": 14,
+              "column": 24
+            },
+            "end": {
+              "line": 14,
+              "column": 84
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3169",
+          "mutatorName": "Equality mutation",
+          "replacement": "byRuns != 0",
+          "location": {
+            "start": {
+              "line": 14,
+              "column": 24
+            },
+            "end": {
+              "line": 14,
+              "column": 35
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3170",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?string.CompareOrdinal(first, second) :byLength)",
+          "location": {
+            "start": {
+              "line": 16,
+              "column": 16
+            },
+            "end": {
+              "line": 16,
+              "column": 79
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3171",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?string.CompareOrdinal(first, second) :byLength)",
+          "location": {
+            "start": {
+              "line": 16,
+              "column": 16
+            },
+            "end": {
+              "line": 16,
+              "column": 79
+            }
+          },
+          "status": "Survived"
+        },
+        {
+          "id": "3172",
+          "mutatorName": "Equality mutation",
+          "replacement": "byLength != 0",
+          "location": {
+            "start": {
+              "line": 16,
+              "column": 16
+            },
+            "end": {
+              "line": 16,
+              "column": 29
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3173",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 20,
+              "column": 5
+            },
+            "end": {
+              "line": 31,
+              "column": 6
+            }
+          },
+          "status": "Ignored"
+        },
+        {
+          "id": "3174",
+          "mutatorName": "Logical mutation",
+          "replacement": "first.IsEmpty && second.IsEmpty",
+          "location": {
+            "start": {
+              "line": 21,
+              "column": 13
+            },
+            "end": {
+              "line": 21,
+              "column": 44
+            }
+          },
+          "status": "Survived"
+        },
+        {
+          "id": "3175",
+          "mutatorName": "Negate expression",
+          "replacement": "!(first.IsEmpty || second.IsEmpty)",
+          "location": {
+            "start": {
+              "line": 21,
+              "column": 13
+            },
+            "end": {
+              "line": 21,
+              "column": 44
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3176",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 22,
+              "column": 9
+            },
+            "end": {
+              "line": 24,
+              "column": 10
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3177",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?Compare(first[firstRun..], second[secondRun..]) :compared)",
+          "location": {
+            "start": {
+              "line": 30,
+              "column": 16
+            },
+            "end": {
+              "line": 30,
+              "column": 90
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3178",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?Compare(first[firstRun..], second[secondRun..]) :compared)",
+          "location": {
+            "start": {
+              "line": 30,
+              "column": 16
+            },
+            "end": {
+              "line": 30,
+              "column": 90
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3179",
+          "mutatorName": "Equality mutation",
+          "replacement": "compared != 0",
+          "location": {
+            "start": {
+              "line": 30,
+              "column": 16
+            },
+            "end": {
+              "line": 30,
+              "column": 29
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3180",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 35,
+              "column": 5
+            },
+            "end": {
+              "line": 40,
+              "column": 6
+            }
+          },
+          "status": "Ignored"
+        },
+        {
+          "id": "3181",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?text.Length :digits)",
+          "location": {
+            "start": {
+              "line": 37,
+              "column": 29
+            },
+            "end": {
+              "line": 37,
+              "column": 62
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3182",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?text.Length :digits)",
+          "location": {
+            "start": {
+              "line": 37,
+              "column": 29
+            },
+            "end": {
+              "line": 37,
+              "column": 62
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3183",
+          "mutatorName": "Equality mutation",
+          "replacement": "digits > 0",
+          "location": {
+            "start": {
+              "line": 37,
+              "column": 29
+            },
+            "end": {
+              "line": 37,
+              "column": 39
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3184",
+          "mutatorName": "Equality mutation",
+          "replacement": "digits <= 0",
+          "location": {
+            "start": {
+              "line": 37,
+              "column": 29
+            },
+            "end": {
+              "line": 37,
+              "column": 39
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3185",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?1 :leadingDigits)",
+          "location": {
+            "start": {
+              "line": 39,
+              "column": 16
+            },
+            "end": {
+              "line": 39,
+              "column": 54
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3186",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?1 :leadingDigits)",
+          "location": {
+            "start": {
+              "line": 39,
+              "column": 16
+            },
+            "end": {
+              "line": 39,
+              "column": 54
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3187",
+          "mutatorName": "Equality mutation",
+          "replacement": "leadingDigits != 0",
+          "location": {
+            "start": {
+              "line": 39,
+              "column": 16
+            },
+            "end": {
+              "line": 39,
+              "column": 34
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3188",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?CompareNumbers(first.TrimStart('0'), second.TrimStart('0'))\r\n:char.ToUpperInvariant(first[0]).CompareTo(char.ToUpperInvariant(second[0])))",
+          "location": {
+            "start": {
+              "line": 43,
+              "column": 9
+            },
+            "end": {
+              "line": 45,
+              "column": 90
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3189",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?CompareNumbers(first.TrimStart('0'), second.TrimStart('0'))\r\n:char.ToUpperInvariant(first[0]).CompareTo(char.ToUpperInvariant(second[0])))",
+          "location": {
+            "start": {
+              "line": 43,
+              "column": 9
+            },
+            "end": {
+              "line": 45,
+              "column": 90
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3190",
+          "mutatorName": "Logical mutation",
+          "replacement": "char.IsAsciiDigit(first[0]) || char.IsAsciiDigit(second[0])",
+          "location": {
+            "start": {
+              "line": 43,
+              "column": 9
+            },
+            "end": {
+              "line": 43,
+              "column": 68
+            }
+          },
+          "status": "Survived"
+        },
+        {
+          "id": "3191",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 48,
+              "column": 5
+            },
+            "end": {
+              "line": 52,
+              "column": 6
+            }
+          },
+          "status": "Ignored"
+        },
+        {
+          "id": "3192",
+          "mutatorName": "Conditional (true) mutation",
+          "replacement": "(true?first.SequenceCompareTo(second) :byLength)",
+          "location": {
+            "start": {
+              "line": 51,
+              "column": 16
+            },
+            "end": {
+              "line": 51,
+              "column": 74
+            }
+          },
+          "status": "Killed"
+        },
+        {
+          "id": "3193",
+          "mutatorName": "Conditional (false) mutation",
+          "replacement": "(false?first.SequenceCompareTo(second) :byLength)",
+          "location": {
+            "start": {
+              "line": 51,
+              "column": 16
+            },
+            "end": {
+              "line": 51,
+              "column": 74
+            }
+          },
+          "status": "Survived"
+        },
+        {
+          "id": "3194",
+          "mutatorName": "Equality mutation",
+          "replacement": "byLength != 0",
+          "location": {
+            "start": {
+              "line": 51,
+              "column": 16
+            },
+            "end": {
+              "line": 51,
+              "column": 29
+            }
+          },
+          "status": "Killed"
+        }
+      ]
+    }
+  }
+}

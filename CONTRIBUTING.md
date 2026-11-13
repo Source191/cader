@@ -37,7 +37,7 @@ winget install --id Microsoft.PowerShell --exact --source winget
 winget install --id Microsoft.DotNet.SDK.10 --exact --source winget
 winget install --id Git.Git --exact --source winget
 npm install -g @fission-ai/openspec   # the OpenSpec CLI
-dotnet tool install -g dotnet-stryker # mutation testing, optional
+dotnet tool restore                   # dotnet-stryker, pinned in .config\dotnet-tools.json, for mutation testing (optional)
 git clone https://github.com/Source191/cader.git
 cd cader
 dotnet build -c Debug
@@ -66,7 +66,7 @@ dotnet format --verify-no-changes
 
 - **The smoke check:** `dotnet run -- smoke <exe> <worktree-folder>` from the same folder opens and cancels every dialog and view of an installed tool, then quits; exit 0 passes. The worktree must be an idle linked worktree under a repository root holding two solutions. The tool's [README](tools/HeadlessTerminal/README.md) also covers `drive`, `grid` and `count`, for scripted keystrokes and reading a capture as a screen.
 - **Claude Code contract tests:** they start real sessions, so an ordinary `dotnet test` skips them. Run them from a trusted repository with `$env:CADER_CLAUDE_CONTRACT = 1; dotnet test --project test\Source191.Cader.Infrastructure.Tests -c Debug -- --filter-trait "Category=ClaudeContract"`.
-- **Mutation testing:** from `test\Source191.Cader.Core.Tests`, run `dotnet stryker --test-runner mtp --project Source191.Cader.Core.csproj --mutate "**/Domain/*.cs"`. Use `--test-runner mtp` (xunit.v3 scores 0 % under the VSTest bridge) and globs like that one, never solution-relative paths.
+- **Mutation testing:** from `test\Source191.Cader.Core.Tests`, run `dotnet stryker --mutate "**/Domain/*.cs"`. `stryker-config.json` there sets the project, the `mtp` test runner (xunit.v3 scores 0 % under the VSTest bridge), the reporters and the thresholds, so add only `--mutate` globs like that one, never solution-relative paths, or `--since:<committish>` to mutate what changed. The reports are under `StrykerOutput` in that folder. `mutation.yml` also runs it after each release and every week; see [MAINTAINING.md](MAINTAINING.md).
 - **Performance:** [docs/performance-monitoring.md](docs/performance-monitoring.md) explains how to watch the console over a working day with `CADER_LOG`, `dotnet-counters`, `dotnet-trace` and the Windows Performance Recorder, and how to read the results before changing anything for speed.
 
 ## Trying your build
@@ -184,7 +184,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README or the user guide, because `DocumentedMinimumShould` reads both.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
-- **Owner-only workflows:** `publish.yml` submits a stable release to winget and `claude-contract.yml` checks each night's Claude Code CLI; [MAINTAINING.md](MAINTAINING.md) describes both.
+- **Owner-only workflows:** `publish.yml` submits a stable release to winget, `claude-contract.yml` checks each night's Claude Code CLI and `mutation.yml` mutation-tests Core after each release and every week, none of them on a pull request; [MAINTAINING.md](MAINTAINING.md) describes all three.
 
 ## Versions
 

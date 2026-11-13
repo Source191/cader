@@ -11,6 +11,7 @@ This guide is for the owner: how a merge becomes a release, how a release reache
 | pipeline.yml, handoff job | With check | The hand-off check against a real Claude session; never blocks a merge | CLAUDE_CODE_OAUTH_TOKEN |
 | publish.yml | By hand, with a stable tag | Verifies the release's zip and submits it to winget-pkgs | The winget environment and its WINGET_PKGS_TOKEN |
 | claude-contract.yml | Nightly at 03:17 UTC, or by hand | The Claude Code contract tests and the hand-off check against the latest CLI; raises the claude-cli issue | CLAUDE_CODE_OAUTH_TOKEN, CLAUDE_CLI_WATCHER variable |
+| mutation.yml | After a release on main, Sundays at 03:00 UTC, or by hand | Stryker over Core: the release's changes, or all of Core weekly; raises the mutation issue | MUTATION_WATCHER variable |
 | codeql.yml | Every pull request and push to main, and weekly | CodeQL over the C# and the workflows; not required | None |
 
 ## Releases
