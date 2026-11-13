@@ -119,19 +119,24 @@ public sealed class ClaudeContractShould
         ClaudeCli cli = new(runner, ClaudeContract.Executable());
         SessionName name = UniqueName("removed");
         string jobId = await StartAsync(cli, name);
+        bool ended = false;
         try
         {
             await ListedAsync(cli, name);
 
             await EndAsync(cli, jobId);
+            ended = true;
 
             IReadOnlyList<Session> sessions = (await cli.ListSessionsAsync(Cancellation)).Sessions;
             sessions.ShouldNotContain(session => session.Name == Listed.As(name.Value));
         }
         finally
         {
-            // A second stop and rm of an id already gone is harmless: their results are not read.
-            await EndAsync(cli, jobId);
+            // Stop and rm throw for an id that is already gone, so the job is ended here only when the fact did not end it.
+            if (!ended)
+            {
+                await EndAsync(cli, jobId);
+            }
         }
     }
 
