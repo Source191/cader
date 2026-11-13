@@ -24,9 +24,9 @@ internal static class ConsoleComposition
 {
     public static async Task<int> RunAsync(SharedParts parts, LaunchParts launch, CancellationToken cancellationToken)
     {
-        // With CADER_LOG set, the counts are also written every 10 minutes; disposed as this returns, before the crash
+        // The counts go to the log every 10 minutes, and reach the log file while that setting is on; disposed as this returns, before the crash
         // recorder's exit write.
-        using PeriodicCounts periodicCounts = new(TimeProvider.System, parts.Log, parts.Counts, parts.LogSetting);
+        using PeriodicCounts periodicCounts = new(TimeProvider.System, parts.Log, parts.Counts);
         FolderPath home = FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
         CurrentSettings settings = await CurrentSettings.LoadAsync(parts.Store, home);
         ClaudeTranscripts transcripts = ClaudeTranscripts.ForCurrentUser();
