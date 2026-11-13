@@ -8,7 +8,8 @@ public sealed class WordingOfConfigShould
 {
     private static readonly DateTimeOffset Now = new(2026, 10, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly TimeZoneInfo UnitedKingdom = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
-    private const string Fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
+    private const string LogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
+    private const string Fragment =@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
 
     public static TheoryData<ConfigRow, string, string> Rows => new()
     {
@@ -23,6 +24,8 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.DefaultPlace(LaunchMode.CurrentBranch), "Default place", "Current branch" },
         { new ConfigRow.CheckForUpdates(On: true), "Check for updates", "on" },
         { new ConfigRow.CheckForUpdates(On: false), "Check for updates", "off" },
+        { new ConfigRow.DiagnosticLog(On: true, File: LogFile), "Diagnostic log", "on" },
+        { new ConfigRow.DiagnosticLog(On: false, File: LogFile), "Diagnostic log", "off" },
         { new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json")), "Settings file", @"C:\Users\me\AppData\Local\Cader\config.json" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)), "Windows Terminal profiles", $"installed, {Fragment}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.NotSetUp()), "Windows Terminal profiles", "not set up, run cader setup-terminal" },
@@ -48,6 +51,7 @@ public sealed class WordingOfConfigShould
             new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
             new ConfigRow.CheckForUpdates(On: true),
+            new ConfigRow.DiagnosticLog(On: true, File: LogFile),
             .. Enum.GetValues<SetupItem>().Select(item => new ConfigRow.Setup(item, new SetupState.Reading())),
         ];
 
@@ -55,6 +59,22 @@ public sealed class WordingOfConfigShould
 
         descriptions.ShouldAllBe(description => description.Length > 0 && description.Length <= 110);
         descriptions.Distinct().Count().ShouldBe(rows.Length);
+    }
+
+    [Fact]
+    public void NameTheLogFileInTheTooltipWhetherTheSettingIsOnOrOff()
+    {
+        string expected = $"Writes diagnostic events and counts to {LogFile}; Enter turns it on or off.";
+
+        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: true, File: LogFile)).ShouldBe(expected);
+        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: LogFile)).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void KeepThePathOutOfTheDiagnosticLogValue()
+    {
+        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: true, File: LogFile), Now, TimeZoneInfo.Utc).ShouldBe("on");
+        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: false, File: LogFile), Now, TimeZoneInfo.Utc).ShouldBe("off");
     }
 
     [Fact]
