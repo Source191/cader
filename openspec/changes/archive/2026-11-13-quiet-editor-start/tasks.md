@@ -1,0 +1,35 @@
+# Tasks
+
+## 1. The start script
+
+- [x] 1.1 Red: `StartProgramScriptShould` names the script's lines for an executable and two arguments, each reaching the script only as Base64 of its UTF-8 bytes, `UseShellExecute` true, and a `Win32Exception` caught and written as its native error code alone. Green: add `StartProgramScript` beside `OpenFileScript` in `Adapters\Processes`. Verify the new test passes and `OneTypePerFileShould` still passes.
+
+## 2. The adapter
+
+- [x] 2.1 Red: in `DesktopShould` (Infrastructure, real processes), add a fact that starts a small console program that writes to standard output and standard error through `Desktop.StartAsync`, and asserts that nothing it wrote reaches this test process's own captured output, while the program still ran (it writes a marker file). Green: change `Desktop.StartAsync` to run `StartProgramScript` through `IProcessRunner` with the PowerShell it was given. Verify the fact, `StartAProgramWithoutWaitingOrClaudeMarkers` and the other `DesktopShould` facts pass.
+  Done with a windowed stand-in, `test\Source191.Cader.NoisyEditor`, rather than a console program: under the old start a console child got a hidden console of its own and printed nothing to Cader's handles, so the fact could not fail. The stand-in attaches to its parent's console as Electron does, and the fact also checks that console is not this process's (`windows.md`).
+- [x] 2.2 Red: `DesktopShould` facts that a refused start still throws `ProgramNotStartedException` with Windows' sentence for its error code alone (`ThrowProgramNotStartedWhenWindowsRefusesTheProgram` keeps its expectation), that PowerShell missing fails with the sentence naming it, and that a folder holding spaces, `&` and `'` arrives as one argument. Green: read the native error code from the child's standard error. Verify the facts pass and `OpenInEditorHandlerShould` is unchanged and green.
+- [x] 2.3 Refactor: update `IDesktop.StartAsync`'s and `Desktop`'s summaries, and the `Desktop` lines in `.claude\rules\security.md` and `windows.md`, to say editors are started through the cleaned child with ShellExecute and inherit no console. Verify `dotnet build -c Debug` with warnings as errors and a read-through of both rules files.
+
+## 3. Release
+
+- [x] 3.1 Raise `Version` one patch or prerelease step in `src\Source191.Cader\Source191.Cader.csproj` and add a `### Fixed` line under Unreleased in `CHANGELOG.md` ending with the pull request number. Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
+- [ ] 3.2 Manual (owner): with Open folder with set to VS Code, press `f` on a row in a local build (`tools\install-local.ps1`) and check that VS Code opens the folder and no text appears over Cader's screen. Verify by eye, and that the status line names the folder and the editor.
+
+## Workflow follow-up
+
+- Archive the change in the pull request that completes it, so `openspec\specs` describes the code on `main`.
+- Close issue #210 from that pull request.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** B
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** A, C, D
+- **Model:** opus
+- **Effort:** medium
+- **Why:** six small tasks, but the start script is PowerShell source built from a path and arguments, so the quoting and Base64 rules in `security.md` must be followed exactly. This pull request closes issue #210.
+- **Owner gates:** after merge, 3.2 (press `f` on a local build with VS Code chosen).

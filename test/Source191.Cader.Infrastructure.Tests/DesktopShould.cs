@@ -1,6 +1,8 @@
 using Source191.Cader.Adapters.Processes;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -43,17 +45,112 @@ public sealed class DesktopShould : IDisposable
         names.Select(name => name.ToUpperInvariant()).ShouldContain("PATH");
     }
 
-    /// <summary>A text file is not a program, so Windows refuses to start it (no shell, so no dialog), as it would a broken install.</summary>
+    /// <summary>
+    /// The noisy editor is a windowed program that attaches to its parent's console, as VS Code does, and writes to both
+    /// streams before it writes its marker file, so once the marker is there anything it printed has been written. Its
+    /// lines must reach neither this process's standard handles nor this process's console. The capture is searched for
+    /// its lines, not checked empty, because other tests' children may share this process's handles meanwhile.
+    /// </summary>
+    [Fact]
+    public async Task KeepAStartedProgramsOutputOffTheConsole()
+    {
+        string editor = Path.Combine(AppContext.BaseDirectory, "Source191.Cader.NoisyEditor.exe");
+        string marker = Path.Combine(folder, "ran.txt");
+        string console = Path.Combine(folder, "console.txt");
+
+        using (StandardHandles.RedirectedTo(console))
+        {
+            await new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(editor, [marker], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
+            await WaitForAsync(marker);
+        }
+
+        string written = await File.ReadAllTextAsync(console, TestContext.Current.CancellationToken);
+        written.ShouldNotContain(NoisyEditor.Program.StandardOutputLine);
+        written.ShouldNotContain(NoisyEditor.Program.StandardErrorLine);
+        string[] consoleProcesses = (await File.ReadAllLinesAsync(marker, TestContext.Current.CancellationToken))[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        consoleProcesses.ShouldNotContain(Environment.ProcessId.ToString(CultureInfo.InvariantCulture), "the editor attached to this process's console");
+    }
+
+    /// <summary>A text file named as a program is not one, so Windows refuses to start it with no dialog, as it would a broken install.</summary>
     [Fact]
     public async Task ThrowProgramNotStartedWhenWindowsRefusesTheProgram()
     {
-        string notAProgram = Path.Combine(folder, "Northwind.notes.txt");
+        string notAProgram = Path.Combine(folder, "Northwind.notes.exe");
         await File.WriteAllTextAsync(notAProgram, "not a program", TestContext.Current.CancellationToken);
 
         ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(notAProgram, [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
 
         failure.Reason.ShouldNotBeNullOrWhiteSpace();
         failure.Reason.ShouldNotContain(notAProgram, Case.Insensitive, "Windows' reason, not .NET's sentence naming the file");
+        int.TryParse(failure.Reason, NumberStyles.Integer, CultureInfo.InvariantCulture, out _).ShouldBeFalse("Windows' sentence, not its bare error code");
+    }
+
+    [Theory]
+    [InlineData("Northwind & Co's tools")]
+    [InlineData("100% ^ (a) !x! ;,= \"q\"")]
+    public async Task HandAFolderWithShellCharactersOverAsOneArgument(string name)
+    {
+        string editor = Path.Combine(AppContext.BaseDirectory, "Source191.Cader.NoisyEditor.exe");
+        string report = Path.Combine(folder, "arguments.txt");
+        string target = Path.Combine(folder, name);
+
+        await new Desktop(new ProcessRunner(TimeSpan.FromMinutes(1)), new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(editor, [report, target], WorkingFolder.Inherit), TestContext.Current.CancellationToken);
+
+        await WaitForAsync(report);
+        string[] lines = await File.ReadAllLinesAsync(report, TestContext.Current.CancellationToken);
+        lines.Skip(1).ShouldBe([target]);
+    }
+
+    [Fact]
+    public async Task StartThroughTheGivenPowerShellInTheRequestsFolder()
+    {
+        FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
+
+        await new Desktop(processes, new ProgramLocation.Found(@"C:\Program Files\PowerShell\7\pwsh.exe")).StartAsync(new ProcessRequest(@"C:\Tools\Northwind.Editor.exe", [@"C:\Users\me\source\repos\Northwind.Orders"], new WorkingFolder.At(@"C:\Users\me")), TestContext.Current.CancellationToken);
+
+        processes.CapturedRequests.Single().FileName.ShouldBe(@"C:\Program Files\PowerShell\7\pwsh.exe");
+        processes.CapturedRequests.Single().WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\Users\me"));
+    }
+
+    [Fact]
+    public async Task GiveWindowsReasonForTheChildsErrorCode()
+    {
+        FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(1, string.Empty, "193\r\n"));
+
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(@"C:\Tools\Northwind.Editor.exe", [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
+
+        failure.Reason.ShouldBe(new Win32Exception(193).Message);
+    }
+
+    [Fact]
+    public async Task PassTheChildsReasonOnWhenItIsNoErrorCode()
+    {
+        FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(1, string.Empty, "Exception calling \"Start\".\r\n"));
+
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(@"C:\Tools\Northwind.Editor.exe", [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
+
+        failure.Reason.ShouldBe("Exception calling \"Start\".");
+    }
+
+    [Fact]
+    public async Task NameTheExitCodeWhenTheStartingChildSaysNothing()
+    {
+        FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(5, string.Empty, string.Empty));
+
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Found(Pwsh)).StartAsync(new ProcessRequest(@"C:\Tools\Northwind.Editor.exe", [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
+
+        failure.Reason.ShouldContain("5");
+    }
+
+    [Fact]
+    public async Task RefuseToStartWithoutPowerShell()
+    {
+        FakeProcessRunner processes = new();
+
+        ProgramNotStartedException failure = await Should.ThrowAsync<ProgramNotStartedException>(() => new Desktop(processes, new ProgramLocation.Missing()).StartAsync(new ProcessRequest(@"C:\Tools\Northwind.Editor.exe", [], WorkingFolder.Inherit), TestContext.Current.CancellationToken));
+
+        failure.Reason.ShouldBe("PowerShell 7 (pwsh.exe) was not found on the PATH, so nothing can be opened.");
+        processes.CapturedRequests.ShouldBeEmpty();
     }
 
     [Theory]
