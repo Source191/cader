@@ -6,7 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
-- A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#247)
+- A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
 ## 0.21.0 - 2026-11-13
 
