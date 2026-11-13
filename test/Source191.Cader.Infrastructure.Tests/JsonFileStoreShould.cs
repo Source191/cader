@@ -755,6 +755,37 @@ public sealed class JsonFileStoreShould : IDisposable
         read.ShouldBe(new UserConfig(RepositoryRoots: null, DefaultBase: null, WorktreeRoot: null, new EditorSetting("Rider", Executable: null, Arguments: null)));
     }
 
+    [Fact]
+    public async Task SkipACreatedWorktreeWithoutABranch()
+    {
+        await WriteRawAsync(@"created\full.json", CreatedRecordJson);
+        await WriteRawAsync(@"created\no-branch.json", CreatedRecordWith(branch: null));
+
+        (await Store.ReadCreatedWorktreesAsync()).Select(worktree => worktree.Path.Value).ShouldBe([@"C:\Users\me\source\repos\Northwind.Orders-fix-123"]);
+    }
+
+    [Fact]
+    public async Task SkipACreatedWorktreeWhoseBranchIsNull()
+    {
+        await WriteRawAsync(@"created\full.json", CreatedRecordJson);
+        await WriteRawAsync(@"created\null-branch.json", CreatedRecordWith(branch: "null"));
+
+        (await Store.ReadCreatedWorktreesAsync()).Select(worktree => worktree.Path.Value).ShouldBe([@"C:\Users\me\source\repos\Northwind.Orders-fix-123"]);
+    }
+
+    /// <summary>The created-worktree record for Northwind.Billing-invoice-pdf, its branch member written as the JSON given, or left out when null.</summary>
+    private static string CreatedRecordWith(string? branch)
+    {
+        string branchMember = branch is null ? string.Empty : $"\"branch\": {branch},\n  ";
+
+        return $$"""
+            {
+              "path": "C:\\Users\\me\\source\\worktrees\\Northwind.Billing-invoice-pdf",
+              {{branchMember}}"repository": "C:\\Users\\me\\source\\repos\\Northwind.Billing",
+              "createdAt": "2026-10-23T12:00:00+00:00"
+            }
+            """;
+    }
     private async Task WriteRawAsync(string relativeFile, string json)
     {
         string file = Path.Combine(folder, relativeFile);
