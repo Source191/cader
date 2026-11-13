@@ -10,3 +10,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # CodeQL fails when its init and analyze steps run different versions, so they are bumped in one pull request.
+    groups:
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
