@@ -9,7 +9,7 @@ public sealed class WordingOfConfigShould
     private static readonly DateTimeOffset Now = new(2026, 10, 30, 15, 0, 0, TimeSpan.Zero);
     private static readonly TimeZoneInfo UnitedKingdom = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
     private const string LogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
-    private const string Fragment =@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
+    private const string Fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
 
     public static TheoryData<ConfigRow, string, string> Rows => new()
     {
