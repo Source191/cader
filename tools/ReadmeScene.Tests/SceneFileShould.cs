@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 
-namespace Source191.Vantage.ReadmeScene.Tests;
+namespace Source191.Cader.ReadmeScene.Tests;
 
 public sealed class SceneFileShould
 {
@@ -79,7 +79,7 @@ public sealed class SceneFileShould
     [InlineData("Contoso.Payments", "https://github.com/northwind-demo/Contoso.Payments.git")]
     [InlineData("Northwind.Orders", "https://github.com/someone-real/Northwind.Orders.git")]
     [InlineData("Northwind.Orders", "https://dev.azure.com/some-company/Orders/_git/Northwind.Orders")]
-    [InlineData("vantage", "https://github.com/northwind-demo/vantage.git")]
+    [InlineData("cader", "https://github.com/northwind-demo/cader.git")]
     public void RefuseARealLookingRepository(string name, string remote)
     {
         string json = $$"""{ "claudeVersion": "2.1.316", "repositories": [ { "name": "{{name}}", "remote": "{{remote}}" } ] }""";
@@ -90,8 +90,8 @@ public sealed class SceneFileShould
     [Theory]
     [InlineData("Northwind.Orders", "https://github.com/northwind-demo/Northwind.Orders.git")]
     [InlineData("Northwind.Billing", "https://dev.azure.com/northwind-demo/Northwind/_git/Northwind.Billing")]
-    [InlineData("vantage", "https://github.com/Source191/vantage.git")]
-    public void AcceptAMadeUpRepositoryOrVantageItself(string name, string remote)
+    [InlineData("cader", "https://github.com/Source191/cader.git")]
+    public void AcceptAMadeUpRepositoryOrItsOwn(string name, string remote)
     {
         string json = $$"""{ "claudeVersion": "2.1.316", "repositories": [ { "name": "{{name}}", "remote": "{{remote}}" } ] }""";
 

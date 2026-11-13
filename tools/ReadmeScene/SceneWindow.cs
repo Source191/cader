@@ -1,4 +1,4 @@
-namespace Source191.Vantage.ReadmeScene;
+namespace Source191.Cader.ReadmeScene;
 
 /// <summary>
 /// The Windows Terminal window the scene runs in. Windows Terminal titles a window after its active tab, so the host

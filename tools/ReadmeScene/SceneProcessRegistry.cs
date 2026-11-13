@@ -1,6 +1,6 @@
-using Source191.Vantage.Domain;
+using Source191.Cader.Domain;
 
-namespace Source191.Vantage.ReadmeScene;
+namespace Source191.Cader.ReadmeScene;
 
 /// <summary>
 /// The process table as the scene sees it: the scene's made-up Claude Code processes answered from the listing, every
