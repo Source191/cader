@@ -38,7 +38,7 @@ It is built in the gaps between rate limits. If it saves you ten minutes a day, 
 winget install Source191.Cader
 ```
 
-That brings Windows Terminal, PowerShell 7 and git if any of them is missing, and Cader carries its own .NET. The one thing it cannot bring is Claude Code 2.1.309 or later, which comes from its own installer:
+That brings Windows Terminal, PowerShell 7 and git if any of them is missing, and Cader carries its own .NET. winget picks the build for your machine, native on both x64 and Arm Windows 11. The one thing it cannot bring is Claude Code 2.1.309 or later, which comes from its own installer:
 
 ```powershell
 irm https://claude.ai/install.ps1 | iex

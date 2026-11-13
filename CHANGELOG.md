@@ -4,6 +4,10 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ## Unreleased
 
+### Added
+
+- A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93)
+
 ## 0.21.1 - 2026-11-13
 
 ### Internal
