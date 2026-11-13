@@ -49,3 +49,17 @@
 ## Workflow follow-up
 
 - Archive the change in the pull request that completes it, so `openspec\specs` describes the code on `main`; at archive, also change the `tool-updates` spec's Purpose, which still names nuget.org.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** A (shared with readme-front-page): close out
+- **Step:** 1
+- **Depends on:** nothing, it is the first to archive
+- **Parallel with:** B, C, D
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** run each open task's own Verify clause (4.4, 5.2, 5.3, 7.1) before ticking it, then archive; the archive writes the `installation` capability and the winget deltas to `config-tab`, `tool-updates`, `release-notes` and `command-line`, and changes the `tool-updates` Purpose, so a careful spec merge matters more than design.
+- **Owner gates:** after merge, 8.1 to 8.3 (clean VM, upgrade with `U`, retire nuget.org). Say in the pull request which are done; never tick them for the owner.
+- **Note:** E, F and G wait for this archive.

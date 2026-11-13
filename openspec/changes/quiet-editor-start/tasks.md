@@ -19,3 +19,16 @@
 
 - Archive the change in the pull request that completes it, so `openspec\specs` describes the code on `main`.
 - Close issue #210 from that pull request.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** B
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** A, C, D
+- **Model:** opus
+- **Effort:** medium
+- **Why:** six small tasks, but the start script is PowerShell source built from a path and arguments, so the quoting and Base64 rules in `security.md` must be followed exactly. This pull request closes issue #210.
+- **Owner gates:** after merge, 3.2 (press `f` on a local build with VS Code chosen).

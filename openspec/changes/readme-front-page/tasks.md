@@ -71,3 +71,16 @@
 
 - Archive the change in the pull request that completes it, after review.
 - Retarget the pull request to `main` once #206 has merged.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** A (shared with install-with-winget): close out
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** B, C, D
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** two small open tasks (8.5 FUNDING.yml, 8.6 link check), then archive, whose `needs-input-notification` delta is merged into the spec in the same pull request as the winget archive.
+- **Owner gates:** after merge, the Sponsor button appears and opens the page (8.5).

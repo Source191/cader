@@ -68,3 +68,16 @@
 
 - **Archive:** archive the change in the same pull request once 3.1's dispatch run and 4.2 pass.
 - **After merge (owner):** on the first release after merge, confirm a `mutation` run started from `pipeline` with `--since` in its log and a report in its summary. Confirm the next Sunday's full run too. Before then, set the `MUTATION_WATCHER` repository variable to the login that should be assigned new `mutation` issues; this one-off step goes in the pull request's description.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** D
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** A, B, C
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** new workflow files beside `claude-contract.yml` with careful permissions (`workflow_run`, a read-only job, a single write job); the measurements in 2.1 and 2.2 set the break score, so they are taken, not guessed.
+- **Owner gates:** blocking, 2.2 (the owner agrees the timings and the break score from the measured baseline). Optional, the `MUTATION_WATCHER` variable.

@@ -26,3 +26,17 @@
 
 - [ ] 5.1 On a clean Windows 11 machine, download the release zip in a browser, extract and run `cader.exe`; right-click, Properties, Digital Signatures shows the publisher and timestamp. Record whether SmartScreen warned (dated) in `windows.md`.
 - [ ] 5.2 `winget install Source191.Cader` of the signed release on a machine with App Control for Business in audit mode, and note any block. Verify by the event log.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** G
+- **Step:** 3
+- **Depends on:** A, and E (arm64 builds the second zip first)
+- **Parallel with:** H
+- **Model:** opus
+- **Effort:** high
+- **Why:** a signing pipeline must never sign from a pull request or leave a credential behind, and its verifier is a security check; the OIDC and environment restrictions are easy to get subtly wrong.
+- **Owner gates:** blocking, 1.1 and 1.2 (signing service, identity, cost and account; a federated credential for `main`; the `signing` environment). After merge, 5.1 and 5.2 on real machines.
+- **Amendment from the plan:** once E has landed there are two zips (`cader_<version>_win-x64.zip` and `cader_<version>_win-arm64.zip`). Read tasks 2.1, 3.1, 3.2, 3.3 and 5.1 as covering both: the `sign` job signs and smoke-checks each architecture's executable on its own runner, the release job attests and attaches both signed zips, and `publish.yml` runs `Test-Signature.ps1` on both and fails naming the architecture. Remove the proposal's Out of scope line on `win-arm64` in the same pull request.
