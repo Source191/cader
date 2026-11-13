@@ -8,7 +8,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
-- Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#000)
+- Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
 
 ## 0.21.1 - 2026-11-13
 
