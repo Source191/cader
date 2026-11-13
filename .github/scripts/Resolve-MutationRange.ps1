@@ -10,11 +10,11 @@
     - schedule and workflow_dispatch: a full run, with no range.
     - workflow_run: a release only when HeadSha carries a v* tag, which pipeline.yml's release job makes on the
       commit it publishes; otherwise 'skip' with a notice. The range starts at the head commit of the newest finished
-      (success or failure) mutation run on main that is an ancestor of HeadSha, so a run replaced in the queue never
-      loses its release's changes, and falls back to the previous v* tag, then to no range at all.
+      (success or failure) mutation run on main that is an ancestor of HeadSha (a workflow_run counts only when its
+      commit is a release), so a run replaced in the queue never loses its release's changes, and falls back to the previous v* tag, then to no range at all.
 
     RunsJson is the answer of `gh run list --workflow mutation.yml --branch main --status completed --json
-    conclusion,headSha`; without it the script asks gh. Run it locally with a recorded answer to try a case.
+    conclusion,headSha,event`; without it the script asks gh. Run it locally with a recorded answer to try a case.
 
 .EXAMPLE
     .github\scripts\Resolve-MutationRange.ps1 -EventName workflow_run -HeadSha (git rev-parse HEAD) -RunsJson '[]'
@@ -38,10 +38,14 @@ function Get-ReleaseTag([string] $commit) {
 
 function Get-FinishedRunCommit([string] $commit, [string] $runsJson) {
     if (-not $runsJson) {
-        $runsJson = gh run list --workflow mutation.yml --branch main --status completed --limit 20 --json conclusion,headSha
+        $runsJson = gh run list --workflow mutation.yml --branch main --status completed --limit 20 --json conclusion,headSha,event
         if ($LASTEXITCODE -ne 0) { throw 'gh run list failed' }
     }
-    $finished = @($runsJson | ConvertFrom-Json | Where-Object { $_.conclusion -in 'success', 'failure' })
+    # A run that only reached the notice for an untagged commit finished as a success without mutating anything, so a
+    # workflow_run counts only when its commit is a release; a schedule or a dispatch always mutated.
+    $finished = @($runsJson | ConvertFrom-Json | Where-Object {
+        $_.conclusion -in 'success', 'failure' -and ($_.event -ne 'workflow_run' -or (Get-ReleaseTag $_.headSha))
+    })
     foreach ($run in $finished) {
         git merge-base --is-ancestor $run.headSha $commit 2>$null
         $ancestor = $LASTEXITCODE -eq 0

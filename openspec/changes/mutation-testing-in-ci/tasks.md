@@ -2,17 +2,17 @@
 
 ## 1. Pinned tool and shared settings
 
-- [ ] 1.1 Add `.config\dotnet-tools.json` pinning `dotnet-stryker` (the newest release at least two weeks old), and replace `CONTRIBUTING.md`'s global install with `dotnet tool restore`. Verify `dotnet tool restore` then `dotnet stryker --version` prints the pinned version.
-- [ ] 1.2 Add `test\Source191.Cader.Core.Tests\stryker-config.json`:
+- [x] 1.1 Add `.config\dotnet-tools.json` pinning `dotnet-stryker` (the newest release at least two weeks old), and replace `CONTRIBUTING.md`'s global install with `dotnet tool restore`. Verify `dotnet tool restore` then `dotnet tool list` shows the pinned version (Stryker 5.0.0 has `-v|--version` as a dashboard option, so `dotnet stryker --version` prints nothing useful).
+- [x] 1.2 Add `test\Source191.Cader.Core.Tests\stryker-config.json`:
   - `project` and `test-runner: mtp`;
   - the `html`, `markdown`, `json` and `progress` reporters;
-  - `high` and `low` thresholds, with `break` 0 for now.
+  - `high` and `low` thresholds, with `break` 0 for now (set to the proposed 81 in 2.2, awaiting the owner).
 
-  Verify `dotnet stryker --mutate "**/Domain/NumberAwareOrder.cs"` from that folder runs with no other options and writes `mutation-report.md`.
+  Verify `dotnet stryker --mutate "**/Domain/NumberAwareOrder.cs"` from that folder runs with no other options and writes `mutation-report.md` (under `StrykerOutput<timestamp>eports`).
 
 ## 2. Measure before building the workflow
 
-- [ ] 2.1 Time a full Core run locally (`dotnet stryker`), and a `--since:<previous v* tag>` run for the latest release. Record both times, the mutant counts and the whole-Core score in `.claude\rules\checks.md`'s Mutation testing section, with the date and Stryker version. Also check the field names the report job reads (`files.<path>.mutants[]`, `status`, `mutatorName`, `replacement`, `location.start.line`) against the run's `mutation-report.json`, and keep a trimmed copy as the report job's test fixture.
+- [x] 2.1 Time a full Core run locally (`dotnet stryker`), and a `--since:<previous v* tag>` run for the latest release. Record both times, the mutant counts and the whole-Core score in `.claude\rules\checks.md`'s Mutation testing section, with the date and Stryker version. Also check the field names the report job reads (`files.<path>.mutants[]`, `status`, `mutatorName`, `replacement`, `location.start.line`) against the run's `mutation-report.json`, and keep a trimmed copy as the report job's test fixture.
 - [ ] 2.2 Decide with the owner on the timings:
   - **A `--since` run under 30 minutes:** keep the per-release trigger.
   - **Over 30 minutes:** keep only the weekly run, and update design.md before going on.
@@ -30,14 +30,14 @@
   - **Pins:** every action pinned by commit with its version in a comment.
 
   Verify with `actionlint` if installed, and by a `workflow_dispatch` run on the branch completing, with the report in its summary and the artefact uploaded.
-- [ ] 3.2 Add the release and range steps:
+- [x] 3.2 Add the release and range steps:
   - the `v*` tag on `head_sha` (otherwise a notice and stop);
   - the last finished mutation run's head commit from `gh run list`, falling back to the previous `v*` tag;
   - `--since:<that commit>` for `workflow_run`, none for `schedule` and `workflow_dispatch`.
 
   Verify by running the step's script locally against `main`'s history with a recorded `gh run list` answer, for three cases: a tagged commit, an untagged commit, and no earlier run.
 - [ ] 3.3 Restore `pipeline`'s NuGet cache read-only (`actions/cache/restore`, same key), run `dotnet tool restore`, and run Stryker from `test\Source191.Cader.Core.Tests`. Append `mutation-report.md` to the job summary and upload `StrykerOutput` (30 days). Verified by the dispatch run in 3.1.
-- [ ] 3.4 Write `run.json` (kind, release tag, `--since` commit, whole score) beside `mutation-report.json` and upload both as the `mutation-results` artefact. Set the job's `finding` output:
+- [x] 3.4 Write `run.json` (kind, release tag, `--since` commit, whole score) beside `mutation-report.json` and upload both as the `mutation-results` artefact. Set the job's `finding` output:
   - **After a release:** any `Survived` or `NoCoverage` mutant in the report.
   - **After a full run:** the score below the previous full run's, read with `gh run download`; skipped with a notice when that artefact is missing.
 
@@ -54,7 +54,7 @@
 
 ## 4. Docs
 
-- [ ] 4.1 Update the docs:
+- [x] 4.1 Update the docs:
   - `.claude\rules\checks.md`: Mutation testing gets the workflow, its triggers, the range rule, the break score and the `mutation` issue; Workflows gets one bullet for `mutation.yml`.
   - `MAINTAINING.md` gets the optional `MUTATION_WATCHER` variable, beside `CLAUDE_CLI_WATCHER`.
   - `MAINTAINING.md` and `CONTRIBUTING.md`, where they list the workflows and the mutation command.

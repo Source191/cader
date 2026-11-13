@@ -141,3 +141,14 @@ This follows `claude-contract.yml`'s `report` job.
 ## Open Questions
 
 - **The break score's value:** to be chosen after the baseline full run, for example the measured whole-Core score less five points, rounded down. It changes only one number in `stryker-config.json`, not the approach.
+
+## Found while building
+
+- **The break score is proposed, not decided:** 81, from the 86.78 % full-run baseline of 13 November 2026 (less five points, rounded down). Task 2.2 waits for the owner, who also decides whether it applies to a `--since` run, whose score covers only the mutants tested; as built it does, because the config holds it.
+- **The timings favour the per-release trigger:** locally a `--since` run took 3 to 8 minutes and a full run 9 to 11 (`checks.md`), all under the 30 minutes that decide it; runner times are not yet measured.
+- **The weekly comparison has a tolerance of 0.5 points:** two full runs of the same code scored 86.78 and 86.95 %, so an exact "lower than before" would raise the issue by chance.
+- **A `--since` run barely narrows when tests change:** a changed test counts every mutant it covers, and the shared fixtures cover nearly everything, so the saving shows only for a release that changes no tests; a changed non-C# file in the test project, `stryker-config.json` included, tests everything.
+- **The report job's rights are one fewer:** it holds only `issues: write`. The mutation job (with `actions: read`) does the previous-run lookup and writes the whole comment into `mutation-results`, so nothing from the repository runs with write rights.
+- **The range ignores a `workflow_run` that stopped at the notice:** an untagged commit's run ends as a success without mutating, so only a `workflow_run` on a `v*`-tagged commit, or any schedule or dispatch run, can start a later range.
+- **`mutation-results` holds a cut report:** the full JSON is 12 MB of coverage ids, so `Write-MutationRun.ps1` keeps only the status, mutator, replacement and line of the four counted statuses (about 450 KB), and the scripts' fixtures have that shape.
+- **A new workflow cannot be dispatched before it is on `main`:** 3.1's and 3.5's dispatch runs, and the deliberate weak-test run, are for the owner after the merge.

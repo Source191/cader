@@ -12,9 +12,12 @@
     The results folder also gets mutation-report.json cut to the fields below, so the artefact stays small.
 
     A finding is, after a release, any Survived or NoCoverage mutant in the changed code, and after a full run, a
-    whole score below the previous full run's. PreviousDirectory is the folder holding that run's run.json and
-    mutation-report.json; without it (the artefact expired, or this is the first full run) the comparison is skipped
-    with a notice and this run becomes the baseline.
+    whole score more than Tolerance points below the previous full run's (two full runs of the same code differed by
+    0.17 points on 13 November 2026, so an exact comparison would raise the issue by chance).
+
+    PreviousDirectory is the folder holding the previous full run's run.json and mutation-report.json; without it
+    (the artefact expired, or this is the first full run) the comparison is skipped with a notice and this run
+    becomes the baseline.
 
     Answers an object with Score, Finding and Reason.
 
@@ -31,7 +34,8 @@ param(
     [string] $Since = '',
     [Parameter(Mandatory)] [string] $HeadSha,
     [Parameter(Mandatory)] [string] $OutputDirectory,
-    [string] $PreviousDirectory = ''
+    [string] $PreviousDirectory = '',
+    [double] $Tolerance = 0.5
 )
 
 $ErrorActionPreference = 'Stop'
@@ -67,7 +71,7 @@ else {
     else {
         $previousScore = (Get-Content $previousRunPath -Raw | ConvertFrom-Json).score
         $run['previousScore'] = $previousScore
-        $finding = $null -ne $score -and $null -ne $previousScore -and $score -lt $previousScore
+        $finding = $null -ne $score -and $null -ne $previousScore -and $score -lt $previousScore - $Tolerance
         if ($finding) {
             $before = Get-FileScores (Read-MutationReport $previousReportPath)
             $after = Get-FileScores $report

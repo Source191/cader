@@ -83,7 +83,9 @@ jobs:
           dotnet --version
           dotnet tool restore
 
-      # The settings, the break score among them, are in stryker-config.json, so a local run is the same run.
+      # The settings, the break score among them, are in stryker-config.json, so a local run is the same run. The break
+      # score there (81) is a proposal from the 86.78 % baseline, awaiting the owner's agreement; it applies to a
+      # --since run too, whose score covers only the mutants tested.
       - name: Mutate
         id: stryker
         if: steps.range.outputs.kind != 'skip'
