@@ -745,6 +745,22 @@ public sealed class JsonFileStoreShould : IDisposable
         (await Store.ReadUpdateCheckAsync()).ShouldBe(new UpdateCheckRecord.Never());
     }
 
+    [Fact]
+    public async Task ReadAnEditorNamingOnlyItsPreset()
+    {
+        await WriteRawAsync("config.json", """{ "editor": { "preset": "Rider" } }""");
+
+        UserConfig read = await Store.ReadConfigAsync();
+
+        read.ShouldBe(new UserConfig(RepositoryRoots: null, DefaultBase: null, WorktreeRoot: null, new EditorSetting("Rider", Executable: null, Arguments: null)));
+    }
+
+    private async Task WriteRawAsync(string relativeFile, string json)
+    {
+        string file = Path.Combine(folder, relativeFile);
+        Directory.CreateDirectory(Path.GetDirectoryName(file) ?? folder);
+        await File.WriteAllTextAsync(file, json, TestContext.Current.CancellationToken);
+    }
     /// <summary>update-check.json exactly as the store wrote it before the record had named cases, with the newest member's JSON.</summary>
     private static string UpdateCheckJson(string newestJson) => $$"""
         {
