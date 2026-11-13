@@ -1,0 +1,14 @@
+name: arm-probe
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: windows-11-arm
+    timeout-minutes: 10
+    steps:
+      - shell: pwsh
+        run: |
+          "PROCESSOR_ARCHITECTURE=$env:PROCESSOR_ARCHITECTURE"
+          winget --version
+          foreach ($id in 'Microsoft.WindowsTerminal','Microsoft.PowerShell','Git.Git') { "== $id"; winget show --id $id --exact --source winget --disable-interactivity 2>&1 | Select-String 'Version:|Architecture|Installer Type|Installer Url' }
