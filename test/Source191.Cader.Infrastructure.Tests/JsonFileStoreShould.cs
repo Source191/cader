@@ -93,11 +93,12 @@ public sealed class JsonFileStoreShould : IDisposable
             "arguments": null
           },
           "checkForUpdates": true,
-          "defaultPlace": "NewWorktree"
+          "defaultPlace": "NewWorktree",
+          "diagnosticLog": false
         }
         """;
 
-    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
@@ -359,6 +360,26 @@ public sealed class JsonFileStoreShould : IDisposable
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "defaultPlace": 7 }""", TestContext.Current.CancellationToken);
 
         (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task ReadAConfigHoldingTextForTheDiagnosticLogAsMissing()
+    {
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "diagnosticLog": "yes" }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task WriteTheDiagnosticLogTurnedOn()
+    {
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), DiagnosticLog: true);
+
+        await Store.WriteConfigAsync(saved);
+
+        (await Store.ReadConfigAsync()).ShouldBe(saved);
+        (await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken)).ShouldContain("\"diagnosticLog\": true");
     }
 
     [Fact]
