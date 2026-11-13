@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Diagnostics;
+using Source191.Cader.Application.Diagnostics;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -152,6 +154,39 @@ public sealed class DiagnosticFileShould : IDisposable
         Should.NotThrow(() => file.Write("2026-10-29T12:00:00.000Z view Sessions"));
 
         new FileInfo(path).Length.ShouldBe(10_485_760 + "2026-10-29T12:00:00.000Z view Sessions".Length + NewLineBytes);
+    }
+
+    [Fact]
+    public void WriteOnlyTheEventsRecordedWhileOnAndKeepEveryEventInMemory()
+    {
+        FakeTimeProvider clock = new(new DateTimeOffset(2026, 11, 1, 9, 0, 0, TimeSpan.Zero));
+        DiagnosticLog log = new(clock, [new DiagnosticFile(path, () => on)]);
+
+        on = false;
+        log.Record(new ViewShown(ViewKind.Sessions));
+        on = true;
+        log.Record(new ViewShown(ViewKind.Config));
+        on = false;
+        log.Record(new ViewShown(ViewKind.Worktrees));
+
+        File.ReadAllLines(path).ShouldBe(["2026-11-01T09:00:00.000Z view Config"]);
+        log.Snapshot().Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void WriteTheNextCountsOnceTurnedOnAndNoneOfTheEarlierMarksLate()
+    {
+        FakeTimeProvider clock = new(new DateTimeOffset(2026, 11, 1, 9, 0, 0, TimeSpan.Zero));
+        DiagnosticLog log = new(clock, [new DiagnosticFile(path, () => on)]);
+        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(clock, log), new StallCounts());
+        using PeriodicCounts periodic = new(clock, log, counts);
+
+        on = false;
+        clock.Advance(TimeSpan.FromMinutes(25));
+        on = true;
+        clock.Advance(TimeSpan.FromMinutes(5));
+
+        File.ReadAllLines(path).ShouldBe(["2026-11-01T09:30:00.000Z stalls ui thread: 0 stalls"]);
     }
 
     private static int NewLineBytes => Environment.NewLine.Length;
