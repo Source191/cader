@@ -4,7 +4,7 @@ Each task is one red-green-refactor cycle (or smaller), with the test named befo
 
 ## 1. Facts to check first
 
-- [ ] 1.1 For each member design.md's table makes required (`TabFile`'s `Id`, `SessionId`, `Colour` and `CreatedAt`; `CreatedWorktree`'s four; `RecentRepository`'s `Path` and `UsedAt`; `UpdateCheckFile`'s `CheckedAt`), read `git log -p` on the file that declares it and confirm every released version that wrote the file wrote that member. Record the answer in design.md's first risk; a member some version left out becomes optional with a default in group 3 instead. Verify by the recorded answer.
+- [x] 1.1 For each member design.md's table makes required (`TabFile`'s `Id`, `SessionId`, `Colour` and `CreatedAt`; `CreatedWorktree`'s four; `RecentRepository`'s `Path` and `UsedAt`; `UpdateCheckFile`'s `CheckedAt`), read `git log -p` on the file that declares it and confirm every released version that wrote the file wrote that member. Record the answer in design.md's first risk; a member some version left out becomes optional with a default in group 3 instead. Verify by the recorded answer.
 
 ## 2. The records say what is optional (Ports)
 
