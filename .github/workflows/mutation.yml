@@ -14,6 +14,8 @@ on:
   schedule:
     - cron: '0 3 * * 0'
   workflow_dispatch:
+  push:
+    branches: [pr-d-mutation-testing-in-ci]
 
 permissions:
   contents: read
@@ -58,7 +60,7 @@ jobs:
         id: range
         shell: pwsh
         env:
-          EVENT_NAME: ${{ github.event_name }}
+          EVENT_NAME: ${{ github.event_name == 'push' && 'workflow_dispatch' || github.event_name }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           $ErrorActionPreference = 'Stop'
