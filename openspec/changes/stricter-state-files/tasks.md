@@ -31,3 +31,16 @@ Each task is one red-green-refactor cycle (or smaller), with the test named befo
 
 - Archive the change in the pull request that completes it, syncing the two added requirements into `openspec\specs\settings\spec.md` and `openspec\specs\session-launch\spec.md`.
 - Push and open the implementation pull request only when the owner asks.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** C
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** A, B, D
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** a narrow change whose design table decides what is required; task 1.1 checks that table against the code and must come out right before any red test is written. It shapes `UserConfig`, so F and H follow it.
+- **Owner gates:** none.

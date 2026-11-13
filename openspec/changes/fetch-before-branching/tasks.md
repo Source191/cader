@@ -159,3 +159,19 @@
 
 - Archive the change in the pull request that completes it, so `openspec\specs` describes `main`.
 - Whichever of this change and `diagnostic-log-setting` merges second rebases its `Settings`, `UserConfig`, `SettingsFile` and `ConfigRows` edits onto the other.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** H (part 1), then I (part 2)
+- **Step:** 3 for H, 4 for I
+- **Depends on:** F and C for both parts; I also needs H
+- **Parallel with:** H with G; I with nothing
+- **Model:** H opus, I sonnet
+- **Effort:** H xhigh, I high
+- **Why:** H is git behaviour that can hang on a credential prompt or fast-forward over local work, tested against real git with a bare origin; I is the Config tab row, the wizard field and the docs, all in established patterns.
+- **Owner gates:** blocking for H, 3.1 (the credential-prompt spike, recorded with its date, before any port change). After merge, 9.2 in a scratch repository.
+- **H (part 1):** tasks 1 to 5, plus the words that say Cader never fetches (the Default base row, tooltip and dialog, and the wizard's base choice), so no release says something untrue. With no row or wizard field yet, the default `Fetch` applies and `config.json` can set it. Raise `Version` one step; do not archive.
+- **I (part 2):** tasks 6 to 9. The Config tab row, the wizard choice, the user guide, the remade `new-session.gif`, the minor `Version` raise and the `CHANGELOG.md` lines. Archive the change here.
+- **Rebase:** F also adds a property to `Settings`, `UserConfig` and `SettingsFile` and a row to `ConfigRows`; take F's shape and rebase this change's constructor and `Equals` edits onto it.

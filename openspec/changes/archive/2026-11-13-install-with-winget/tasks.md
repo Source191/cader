@@ -26,7 +26,7 @@
 ## 5. Workflows
 
 - [x] 5.1 `pipeline.yml`: replace the nupkg install steps with unzipping the zip into a temp folder, then run the `--version` and smoke steps against that `cader.exe`; upload the zip as the pull request's artefact. Verify a draft pull request's check passes with the zip.
-- [ ] 5.2 `pipeline.yml`'s release job: attest and attach the zip for every release, stable or prerelease, and keep the stable release's notes and `--notes-start-tag`. Verify with the first prerelease from `main` that the Release carries the zip and `gh attestation verify` passes on it.
+- [x] 5.2 `pipeline.yml`'s release job: attest and attach the zip for every release, stable or prerelease, and keep the stable release's notes and `--notes-start-tag`. Verify with the first prerelease from `main` that the Release carries the zip and `gh attestation verify` passes on it.
 - [ ] 5.3 Rewrite `publish.yml` for winget: run by hand with a stable tag, in the `winget` environment (owner approval, `main` only, `WINGET_PKGS_TOKEN` as its secret); refuse a prerelease tag, verify the zip's attestation from `pipeline.yml` on `main`, fail while winget-pkgs has no Source191.Cader, run `wingetcreate update --submit`, and fail loudly when the pull request cannot be opened. Verify with a dry run on a test fork before the secret is real.
 - [x] 5.4 `Assert-ChangelogUpdated.ps1`: drop the 35,000-character limit, which only nuget.org's release notes needed. Verify it passes between `main` and the branch.
 
@@ -49,3 +49,17 @@
 ## Workflow follow-up
 
 - Archive the change in the pull request that completes it, so `openspec\specs` describes the code on `main`; at archive, also change the `tool-updates` spec's Purpose, which still names nuget.org.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** A (shared with readme-front-page): close out
+- **Step:** 1
+- **Depends on:** nothing, it is the first to archive
+- **Parallel with:** B, C, D
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** run each open task's own Verify clause (4.4, 5.2, 5.3, 7.1) before ticking it, then archive; the archive writes the `installation` capability and the winget deltas to `config-tab`, `tool-updates`, `release-notes` and `command-line`, and changes the `tool-updates` Purpose, so a careful spec merge matters more than design.
+- **Owner gates:** after merge, 8.1 to 8.3 (clean VM, upgrade with `U`, retire nuget.org). Say in the pull request which are done; never tick them for the owner.
+- **Note:** E, F and G wait for this archive.

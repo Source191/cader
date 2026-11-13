@@ -54,7 +54,7 @@
 - [x] 8.3 Add the "Built by Simon Vane" badge beside the support button and the signed line at the end of "Why I built it", both linking to `https://www.linkedin.com/in/simonvane/`; verify both render and open the profile on GitHub's preview
 - [x] 8.4 Replace the shields.io sponsor badge with the official Buy Me a Coffee button under the banner, and add it again in "Support Cader" (with the specific ask, the monthly membership line and the QR code) and in the one-line ask at the end of getting started; verify there are exactly three support placements and each opens `https://buymeacoffee.com/simonvane`
 - [ ] 8.5 Add `.github/FUNDING.yml` with `buy_me_a_coffee: simonvane`; verify once pushed that the Sponsor button appears in the repository header and opens the page
-- [ ] 8.6 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
+- [x] 8.6 Verify every link and image in the README and the guide resolves (the raw image URLs once merged; relative links now)
 
 ## 9. Contributor docs
 
@@ -71,3 +71,16 @@
 
 - Archive the change in the pull request that completes it, after review.
 - Retarget the pull request to `main` once #206 has merged.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** A (shared with install-with-winget): close out
+- **Step:** 1
+- **Depends on:** nothing
+- **Parallel with:** B, C, D
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** two small open tasks (8.5 FUNDING.yml, 8.6 link check), then archive, whose `needs-input-notification` delta is merged into the spec in the same pull request as the winget archive.
+- **Owner gates:** after merge, the Sponsor button appears and opens the page (8.5).

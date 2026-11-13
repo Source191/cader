@@ -26,3 +26,17 @@
 ## 5. Integration checks (owner, on real machines)
 
 - [ ] 5.1 On a Windows 11 Arm machine: `winget install Source191.Cader`, `cader` starts, `cader setup-terminal` works and a session can be started and attached. Verify the installed executable is the Arm build.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** E
+- **Step:** 2
+- **Depends on:** A (the `installation` capability exists only once install-with-winget is archived)
+- **Parallel with:** C, D, F
+- **Model:** sonnet
+- **Effort:** medium
+- **Why:** workflow and script plumbing once the two premises in 1.1 and 1.2 are confirmed; no C# is expected.
+- **Owner gates:** blocking, 1.1 (the hosted `windows-11-arm` runner is available; stop and re-plan if not) and 1.2 (Arm installers exist for the winget dependencies). After merge, 5.1 on a Windows 11 Arm machine.
+- **Note:** G follows this change, because signing must cover both zips.
