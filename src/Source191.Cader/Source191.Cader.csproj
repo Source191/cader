@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Source191.Cader</RootNamespace>
     <AssemblyName>cader</AssemblyName>
-    <Version>0.21.0</Version>
+    <Version>0.21.1</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>Simon Vane</Authors>
     <Description>Every agent session in one tab, still there after a reboot.</Description>
