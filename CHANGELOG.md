@@ -8,6 +8,12 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
+## 0.21.1 - 2026-11-13
+
+### Internal
+
+- System.CommandLine 3.0.0, Microsoft.Extensions.Logging.Abstractions and Microsoft.Extensions.FileSystemGlobbing 11.0.0, SonarAnalyzer.CSharp 10.36.0.15337 and Microsoft.Extensions.TimeProvider.Testing 11.0.0 (#246)
+
 ## 0.21.0 - 2026-11-13
 
 ### Changed

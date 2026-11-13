@@ -32,11 +32,11 @@ A pull request that changes the packaged tool SHALL change the changelog's Unrel
 - **THEN** the pull request check fails and says the Unreleased entries need moving to a 0.21.0 section
 
 ### Requirement: The package carries the release notes
-The packed tool SHALL carry the changelog as the package's release notes and as a file inside the installed tool. Cader SHALL never show the Unreleased section or Internal entries from either.
+Every release's zip SHALL hold the changelog as a file beside the executable, and Cader SHALL read its own release notes from it. Notes for a newer release SHALL be read from the changelog at that release's tag on GitHub. Cader SHALL never show the Unreleased section or Internal entries from either.
 
-#### Scenario: Notes on nuget.org
-- **WHEN** 0.21.0 is packed
-- **THEN** its nuspec release notes hold the changelog, with the 0.21.0 section and the sections before it
+#### Scenario: Notes for the newest release
+- **WHEN** 0.21.0 is the newest release
+- **THEN** the notes Cader records for it are read from the changelog at tag v0.21.0, with the 0.21.0 section and the sections before it
 
 #### Scenario: Internal entries stay hidden
 - **WHEN** the 0.21.0 section has two Fixed entries and three Internal entries
@@ -44,14 +44,14 @@ The packed tool SHALL carry the changelog as the package's release notes and as 
 
 #### Scenario: Notes inside the tool
 - **WHEN** 0.21.0 is installed
-- **THEN** the installed tool's folder holds the same notes for Cader to read without a network request
+- **THEN** the installed folder holds the same notes for Cader to read without a network request
 
 ### Requirement: A stable GitHub Release describes everything since the last stable release
-The GitHub Release of a stable version SHALL carry that version's changelog section, followed by the generated list of pull requests since the previous stable release rather than since the previous preview. A prerelease's GitHub Release SHALL keep its generated notes.
+The GitHub Release of a stable version SHALL carry that version's changelog section, followed by the generated list of pull requests since the previous stable release rather than since the previous preview, and the version's zip. A prerelease's GitHub Release SHALL keep its generated notes and carry its zip.
 
 #### Scenario: Stable after previews
 - **WHEN** 0.21.0 is released after 0.21.0-preview.1 to 0.21.0-preview.9, which followed 0.20.0
-- **THEN** the 0.21.0 GitHub Release shows its changelog section and lists every pull request merged since 0.20.0
+- **THEN** the 0.21.0 GitHub Release shows its changelog section, lists every pull request merged since 0.20.0 and carries the 0.21.0 zip
 
 ### Requirement: The What's new dialogue lists the changes before an update
 When an update is available, the update key SHALL open a What's new dialogue listing, newest first, every stable release after the running version up to the newest, each with its Added, Changed, Fixed, Removed and Security entries and their pull request numbers. Its buttons SHALL be Update now, Release page and Later, with Later focused.
@@ -100,7 +100,7 @@ On the first start of a stable version higher than the stable version that last 
 - **THEN** no dialogue opens, the failure is recorded only in the diagnostic log, and the running version is recorded
 
 ### Requirement: Release notes are shown as text only
-Cader SHALL treat notes read from nuget.org or from the installed tool as text from outside Cader: notes it cannot read SHALL count as no notes, control characters SHALL be removed before they are drawn, and no text from the notes SHALL be opened, run or used to build a URL. The release page's URL SHALL be built from the version alone.
+Cader SHALL treat notes read from GitHub or from the installed folder as text from outside Cader: notes it cannot read SHALL count as no notes, control characters SHALL be removed before they are drawn, and no text from the notes SHALL be opened, run or used to build a URL. The release page's URL SHALL be built from the version alone.
 
 #### Scenario: Escape sequences in the notes
 - **WHEN** a note line holds an escape sequence that would change the terminal's title

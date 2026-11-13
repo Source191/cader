@@ -21,7 +21,7 @@ Because the agent_needs_input and agent_completed hook types fire only while the
 - **THEN** Cader stays silent, because Claude Code rings the bell in that session's own tab
 
 ### Requirement: Claude Code's own bell covers attached tabs
-The README SHALL have one short notifications section that tells the user to run `cader setup-terminal`, which sets Claude Code's `preferredNotifChannel` to `terminal_bell` and so makes Claude ring the bell in the tab a session is attached in when it finishes a task or pauses for a permission prompt while the user appears away.
+The user guide SHALL have one short notifications section, and the README's getting started one step, that tell the user to run `cader setup-terminal`, which sets Claude Code's `preferredNotifChannel` to `terminal_bell` and so makes Claude ring the bell in the tab a session is attached in when it finishes a task or pauses for a permission prompt while the user appears away.
 
 #### Scenario: Attached session needs permission
 - **WHEN** a session attached in a Cader-opened tab pauses for a permission prompt while the user is in another tab
@@ -32,8 +32,12 @@ The README SHALL have one short notifications section that tells the user to run
 - **THEN** a bell in the Cader tab plays that sound and bells in other profiles keep theirs
 
 #### Scenario: Reading the notifications section
-- **WHEN** the user reads the README's notifications section
+- **WHEN** the user reads the user guide's notifications section
 - **THEN** it names `cader setup-terminal` as the one step that sets up both bells
+
+#### Scenario: Reading the getting started
+- **WHEN** the user reads the README's getting started
+- **THEN** one step names `cader setup-terminal` as what adds the Cader profiles and both bells, and links to the user guide's notifications section
 
 ### Requirement: No toasts and no hooks
 Cader SHALL NOT raise Windows toast notifications and SHALL NOT install Claude Code hooks; attention is the terminal bell, the header's needs-input count and the amber rows.

@@ -51,7 +51,7 @@ What Cader does with its command line as a whole: which arguments open the conso
 - **THEN** standard output is 0.13.0 and the exit code is 0
 
 #### Scenario: Prerelease version
-- **WHEN** Cader 0.17.0-preview.2 is installed from nuget.org and the user runs cader --version
+- **WHEN** Cader 0.17.0-preview.2 is installed from its zip and the user runs cader --version
 - **THEN** standard output is 0.17.0-preview.2, with no `+` and commit after it
 
 #### Scenario: Short form of a local build
