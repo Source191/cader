@@ -73,7 +73,7 @@ public sealed class WordingOfConfigShould
     [Fact]
     public void KeepTheLogTooltipWithinTheLimitForARealisticUserProfile()
     {
-        string longerPath = @"C:\Users\alexandra.northwind\AppData\Local\Cader\cader.log";
+        string longerPath = @"C:\Users\anna.lewis\AppData\Local\Cader\cader.log";
 
         Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: longerPath)).Length.ShouldBeLessThanOrEqualTo(110);
     }
