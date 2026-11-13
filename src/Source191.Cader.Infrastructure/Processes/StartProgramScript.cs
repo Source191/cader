@@ -14,22 +14,24 @@ public static class StartProgramScript
 {
     public static string For(string executable, IReadOnlyList<string> arguments)
     {
-        return string.Join('\n',
-        [
-            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
-            "try {",
-            $"    $info = [System.Diagnostics.ProcessStartInfo]::new({Decoded(executable)})",
-            .. arguments.Select(argument => $"    $info.ArgumentList.Add({Decoded(argument)})"),
-            "    $info.UseShellExecute = $true",
-            "    [System.Diagnostics.Process]::Start($info) | Out-Null",
-            "} catch [System.ComponentModel.Win32Exception] {",
-            "    [Console]::Error.WriteLine($_.Exception.NativeErrorCode)",
-            "    exit 1",
-            "} catch {",
-            "    [Console]::Error.WriteLine($_.Exception.Message)",
-            "    exit 1",
-            "}",
-        ]);
+        // Each argument's line ends with its own newline, so no arguments leave no blank line.
+        string argumentLines = string.Concat(arguments.Select(argument => $"    $info.ArgumentList.Add({Decoded(argument)})\n"));
+
+        // The literal's line breaks are the source file's (CRLF), so they are made \n, as the script has always used.
+        return $$"""
+            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+            try {
+                $info = [System.Diagnostics.ProcessStartInfo]::new({{Decoded(executable)}})
+            {{argumentLines}}    $info.UseShellExecute = $true
+                [System.Diagnostics.Process]::Start($info) | Out-Null
+            } catch [System.ComponentModel.Win32Exception] {
+                [Console]::Error.WriteLine($_.Exception.NativeErrorCode)
+                exit 1
+            } catch {
+                [Console]::Error.WriteLine($_.Exception.Message)
+                exit 1
+            }
+            """.ReplaceLineEndings("\n");
     }
 
     private static string Decoded(string value) => $"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{Convert.ToBase64String(Encoding.UTF8.GetBytes(value))}'))";
