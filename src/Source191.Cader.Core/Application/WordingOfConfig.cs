@@ -114,7 +114,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "This tab writes the settings file: edit a setting above to change it.",
             SetupItem.TerminalProfiles => "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.",
             SetupItem.ClaudeBell => "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.",
-            SetupItem.DiagnosticLog => "Set the CADER_LOG environment variable to a file path, then start again, to keep a diagnostic log.",
             SetupItem.LastUpdateCheck => "The winget community repository is asked at most once a day; turn the check on or off with Check for updates.",
         };
     }
@@ -126,7 +125,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "The file the settings above are kept in; f opens the folder holding it.",
             SetupItem.TerminalProfiles => "Windows Terminal profiles that give the console's tabs a bell and the icon.",
             SetupItem.ClaudeBell => "Claude's terminal bell, which rings when a session finishes or needs permission while you are away.",
-            SetupItem.DiagnosticLog => "The file CADER_LOG names, where the diagnostic log is written as it runs.",
             SetupItem.LastUpdateCheck => "When the winget community repository was last asked for a newer release, and the newest it found.",
         };
     }
@@ -138,7 +136,6 @@ public static partial class Wording
             SetupItem.SettingsFile => "Settings file",
             SetupItem.TerminalProfiles => "Windows Terminal profiles",
             SetupItem.ClaudeBell => "Claude bell",
-            SetupItem.DiagnosticLog => "Diagnostic log",
             SetupItem.LastUpdateCheck => "Last update check",
         };
     }

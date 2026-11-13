@@ -9,7 +9,7 @@ namespace Source191.Cader.Application;
 /// Reads the setup the Config tab shows, through the ports that already read it for <c>cader setup-terminal</c> and the
 /// update check; a piece whose read fails is unreadable on its own, and never stops the others.
 /// </summary>
-public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLogSetting logSetting, DiagnosticLog log)
+public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLog log)
 {
     private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
 
@@ -19,18 +19,10 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings
             new SetupState.At(settingsFile),
             await Guarded(() => Task.FromResult(TerminalProfiles())),
             await Guarded(() => ClaudeBellAsync(cancellationToken)),
-            LogState(),
             await Guarded(LastUpdateCheckAsync));
     }
 
     private Task<SetupState> Guarded(Func<Task<SetupState>> read) => Attempt.RunAsync(log, FailureSite.Load, This, read, exception => exception is IOException or UnauthorizedAccessException, _ => new SetupState.Unreadable());
-
-    private SetupState LogState() => logSetting switch
-    {
-        DiagnosticLogSetting.File file => new SetupState.At(file.Path),
-        DiagnosticLogSetting.Off => new SetupState.Disabled(),
-        _ => throw new UnreachableException(),
-    };
 
     private SetupState TerminalProfiles() => fragment.Exists ? new SetupState.At(fragment.Location) : new SetupState.NotSetUp();
 

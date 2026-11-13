@@ -54,7 +54,6 @@ public sealed class NullFreeModelsShould
         new(typeof(EditorChoice), "FromFile(preset)", "reads EditorSetting's properties as config.json has them"),
         new(typeof(EditorChoice), "FromFile(executable)", "reads EditorSetting's properties as config.json has them"),
         new(typeof(EditorChoice), "FromFile(arguments)", "reads EditorSetting's properties as config.json has them"),
-        new(typeof(DiagnosticLogSetting), "Read(variable)", "reads CADER_LOG, which may be unset"),
         new(typeof(Wording), "ClaudeBellPlan(replacing)", "Claude's settings.json may name no other notification channel"),
         new(typeof(ListSelection<>), "SelectedKey", "nothing is selected in an empty list"),
         new(typeof(ListSelection<>), "Selected", "nothing is selected in an empty or filtered-out list"),
