@@ -80,7 +80,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         EffectPorts ports = new(claude, gitCli, processRegistry, transcripts, terminal, store, clock, clipboard, desktop, editors, fileFolders, crashFile);
         TabScripts tabScripts = new(executables.Claude, ownPath);
         OwnProcess own = new(Environment.ProcessId, home, new ProgramLocation.Missing());
-        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, own, log);
+        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, own, log, Path.Combine(folders.State, "cader.log"));
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);

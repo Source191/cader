@@ -20,6 +20,7 @@ internal sealed record SharedParts(
     TerminalFragment TerminalFragment,
     ProgramLocator Programs,
     DiagnosticLogSetting LogSetting,
+    string LogFile,
     DiagnosticLog Log,
     PerformanceCounts Counts,
     RecordedProcessRunner Processes,
@@ -53,7 +54,7 @@ internal sealed record SharedParts(
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
-        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
+        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSetting, Path.Combine(stateFolder, "cader.log"), log, counts, processes, crashFile, crashes);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.

@@ -112,6 +112,9 @@ public sealed record Settings
     /// <summary>These settings with the update check turned the other way.</summary>
     public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog);
 
+    /// <summary>These settings with the diagnostic log turned the other way.</summary>
+    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog);
+
     public bool Equals(Settings? other)
     {
         return other is not null
