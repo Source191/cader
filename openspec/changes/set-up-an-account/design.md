@@ -22,7 +22,7 @@
 
 ### 1. Verify junctions and imports first, with a fallback chosen now
 
-Task group 1 (owner, a logged-in second account): does Claude Code read `rules\<junction>\*.md` and `skills\<junction>\SKILL.md` through a junction; does an `@~/.claude/CLAUDE.md` or `@~/.claude-shared/CLAUDE.md` import load, and does it ask for approval; does `/memory` open the imported file; does removing a junction with `Directory.Delete(path, recursive: false)` leave its target whole; does Claude Code rewrite or follow a junction when it updates a skill or rule. Recorded with dates and versions in `claude-code.md` and `windows.md`.
+Task group 1 (owner, a logged-in second account): does Claude Code read `rules\<junction>\*.md` and `skills\<junction>\SKILL.md` through a junction; does an `@~/.claude/CLAUDE.md` or `@~/.claude-shared/CLAUDE.md` import load, and does it ask for approval; does `/memory` open the imported file; does removing a junction with `Directory.Delete(path, recursive: false)` leave its target whole; does Claude Code rewrite or follow a junction when it updates a skill or rule; and does Windows Terminal 1.25 load two JSON files from one fragment folder (decision 8). Recorded with dates and versions in `claude-code.md` and `windows.md`.
 
 If Claude Code does not follow junctions, Link to default and Shared folder use directory symbolic links, offered only when Windows lets the person make one (Developer Mode or elevation), and otherwise listed but refused with a sentence saying why and that Copy works without it. The spec does not change: it says "junction" for the link Cader makes, and the wording changes with the fact.
 
@@ -41,7 +41,7 @@ If Claude Code does not follow junctions, Link to default and Shared folder use 
 | Link to default | untouched | `CLAUDE.md` importing `@~/.claude/CLAUDE.md`; `rules\default` junction to the default rules folder (all rules or none, as one link); one junction per chosen skill | yes |
 | Shared folder | backed up; chosen rule files and skills moved to `.claude-shared`; `rules\shared` and skill junctions; import at top of its `CLAUDE.md` | the same junctions and import | yes |
 
-For Shared folder's `CLAUDE.md` the person chooses: move the default's whole text into the shared file (the default's file becomes the import line alone), or start the shared file empty (the default's file keeps its text under the new import). A default account with no `CLAUDE.md` is offered neither.
+For Shared folder's `CLAUDE.md` the person chooses: move the default's whole text into the shared file (the default's file becomes the import line alone), or start the shared file empty (the default's file keeps its text under the new import). A default account with no `CLAUDE.md` is offered neither. `--yes` always takes the second, which moves no text, and never answers yes to `--remove`'s restore question: both are the smallest change available.
 
 ### 4. Moves are one item at a time, link straight after
 
@@ -59,11 +59,21 @@ Each Shared folder move is `Move` then `MakeLink` for that item before the next,
 
 `Domain\ClaudeFolderPaths` holds the four allowed roots (`.claude`, `.claude-<name>`, `.claude-shared`, Cader's state folder) and the never-touched names (`.credentials.json`, `.claude.json`, `settings.json` except through `IClaudeSettings`, `projects`, `sessions`, `plugins`, `history.jsonl`, `todos`, `statsig`, `shell-snapshots`, `jobs`, `daemon`). The planner asks it for every step, so a path outside is a plan that cannot be built, not a runtime check in an adapter. An item that is already a link to elsewhere is offered to link, never to move.
 
-### 8. The fragment is written whole, Cader profiles included
+### 8. Account profiles get a fragment file of their own
 
-`TerminalProfiles` gains the account profiles, and both `setup-terminal` and `setup-account` write the whole fragment from `CurrentSettings`' accounts and the default or recorded sounds. When the fragment does not exist yet, `setup-account`'s preview says it will also add the Cader profiles (with their default sounds), because Cader opens tabs with `--profile "Cader session"` whenever the fragment exists. Each account profile's command line is `pwsh -NoExit -EncodedCommand` over a `TabScripts` script holding the account line, so the folder is quoted as every tab value is.
+`WindowsTerminal` adds `--profile "Cader session"` to every tab while `cader.json` exists, so a `setup-account` that wrote the Cader profiles would quietly change how every later tab opens, before Windows Terminal had even been restarted to load the profile (`windows.md` records that case as unverified). Instead the account profiles go in `Fragments\Cader\accounts.json`, written whole from the configured accounts by `setup-account` alone; `setup-terminal` writes only `cader.json`, and `--remove` still deletes the folder with both. Task 1.1 checks that Windows Terminal loads two files from one fragment folder; if it does not, the account file moves to a folder of its own, `Fragments\Cader accounts\`, and `setup-terminal --remove` removes that too.
 
-### 9. Junctions are an adapter of their own
+Each account profile's command line is `pwsh -NoExit -EncodedCommand` over a `TabScripts` script holding the account line, so the folder is quoted as every tab value is. The login tab does not use the profile (it is not loaded until Windows Terminal restarts); it is an ordinary `wt new-tab` with the account line, as every account's tab is after `accounts-in-the-console`.
+
+### 9. The record decides what is Cader's
+
+A folder with a setup record is Cader's to carry on with, whatever Claude Code has written in it since (a login, settings, projects); a folder without one that holds anything is someone else's and is only registered. This is what lets a re-run finish an interrupted Shared folder move (decision 4) without ever writing into a folder set up by hand.
+
+### 10. `default` is always `%USERPROFILE%\.claude`
+
+Imports and links name `~/.claude`, so the account they read from must be that folder, not whatever `CLAUDE_CONFIG_DIR` the shell running the command has. The command ignores the variable for its source and for the `default` entry, and says so when it is set.
+
+### 11. Junctions are an adapter of their own
 
 `IJunctions` (`Make(link, target)`, `TryReadTarget(link, out FolderPath)`, `RemoveLink(link, expectedTarget)`) is held only by the setup and removal runners (a `LayeringShould` fact, like `IFolderDeleter`). `RemoveLink` checks the reparse point is a junction to the expected target and removes it without recursion; anything else answers `NotOurs`.
 

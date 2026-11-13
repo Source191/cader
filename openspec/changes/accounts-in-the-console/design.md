@@ -49,6 +49,7 @@ If the listing is not scoped to the folder, decision 2's merge becomes a de-dupl
 - `ProcessRequest` gains a `ChildEnvironment` (an immutable list of `Set(name, value)` and `Removed(name)`), applied in `ProcessRunner.StartInfo` after the `InheritedEnvironment` drop. If `fetch-before-branching` has landed `Variables`, this becomes that member's richer form, and its `GIT_*` entries become `Set`s.
 - `ClaudeAccount.Environment(home)` answers `Removed("CLAUDE_CONFIG_DIR")` for the account whose folder is `%USERPROFILE%\.claude` and `Set("CLAUDE_CONFIG_DIR", folder)` otherwise. Setting the variable to the default folder would move `.claude.json` (user MCP servers, trust, onboarding) to `%USERPROFILE%\.claude\.claude.json`, so the default account would lose its trust and MCP servers: the worst surprise available.
 - `TabScripts` starts every script that runs claude with one account line: `$env:CLAUDE_CONFIG_DIR = <PowerShellScript.Quote(folder)>` or `Remove-Item Env:\CLAUDE_CONFIG_DIR -ErrorAction Ignore`. The value goes through `Quote` and the whole script through Base64 as today (security.md).
+- With one account (no `accounts` list) the child environment is empty and the account line is left out, so whatever Cader inherited passes through exactly as before, including a variable that names the default folder.
 - **Alternative:** relying on `wt.exe` inheriting Cader's environment works for one account only.
 
 ### 5. Ports take the account, adapters stay stateless

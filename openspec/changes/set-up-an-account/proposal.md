@@ -8,15 +8,16 @@ The owner's first design (2 November 2026) moved the default account's rules and
 
 ## What Changes
 
-- **`cader setup-account <name>`:** makes `%USERPROFILE%\.claude-<name>`, adds it to `config.json`'s `accounts` (with the existing folder as `default` when there is no list yet), and walks the person through the rest. `--yes` answers yes, `--mode` chooses the start, `--root <folder>` (repeatable) gives roots to the account, `--remove` undoes it.
+- **`cader setup-account <name>`:** makes `%USERPROFILE%\.claude-<name>`, adds it to `config.json`'s `accounts` (with `%USERPROFILE%\.claude` as `default` when there is no list yet, whatever `CLAUDE_CONFIG_DIR` the shell has), and walks the person through the rest. `--yes` answers yes, `--mode` chooses the start, `--root <folder>` (repeatable) gives roots to the account, `--remove` undoes it.
 - **Four ways to start, chosen by the person,** each described before it is chosen:
   - **Clean:** an empty account, like a fresh Claude Code install. Nothing outside the new folder is touched. The default for `--yes` with no `--mode`.
   - **Copy:** copies of the chosen `CLAUDE.md`, rule files and skills. Both accounts stay standard; later edits are not shared.
   - **Link to default:** the new `CLAUDE.md` imports the default one, and junctions point at the default account's rules and chosen skills. The default account is untouched; edits are shared.
   - **Shared folder:** chosen items move to `%USERPROFILE%\.claude-shared`, and both accounts import and link them. The default account changes, so everything is backed up first.
 - **A preview before anything is written:** every folder, copy, move, edit, junction, profile and `config.json` change, then the question. It also says what is never shared (settings and hooks, plugins, MCP servers and trust, login, history) and that Console sign-ins without an API key are not separated by the folder.
-- **An existing folder is never rewritten:** if `%USERPROFILE%\.claude-<name>` already exists with files in it (someone followed Anthropic's guide), the command only registers it.
-- **To use the account outside Cader:** a "Claude (<name>)" Windows Terminal profile in Cader's own fragment that opens PowerShell with the account set, and the one-line PowerShell to do the same anywhere. Nothing in the person's `$PROFILE` or environment variables is changed.
+- **A folder Cader did not make is never rewritten:** if `%USERPROFILE%\.claude-<name>` already exists with files in it and Cader has no record of making it (someone followed Anthropic's guide), the command only registers it.
+- **`--yes` makes the smallest change:** Clean when no `--mode` is given, no `CLAUDE.md` text moved, and no restore of the default account on `--remove`.
+- **To use the account outside Cader:** a "Claude (<name>)" Windows Terminal profile in a fragment file of its own (so it never changes how Cader opens its tabs) that opens PowerShell with the account set, and the one-line PowerShell to do the same anywhere. Nothing in the person's `$PROFILE` or environment variables is changed.
 - **Then:** a tab opens running `claude` as the new account for its first login, and the bell is offered in its `settings.json`.
 - **Re-running is safe** (done steps are skipped), and **`--remove <name>`** takes out only what Cader added (profile, junctions, import lines, the `config.json` entries) and never deletes a Claude folder, a copy or a moved file; after a Shared folder start it offers to put the default account back as it was.
 - **Recorded facts first:** whether Claude Code reads rules and skills through a junction, whether an import outside the project asks for approval, and what a junction's removal leaves, verified and recorded before the adapters are written.
@@ -30,7 +31,7 @@ The owner's first design (2 November 2026) moved the default account's rules and
 ### Modified Capabilities
 
 - `command-line`: the help lists `setup-account`, and it explains itself.
-- `needs-input-notification`: the fragment keeps each account's profile beside Cader's own, and `setup-terminal --remove` says it removes them too.
+- `needs-input-notification`: account profiles live in a fragment file of their own beside Cader's, and `setup-terminal --remove` says it removes them too.
 
 ## Impact
 

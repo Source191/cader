@@ -55,7 +55,11 @@ A session row SHALL belong to the account whose listing returned it, whatever it
 - **THEN** the row's ACCOUNT is personal and stopping it runs claude as personal
 
 ### Requirement: A child is given its account explicitly
-Every Claude Code program Cader starts for an account, and every tab script that runs one, SHALL be given that account explicitly rather than what Cader inherited: `CLAUDE_CONFIG_DIR` set to the account's folder, or removed for the account whose folder is `%USERPROFILE%\.claude`, so that account keeps its `.claude.json` where Claude Code expects it.
+With more than one account, every Claude Code program Cader starts for an account, and every tab script that runs one, SHALL be given that account explicitly rather than what Cader inherited: `CLAUDE_CONFIG_DIR` set to the account's folder, or removed for the account whose folder is `%USERPROFILE%\.claude`, so that account keeps its `.claude.json` where Claude Code expects it. With one account, children SHALL inherit `CLAUDE_CONFIG_DIR` exactly as Cader did.
+
+#### Scenario: One account keeps what Cader inherited
+- **WHEN** no `accounts` list is configured and Cader was started with `CLAUDE_CONFIG_DIR` set to `C:\Users\me\.claude`
+- **THEN** every `claude` child and tab has `CLAUDE_CONFIG_DIR` set to `C:\Users\me\.claude`, as before
 
 #### Scenario: The default folder's account
 - **WHEN** Cader was started with `CLAUDE_CONFIG_DIR` set to `C:\Users\me\.claude-personal`, and the user stops a work session whose account folder is `C:\Users\me\.claude`

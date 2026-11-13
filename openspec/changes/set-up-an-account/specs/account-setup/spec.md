@@ -17,6 +17,13 @@ Lets a person add a second Claude account with one command, choosing in plain wo
 - **WHEN** the user runs `cader setup-account "my personal"`
 - **THEN** the output says a name is letters, digits and dashes, nothing is written, and the exit code is 2
 
+### Requirement: The default account is the folder in the user profile
+The account the command copies, links or shares from, and the one it registers as `default`, SHALL always be `%USERPROFILE%\.claude`, whatever `CLAUDE_CONFIG_DIR` the shell has. When the shell has `CLAUDE_CONFIG_DIR` set, the command SHALL say it is not used and name the folder it reads instead.
+
+#### Scenario: Run from a shell set up for another account
+- **WHEN** the shell's `CLAUDE_CONFIG_DIR` is `C:\Users\me\.claude-personal` and the user runs `cader setup-account hobby --mode copy`
+- **THEN** the output says CLAUDE_CONFIG_DIR is not used here, the items offered are those in `C:\Users\me\.claude`, and default is registered at `C:\Users\me\.claude`
+
 ### Requirement: Nothing is written before the preview is accepted
 The command SHALL first print every folder it will make, every file it will copy, move or edit, every junction it will make, the profile and the `config.json` change, then ask once; nothing SHALL be written unless the answer is yes or `--yes` was given. A declined preview SHALL exit 0 with nothing written.
 
@@ -36,11 +43,15 @@ Before the preview the command SHALL ask how the account starts, offering Clean,
 - **THEN** the account starts Clean and nothing outside `C:\Users\me\.claude-personal`, `config.json` and Cader's fragment changes
 
 ### Requirement: Clean touches only the new folder
-A Clean start SHALL leave the new account's folder empty for Claude Code to fill on its first run, and SHALL NOT read, copy or change anything in any other Claude folder.
+A Clean start SHALL put no instructions, rules or skills in the new account's folder, leaving it for Claude Code to fill on its first run; the only file Cader SHALL write there is `settings.json`, and only when the bell is accepted. It SHALL NOT read, copy or change anything in any other Claude folder.
 
 #### Scenario: Clean
-- **WHEN** the user chooses Clean and accepts
+- **WHEN** the user chooses Clean, declines the bell and accepts
 - **THEN** `C:\Users\me\.claude-personal` is empty and `C:\Users\me\.claude` is byte for byte as it was
+
+#### Scenario: Clean with the bell
+- **WHEN** the user runs `cader setup-account personal --yes`
+- **THEN** `C:\Users\me\.claude-personal` holds only `settings.json`, with `"preferredNotifChannel": "terminal_bell"`
 
 ### Requirement: Copy leaves both accounts standard
 A Copy start SHALL copy the items the person chose from the default account (its `CLAUDE.md`, rule files and skill folders) into the same places in the new folder, SHALL NOT change the default account, and SHALL make no link, so later edits in either account stay in that account.
@@ -68,11 +79,26 @@ A Shared folder start SHALL back up every file it will move or edit to `%LOCALAP
 - **THEN** every line in it, the new one included, ends with CRLF
 
 ### Requirement: The items to share are chosen one by one
-For Copy, Link to default and Shared folder the command SHALL list the default account's `CLAUDE.md`, rule files and skill folders it found and ask which to take, accepting all, none or their numbers; `--yes` SHALL take all of them. An item already present in the new folder SHALL be left as it is and listed as kept.
+For Copy, Link to default and Shared folder the command SHALL list the default account's `CLAUDE.md`, rule files and skill folders it found and ask which to take, accepting all, none or their numbers; for Link to default the rules SHALL be one item, the whole rules folder, because a link can only point at a folder. An item already present in the new folder SHALL be left as it is and listed as kept.
 
 #### Scenario: Picking by number
 - **WHEN** the list shows 1 CLAUDE.md, 2 skills\dotnet and 3 skills\sql, and the user answers 1 3
 - **THEN** the preview names `CLAUDE.md` and `skills\sql` only
+
+#### Scenario: Link offers the rules whole
+- **WHEN** the default account has the rule files testing.md and style.md and the user chooses Link to default
+- **THEN** the list offers rules as one item, naming both files, and not each file on its own
+
+### Requirement: --yes makes the smallest change it can
+With `--yes`, Copy, Link to default and Shared folder SHALL take every item listed; Shared folder SHALL start the shared `CLAUDE.md` empty and keep the default account's text where it is; and `--remove` SHALL NOT put the default account back, saying instead how to do it.
+
+#### Scenario: Shared folder unattended
+- **WHEN** the user runs `cader setup-account personal --mode shared --yes`
+- **THEN** the default `CLAUDE.md` keeps all its text under the new import line, and `C:\Users\me\.claude-shared\CLAUDE.md` is empty
+
+#### Scenario: Remove unattended
+- **WHEN** personal is the last shared account and the user runs `cader setup-account personal --remove --yes`
+- **THEN** the default account keeps its junctions and import line, and the output says to run `cader setup-account personal --remove` without --yes to put it back
 
 ### Requirement: The preview says what is never shared
 Every preview SHALL say that the new account has its own login, session history, `settings.json` (hooks, permissions, status line), plugins, MCP servers and repository trust, that each repository must be trusted again in it, and that Claude Console sign-ins without an API key are not kept apart by the folder.
@@ -81,19 +107,23 @@ Every preview SHALL say that the new account has its own login, session history,
 - **WHEN** the preview is printed for any start
 - **THEN** it says the new account trusts each repository again and keeps its own settings.json, plugins and MCP servers
 
-### Requirement: An existing folder is only registered
-When `%USERPROFILE%\.claude-<name>` already exists and holds anything, the command SHALL NOT write into it or apply a start: it SHALL offer to register it as the account, add the profile and offer the bell, and say why nothing else is done.
+### Requirement: A folder Cader did not make is only registered
+When `%USERPROFILE%\.claude-<name>` already exists, holds anything, and Cader has no setup record for it, the command SHALL NOT write into it or apply a start: it SHALL offer to register it as the account, add the profile and offer the bell, and say why nothing else is done.
 
 #### Scenario: Set up by hand already
 - **WHEN** the user made `C:\Users\me\.claude-personal` by Anthropic's guide and has logged in there, then runs `cader setup-account personal`
 - **THEN** the preview offers only to register it, add the profile and the bell, and no file in that folder is changed
 
 ### Requirement: Running it again is safe
-Running the command again for an account SHALL skip every step already done, say so for each, and do only what is missing.
+Running the command again for an account Cader has a setup record for SHALL carry on from that record: skip every step already done, say so for each, and do only what is missing, including a step an interrupted run left undone, whatever Claude Code has since written in the folder.
 
 #### Scenario: Again
 - **WHEN** the user runs `cader setup-account personal --yes` twice
 - **THEN** the second run makes no change and says every step was already done
+
+#### Scenario: After the first login
+- **WHEN** personal was set up Clean, the user logged in through the tab, and then runs `cader setup-account personal` again
+- **THEN** the folder is not treated as one Cader did not make, and the run says every step was already done
 
 ### Requirement: The account is reachable outside Cader
 The command SHALL add a "Claude (<name>)" profile to Cader's Windows Terminal fragment that opens PowerShell with `CLAUDE_CONFIG_DIR` set to the account's folder, and SHALL print the one PowerShell line that does the same in any shell. It SHALL NOT change the person's PowerShell profile or environment variables.

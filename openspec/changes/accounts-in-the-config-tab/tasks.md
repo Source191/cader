@@ -1,5 +1,9 @@
 # Tasks
 
+## 0. Rebase the deltas onto the archived specs
+
+- [ ] 0.1 Once `accounts-in-the-console` and `set-up-an-account` are archived on `main`, turn this change's config-tab ADDED requirement "The Config tab has an Accounts section" into a MODIFIED of the archived "The Config tab shows the accounts" (the account rows move out of Setup), and check `account-setup`'s requirements still read true beside the dialog. **Verify:** `openspec validate accounts-in-the-config-tab --strict` passes and each MODIFIED header matches `openspec\specs` exactly.
+
 ## 1. Setup core without prompts
 
 - [ ] 1.1 **Red:** `AccountSetupRunnerShould` facts that a run given an `AccountSetupAnswers` asks nothing and writes what the plan says. **Green:** split `AccountSetupRunner` into the answers core and the command's prompt layer. **Verify:** the new facts and every existing `AccountSetupRunnerShould` and `AccountRemovalRunnerShould` fact pass.
