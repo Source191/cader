@@ -38,7 +38,7 @@ Cader SHALL ask the winget community repository for the published versions of it
 
 #### Scenario: The check fails unexpectedly
 - **WHEN** anything inside the check fails, such as the record that cannot be written
-- **THEN** the console keeps running and shows no update notice, the failure is recorded only in the diagnostic log (as an exception summary, also written to the `CADER_LOG` file when that is set), and the next start tries again
+- **THEN** the console keeps running and shows no update notice, the failure is recorded only in the diagnostic log (as an exception summary, also written to the log file while the Diagnostic log setting is on), and the next start tries again
 
 #### Scenario: A release not yet merged
 - **WHEN** v0.21.0 is a GitHub Release but its manifest is not yet in the winget community repository
