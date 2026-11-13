@@ -6,7 +6,7 @@
 - [x] 1.2 Add `test\Source191.Cader.Core.Tests\stryker-config.json`:
   - `project` and `test-runner: mtp`;
   - the `html`, `markdown`, `json` and `progress` reporters;
-  - `high` and `low` thresholds, with `break` 0 for now (set to the proposed 81 in 2.2, awaiting the owner).
+  - `high` and `low` thresholds, with `break` 0 for now (set to the proposed 86 in 2.2, awaiting the owner).
 
   Verify `dotnet stryker --mutate "**/Domain/NumberAwareOrder.cs"` from that folder runs with no other options and writes `mutation-report.md` (under `StrykerOutput<timestamp>eports`).
 
