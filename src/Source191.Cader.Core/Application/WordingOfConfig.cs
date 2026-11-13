@@ -36,6 +36,7 @@ public static partial class Wording
             ConfigRow.DefaultBase => "Default base",
             ConfigRow.DefaultPlace => "Default place",
             ConfigRow.CheckForUpdates => "Check for updates",
+            ConfigRow.DiagnosticLog => "Diagnostic log",
             ConfigRow.Setup setup => ConfigSetting(setup.Item),
             ConfigRow.Heading => "Setup",
             _ => row.ToString(),
@@ -51,6 +52,7 @@ public static partial class Wording
         ConfigRow.DefaultBase => "New worktrees branch from origin's default branch as of your last git fetch (no fetch is made), or from HEAD.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
+        ConfigRow.DiagnosticLog log => $"Writes diagnostic events and counts to {log.File}; Enter turns it on or off.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
         _ => string.Empty,
     };
@@ -66,6 +68,7 @@ public static partial class Wording
             ConfigRow.DefaultBase defaultBase => Describe(defaultBase.Base),
             ConfigRow.DefaultPlace place => Describe(place.Place),
             ConfigRow.CheckForUpdates check => check.On ? "on" : "off",
+            ConfigRow.DiagnosticLog log => log.On ? "on" : "off",
             ConfigRow.Setup setup => SetupValue(setup.Item, setup.State, now, zone),
             ConfigRow.Heading => string.Empty,
             _ => row.ToString(),
