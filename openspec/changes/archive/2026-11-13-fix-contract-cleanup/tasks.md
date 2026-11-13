@@ -10,4 +10,4 @@ The fact under change is itself the test, and it only runs against the real CLI,
 
 ## 2. Close out
 
-- [ ] 2.1 Archive the change (`/opsx:archive`), `openspec validate --all` passes, and the pull request is stacked on #219 (`v-rename`) and names issue #215, to be closed by hand after the first green nightly run on `main`.
+- [x] 2.1 Archive the change (`/opsx:archive`), `openspec validate --all` passes, and the pull request is stacked on #219 (`v-rename`) and names issue #215, to be closed by hand after the first green nightly run on `main`.
