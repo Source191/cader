@@ -7,9 +7,10 @@ namespace Source191.Cader.NoisyEditor;
 /// A stand-in for an editor that prints as it starts, as VS Code does: a windowed (GUI subsystem) program which, when it
 /// was handed no standard output, attaches to its parent's console as Electron does unless
 /// <see href="https://github.com/electron/electron/blob/main/docs/api/environment-variables.md">ELECTRON_NO_ATTACH_CONSOLE</see>
-/// is set, and writes a line to standard output and one to standard error. It then writes the file named by its one
-/// argument with the ids of the processes on the console it attached to (none when it attached to none), so a test knows
-/// both lines have been written and where they went.
+/// is set, and writes a line to standard output and one to standard error. It then writes the file named by its first
+/// argument: the ids of the processes on the console it attached to (none when it attached to none) on the first line,
+/// and each of its other arguments on a line of its own, so a test knows both lines have been written, where they went
+/// and what it was given.
 /// </summary>
 public static partial class Program
 {
@@ -33,7 +34,7 @@ public static partial class Program
         Console.Out.Flush();
         Console.Error.WriteLine(StandardErrorLine);
         Console.Error.Flush();
-        File.WriteAllText(args[0], consoleProcesses);
+        File.WriteAllLines(args[0], [consoleProcesses, .. args.Skip(1)]);
     }
 
     private static string ConsoleProcesses()
