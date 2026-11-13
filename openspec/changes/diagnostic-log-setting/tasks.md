@@ -31,3 +31,18 @@
 ## Workflow follow-up
 
 - Archive the change in the pull request that completes it, so `openspec\specs` describes the code on `main`. At archive, retitle the two "No log variable" scenarios in `diagnostics` (OpenSpec keeps a modified scenario's title) and rebase the two requirement blocks shared with `install-with-winget` (#206) onto whichever archived first.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **PR:** F
+- **Step:** 2
+- **Depends on:** A (refresh this change's delta first) and C
+- **Parallel with:** E, G
+- **Model:** sonnet
+- **Effort:** high
+- **Why:** a new setting, handler, row and file sink following the pattern of existing settings; the rollover is file IO with a size boundary, so the red tests name exact byte counts.
+- **Owner gates:** after merge, 5.4.
+- **First step:** refresh this change's deltas for `config-tab` (The Config tab shows the setup) and `tool-updates` (Cader checks for a newer release at most once a day) against `openspec\specs` as archived by A, then run `openspec validate diagnostic-log-setting --strict`, before any red test.
+- **Shape:** `Settings` and `UserConfig` follow C. H rebases onto this change, not the reverse.

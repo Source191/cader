@@ -48,3 +48,13 @@ Start only once `quiet-editor-start`, `stricter-state-files`, `mutation-testing-
 
 - Archive this change in the pull request that completes it, so `openspec\specs` still describes `main`.
 - The owner submits the stable release to winget-pkgs by running `publish.yml`.
+
+## Implementation plan
+
+See `openspec\implementation-plan.md` for the whole sequence.
+
+- **Whole change:** four pull requests, J, K, L and M, each leaving `main` building and passing, with the change archived in M. It follows A, B, C, D, F, H and I (see Order); it does not wait for E or G, and whichever of J, E and G merges second rebases the `pipeline.yml` output paths.
+- **PR J:** step 5, tasks 1.1 to 1.10 (retarget and package gate). **Depends on:** the above. **Parallel with:** nothing. **Model:** opus. **Effort:** high. **Why:** every package and breaking change is a judgement recorded with evidence. **Owner gates:** none.
+- **PR K:** step 6, tasks 2.1 to 2.6 (process APIs). **Depends on:** J. **Parallel with:** L. **Model:** opus. **Effort:** xhigh. **Why:** adoption is allowed only where `ProgramLocator`, `InheritedEnvironment`, the timeout with tree kill and the `ConfirmedProcess` rules stay exactly as they are, and each spike decides; a wrong adoption is a security regression. **Owner gates:** none.
+- **PR L:** step 6, tasks 3.1 to 3.9 (C# 15 and house style). **Depends on:** J. **Parallel with:** K. **Model:** opus. **Effort:** high. **Why:** a 59-file sweep with reflection facts, plus a union spike that may be declined. **Owner gates:** none.
+- **PR M:** step 7, tasks 4.1 to 4.5 (release, measure, document, archive). **Depends on:** K and L. **Parallel with:** nothing. **Model:** sonnet. **Effort:** medium. **Why:** measurement and documentation against the figures J recorded. **Owner gates:** none.

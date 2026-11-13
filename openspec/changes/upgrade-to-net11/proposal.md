@@ -35,7 +35,7 @@ None. No requirement changes; `quiet-editor-start` owns the `folder-actions` del
 
 ## Order
 
-This change starts only after `quiet-editor-start`, `stricter-state-files`, `mutation-testing-in-ci` and `install-with-winget` have merged (or are rebased on), because they touch `Desktop.StartAsync`, `JsonFileStore`, the Stryker workflow and the size baselines this change re-measures.
+This change starts only after `quiet-editor-start`, `stricter-state-files`, `mutation-testing-in-ci` and `install-with-winget` have merged (or are rebased on), because they touch `Desktop.StartAsync`, `JsonFileStore`, the Stryker workflow and the size baselines this change re-measures. It also follows `diagnostic-log-setting` and `fetch-before-branching` (both parts), because the C# 15 sweep touches the settings and launch code they change. It does not wait for `add-win-arm64-build` or `sign-the-executable`: they are workflow-only and held by owner gates, so whichever of the three merges second rebases the `pipeline.yml` output paths. `openspec\implementation-plan.md` splits this change into four pull requests.
 
 ## Out of scope
 
