@@ -2,7 +2,7 @@ using Source191.Cader.Ports;
 
 namespace Source191.Cader.TestDoubles;
 
-/// <summary>Keeps every diagnostic line written to it, in place of the <c>CADER_LOG</c> file.</summary>
+/// <summary>Keeps every diagnostic line written to it, in place of the log file.</summary>
 public sealed class RecordingSink : IDiagnosticSink
 {
     private readonly Lock gate = new();
