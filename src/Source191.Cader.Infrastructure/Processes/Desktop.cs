@@ -1,6 +1,8 @@
 using Source191.Cader.Adapters.Terminal;
 using Source191.Cader.Ports;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Source191.Cader.Adapters.Processes;
 
@@ -60,6 +62,11 @@ public sealed class Desktop(IProcessRunner processes, ProgramLocation powerShell
         if (result.ExitCode != 0)
         {
             string reason = result.StandardError.Trim();
+            if (int.TryParse(reason, NumberStyles.Integer, CultureInfo.InvariantCulture, out int code))
+            {
+                throw new ProgramNotStartedException(new Win32Exception(code).Message);
+            }
+
             throw new ProgramNotStartedException(reason.Length > 0 ? reason : $"PowerShell stopped with exit code {result.ExitCode} before Windows started it.");
         }
     }
