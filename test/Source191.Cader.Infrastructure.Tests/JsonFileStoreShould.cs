@@ -808,6 +808,22 @@ public sealed class JsonFileStoreShould : IDisposable
 
         (await Store.ReadUpdateCheckAsync()).ShouldBe(new UpdateCheckRecord.Never());
     }
+    [Fact]
+    public async Task ReadAConfigNamingASettingTwiceAsMissing()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "repositoryRoots": ["E:\\other"] }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task SkipARecentRepositoryNamingItsPathTwice()
+    {
+        await WriteRawAsync(@"recent\full.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Billing", "usedAt": "2026-10-23T12:00:00+00:00" }""");
+        await WriteRawAsync(@"recent\twice.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders", "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders", "usedAt": "2027-01-01T00:00:00+00:00" }""");
+
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")]);
+    }
     /// <summary>The created-worktree record for Northwind.Billing-invoice-pdf, its branch member written as the JSON given, or left out when null.</summary>
     private static string CreatedRecordWith(string? branch)
     {
