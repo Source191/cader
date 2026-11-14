@@ -40,7 +40,7 @@ public sealed class FastForwardPlaceShould
         FastForwardPlace.Of([], Main).ShouldBe(new FastForwardPlace.NotCheckedOut());
     }
 
-    private static Head OnBranch(string branch) => new Head.OnBranch(BranchName.From(branch));
+    private static Head.OnBranch OnBranch(string branch) => new(BranchName.From(branch));
 
     private static GitWorktreeEntry Entry(string path, Head head, bool isMain) => new(path, "0f3c2a1", head, isMain, new WorktreeLock.Unlocked(), IsPrunable: false);
 }
