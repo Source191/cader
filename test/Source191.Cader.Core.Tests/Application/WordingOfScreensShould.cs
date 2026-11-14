@@ -156,6 +156,7 @@ public sealed class WordingOfScreensShould
 
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.HiddenByTerminal(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json") })).ShouldBe([new TextPart("8 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
     }
 
     [Fact]

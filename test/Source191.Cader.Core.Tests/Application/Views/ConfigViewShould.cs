@@ -112,6 +112,18 @@ public sealed class ConfigViewShould
     }
 
     [Fact]
+    public void CopyAndOpenTheFragmentsFolderWhileTerminalHidesAProfile()
+    {
+        string fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
+        SetupFacts hidden = Facts with { TerminalProfiles = new SetupState.HiddenByTerminal(fragment) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), hidden))).State;
+        ConfigViewState onRow = loaded with { List = loaded.List.Select("setup:TerminalProfiles") };
+
+        ConfigView.Reduce(onRow, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(fragment))]);
+        ConfigView.Reduce(onRow, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader"))]);
+    }
+
+    [Fact]
     public void OpenTheSettingsFileAndTheDiagnosticLogFileThemselves()
     {
         ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(SettingsFile))]);
