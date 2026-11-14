@@ -8,6 +8,20 @@ BeforeAll {
     function Invoke-Compare([string] $Baseline = (Join-Path $script:Fixtures 'local.json'), [string] $Comparison = (Join-Path $script:Fixtures 'runner.json'), [hashtable] $More = @{}) {
         & $script:Script -BaselinePath $Baseline -ComparisonPath $Comparison -BaselineName local -ComparisonName runner @More
     }
+
+    # The smallest report the script reads: one file holding the given mutants (a mutator, a replacement, a line and a status each).
+    function New-Report([string] $Name, [hashtable[]] $Mutants) {
+        $list = @($Mutants | ForEach-Object {
+            [ordered]@{
+                id = [guid]::NewGuid().ToString('N'); mutatorName = $_.Mutator; replacement = $_.Replacement; status = $_.Status
+                location = @{ start = @{ line = $_.Line; column = 1 }; end = @{ line = $_.Line; column = 9 } }
+            }
+        })
+        $report = [ordered]@{ files = @{ 'C:\r\src\Core\Domain\Big.cs' = @{ mutants = $list } } }
+        $path = Join-Path $TestDrive "$Name.json"
+        $report | ConvertTo-Json -Depth 8 | Set-Content $path
+        $path
+    }
 }
 
 Describe 'Compare-MutationReports' {
@@ -40,5 +54,30 @@ Describe 'Compare-MutationReports' {
 
         $result.Changes[0].Groups.Count | Should -Be 2
         $result.Changes[0].Count | Should -Be 4
+    }
+
+    It 'lists a mutant present in only one report as its own group' {
+        $both = @{ Mutator = 'Boolean mutation'; Replacement = 'false'; Line = 1; Status = 'Killed' }
+        $only = @{ Mutator = 'String mutation'; Replacement = '""'; Line = 2; Status = 'Survived' }
+
+        $result = Invoke-Compare (New-Report 'a' @($both, $only)) (New-Report 'b' @($both))
+
+        $result.Paired | Should -Be 1
+        $result.OneSided.Count | Should -Be 1
+        $result.OneSided[0].Side | Should -Be 'local'
+        $result.OneSided[0].Mutator | Should -Be 'String mutation'
+    }
+
+    It 'pairs duplicate keys in report order and reports a count that does not match as one-sided' {
+        $twin = { param($status) @{ Mutator = 'Boolean mutation'; Replacement = 'false'; Line = 1; Status = $status } }
+
+        $same = Invoke-Compare (New-Report 'a' @((& $twin 'Survived'), (& $twin 'Killed'))) (New-Report 'b' @((& $twin 'Killed'), (& $twin 'Killed')))
+        $fewer = Invoke-Compare (New-Report 'c' @((& $twin 'Killed'), (& $twin 'Killed'))) (New-Report 'd' @((& $twin 'Killed')))
+
+        $same.Paired | Should -Be 2
+        $same.Changes.Change | Should -Be 'Survived -> Killed'
+        $same.Changes[0].Count | Should -Be 1
+        $fewer.Paired | Should -Be 1
+        $fewer.OneSided.Count | Should -Be 1
     }
 }
