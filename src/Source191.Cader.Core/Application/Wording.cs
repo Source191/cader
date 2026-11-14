@@ -433,7 +433,15 @@ public static partial class Wording
 
     public static string HiddenProfilesShown(string settingsPath) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
 
-    public static string TerminalSettingsLinked(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    /// <summary>Why nothing was written to a linked settings file, and the entries to add by hand.</summary>
+    public static string TerminalSettingsLinked(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not add the entries: {settingsPath} is a link, and writing it would replace the link with a file, so nothing was written.",
+            "Add each of these to the profile list in the file it links to:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
 
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 

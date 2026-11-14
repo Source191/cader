@@ -168,7 +168,7 @@ public sealed class TerminalSetupRunner(
             return Step.Skipped;
         }
 
-        Step step = await TryWriteAsync(terminalSettings.Location, () => terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken));
+        Step step = await AddEntriesAsync(hidden, cancellationToken);
         if (step == Step.Written)
         {
             await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location));
@@ -177,6 +177,20 @@ public sealed class TerminalSetupRunner(
         return step;
     }
 
+    /// <summary>A linked settings file is refused by the adapter; the user is given the entries to add by hand.</summary>
+    private async Task<Step> AddEntriesAsync(IReadOnlyList<TerminalProfileEntry> hidden, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await TryWriteAsync(terminalSettings.Location, () => terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken));
+        }
+        catch (SettingsFileIsALinkException)
+        {
+            await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, hidden));
+
+            return Step.Failed;
+        }
+    }
     private async Task<Step> OfferBellAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
         NotificationChannelState state = await claudeSettings.ReadNotificationChannelAsync(cancellationToken);
