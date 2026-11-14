@@ -2,6 +2,10 @@
 
 This guide is for the owner: how a merge becomes a release, how a release reaches winget, and the jobs and secrets behind them. Contributors need only [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Ownership
+
+Cader is the owner's personal project, and the owner owns it. Every account, subscription, token and certificate used to build, publish or package it is the owner's own or the project's (the Source191 GitHub organisation and the winget submission).
+
 ## Workflows at a glance
 
 | Workflow | Runs | What it does | Secrets and settings |

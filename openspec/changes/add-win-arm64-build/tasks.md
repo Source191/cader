@@ -39,4 +39,3 @@ See `openspec\implementation-plan.md` for the whole sequence.
 - **Effort:** medium
 - **Why:** workflow and script plumbing once the two premises in 1.1 and 1.2 are confirmed; no C# is expected.
 - **Owner gates:** blocking, 1.1 (the hosted `windows-11-arm` runner is available; stop and re-plan if not) and 1.2 (Arm installers exist for the winget dependencies). After merge, 5.1 on a Windows 11 Arm machine.
-- **Note:** G follows this change, because signing must cover both zips.
