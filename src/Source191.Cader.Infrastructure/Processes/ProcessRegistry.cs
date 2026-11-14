@@ -11,8 +11,8 @@ namespace Source191.Cader.Adapters.Processes;
 /// with exit code 0. Every read opens its own
 /// <see href="https://learn.microsoft.com/windows/win32/procthread/process-security-and-access-rights">limited-rights
 /// handle</see> directly: <see cref="Process.GetProcessById(int)"/> walks the whole table on every call, about twenty
-/// milliseconds, and a refresh reads a few hundred processes. It is used only to end a process, which needs a
-/// <see cref="Process"/>.
+/// milliseconds, and a refresh reads a few hundred processes. A process is looked up by id, with
+/// <see cref="Process.TryGetProcessById"/>, only to end it, which needs a <see cref="Process"/>.
 /// </summary>
 public sealed partial class ProcessRegistry : IProcessRegistry
 {
