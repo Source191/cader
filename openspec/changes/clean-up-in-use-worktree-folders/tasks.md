@@ -23,7 +23,7 @@
 ## 5. Words and tones
 
 - [x] 5.1 Red: `WordingOfOutcomesShould.SayTheFolderWasLeftAfterARemoval` covering `Removed`, `RemovedAndDeletedBranch`, both `BranchKept` forms and the two delete cases with `FolderLeft: true`, each ending "The worktree's folder was left because a tab or program still has it open; close that and remove it from the worktrees view."; the existing in-use facts keep their words. Green: one shared sentence in `WordingOfOutcomes`, appended where `FolderLeft` is true. Verify the facts pass and `SentenceLiteralsShould` and `SpellBritish` stay green.
-- [ ] 5.2 Red: `StatusTonesShould` lines giving each flagged case `StatusTone.Notice` (the unflagged ones keep `Success`). Green: the `ToneOf` arms for both outcome families. Verify `StatusTonesShould` passes.
+- [x] 5.2 Red: `StatusTonesShould` lines giving each flagged case `StatusTone.Notice` (the unflagged ones keep `Success`). Green: the `ToneOf` arms for both outcome families. Verify `StatusTonesShould` passes.
 
 ## 6. Empty folders under the worktree root are listed
 

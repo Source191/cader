@@ -109,6 +109,7 @@ public static partial class Wording
     {
         return outcome switch
         {
+            DeleteSessionOutcome.RemovedWorktreeAndBranch { FolderLeft: true } or DeleteSessionOutcome.BranchNotMerged { FolderLeft: true } => StatusTone.Notice,
             DeleteSessionOutcome.Deleted or DeleteSessionOutcome.RemovedWorktreeAndBranch or DeleteSessionOutcome.BranchNotMerged => StatusTone.Success,
             DeleteSessionOutcome.RemovedWorktree removed => ToneOf(removed.Worktree),
             DeleteSessionOutcome.NotDeleted => StatusTone.Failure,
@@ -121,6 +122,7 @@ public static partial class Wording
         return outcome switch
         {
             RemoveWorktreeOutcome.Refused or RemoveWorktreeOutcome.InUse => StatusTone.Notice,
+            RemoveWorktreeOutcome.Removed { FolderLeft: true } or RemoveWorktreeOutcome.RemovedAndDeletedBranch { FolderLeft: true } or RemoveWorktreeOutcome.BranchKept { FolderLeft: true } => StatusTone.Notice,
             _ => StatusTone.Success,
         };
     }

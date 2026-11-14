@@ -38,7 +38,8 @@ public sealed class StatusTonesShould
         Wording.StatusClose.ShouldBe("✕");
         Wording.StatusCloseTip.ShouldBe("Close this message");
     }
-    // Outcomes, each built with the placeholders below; an outcome whose tone depends on its data has its own facts too.
+    // Outcomes, each built with the placeholders below (every bool true, so a removal's FolderLeft is set); an outcome whose
+    // tone depends on its data has its own facts too.
 
     private static readonly Dictionary<Type, StatusTone> OutcomeTones = new()
     {
@@ -57,16 +58,16 @@ public sealed class StatusTonesShould
         [typeof(ResumeSessionsOutcome)] = StatusTone.Success,
         [typeof(DeleteSessionOutcome.Deleted)] = StatusTone.Success,
         [typeof(DeleteSessionOutcome.KeptWorktree)] = StatusTone.Notice,
-        [typeof(DeleteSessionOutcome.RemovedWorktreeAndBranch)] = StatusTone.Success,
-        [typeof(DeleteSessionOutcome.BranchNotMerged)] = StatusTone.Success,
+        [typeof(DeleteSessionOutcome.RemovedWorktreeAndBranch)] = StatusTone.Notice,
+        [typeof(DeleteSessionOutcome.BranchNotMerged)] = StatusTone.Notice,
         [typeof(DeleteSessionOutcome.RemovedWorktree)] = StatusTone.Success,
         [typeof(DeleteSessionOutcome.WorktreeInUse)] = StatusTone.Notice,
         [typeof(DeleteSessionOutcome.NotDeleted)] = StatusTone.Failure,
         [typeof(DeleteBranchOutcome)] = StatusTone.Success,
         [typeof(RemoveWorktreeOutcome.Refused)] = StatusTone.Notice,
-        [typeof(RemoveWorktreeOutcome.Removed)] = StatusTone.Success,
-        [typeof(RemoveWorktreeOutcome.RemovedAndDeletedBranch)] = StatusTone.Success,
-        [typeof(RemoveWorktreeOutcome.BranchKept)] = StatusTone.Success,
+        [typeof(RemoveWorktreeOutcome.Removed)] = StatusTone.Notice,
+        [typeof(RemoveWorktreeOutcome.RemovedAndDeletedBranch)] = StatusTone.Notice,
+        [typeof(RemoveWorktreeOutcome.BranchKept)] = StatusTone.Notice,
         [typeof(RemoveWorktreeOutcome.DeletedFolder)] = StatusTone.Success,
         [typeof(RemoveWorktreeOutcome.DeletedFolderAndPruned)] = StatusTone.Success,
         [typeof(RemoveWorktreeOutcome.InUse)] = StatusTone.Notice,
@@ -143,6 +144,28 @@ public sealed class StatusTonesShould
         Wording.ToneOf(new DeleteSessionOutcome.KeptWorktree(Listed.As("fix-123"), new RemovalReason.LeftoverFilesWouldBeLost(12, AtLeast: false), TabClosed: false)).ShouldBe(StatusTone.Notice);
         Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive"))), TabClosed: false)).ShouldBe(StatusTone.Notice);
         Wording.ToneOf(new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(@"D:\Northwind.Archive")))).ShouldBe(StatusTone.Notice);
+    }
+
+    [Fact]
+    public void MarkARemovalAsDoneWhenItsFolderWent()
+    {
+        Wording.ToneOf(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123")).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"))).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false)).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true)).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: true)).ShouldBe(StatusTone.Success);
+    }
+
+    [Fact]
+    public void MarkARemovalWhoseFolderWasLeftAsANotice()
+    {
+        Wording.ToneOf(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: true, FolderLeft: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: false, FolderLeft: true)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: true), TabClosed: false)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StatusMessage.BranchKept(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false, FolderLeft: true))).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
