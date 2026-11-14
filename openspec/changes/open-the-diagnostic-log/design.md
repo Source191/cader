@@ -1,0 +1,26 @@
+## Context
+
+The Config tab's `DiagnosticLog` row carries the log file's path only for its tooltip (`ConfigRows.For(settings, facts, diagnosticLogFile)`). The setup rows are read off the UI thread by `SetupFactsReader` as `SetupFacts`, and a `Setup` row with `SetupState.At` has a path that `ConfigView.TryPathOf` gives to `c` (`CopyFolderPath`) and `f` (`OpenFolderInEditor` on the folder holding it). `IFolders.FileExists` already exists, and `OpenInEditorHandler` already finds the editor through `IEditorLocator`, starts it through `IDesktop.StartAsync` with an `EditorCommand` argument list, and words its failures.
+
+## Goals / Non-Goals
+
+**Goals:** the log file's path is always visible and selectable; one key opens it in the user's editor; the help says what `!` holds and where the log file fits.
+
+**Non-Goals:** attaching `cader.log` to a report; changing what a report holds; changing how the log is written; opening the Windows Terminal fragment file; a new setting for the log's location.
+
+## Decisions
+
+- **A Setup row, not a longer VALUE on the Diagnostic log row.** The row is grey and read-only like Settings file, so it matches the existing pattern, keeps the settings rows short, and its value is plain text that can be selected from the terminal. Its words are `off, <path>`, `on, <path>` or `on, not written yet, <path>`, said by `Wording` from a new `SetupItem.DiagnosticLogFile`. The row sits after Settings file, so the log is read next to the file it is controlled from.
+- **The state says what was read.** A new `SetupState` case holds the path and whether the file exists; whether the setting is on comes from `Settings`, as `LastUpdateCheck` already takes `CheckForUpdates`, so the row is correct the moment a save toggles the setting. `SetupFactsReader` checks existence off the UI thread through `IFolders.FileExists`, and a failed read is `SetupState.Unreadable` as for the other rows. `ConfigRow.DiagnosticLog` loses its `File`, and `ConfigRows.For` takes the path for the new row's fact instead of for the tooltip.
+- **`f` opens the file only on the two file rows it was asked for.** A new effect `OpenFileInEditor` and its own `OpenFileInEditorHandler` with an outcome record (`Opened`, `FileMissing`, `EditorNotFound`, `EditorNotStarted`), reusing `EditorCommand` and the editor lookup of `OpenInEditorHandler` rather than copying them; the shared part is extracted if it is more than a few lines. `ConfigView` raises it for `SetupItem.SettingsFile` and `SetupItem.DiagnosticLogFile` and keeps `OpenFolderInEditor` for every other path row. The words for the missing-file outcome say the log does not exist yet and that Diagnostic log turns it on; the settings file case cannot normally be missing and says so plainly if it is. The effect carries the existing `FolderPath` value type only if one fits a file, otherwise a small `FilePath` value in `Domain` with `From`, `TryParse` and its own tests; this is decided against the code in the first task, with no string parameter named for a path.
+- **`c` needs no new effect.** `TryPathOf` returns the path of the new row's state, and `CopyFolderPath` already copies a path value as it does for Settings file. The task confirms this with a test rather than assuming it.
+- **The tooltip loses the path.** `Wording.ConfigDescription` for `DiagnosticLog` says the log goes to a file, names the Diagnostic log file row for where, and says Enter turns it on or off. The Diagnostic log file row's own tooltip says `f` opens it and `c` copies its path, and that the log rolls at 10 MiB.
+- **Help wording is one line per fact, in `Wording`.** The `!` `KeyHelp` and tooltip, the Config `f` help line and `docs\user-guide.md` use the same sentences, held by a `Wording` fact each so the help and the guide cannot drift apart unnoticed (the guide is checked by review, as today).
+- **Counts.** The new row is setup, so the settings count is unchanged and the title's row count rises by one. Only a `NotSetUp` row counts as "to set up", and the log file row is never `NotSetUp`, so it never turns the counts amber.
+
+## Risks / Trade-offs
+
+- **Visual Studio and Rider with a file argument:** an editor started with a file path rather than a folder behaves slightly differently per preset. VS Code and a custom editor take it as one argument as for a folder; the task checks `EditorCommand` for each preset and a manual check opens a real file in VS Code, because Visual Studio's launcher may need its own file switch.
+- **A `.log` or `.json` file in a heavy editor:** that is the user's configured choice and what `f` already means; no fallback to the default application is added (YAGNI).
+- **Overlap with `accounts-in-the-config-tab`:** both add Config rows; the second to merge reconciles `SetupItem`, `ConfigRows` and the counts scenarios.
+- **Path on screen:** the log file's path is the user's own local path shown to the user; it is never recorded in a diagnostic or a report, so the privacy rules in `security.md` are untouched.
