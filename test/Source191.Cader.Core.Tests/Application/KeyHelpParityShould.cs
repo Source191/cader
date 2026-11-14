@@ -90,6 +90,7 @@ public sealed class KeyHelpParityShould
 
     private static SetupFacts ConfigFacts() => new(
         new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"),
+        new SetupState.Folder(TestSettings.DefaultClaudeFolder),
         new SetupState.LogFile(@"C:\Users\me\AppData\Local\Cader\cader.log", Exists: true),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),

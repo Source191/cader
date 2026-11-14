@@ -22,8 +22,6 @@ public sealed class ClaudeSettings(string claudeHome) : IClaudeSettings
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    public static ClaudeSettings ForCurrentUser() => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude"));
-
     public string Location => Path.Combine(claudeHome, "settings.json");
 
     public async Task<NotificationChannelState> ReadNotificationChannelAsync(CancellationToken cancellationToken)

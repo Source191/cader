@@ -8,8 +8,6 @@ namespace Source191.Cader.Adapters.Claude;
 /// </summary>
 public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
 {
-    public static ClaudeTranscripts ForCurrentUser() => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude"));
-
     public bool HasMessages(SessionId sessionId)
     {
         string projects = Path.Combine(claudeHome, "projects");

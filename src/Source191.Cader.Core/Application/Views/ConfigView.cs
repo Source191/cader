@@ -31,6 +31,7 @@ public static class ConfigView
             ConfigRow.RepositoryRoot root => root.Path.Value,
             ConfigRow.WorktreeRoot worktreeRoot => worktreeRoot.Path.Value,
             ConfigRow.Setup { State: SetupState.At at } => at.Path,
+            ConfigRow.Setup { State: SetupState.Folder folder } => folder.Claude.Folder.Value,
             ConfigRow.Setup { State: SetupState.HiddenByTerminal hidden } => hidden.Path,
             ConfigRow.Setup { State: SetupState.LogFile file } => file.Path,
             ConfigRow.Setup { State: SetupState.LogOff off } => off.Path,
@@ -96,11 +97,11 @@ public static class ConfigView
             : new OpenFolderInEditor(FolderOf(row, path));
     }
 
-    /// <summary>A setup row's path is a file, so the folder holding it is the one to open; a root is a folder already.</summary>
+    /// <summary>A setup row's path is a file, so the folder holding it is the one to open; a root and the Claude folder are folders already.</summary>
     private static FolderPath FolderOf(ConfigRow row, string path)
     {
         FolderPath folder = FolderPath.From(path);
 
-        return row is ConfigRow.Setup && folder.Parent is FolderPath parent ? parent : folder;
+        return row is ConfigRow.Setup { State: not SetupState.Folder } && folder.Parent is FolderPath parent ? parent : folder;
     }
 }

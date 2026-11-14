@@ -13,6 +13,7 @@ public sealed class ConfigViewShould
 
     private static readonly SetupFacts Facts = new(
         new SetupState.At(SettingsFile),
+        new SetupState.Folder(TestSettings.DefaultClaudeFolder),
         new SetupState.LogFile(LogFile, Exists: true),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),
@@ -121,6 +122,13 @@ public sealed class ConfigViewShould
 
         ConfigView.Reduce(onRow, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(fragment))]);
         ConfigView.Reduce(onRow, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader"))]);
+    }
+
+    [Fact]
+    public void CopyAndOpenTheClaudeFolderItself()
+    {
+        ConfigView.Reduce(At("setup:ClaudeFolder"), new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(@"C:\Users\me\.claude"))]);
+        ConfigView.Reduce(At("setup:ClaudeFolder"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\.claude"))]);
     }
 
     [Fact]
@@ -284,8 +292,8 @@ public sealed class ConfigViewShould
     {
         ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts))).State;
 
-        oneRoot.Title.Shown.ShouldBe(13);
-        oneRoot.Title.Total.ShouldBe(13);
+        oneRoot.Title.Shown.ShouldBe(14);
+        oneRoot.Title.Total.ShouldBe(14);
     }
 
     [Fact]
