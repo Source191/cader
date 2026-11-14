@@ -1,7 +1,7 @@
 namespace Source191.Cader.Tui;
 
 /// <summary>How a table column takes its width: its natural width, cut at a number of cells, the width the others leave, or right-aligned.</summary>
-internal abstract record ColumnFit
+internal closed record ColumnFit
 {
     /// <summary>The column is as wide as its widest cell.</summary>
     public sealed record Natural : ColumnFit;
