@@ -8,6 +8,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 - A Before branching setting on the Config tab, and a Before branching choice in the new-session wizard: Fetch origin, Pull default branch or Nothing, for what happens before a new worktree branches from origin's default branch (#273)
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
+- A Diagnostic log file row on the Config tab shows the full path of cader.log, which you can select and copy, and f on it or on Settings file opens the file in your editor; the help and user guide now say what a problem report holds and that cader.log is never attached to it (#274)
 - A Diagnostic log setting on the Config tab: Enter turns the log file on or off at once, and its tooltip names %LOCALAPPDATA%\Cader\cader.log, which becomes cader.log.1 at 10 MB so at most about 20 MB is kept (#254)
 
 ### Changed
