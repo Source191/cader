@@ -19,7 +19,7 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettin
     {
         return new SetupFacts(
             new SetupState.At(settingsFile),
-            new SetupState.Folder(new ClaudeFolder.Unset(claudeFolder.Folder)),
+            new SetupState.Folder(claudeFolder),
             new SetupState.LogFile(diagnosticLogFile, folders.FileExists(diagnosticLogFile)),
             await Guarded(() => TerminalProfilesAsync(cancellationToken)),
             await Guarded(() => ClaudeBellAsync(cancellationToken)),
