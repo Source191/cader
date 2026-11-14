@@ -217,6 +217,22 @@ public sealed class WizardViewShould
             plan => plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Read the README")));
     }
 
+    /// <summary>Until the wizard has a Before branching field of its own, the saved setting is what each launch does.</summary>
+    [Theory]
+    [InlineData(BeforeBranching.Fetch)]
+    [InlineData(BeforeBranching.Pull)]
+    [InlineData(BeforeBranching.None)]
+    public void StartWithTheSavedBeforeBranching(BeforeBranching choice)
+    {
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, beforeBranching: choice);
+        WizardState opened = WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, new WizardOrigin.Anywhere());
+
+        WizardUpdate started = WizardView.Reduce(Reduce(opened, new WizardInput.NameChanged("Fix 123")), new WizardInput.Start());
+
+        opened.BeforeBranching.ShouldBe(choice);
+        started.Effect.ShouldBeOfType<WizardEffect.Launch>().Plan.BeforeBranching.ShouldBe(choice);
+    }
+
     [Fact]
     public void StartWithTheDefaultsMakesAWorktree()
     {
