@@ -27,7 +27,8 @@ internal sealed class SettingsControls
         Arguments.Text = text.Arguments;
         BaseRef.Value = OptionSelectors.Index(text.Base);
         Place.Value = OptionSelectors.Index(text.Place);
-        Before.Value = OptionSelectors.Index(text.BeforeBranching);        Custom = [Caption(RightColumn, 1, "Executable (full path, not a .cmd or .bat)"), Executable, Caption(RightColumn, 4, $"Arguments ({EditorChoice.FolderPlaceholder} is the folder)"), Arguments];
+        Before.Value = OptionSelectors.Index(text.BeforeBranching);
+        Custom = [Caption(RightColumn, 1, "Executable (full path, not a .cmd or .bat)"), Executable, Caption(RightColumn, 4, $"Arguments ({EditorChoice.FolderPlaceholder} is the folder)"), Arguments];
         (IReadOnlyDictionary<SettingsField, View> Fields, View[] All, int Height) layout = state.Scope switch
         {
             SettingsScope.Roots => (
