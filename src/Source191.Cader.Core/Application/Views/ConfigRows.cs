@@ -28,6 +28,7 @@ public static class ConfigRows
         return
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, facts.SettingsFile),
+            new ConfigRow.Setup(SetupItem.ClaudeFolder, facts.ClaudeFolder),
             new ConfigRow.Setup(SetupItem.DiagnosticLogFile, LogFileAs(settings, facts.DiagnosticLogFile)),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, facts.TerminalProfiles),
             new ConfigRow.Setup(SetupItem.ClaudeBell, facts.ClaudeBell),
