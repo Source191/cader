@@ -63,12 +63,7 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
     {
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         int start = ByteOrderMarkLength(bytes);
-        using (JsonDocument document = Parse(bytes))
-        {
-            // The whole file must be JSON with a profile list before anything is inserted into it.
-            _ = ProfileList(document.RootElement);
-        }
-
+        RefuseWithoutAProfileList(bytes);
         ListPlace place = FindList(bytes.AsSpan(start));
         string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
         byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
@@ -83,6 +78,20 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         finally
         {
             File.Delete(temporary);
+        }
+    }
+
+    /// <summary>The whole file must be JSON with a profile list before anything is inserted into it.</summary>
+    private void RefuseWithoutAProfileList(byte[] bytes)
+    {
+        try
+        {
+            using JsonDocument document = Parse(bytes);
+            _ = ProfileList(document.RootElement);
+        }
+        catch (JsonException exception)
+        {
+            throw new IOException($"{Location} could not be read ({exception.Message}), so it was left alone.", exception);
         }
     }
 
