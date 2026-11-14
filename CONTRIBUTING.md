@@ -34,7 +34,7 @@ It builds and runs on Windows 11 only. Install Claude Code as the README's [Inst
 ```powershell
 winget install --id Microsoft.WindowsTerminal --exact --source winget   # already part of Windows 11 22H2 and later
 winget install --id Microsoft.PowerShell --exact --source winget
-winget install --id Microsoft.DotNet.SDK.10 --exact --source winget
+winget install --id Microsoft.DotNet.SDK.11 --exact --source winget
 winget install --id Git.Git --exact --source winget
 npm install -g @fission-ai/openspec   # the OpenSpec CLI
 dotnet tool restore                   # dotnet-stryker, pinned in .config\dotnet-tools.json, for mutation testing (optional)

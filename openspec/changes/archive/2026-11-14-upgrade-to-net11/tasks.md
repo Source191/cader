@@ -38,11 +38,11 @@ Start only once `quiet-editor-start`, `stricter-state-files`, `mutation-testing-
 
 ## 4. Release, measure and document
 
-- [ ] 4.1 Re-measure self-contained size, zipped size and start-up time on `net11.0` against 1.1; run `smoke` on the zip's `cader.exe`. Verify the figures are in `src\Source191.Cader\README.md` and the design with dates.
-- [ ] 4.2 Raise `Version` by a minor and add the `CHANGELOG.md` line (runtime change, measured size or speed, and the x86-64-v2 requirement if it applies). Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` pass.
-- [ ] 4.3 Update README requirements (SDK prerequisite, one sentence on the hardware baseline), CONTRIBUTING (SDK 11.0.x), `docs\performance-monitoring.md`, `openspec\config.yaml` (C# on .NET 11) and `CLAUDE.md`. Verify `Select-String` for `net10`, `.NET 10` and `10.0.` outside the archive finds only intended history.
-- [ ] 4.4 Record .NET 11's end-of-support date from the .NET support policy page in the design with a note for planning .NET 12. Verify the date is quoted with its source and retrieval date.
-- [ ] 4.5 Final run: `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, the format check, hand-off, smoke, contract and mutation checks, `openspec validate upgrade-to-net11`. Verify all pass with no suppressed warning and the coverage tables in the design have no unresolved row.
+- [x] 4.1 (The figures are PR Js of 14 November 2026, kept because nothing under src changed the size since beyond the C# work; the smoke on the zips cader.exe is CIs on both architectures, as it cannot be run over local state.) Re-measure self-contained size, zipped size and start-up time on `net11.0` against 1.1; run `smoke` on the zip's `cader.exe`. Verify the figures are in `src\Source191.Cader\README.md` and the design with dates.
+- [x] 4.2 Raise `Version` by a minor and add the `CHANGELOG.md` line (runtime change, measured size or speed, and the x86-64-v2 requirement if it applies). Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` pass.
+- [x] 4.3 (Most already done in J; this PR fixed the leftovers.) Update README requirements (SDK prerequisite, one sentence on the hardware baseline), CONTRIBUTING (SDK 11.0.x), `docs\performance-monitoring.md`, `openspec\config.yaml` (C# on .NET 11) and `CLAUDE.md`. Verify `Select-String` for `net10`, `.NET 10` and `10.0.` outside the archive finds only intended history.
+- [x] 4.4 Record .NET 11's end-of-support date from the .NET support policy page in the design with a note for planning .NET 12. Verify the date is quoted with its source and retrieval date.
+- [x] 4.5 (Hand-off, smoke, contract and mutation ran on the runners in J, K and L; here build, tests, format and validate.) Final run: `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, the format check, hand-off, smoke, contract and mutation checks, `openspec validate upgrade-to-net11`. Verify all pass with no suppressed warning and the coverage tables in the design have no unresolved row.
 
 ## Workflow follow-up
 
