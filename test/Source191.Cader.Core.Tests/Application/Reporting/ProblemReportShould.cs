@@ -30,7 +30,7 @@ public sealed class ProblemReportShould
         foreach (int index in Enumerable.Range(0, 500))
         {
             clock.Advance(TimeSpan.FromSeconds(1));
-            log.Record(index % 50 == 0 ? new Failed(FailureSite.Effect, CodeName.For(typeof(Quit)), ExceptionSummary.From(new GitException("x"))) : new ViewShown(ViewKind.Sessions));
+            log.Record(index % 50 == 0 ? new Failed(FailureSite.Effect, CodeName.For(typeof(Quit)), ExceptionSummary.From(new GitException("x", inUse: false))) : new ViewShown(ViewKind.Sessions));
         }
 
         string[] programs = ["status", "log", "branch", "rev-list"];
@@ -66,7 +66,7 @@ public sealed class ProblemReportShould
     public async Task DropOrdinaryEventsBeforeCountsAndCountsBeforeFailures()
     {
         log.Record(new ViewShown(ViewKind.Sessions));
-        log.Record(new Failed(FailureSite.Load, null, ExceptionSummary.From(new GitException("x"))));
+        log.Record(new Failed(FailureSite.Load, null, ExceptionSummary.From(new GitException("x", inUse: false))));
         log.Record(new ViewShown(ViewKind.Worktrees));
         counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(5));
         ProblemReport report = await Reports().BuildAsync();

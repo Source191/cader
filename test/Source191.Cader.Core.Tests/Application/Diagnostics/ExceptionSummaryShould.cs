@@ -58,7 +58,7 @@ public sealed class ExceptionSummaryShould
     [Fact]
     public void CapTheDepthOfInnerExceptions()
     {
-        Exception exception = new AggregateException(new ArgumentException("a", new FormatException("b", new IOException("c", new TimeoutException("d", new GitException("e"))))));
+        Exception exception = new AggregateException(new ArgumentException("a", new FormatException("b", new IOException("c", new TimeoutException("d", new GitException("e", inUse: false))))));
 
         string text = ExceptionSummary.From(exception).ToString();
 
@@ -68,7 +68,7 @@ public sealed class ExceptionSummaryShould
     [Fact]
     public void SummariseAnExceptionThatWasNeverThrown()
     {
-        ExceptionSummary.From(new GitException(Folder)).ToString().ShouldBe("GitException");
+        ExceptionSummary.From(new GitException(Folder, inUse: false)).ToString().ShouldBe("GitException");
     }
 
     private static Exception Caught(Action action)
@@ -101,20 +101,20 @@ public sealed class ExceptionSummaryShould
 
     private static void ThrowGit()
     {
-        throw new GitException($"fatal: '{Folder}' contains modified or untracked files");
+        throw new GitException($"fatal: '{Folder}' contains modified or untracked files", inUse: false);
     }
 
     private static async Task ThrowLaterAsync()
     {
         await Task.Yield();
-        throw new GitException(Folder);
+        throw new GitException(Folder, inUse: false);
     }
 
     private static void Recurse(int depth)
     {
         if (depth == 0)
         {
-            throw new GitException(Folder);
+            throw new GitException(Folder, inUse: false);
         }
 
         Recurse(depth - 1);

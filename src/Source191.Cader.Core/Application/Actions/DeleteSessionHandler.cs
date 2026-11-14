@@ -50,7 +50,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         {
             row = await RowAsync(created, cancellationToken);
             bool merged = await inspector.IsMergedAsync(created.Repository, created.Branch, cancellationToken);
-            decision = RemovalDecision.For(row.Facts(branchCreatedHere: true, merged), forced);
+            decision = RemovalDecision.For(row.Facts(branchCreatedHere: true, branchMerged: merged), forced);
         }
         catch (GitException failure)
         {

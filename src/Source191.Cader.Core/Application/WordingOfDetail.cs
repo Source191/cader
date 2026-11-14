@@ -28,14 +28,14 @@ public static partial class Wording
         [
             [
                 WaitingLine(WaitingFor(row)),
-                new("Started", TimeAgo(session.StartedAt, now, zone)),
-                new("Prompted", detail.LastPromptedAt is LastPrompt.Seen prompted ? TimeAgo(prompted.At, now, zone) : "not seen since the console started"),
+                new("Started", TimeAgo(session.StartedAt, now, zone), TextTone.Plain, Span: 1),
+                new("Prompted", detail.LastPromptedAt is LastPrompt.Seen prompted ? TimeAgo(prompted.At, now, zone) : "not seen since the console started", TextTone.Plain, Span: 1),
             ],
-            [new("Folder", session.WorkingDirectory.Value, Span: 2), new("Session", session.SessionId.Value)],
-            [new("Worktree", PlaceOf(row)), new("Branch", HeadLine(row.Head)), new("Tab", TabLine(row))],
+            [new("Folder", session.WorkingDirectory.Value, TextTone.Plain, Span: 2), new("Session", session.SessionId.Value, TextTone.Plain, Span: 1)],
+            [new("Worktree", PlaceOf(row), TextTone.Plain, Span: 1), new("Branch", HeadLine(row.Head), TextTone.Plain, Span: 1), new("Tab", TabLine(row), TextTone.Plain, Span: 1)],
             [
-                new("Changes", CountsLine(detail.Counts, now), Span: 2),
-                new("Memory", MemoryLine(row.Memory)),
+                new("Changes", CountsLine(detail.Counts, now), TextTone.Plain, Span: 2),
+                new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1),
             ],
         ];
 
@@ -49,10 +49,10 @@ public static partial class Wording
         IReadOnlyList<IReadOnlyList<DetailLine>> facts =
         [
             [new("Health", HealthLine(row.Health), ToneOf(row.Health.Kind), Span: 3)],
-            [new("Branch", BranchLine(row.Head, detail.Merge), Span: 2), new("PR", PullRequestLine(row.PullRequest))],
+            [new("Branch", BranchLine(row.Head, detail.Merge), TextTone.Plain, Span: 2), new("PR", PullRequestLine(row.PullRequest), TextTone.Plain, Span: 1)],
             [
-                new("Folder", row.Path.Value, Span: 2),
-                new("Created", detail.Created is WorktreeOrigin.CreatedHere created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader"),
+                new("Folder", row.Path.Value, TextTone.Plain, Span: 2),
+                new("Created", detail.Created is WorktreeOrigin.CreatedHere created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader", TextTone.Plain, Span: 1),
             ],
             [new("Changes", $"{Count(row.DirtyFiles, "changed file")} · {Count(row.UnpushedCommits, "unpushed commit")}", row.DirtyFiles + row.UnpushedCommits > 0 ? TextTone.Amber : TextTone.Plain, Span: 3)],
         ];
@@ -70,8 +70,8 @@ public static partial class Wording
 
     private static DetailLine WaitingLine(WaitingReason reason) => reason switch
     {
-        WaitingReason.Given given => new("Waiting", given.Text, TextTone.Amber),
-        WaitingReason.None => new("Waiting", "nothing"),
+        WaitingReason.Given given => new("Waiting", given.Text, TextTone.Amber, Span: 1),
+        WaitingReason.None => new("Waiting", "nothing", TextTone.Plain, Span: 1),
         _ => throw new UnreachableException(),
     };
 
@@ -161,16 +161,16 @@ public static partial class Wording
     {
         (DetailFact<IReadOnlyList<UnpushedCommit>>.Known commits, _) => Listed("Unpushed", [.. commits.Value.Select(commit => $"{commit.Hash}  {Durations.Age(now - commit.At)}  {commit.Subject}")], detail.Row.UnpushedCommits),
         (_, DetailFact<IReadOnlyList<string>>.Known files) => Listed("Changed", files.Value, detail.Row.DirtyFiles),
-        (DetailFact<IReadOnlyList<UnpushedCommit>>.Unavailable, _) or (_, DetailFact<IReadOnlyList<string>>.Unavailable) => [new("Git", Unavailable)],
+        (DetailFact<IReadOnlyList<UnpushedCommit>>.Unavailable, _) or (_, DetailFact<IReadOnlyList<string>>.Unavailable) => [new("Git", Unavailable, TextTone.Plain, Span: 1)],
         _ => [],
     };
 
     private static List<DetailLine> Listed(string label, IReadOnlyList<string> items, int total)
     {
-        List<DetailLine> lines = [.. items.Select((item, index) => new DetailLine(index == 0 ? label : string.Empty, item))];
+        List<DetailLine> lines = [.. items.Select((item, index) => new DetailLine(index == 0 ? label : string.Empty, item, TextTone.Plain, 1))];
         if (total > items.Count)
         {
-            lines.Add(new DetailLine(string.Empty, $"… {total - items.Count} more", TextTone.Grey));
+            lines.Add(new DetailLine(string.Empty, $"… {total - items.Count} more", TextTone.Grey, 1));
         }
 
         return lines;

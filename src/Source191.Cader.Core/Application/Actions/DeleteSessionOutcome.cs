@@ -16,9 +16,9 @@ public abstract record DeleteSessionOutcome(bool TabClosed) : Outcome
 
     public sealed record KeptWorktree(ListedName Name, RemovalReason Reason, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch, bool TabClosed, bool FolderLeft = false) : DeleteSessionOutcome(TabClosed);
+    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch, bool TabClosed, bool FolderLeft) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch, bool TabClosed, bool FolderLeft = false) : DeleteSessionOutcome(TabClosed);
+    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch, bool TabClosed, bool FolderLeft) : DeleteSessionOutcome(TabClosed);
 
     /// <summary>The worktree was a leftover: its folder deleted, and its registration pruned when stale.</summary>
     public sealed record RemovedWorktree(ListedName Name, RemoveWorktreeOutcome Worktree, bool TabClosed) : DeleteSessionOutcome(TabClosed);

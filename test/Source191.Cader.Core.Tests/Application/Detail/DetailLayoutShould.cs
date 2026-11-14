@@ -7,8 +7,8 @@ public sealed class DetailLayoutShould
 {
     private static readonly IReadOnlyList<IReadOnlyList<DetailLine>> Facts =
     [
-        [new("State", "needs input", TextTone.Amber), new("Started", "14:02"), new("Prompted", "14:03")],
-        [new("Folder", @"C:\f", Span: 2), new("Session", "s1")],
+        [new("State", "needs input", TextTone.Amber, Span: 1), new("Started", "14:02", TextTone.Plain, Span: 1), new("Prompted", "14:03", TextTone.Plain, Span: 1)],
+        [new("Folder", @"C:\f", TextTone.Plain, Span: 2), new("Session", "s1", TextTone.Plain, Span: 1)],
     ];
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class DetailLayoutShould
     public void WidenTheColumnsAWideFactSpansBeforeGivingTheLastTheRest()
     {
         string folder = new('x', 40);
-        DetailContent content = new("fix-123", [Facts[0], [new("Folder", folder, Span: 2), new("Session", "s1")]], Below: []);
+        DetailContent content = new("fix-123", [Facts[0], [new("Folder", folder, TextTone.Plain, Span: 2), new("Session", "s1", TextTone.Plain, Span: 1)]], Below: []);
 
         string second = Text(DetailLayout.Rows(content, width: 80, height: 5))[1];
 
@@ -68,7 +68,7 @@ public sealed class DetailLayoutShould
     [Fact]
     public void KeepTheStartOfAListingWithItsLabelsAligned()
     {
-        DetailContent content = new("Northwind.Orders-fix-123", Facts, [new("Unpushed", "a1b2c31"), new(string.Empty, "a1b2c32"), new(string.Empty, "… 3 more", TextTone.Grey)]);
+        DetailContent content = new("Northwind.Orders-fix-123", Facts, [new("Unpushed", "a1b2c31", TextTone.Plain, Span: 1), new(string.Empty, "a1b2c32", TextTone.Plain, Span: 1), new(string.Empty, "… 3 more", TextTone.Grey, Span: 1)]);
 
         Text(DetailLayout.Rows(content, width: 60, height: 4))[2..].Select(row => row.TrimEnd()).ShouldBe(["Unpushed a1b2c31", "         a1b2c32"]);
     }
@@ -76,7 +76,7 @@ public sealed class DetailLayoutShould
     [Fact]
     public void ShowAsManyFactRowsAsThePaneHas()
     {
-        DetailContent content = new("fix-123", Facts, [new(string.Empty, "one")]);
+        DetailContent content = new("fix-123", Facts, [new(string.Empty, "one", TextTone.Plain, Span: 1)]);
 
         DetailLayout.Rows(content, width: 60, height: 1).Count.ShouldBe(1);
         DetailLayout.Rows(content, width: 60, height: 0).ShouldBeEmpty();

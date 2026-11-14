@@ -52,7 +52,7 @@ public sealed record Settings
     /// Fills in what is missing: no roots means <c>&lt;home&gt;\source\repos</c>; <see cref="WorktreeRootChoice.BesideFirstRoot"/> means <c>worktrees</c>
     /// beside the first root (inside it when it has no parent, such as <c>D:\</c>). A file's missing base, update setting and place are <see cref="BaseWhenUnset"/>, <see cref="ChecksForUpdatesWhenUnset"/> and <see cref="PlaceWhenUnset"/>.
     /// </summary>
-    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates = ChecksForUpdatesWhenUnset, LaunchMode defaultPlace = PlaceWhenUnset, bool diagnosticLog = DiagnosticLogWhenUnset)
+    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog)
     {
         IReadOnlyList<FolderPath> resolvedRoots = roots is { Count: > 0 } ? roots : [home.Combine(Path.Combine("source", "repos"))];
         FolderPath first = resolvedRoots[0];
