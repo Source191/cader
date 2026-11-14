@@ -38,7 +38,7 @@
 
 - [ ] 7.1 Manual (owner): on a local build (`tools\install-local.ps1`), with the fragment installed, delete the Cader session profile in Windows Terminal's Settings and save; check that `state.json` lists `{cdf8708d-a821-5c97-95d0-fea560807dea}`, that the Config tab's row reads hidden by Windows Terminal, that `cader setup-terminal` reports the profile and, answered y, brings it back to the new-tab menu with no restart, and that the row then reads installed. While there, observe the design's assumptions: whether Terminal wrote the same four-property entries itself before the deletion (from a copy of `settings.json` taken first), whether they sat at the end of the list, and whether a `//` comment in `settings.json` is accepted. Record the observed ids and each observation in `windows.md` with the date and Terminal version. Verify by eye.
 - [ ] 7.2 Manual (owner), during 7.1 before answering y: with Cader session hidden, press Enter on a background session and record what `wt new-tab --profile "Cader session"` does (a tab in the default profile, an error, or no tab) in `windows.md` with the date and Terminal version, replacing the "unverified" sentence; if no tab opens, open an issue for the follow-up the design's Open Questions names. Verify the record.
-- [ ] 7.3 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate --all`. Verify each exits 0.
+- [x] 7.3 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate --all`. Verify each exits 0.
 
 ## Workflow follow-up
 
