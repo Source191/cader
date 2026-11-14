@@ -34,7 +34,7 @@
 - [x] 6.2 Red-green: `WorktreeInventoryLeftoversShould.SkipAFolderUnderTheWorktreeRootThatHoldsFilesButNoGitFile` and `LeaveAnEmptyFolderGitStillRegistersToItsRegisteredRow` (git lists it as prunable: one row, health broken, not a second empty row). Verify both pass.
 - [x] 6.3 Red-green: `WorktreeInventoryLeftoversShould.ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot` (settings whose worktree root is also a root: an empty child without the `.worktrees` suffix is not listed). Verify the fact passes, then update `WorktreeInventory`'s class summary to name the new leftover.
 
-- [ ] 6.4 Red-green: `FoldersShould.AnswerNotEmptyForAFolderThatHasGone` (Infrastructure, real disc): `Folders.IsEmpty` answers false for a missing folder instead of throwing, and false for one it cannot read; and `WorktreeInventoryShould.ListAnEmptyFolderUnderTheWorktreeRootAsEmpty` (real git and disc) shows the new row end to end. Verify both pass. Added during implementation, after review.
+- [x] 6.4 Red-green: `FoldersShould.AnswerNotEmptyForAFolderThatHasGone` (Infrastructure, real disc): `Folders.IsEmpty` answers false for a missing folder instead of throwing, and false for one it cannot read; and `WorktreeInventoryShould.ListAnEmptyFolderUnderTheWorktreeRootAsEmpty` (real git and disc) shows the new row end to end. Verify both pass. Added during implementation, after review.
 
 ## 7. Docs and release
 

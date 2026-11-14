@@ -22,7 +22,18 @@ public sealed class Folders : IFolders, IFolderDeleter
 
     public IEnumerable<string> FilesIn(string path) => Directory.Exists(path) ? Directory.EnumerateFiles(path) : [];
 
-    public bool IsEmpty(string path) => !Directory.EnumerateFileSystemEntries(path).Any();
+    /// <summary>Whether the folder holds nothing; a folder that has gone since it was listed, or cannot be read, is not empty, so one such folder never fails a scan.</summary>
+    public bool IsEmpty(string path)
+    {
+        try
+        {
+            return !Directory.EnumerateFileSystemEntries(path).Any();
+        }
+        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     public IEnumerable<string> Lines(string file) => File.ReadLines(file);
 
