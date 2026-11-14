@@ -86,6 +86,13 @@ public sealed class WordingOfOutcomesShould
         Wording.Describe(new ToggleUpdateCheckOutcome(On: false)).ShouldBe("The update check is off.");
     }
 
+    [Fact]
+    public void SayWhereTheDiagnosticLogIsWrittenOrThatItIsOff()
+    {
+        Wording.Describe(new ToggleDiagnosticLogOutcome(On: true, File: @"C:\Users\me\AppData\Local\Cader\cader.log")).ShouldBe(@"The diagnostic log is on: it is now written to C:\Users\me\AppData\Local\Cader\cader.log.");
+        Wording.Describe(new ToggleDiagnosticLogOutcome(On: false, File: @"C:\Users\me\AppData\Local\Cader\cader.log")).ShouldBe("The diagnostic log is off.");
+    }
+
     // Sessions.
 
     [Fact]

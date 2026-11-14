@@ -48,7 +48,7 @@ In both table views the copy key SHALL place the selected row's full folder path
 - **THEN** nothing is copied and the status line says the clipboard was busy and to try again
 
 ### Requirement: The editor key opens the folder in the chosen editor
-In both table views the editor key SHALL open the selected row's folder in the editor chosen in settings, without waiting for the editor to close, without passing Cader's Claude Code session markers to it, and without the folder path ever being read by a command shell. When the chosen editor, preset or Custom, cannot be found or will not start, nothing SHALL be started and the status line SHALL say so in Cader's words and that the Config tab's Open folder with row chooses another.
+In both table views the editor key SHALL open the selected row's folder in the editor chosen in settings, without waiting for the editor to close, without passing Cader's Claude Code session markers to it, without the folder path ever being read by a command shell, and without anything the editor writes reaching Cader's screen. When the chosen editor, preset or Custom, cannot be found or will not start, nothing SHALL be started and the status line SHALL say so in Cader's words and that the Config tab's Open folder with row chooses another.
 
 #### Scenario: Open in VS Code
 - **WHEN** the editor setting is VS Code and the user presses the editor key on a row
@@ -73,6 +73,10 @@ In both table views the editor key SHALL open the selected row's folder in the e
 #### Scenario: Folder gone
 - **WHEN** the selected session's working directory no longer exists
 - **THEN** nothing is started and the status line says the folder no longer exists
+
+#### Scenario: An editor that prints as it starts
+- **WHEN** the editor setting is VS Code and VS Code writes a deprecation warning to its standard error as it starts
+- **THEN** VS Code opens the folder, and Cader's screen shows no line of that warning, before or after its next redraw
 
 ### Requirement: The solution key opens the folder's solution
 In both table views the solution key SHALL look for files ending `.sln` or `.slnx` directly in the selected row's folder and, when none are there, directly in its `src` folder. One solution found SHALL be opened; several SHALL open the one whose name matches the row's repository name, else ask the user which to open from a list of their paths relative to the folder, in a dialog whose tab title names it; none SHALL be reported in the status line.

@@ -6,7 +6,7 @@ Lets the user see and change where Cader looks for repositories, where it puts n
 ## Requirements
 
 ### Requirement: Settings live in one file with defaults
-Cader SHALL keep its settings in `config.json` in its state folder: the repository roots, the worktree root, the editor, the default worktree base and the default place for a new session. A missing, corrupt or unreadable file, a number where a base or place name belongs, or a missing property SHALL read as the default: roots `<home>\source\repos`, worktree root `worktrees` beside the first repository root, editor VS Code, base the remote default branch, place a new worktree.
+Cader SHALL keep its settings in `config.json` in its state folder: the repository roots, the worktree root, the editor, the default worktree base, the default place for a new session and whether the diagnostic log is written to a file. A missing, corrupt or unreadable file, a number where a base or place name belongs, or a missing property SHALL read as the default: roots `<home>\source\repos`, worktree root `worktrees` beside the first repository root, editor VS Code, base the remote default branch, place a new worktree, diagnostic log off.
 
 #### Scenario: No settings file
 - **WHEN** Cader starts and `config.json` does not exist
@@ -35,6 +35,14 @@ Cader SHALL keep its settings in `config.json` in its state folder: the reposito
 #### Scenario: A file Cader may not read
 - **WHEN** `config.json` exists but the user's account is denied reading its contents
 - **THEN** Cader starts with every default and does not exit
+
+#### Scenario: The diagnostic log by hand
+- **WHEN** `config.json` holds `diagnosticLog` of `true`
+- **THEN** Cader writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log` from its first event, and the Config tab's Diagnostic log row reads on
+
+#### Scenario: Not a true or false
+- **WHEN** `config.json` holds `diagnosticLog` of `"yes"`
+- **THEN** Cader starts with every default, as it does for a corrupt file, and writes no log file
 
 ### Requirement: The editor is a preset or a custom command
 The editor setting SHALL be one of the presets VS Code, Visual Studio, Rider and Explorer, or a custom executable, named by its full path, with arguments in which `{folder}` stands for the folder to open. Visual Studio SHALL open the folder in the newest installed Visual Studio.
@@ -110,7 +118,7 @@ A setting's dialog SHALL refuse to save, name the problem and keep the dialog op
 - **THEN** nothing is saved and the dialog asks for a repository root
 
 ### Requirement: Saved settings apply without a restart
-Saving SHALL write `config.json` and SHALL make every later scan, wizard, worktree creation, editor launch and the Config tab use the saved values, without restarting Cader. Saving SHALL keep the file readable by hand, with the property names `repositoryRoots`, `worktreeRoot`, `editor` and `defaultBase`.
+Saving SHALL write `config.json` and SHALL make every later scan, wizard, worktree creation, editor launch, diagnostic event and the Config tab use the saved values, without restarting Cader. Saving SHALL keep the file readable by hand, with the property names `repositoryRoots`, `worktreeRoot`, `editor`, `defaultBase` and `diagnosticLog`.
 
 #### Scenario: Add a root
 - **WHEN** the user adds `D:\work` as a second repository root and saves
@@ -119,6 +127,10 @@ Saving SHALL write `config.json` and SHALL make every later scan, wizard, worktr
 #### Scenario: Change the worktree root
 - **WHEN** the user sets the worktree root to `D:\worktrees` and saves, then starts a session in a new worktree
 - **THEN** the worktree is created under `D:\worktrees`
+
+#### Scenario: Turn the diagnostic log on
+- **WHEN** the user turns Diagnostic log on and then stops a session
+- **THEN** `config.json` holds `"diagnosticLog": true` and `cader.log` gains the line for the stop, without a restart
 
 ### Requirement: An editor Cader cannot use reads as VS Code
 A custom editor whose arguments do not contain `{folder}`, whose executable is not a full path, or whose executable is a `.cmd` or `.bat` file SHALL be refused when saved from its dialog and SHALL read as VS Code when found in the file; a preset name the file holds that Cader no longer offers SHALL read as VS Code with every other setting kept. A custom editor in the file whose executable does not exist SHALL be kept as it is, so the editor key reports it rather than another editor opening.
@@ -196,3 +208,26 @@ Saving SHALL write the new `config.json` beside the old one and replace it in on
 #### Scenario: Another process is reading the file
 - **WHEN** `cader here` is reading `config.json` as the console saves a new worktree root
 - **THEN** the save completes, the new worktree root is read by the next reader, and only `config.json` is left in the state folder
+
+### Requirement: A hand-edited settings file is read leniently but not twice
+A `config.json` that names the same property twice SHALL read as a corrupt file does, every setting its default. A property Cader does not know SHALL be ignored and every other setting kept, so a file written by a newer or older version still reads. A property's name SHALL be matched whatever its letter case.
+
+#### Scenario: A setting named twice
+- **WHEN** `config.json` holds `repositoryRoots` of `D:\work` and then `repositoryRoots` again of `E:\other`
+- **THEN** Cader starts with every default, as it does for a corrupt file, and does not exit
+
+#### Scenario: A property Cader does not know
+- **WHEN** `config.json` holds `repositoryRoots` of `D:\work` and a `theme` property no version of Cader writes
+- **THEN** Cader scans `D:\work` and the other settings read as their defaults
+
+#### Scenario: A file from a newer version
+- **WHEN** a newer Cader has written `config.json` with every setting this version knows and one it does not
+- **THEN** this version reads every setting it knows, and a save from the Config tab keeps them
+
+#### Scenario: A name in another letter case
+- **WHEN** `config.json` holds `RepositoryRoots` of `D:\work`
+- **THEN** Cader scans `D:\work`
+
+#### Scenario: A null where a setting belongs
+- **WHEN** `config.json` holds `repositoryRoots` of `D:\work` and `worktreeRoot` of `null`
+- **THEN** Cader scans `D:\work` and puts new worktrees under `D:\worktrees`, as it does when `worktreeRoot` is missing

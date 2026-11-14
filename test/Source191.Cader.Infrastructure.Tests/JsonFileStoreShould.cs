@@ -5,6 +5,7 @@ using Source191.Cader.Ports;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -92,11 +93,12 @@ public sealed class JsonFileStoreShould : IDisposable
             "arguments": null
           },
           "checkForUpdates": true,
-          "defaultPlace": "NewWorktree"
+          "defaultPlace": "NewWorktree",
+          "diagnosticLog": false
         }
         """;
 
-    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
@@ -358,6 +360,26 @@ public sealed class JsonFileStoreShould : IDisposable
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "defaultPlace": 7 }""", TestContext.Current.CancellationToken);
 
         (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task ReadAConfigHoldingTextForTheDiagnosticLogAsMissing()
+    {
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "diagnosticLog": "yes" }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task WriteTheDiagnosticLogTurnedOn()
+    {
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), DiagnosticLog: true);
+
+        await Store.WriteConfigAsync(saved);
+
+        (await Store.ReadConfigAsync()).ShouldBe(saved);
+        (await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken)).ShouldContain("\"diagnosticLog\": true");
     }
 
     [Fact]
@@ -745,6 +767,134 @@ public sealed class JsonFileStoreShould : IDisposable
         (await Store.ReadUpdateCheckAsync()).ShouldBe(new UpdateCheckRecord.Never());
     }
 
+    [Fact]
+    public async Task ReadAnEditorNamingOnlyItsPreset()
+    {
+        await WriteRawAsync("config.json", """{ "editor": { "preset": "Rider" } }""");
+
+        UserConfig read = await Store.ReadConfigAsync();
+
+        read.ShouldBe(new UserConfig(RepositoryRoots: null, DefaultBase: null, WorktreeRoot: null, new EditorSetting("Rider", Executable: null, Arguments: null)));
+    }
+
+    [Fact]
+    public async Task SkipACreatedWorktreeWithoutABranch()
+    {
+        await WriteRawAsync(@"created\full.json", CreatedRecordJson);
+        await WriteRawAsync(@"created\no-branch.json", CreatedRecordWith(branch: null));
+
+        (await Store.ReadCreatedWorktreesAsync()).Select(worktree => worktree.Path.Value).ShouldBe([@"C:\Users\me\source\repos\Northwind.Orders-fix-123"]);
+    }
+
+    [Fact]
+    public async Task SkipACreatedWorktreeWhoseBranchIsNull()
+    {
+        await WriteRawAsync(@"created\full.json", CreatedRecordJson);
+        await WriteRawAsync(@"created\null-branch.json", CreatedRecordWith(branch: "null"));
+
+        (await Store.ReadCreatedWorktreesAsync()).Select(worktree => worktree.Path.Value).ShouldBe([@"C:\Users\me\source\repos\Northwind.Orders-fix-123"]);
+    }
+
+    [Fact]
+    public async Task SkipATabFileWithoutAColour()
+    {
+        await WriteRawAsync(@"tabs\full.json", SessionTabJson);
+        await WriteRawAsync(@"tabs\no-colour.json", Regex.Replace(OwnTabJson, "\"colour\": \\{[^}]*\\},\\s*", string.Empty));
+
+        (await Store.ReadTabsAsync()).ShouldBe([SessionTab]);
+    }
+
+    [Fact]
+    public async Task SkipATabFileWhoseOwnerIsNull()
+    {
+        await WriteRawAsync(@"tabs\full.json", SessionTabJson);
+        await WriteRawAsync(@"tabs\null-owner.json", OwnTabJson.Replace("\"sessionId\": \"console\"", "\"sessionId\": null", StringComparison.Ordinal));
+
+        (await Store.ReadTabsAsync()).ShouldBe([SessionTab]);
+    }
+
+    [Fact]
+    public async Task SkipARecentRepositoryWhosePathIsNull()
+    {
+        await WriteRawAsync(@"recent\full.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Billing", "usedAt": "2026-10-23T12:00:00+00:00" }""");
+        await WriteRawAsync(@"recent\null-path.json", """{ "path": null, "usedAt": "2027-01-01T00:00:00+00:00" }""");
+
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")]);
+    }
+
+    [Fact]
+    public async Task ReadAnUpdateCheckWithoutCheckedAtAsNever()
+    {
+        await WriteRawAsync("update-check.json", """{ "newest": "0.21.0" }""");
+
+        (await Store.ReadUpdateCheckAsync()).ShouldBe(new UpdateCheckRecord.Never());
+    }
+    [Fact]
+    public async Task ReadAConfigNamingASettingTwiceAsMissing()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "repositoryRoots": ["E:\\other"] }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task SkipARecentRepositoryNamingItsPathTwice()
+    {
+        await WriteRawAsync(@"recent\full.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Billing", "usedAt": "2026-10-23T12:00:00+00:00" }""");
+        await WriteRawAsync(@"recent\twice.json", """{ "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders", "path": "C:\\Users\\me\\source\\repos\\Northwind.Orders", "usedAt": "2027-01-01T00:00:00+00:00" }""");
+
+        (await Store.ReadRecentRepositoriesAsync()).ShouldBe([FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")]);
+    }
+    [Fact]
+    public async Task ReadAConfigHoldingAnUnknownPropertyAsItsKnownSettings()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "theme": "dark" }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadAConfigWhoseNamesAreInAnotherCase()
+    {
+        await WriteRawAsync("config.json", """{ "RepositoryRoots": ["D:\\work"] }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadANullWorktreeRootAsMissing()
+    {
+        await WriteRawAsync("config.json", """{ "repositoryRoots": ["D:\\work"], "worktreeRoot": null }""");
+
+        (await Store.ReadConfigAsync()).ShouldBe(new UserConfig([@"D:\work"]));
+    }
+
+    [Fact]
+    public async Task ReadACreatedWorktreeHoldingAnUnknownKey()
+    {
+        await WriteRawAsync(@"created\note.json", CreatedRecordJson.Replace("\"createdAt\"", "\"note\": \"by hand\",\"createdAt\"", StringComparison.Ordinal));
+
+        (await Store.ReadCreatedWorktreesAsync()).Single().Branch.ShouldBe(BranchName.From("fix-123"));
+    }
+    /// <summary>The created-worktree record for Northwind.Billing-invoice-pdf, its branch member written as the JSON given, or left out when null.</summary>
+    private static string CreatedRecordWith(string? branch)
+    {
+        string branchMember = branch is null ? string.Empty : $"\"branch\": {branch},\n  ";
+
+        return $$"""
+            {
+              "path": "C:\\Users\\me\\source\\worktrees\\Northwind.Billing-invoice-pdf",
+              {{branchMember}}"repository": "C:\\Users\\me\\source\\repos\\Northwind.Billing",
+              "createdAt": "2026-10-23T12:00:00+00:00"
+            }
+            """;
+    }
+    private async Task WriteRawAsync(string relativeFile, string json)
+    {
+        string file = Path.Combine(folder, relativeFile);
+        Directory.CreateDirectory(Path.GetDirectoryName(file) ?? folder);
+        await File.WriteAllTextAsync(file, json, TestContext.Current.CancellationToken);
+    }
     /// <summary>update-check.json exactly as the store wrote it before the record had named cases, with the newest member's JSON.</summary>
     private static string UpdateCheckJson(string newestJson) => $$"""
         {

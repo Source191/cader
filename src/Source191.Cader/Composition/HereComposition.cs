@@ -15,6 +15,10 @@ internal static class HereComposition
     {
         ClaudeCli claude = launch.Claude;
         LaunchService launchService = launch.Launches;
+        // The settings are read once, so the Diagnostic log setting decides whether this run is written to the log file; a change made in a console
+        // meanwhile applies to the next run, as the two processes share no memory.
+        CurrentSettings settings = await CurrentSettings.LoadAsync(parts.Store, FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
+        parts.LogSwitch.PointAt(() => settings.Value.DiagnosticLog);
         // here does not ask Claude Code for its version, so as not to slow the attach down.
         parts.RecordStart(new ClaudeVersionReport.NotRead());
         TerminalConsole hereConsole = new(Console.Out, Wording.TabTitle);

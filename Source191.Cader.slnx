@@ -26,6 +26,7 @@
     <Project Path="src/Source191.Cader/Source191.Cader.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/Source191.Cader.NoisyEditor/Source191.Cader.NoisyEditor.csproj" />
     <Project Path="test/Source191.Cader.TestDoubles/Source191.Cader.TestDoubles.csproj" />
     <Project Path="test/Source191.Cader.Core.Tests/Source191.Cader.Core.Tests.csproj" />
     <Project Path="test/Source191.Cader.Infrastructure.Tests/Source191.Cader.Infrastructure.Tests.csproj" />

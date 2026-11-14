@@ -10,7 +10,7 @@ namespace Source191.Cader.Application.Effects;
 /// </summary>
 public static class Composition
 {
-    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, OwnProcess own, DiagnosticLog log)
+    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, OwnProcess own, DiagnosticLog log, string diagnosticLogFile)
     {
         OpenTabHandler tabs = new(ports.Tabs, ports.Processes, ports.Terminal, ports.Clock, scripts);
         SessionTabs sessionTabs = new(ports.Tabs, ports.Processes);
@@ -35,6 +35,7 @@ public static class Composition
             .Register(new OpenInEditorHandler(ports.Editors, ports.Desktop, ports.Folders, settings))
             .Register(new SaveSettingsHandler(settings))
             .Register(new ToggleUpdateCheckHandler(settings))
+            .Register(new ToggleDiagnosticLogHandler(settings, diagnosticLogFile))
             .Register(new StartUpdateHandler(ports.Terminal, scripts, own));
     }
 }

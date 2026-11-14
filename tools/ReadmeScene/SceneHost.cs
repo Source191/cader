@@ -80,7 +80,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         EffectPorts ports = new(claude, gitCli, processRegistry, transcripts, terminal, store, clock, clipboard, desktop, editors, fileFolders, crashFile);
         TabScripts tabScripts = new(executables.Claude, ownPath);
         OwnProcess own = new(Environment.ProcessId, home, new ProgramLocation.Missing());
-        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, own, log);
+        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, own, log, Path.Combine(folders.State, "cader.log"));
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);
@@ -96,8 +96,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         FolderLabels folderLabels = new(settings, home);
         SessionRowEnricher enricher = new(gitCli, store, processRegistry, clock, transcripts, pullRequests);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, log);
-        SetupFactsReader setup = new(fragment, ClaudeSettings.ForCurrentUser(), store, store.ConfigFile, DiagnosticLogSetting.Read(null), log);
-        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, counts.Refreshes);
+        SetupFactsReader setup = new(fragment, ClaudeSettings.ForCurrentUser(), store, store.ConfigFile, log);
+        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, counts.Refreshes, Path.Combine(folders.State, "cader.log"));
 
         SessionActivity activity = new(clock);
         RunningLoads listings = new();
