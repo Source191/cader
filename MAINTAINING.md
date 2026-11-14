@@ -2,6 +2,10 @@
 
 This guide is for the owner: how a merge becomes a release, how a release reaches winget, and the jobs and secrets behind them. Contributors need only [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Ownership
+
+Cader is the owner's personal project, and the owner owns it. Every account, subscription, token and certificate used to build, sign, publish or package it is the owner's own or the project's (the Source191 GitHub organisation, the winget submission, and the code signing service once it is set up), and it is published under the project's and the owner's names alone. The one other name a user may see is the signing service's: a signed `cader.exe` will name SignPath Foundation as its publisher, because that is whom the free open-source certificate is issued to (openspec change `sign-the-executable`).
+
 ## Workflows at a glance
 
 | Workflow | Runs | What it does | Secrets and settings |

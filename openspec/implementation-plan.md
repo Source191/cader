@@ -55,7 +55,7 @@ Step numbers are the order of merge; pull requests in the same step are independ
 Blocking (the pull request cannot start or finish without them):
 
 - **E:** 1.1 (the repository can use the hosted `windows-11-arm` runner) and 1.2 (Arm installers exist for the winget dependencies). If 1.1 fails, stop and re-plan.
-- **G:** 1.1 and 1.2 (signing service, identity, cost and account, the Entra federated credential, the `signing` environment limited to `main`).
+- **G:** 1.1 (the SignPath Foundation application and its acceptance, which can take days, before anything starts) and 1.2 (the SignPath project, signing policy, CI user and token, and the `signing` environment limited to `main`). Once merged, every release waits for the owner's approval of its signing request in SignPath.
 - **H:** 3.1 (the `git fetch` credential spike on a developer machine), before any port change.
 - **D:** 2.2 (the owner agrees the timings and break score from the measured baseline).
 
@@ -78,4 +78,5 @@ After merge (the change is archived without them, but they are not forgotten):
 - **Fetch is split in two** so that the owner's spike and the git work are reviewed apart from the screens; part 1 changes the words that say Cader never fetches, so no release says something untrue.
 - **.NET 11 is split in four** on its own task sections; each slice builds and passes on `net11.0` or leaves `net11.0` untouched, so `main` is always releasable. The minor `Version` bump and the `CHANGELOG.md` summary are in M.
 - **Signing and arm64:** arm64 first, then signing amended to sign and verify both zips.
+- **Signing service (14 November 2026):** SignPath Foundation rather than Azure Artifact Signing, at the owner's choice, to avoid a monthly cost; one signing request per release covers both executables, so the owner approves once (sign-the-executable's design).
 - **This plan is not an OpenSpec change** because it changes no behaviour, tooling or code, only schedules existing changes.

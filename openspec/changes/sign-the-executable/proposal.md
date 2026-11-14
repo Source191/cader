@@ -6,33 +6,32 @@ Issue #93 left signing open: "unsigned executables trip SmartScreen and some ant
 
 ## What Changes
 
-- `cader.exe` in every stable release zip carries an Authenticode signature with a timestamp, made in CI from `main` and never on a developer machine or a pull request build.
-- A new `sign` job in `pipeline.yml`, between the check job and the release job, runs only for a release. It takes the smoke-checked zip, signs the executable, rebuilds the zip, runs the smoke check on the signed zip and hands that zip on; the release job then attests and attaches it as before.
-- The signing identity is held by an approval-free but branch-restricted `signing` environment and reached by OIDC, so no certificate or password is stored as a secret.
+- `cader.exe` in both release zips (`win-x64` and `win-arm64`) carries an Authenticode signature with a timestamp, made through SignPath Foundation's free open-source signing from a workflow run on `main`, never on a developer machine or a pull request build. The certificate is SignPath Foundation's, so the signature names SignPath Foundation as the publisher.
+- A new `sign` job in `pipeline.yml`, after the check job, runs only for a release: it sends both executables to SignPath in one signing request, which the owner approves in SignPath, and hands the signed pair on. A new `signed` job per architecture rezips each signed executable, verifies its signature and runs the smoke check on the signed zip; the release job then attests and attaches both signed zips as before.
+- The SignPath API token is held only by a `signing` environment that accepts only `main` and has no GitHub reviewer, belongs to a submit-only CI user, and cannot sign without the owner's approval; no certificate or private key is held anywhere in the repository.
 - Prereleases are signed too, so what is tried is what ships.
-- `publish.yml` refuses a zip whose executable is not validly signed, as well as one without provenance.
-- The signing service and its cost are chosen in the design (recommendation: Azure Artifact Signing; the alternative is SignPath Foundation).
-- MAINTAINING says how signing is set up, renewed and revoked.
+- `publish.yml` refuses a zip whose executable is not validly signed, as well as one without provenance, naming the architecture.
+- The README gains the code signing policy SignPath requires and a line on checking the signature; MAINTAINING says how signing is set up, approved, rotated and revoked.
 
 ## Capabilities
 
 ### New Capabilities
 
 ### Modified Capabilities
-- `installation`: a released executable is signed, and a release whose executable is unsigned or whose signature does not verify is neither published nor submitted to winget. This capability is added by `install-with-winget`, which must be archived first.
+- `installation`: a released executable is signed, and a release whose executable is unsigned or whose signature does not verify is neither published nor submitted to winget.
 
 ## Impact
 
-- **Code:** none in the tool.
-- **Workflows:** a `sign` job in `pipeline.yml`, a signature check in `publish.yml`, a `Test-Signature.ps1` script (with tests) shared by both.
-- **Services:** one signing account (Azure subscription resources or a SignPath project) and an Entra app registration with a federated credential for the repository's `main` branch.
-- **Cost:** about US$10 a month for Azure Artifact Signing's Basic tier at the time of writing, or nothing for SignPath Foundation if the project qualifies (verify both before deciding).
-- **Docs:** MAINTAINING (setup, rotation), README (a line on verifying the signature), `.claude\rules\checks.md` and `security.md`.
+- **Code:** possibly one line in the tool: `Product` set to `Cader` in `src\Source191.Cader\Source191.Cader.csproj` if the executable's product name is not already `Cader`, which SignPath's terms require (with the version bump every such change needs).
+- **Workflows:** `sign` and `signed` jobs in `pipeline.yml`, the smoke steps moved into a shared composite action, a signature check in `publish.yml`, a `Test-Signature.ps1` script (with Pester tests) shared by both.
+- **Services:** a SignPath Foundation project with the GitHub.com trusted build system, the SignPath GitHub App on the repository, a CI user and its API token, and the `signing` environment.
+- **Cost:** nothing in money. Each release, prereleases and Dependabot bumps included, waits for the owner to approve its signing request in SignPath.
+- **Docs:** README (the code signing policy and checking the signature), MAINTAINING (setup, approval, rotation), the stable release notes (a code signing policy link), `.claude\rules\checks.md` and `security.md`.
 
 ## Out of scope
 
-- A `win-arm64` build, which is `add-win-arm64-build` (signing must cover its zip too, whichever lands second).
-- Signing the third-party `libonigwrap.dll`; only Cader's own executable is signed.
+- Signing the third-party `libonigwrap.dll`; only Cader's own executables are signed.
 - An MSIX or MSI installer and the Microsoft Store.
-- Guaranteeing that SmartScreen never warns: reputation can lag a new publisher, and the result is measured, not promised.
+- Guaranteeing that SmartScreen never warns: reputation can lag, and the result is measured, not promised.
+- A certificate in the owner's or the project's own name, which would need a paid service.
 - Multiple Claude accounts, which is a later change.

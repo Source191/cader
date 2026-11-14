@@ -30,6 +30,7 @@ Facts that matter only in part of the code are path-scoped rules in `.claude\rul
 - Test fixtures use made-up Northwind.* repository names and `C:\Users\me` paths; never real repositories or people. Never read or write the real `%LOCALAPPDATA%\Cader\config.json`, the Windows Terminal Fragments folder or `~\.claude\settings.json` from a test or a session: use `InMemoryState` and `TestSettings`, and a temporary folder as the root for adapter tests. Tests never reach GitHub: they use `FakePackageVersions` or a stub `HttpMessageHandler`.
 - A project's `.csproj` carries no comments: what is worth recording about a project or one of its settings goes in the `README.md` in that project's folder. The two `Directory.Build.props` files (the root one and `src\Directory.Build.props`) are the exception and keep their comments beside their settings.
 - A newly verified fact about Claude Code, Terminal.Gui, Windows Terminal or Windows is recorded with its date and version in its file in `.claude\rules`.
+- Cader is the owner's personal project, owned by the owner alone: every account, subscription and certificate used to build, sign, publish or package it is the owner's or the project's own (MAINTAINING.md, Ownership).
 - Commit only when asked.
 
 ## Code rules
