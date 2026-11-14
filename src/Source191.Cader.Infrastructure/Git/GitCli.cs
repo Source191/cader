@@ -30,6 +30,24 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     public Task FetchBranchAsync(FolderPath repository, RemoteBranch branch, CancellationToken cancellationToken) =>
         RunOrThrowAsync(repository.Value, ["fetch", branch.Remote, $"+refs/heads/{branch.Branch.Value}:{TrackingRef(branch)}"], NoPrompts, cancellationToken);
 
+    public async Task<bool> BranchExistsAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
+    {
+        ProcessResult result = await RunAsync(repository.Value, ["rev-parse", "--verify", "--quiet", $"refs/heads/{branch.Value}"], cancellationToken);
+
+        return result.ExitCode == 0;
+    }
+
+    /// <summary>--ff-only: git moves the branch only when it is behind, and refuses rather than merge or overwrite a local change (https://git-scm.com/docs/git-merge).</summary>
+    public Task FastForwardCheckoutAsync(FolderPath checkout, RemoteBranch target, CancellationToken cancellationToken) =>
+        RunOrThrowAsync(checkout.Value, ["merge", "--ff-only", TrackingRef(target)], cancellationToken);
+
+    /// <summary>
+    /// A fetch from the repository itself: with no + in the refspec git refuses a move that is not a fast-forward, and it
+    /// refuses a branch checked out in any worktree (https://git-scm.com/docs/git-fetch).
+    /// </summary>
+    public Task FastForwardBranchAsync(FolderPath repository, BranchName branch, RemoteBranch target, CancellationToken cancellationToken) =>
+        RunOrThrowAsync(repository.Value, ["fetch", ".", $"{TrackingRef(target)}:refs/heads/{branch.Value}"], cancellationToken);
+
     public async Task<IReadOnlyList<GitWorktreeEntry>> ListWorktreesAsync(string repository, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(repository, ["worktree", "list", "--porcelain"], cancellationToken);
