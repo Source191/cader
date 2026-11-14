@@ -29,7 +29,7 @@ Issue #93 asked for `win-x64` and `win-arm64` builds. 0.21.0 shipped `win-x64` o
 
 ## Out of scope
 
-- Code signing, which is `sign-the-executable`.
+- Code signing, which is tracked in issue #263.
 - `win-x86`, macOS and Linux.
 - Multiple Claude accounts, which is a later change.
 - Hand-testing Terminal.Gui and Windows Terminal on real Arm hardware beyond the owner's one check in the tasks.
