@@ -262,6 +262,26 @@ public sealed class GitCliIntegrationShould : IDisposable
         (await OutputOfGitAsync(Repository, "rev-parse", "refs/heads/main")).ShouldBe(local);
     }
 
+    /// <summary>
+    /// A main ahead of origin's, with nothing new on origin: merge --ff-only answers "Already up to date" in the checkout,
+    /// while fetch . refuses to move a branch elsewhere backwards, so Pull warns only when main is not checked out.
+    /// </summary>
+    [Fact]
+    public async Task LeaveAMainAheadOfOriginWhereItIsEitherWay()
+    {
+        await CloneABareOriginAsync();
+        await CommitInAsync(Repository, "Local.cs", "class Local;");
+        string local = await OutputOfGitAsync(Repository, "rev-parse", "HEAD");
+        await git.FetchBranchAsync(FolderPath.From(Repository), RemoteBranch.From("origin/main"), TestContext.Current.CancellationToken);
+
+        await git.FastForwardCheckoutAsync(FolderPath.From(Repository), RemoteBranch.From("origin/main"), TestContext.Current.CancellationToken);
+        (await OutputOfGitAsync(Repository, "rev-parse", "HEAD")).ShouldBe(local);
+
+        await RunGitAsync("switch", "-q", "-c", "fix-99");
+        await Should.ThrowAsync<GitException>(() => git.FastForwardBranchAsync(FolderPath.From(Repository), BranchName.From("main"), RemoteBranch.From("origin/main"), TestContext.Current.CancellationToken));
+        (await OutputOfGitAsync(Repository, "rev-parse", "refs/heads/main")).ShouldBe(local);
+    }
+
     [Fact]
     public async Task SayWhetherALocalBranchExists()
     {
