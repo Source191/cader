@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "project": "Source191.Cader.Core.csproj",
+    "test-runner": "mtp",
+    "reporters": ["html", "markdown", "json", "progress"],
+    "thresholds": {
+      "high": 95,
+      "low": 90,
+      "break": 86
+    }
+  }
+}

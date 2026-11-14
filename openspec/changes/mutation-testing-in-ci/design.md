@@ -94,7 +94,7 @@ Every Sunday at 03:00 UTC (`schedule`), and on `workflow_dispatch`, the same job
 
 - **Timeouts:** a per-release run is given 60 minutes, and the weekly run 300 (a hosted job's limit is 360).
 - **Report:** `mutation-report.md` is appended to `$GITHUB_STEP_SUMMARY`, and `StrykerOutput` is uploaded as an artefact kept 30 days.
-- **Break score:** `--break-at` comes from the config, so a score below it fails the run and GitHub sends its usual failed-run notice.
+- **Break score:** `--break-at` comes from the config for a full run, so a score below it fails the run and GitHub sends its usual failed-run notice. A release run overrides it with `--break-at 0`: its score covers only the mutants tested, and its survivors go to the issue.
 
 ### Findings go to one rolling `mutation` issue, from a job of its own
 
@@ -140,4 +140,16 @@ This follows `claude-contract.yml`'s `report` job.
 
 ## Open Questions
 
-- **The break score's value:** to be chosen after the baseline full run, for example the measured whole-Core score less five points, rounded down. It changes only one number in `stryker-config.json`, not the approach.
+- **The break score's value:** decided on 14 November 2026: 86 (see Found while building).
+
+## Found while building
+
+- **The owner decided task 2.2 on 14 November 2026 (option A):** keep the per-release trigger and the weekly full run; the break score is 86, from the 91.22 % full run on a runner on 13 November 2026 (less five points, rounded down; 86.78 % on the developer machine); it applies to the weekly full run only, and a release (`--since`) run passes `--break-at 0`, since its score covers only the mutants tested; the weekly comparison keeps its 0.5 point tolerance.
+- **The timings favour the per-release trigger:** locally a `--since` run took 3 to 8 minutes and a full run 9 to 11 (`checks.md`), and a full run on a runner 15.5 minutes (91.22 %), so a `--since` run is under 30 minutes in every case measured.
+- **The weekly comparison has a tolerance of 0.5 points:** two full runs of the same code scored 86.78 and 86.95 %, so an exact "lower than before" would raise the issue by chance.
+- **A `--since` run barely narrows when tests change:** a changed test counts every mutant it covers, and the shared fixtures cover nearly everything, so the saving shows only for a release that changes no tests; a changed non-C# file in the test project, `stryker-config.json` included, tests everything.
+- **The report job's rights are one fewer:** it holds only `issues: write`. The mutation job (with `actions: read`) does the previous-run lookup and writes the whole comment into `mutation-results`, so nothing from the repository runs with write rights.
+- **The range ignores a `workflow_run` that stopped at the notice:** an untagged commit's run ends as a success without mutating, so only a `workflow_run` on a `v*`-tagged commit, or any schedule or dispatch run, can start a later range.
+- **`mutation-results` holds a cut report:** the full JSON is 12 MB of coverage ids, so `Write-MutationRun.ps1` keeps only the status, mutator, replacement and line of the four counted statuses (about 450 KB), and the scripts' fixtures have that shape.
+- **A new workflow cannot be dispatched before it is on `main`:** 3.1's and 3.5's dispatch runs, and the deliberate weak-test run, are for the owner after the merge.
+- **What ran on a runner:** a temporary `push` trigger on the branch (removed again) ran the full-run path on `windows-latest`: checkout, the range step, the read-only cache restore, `dotnet tool restore`, Stryker, the job summary, the previous-run lookup (none), `run.json` and both artefacts all passed (run 43478448861, 16 min 12 s). The `workflow_run` path, the `--since` run and the `report` job have not run on a runner, and the first `workflow_dispatch` is the owner's after the merge.
