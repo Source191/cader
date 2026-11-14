@@ -201,19 +201,21 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// <summary>Acts on a live process; a process that has gone, or refuses the action, is left alone.</summary>
     private static void WithProcess(int processId, Action<Process> action)
     {
+        if (!Process.TryGetProcessById(processId, out Process? process))
+        {
+            return;
+        }
+
         try
         {
-            using Process process = Process.GetProcessById(processId);
-
-            action(process);
+            using (process)
+            {
+                action(process);
+            }
         }
         catch (AggregateException)
         {
             // Process.Kill(entireProcessTree: true) throws this when a descendant has already gone or cannot be ended; what could be ended was.
-        }
-        catch (ArgumentException)
-        {
-            // The process has gone.
         }
         catch (InvalidOperationException)
         {
