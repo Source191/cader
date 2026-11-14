@@ -25,4 +25,4 @@
 - [x] 4.2 Update `.claude\rules\console-screen.md` so the Config tab's `DiagnosticLog` no longer carries the file and the new Setup case is listed
 - [x] 4.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` (minor while pre-1.0) and add the changelog line the repository keeps
 - [ ] 4.4 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate open-the-diagnostic-log`; manually check with `tools\install-local.ps1`, with the log on and off and the file present and absent: path selectable, `f` opens the file in VS Code, `c` copies the path, tooltip has no path (clearing NO_COLOR, CLAUDECODE, CLAUDE_PID and CLAUDE_CODE_* first)
-- [ ] 4.5 Archive the change in the same pull request, with a description that opens with Why, Benefit and What changed
+- [x] 4.5 Archive the change in the same pull request, with a description that opens with Why, Benefit and What changed
