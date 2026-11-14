@@ -31,6 +31,8 @@ public static class ConfigView
             ConfigRow.RepositoryRoot root => root.Path.Value,
             ConfigRow.WorktreeRoot worktreeRoot => worktreeRoot.Path.Value,
             ConfigRow.Setup { State: SetupState.At at } => at.Path,
+            ConfigRow.Setup { State: SetupState.LogFile file } => file.Path,
+            ConfigRow.Setup { State: SetupState.LogOff off } => off.Path,
             _ => null,
         };
 
@@ -49,7 +51,7 @@ public static class ConfigView
             { Name: KeyName.Enter } => RowAction(state, Enter),
             { Name: KeyName.Character, Character: '/' } => Unchanged(state with { List = state.List.StartFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithPath(row, path => new CopyFolderPath(FolderPath.From(path)))),
-            { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => new OpenFolderInEditor(FolderOf(row, path)))),
+            { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => OpenEffect(row, path))),
             _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
@@ -84,6 +86,14 @@ public static class ConfigView
     }
 
     private static RowDecision WithPath(ConfigRow row, Func<string, ViewEffect> effect) => TryPathOf(row, out string? path) ? new RowDecision.Act(effect(path)) : new RowDecision.Explain(new StatusMessage.NoPathHere());
+
+    /// <summary>The settings and the diagnostic log files open themselves; every other path opens as a folder.</summary>
+    private static ViewEffect OpenEffect(ConfigRow row, string path)
+    {
+        return row is ConfigRow.Setup { Item: SetupItem.SettingsFile or SetupItem.DiagnosticLogFile }
+            ? new OpenFileInEditor(FolderPath.From(path))
+            : new OpenFolderInEditor(FolderOf(row, path));
+    }
 
     /// <summary>A setup row's path is a file, so the folder holding it is the one to open; a root is a folder already.</summary>
     private static FolderPath FolderOf(ConfigRow row, string path)

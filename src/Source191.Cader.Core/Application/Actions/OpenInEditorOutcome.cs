@@ -17,4 +17,7 @@ public abstract record OpenInEditorOutcome : Outcome
 
     /// <summary>The folder was deleted since the row was listed, so nothing was started.</summary>
     public sealed record FolderMissing(string FolderName) : OpenInEditorOutcome;
+
+    /// <summary>The file was not there when asked for, so nothing was started; the diagnostic log is not written until the setting is on.</summary>
+    public sealed record FileMissing(string FileName) : OpenInEditorOutcome;
 }

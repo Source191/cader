@@ -14,6 +14,7 @@ public static class Composition
     {
         OpenTabHandler tabs = new(ports.Tabs, ports.Processes, ports.Terminal, ports.Clock, scripts);
         SessionTabs sessionTabs = new(ports.Tabs, ports.Processes);
+        EditorLauncher editor = new(ports.Editors, ports.Desktop, ports.Folders, settings);
 
         return new EffectDispatcher(log, ports.Clock)
             .Register(tabs)
@@ -32,7 +33,8 @@ public static class Composition
             .Register(new OpenSolutionHandler(ports.Desktop))
             .Register(new OpenPullRequestHandler(ports.Desktop))
             .Register(new OpenReleasePageHandler(ports.Desktop))
-            .Register(new OpenInEditorHandler(ports.Editors, ports.Desktop, ports.Folders, settings))
+            .Register(new OpenInEditorHandler(editor, ports.Folders))
+            .Register(new OpenFileInEditorHandler(editor, ports.Folders))
             .Register(new SaveSettingsHandler(settings))
             .Register(new ToggleUpdateCheckHandler(settings))
             .Register(new ToggleDiagnosticLogHandler(settings, diagnosticLogFile))
