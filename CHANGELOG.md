@@ -21,7 +21,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
-- No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#265)
+- No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
 
 ## 0.21.1 - 2026-11-13
 
