@@ -329,6 +329,7 @@ public sealed class TerminalSettingsShould : IDisposable
     [Theory]
     [InlineData("{ \"theme\": \"dark\" } // no profiles")]
     [InlineData("{ \"profiles\": [ ")]
+    [InlineData("{ \"profiles\": { \"defaults\": {} }, \"profiles\": [] }")]
     public async Task RefuseAFileWithNoReadableProfileListAndLeaveItAlone(string original)
     {
         Given(settings.Location, original);
