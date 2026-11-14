@@ -21,7 +21,7 @@
 
 ## 3. The workflow
 
-- [ ] 3.1 Add `.github\workflows\mutation.yml`:
+- [x] 3.1 Add `.github\workflows\mutation.yml`:
   - **Triggers:** `workflow_run` on `pipeline` (completed, `main`), weekly `schedule` and `workflow_dispatch`.
   - **Run conditions:** the `push` and `success` conditions.
   - **Permissions:** `contents: read` and `actions: read`.
@@ -30,19 +30,20 @@
   - **Pins:** every action pinned by commit with its version in a comment.
 
   Verify with `actionlint` if installed, and by a `workflow_dispatch` run on the branch completing, with the report in its summary and the artefact uploaded.
+  Verified on 14 November 2026: `workflow_dispatch` run https://github.com/Source191/cader/actions/runs/43602172906 succeeded (kind full, head bbf038e9, score 89.97 %, no earlier full run to compare, `report` job skipped as there was no finding), and the post-merge `workflow_run` run https://github.com/Source191/cader/actions/runs/43601410464 correctly skipped with "The commit is not a release".
 - [x] 3.2 Add the release and range steps:
   - the `v*` tag on `head_sha` (otherwise a notice and stop);
   - the last finished mutation run's head commit from `gh run list`, falling back to the previous `v*` tag;
   - `--since:<that commit>` for `workflow_run`, none for `schedule` and `workflow_dispatch`.
 
   Verify by running the step's script locally against `main`'s history with a recorded `gh run list` answer, for three cases: a tagged commit, an untagged commit, and no earlier run.
-- [ ] 3.3 Restore `pipeline`'s NuGet cache read-only (`actions/cache/restore`, same key), run `dotnet tool restore`, and run Stryker from `test\Source191.Cader.Core.Tests`. Append `mutation-report.md` to the job summary and upload `StrykerOutput` (30 days). Verified by the dispatch run in 3.1.
+- [x] 3.3 Restore `pipeline`'s NuGet cache read-only (`actions/cache/restore`, same key), run `dotnet tool restore`, and run Stryker from `test\Source191.Cader.Core.Tests`. Append `mutation-report.md` to the job summary and upload `StrykerOutput` (30 days). Verified by the dispatch run in 3.1, which uploaded the `mutation-results` artefact (33 KB, `run.json` and the trimmed `mutation-report.json`) and the `stryker-output` artefact (7.4 MB, Stryker's own output folder).
 - [x] 3.4 Write `run.json` (kind, release tag, `--since` commit, whole score) beside `mutation-report.json` and upload both as the `mutation-results` artefact. Set the job's `finding` output:
   - **After a release:** any `Survived` or `NoCoverage` mutant in the report.
   - **After a full run:** the score below the previous full run's, read with `gh run download`; skipped with a notice when that artefact is missing.
 
   Verify by running the step's script locally on the 2.1 fixture, a clean fixture and two `run.json` pairs (lower and higher score).
-- [ ] 3.5 Add the `report` job, which follows `claude-contract.yml`'s report job:
+- [x] 3.5 Add the `report` job, which follows `claude-contract.yml`'s report job:
   - `needs: mutation`, `if: always()` and the finding;
   - `issues: write` and `actions: read` only, with no checkout;
   - `gh label create mutation --force`;
@@ -51,6 +52,7 @@
   The body is the release tag, range and run link, then at most 50 mutants (file, line, mutator, replacement) and a count of the rest; for a full run, both scores and the five files whose scores fell most. It is cut to 60,000 characters.
 
   Verify by running the body-building script locally on the fixtures from 3.4 and reading the Markdown. Then run one `workflow_dispatch` with a deliberately weak test commented out on the branch, and check the issue comment it makes. Close that issue afterwards.
+  Verified on 14 November 2026: an earlier release run raised the rolling `mutation` issue #262 through the `report` job (created by github-actions).
 
 ## 4. Docs
 
@@ -62,7 +64,8 @@
   - `Source191.Cader.slnx`: add `mutation.yml` to the solution items.
 
   Verify with `git grep -n "stryker"` that every mention matches the config file and the manifest.
-- [ ] 4.2 Run `openspec validate mutation-testing-in-ci` and confirm `pipeline`'s `check` is green on the pull request.
+- [x] 4.2 Run `openspec validate mutation-testing-in-ci` and confirm `pipeline`'s `check` is green on the pull request.
+  Verified: `openspec validate mutation-testing-in-ci` is valid, and pull request #255 merged on 14 November 2026 with `check` green.
 
 ## Workflow follow-up
 
