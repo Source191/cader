@@ -384,7 +384,7 @@ public static partial class Wording
         };
     }
 
-    public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles)
+    public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles, bool terminalHidesAProfile)
     {
         return string.Join(Environment.NewLine,
             $"Two Windows Terminal profiles will be written to {fragmentPath}",

@@ -71,7 +71,7 @@ public sealed class TerminalSetupRunner(
 
         TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
         TerminalProfiles profiles = await ChooseProfilesAsync(request);
-        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles));
+        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles, terminalHidesAProfile: false));
         Step profileStep = await WriteProfilesAsync(request, profiles, cancellationToken);
         Step hiddenStep = profileStep == Step.Failed || !fragment.Exists ? Step.Skipped : await ShowHiddenProfilesAsync(request, records, cancellationToken);
         Step bellStep = profileStep == Step.Failed ? Step.Skipped : await OfferBellAsync(request, cancellationToken);

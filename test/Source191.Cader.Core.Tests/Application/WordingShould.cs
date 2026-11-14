@@ -889,10 +889,23 @@ public sealed class WordingShould
     {
         TerminalProfiles profiles = new(@"C:\Users\me\.dotnet\tools\cader.exe", new BellSound.File(@"C:\Windows\Media\Windows Notify Messaging.wav"), new BellSound.TerminalDefault());
 
-        Wording.TerminalSetupPlan(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json", profiles).ShouldBe("""
+        Wording.TerminalSetupPlan(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json", profiles, terminalHidesAProfile: false).ShouldBe("""
             Two Windows Terminal profiles will be written to C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json
             Your Windows Terminal settings file is not changed.
               Cader          runs C:\Users\me\.dotnet\tools\cader.exe; bell sound C:\Windows\Media\Windows Notify Messaging.wav
+              Cader session  runs PowerShell; bell sound is Windows Terminal's own
+            Both ring the bell and flash the window and the taskbar.
+            """);
+    }
+
+    [Fact]
+    public void LeaveOutThatTerminalsSettingsAreNotChangedWhenItHidesAProfile()
+    {
+        TerminalProfiles profiles = new(@"C:\Users\me\.dotnet\tools\cader.exe", new BellSound.TerminalDefault(), new BellSound.TerminalDefault());
+
+        Wording.TerminalSetupPlan(@"C:\f\cader.json", profiles, terminalHidesAProfile: true).ShouldBe("""
+            Two Windows Terminal profiles will be written to C:\f\cader.json
+              Cader          runs C:\Users\me\.dotnet\tools\cader.exe; bell sound is Windows Terminal's own
               Cader session  runs PowerShell; bell sound is Windows Terminal's own
             Both ring the bell and flash the window and the taskbar.
             """);
