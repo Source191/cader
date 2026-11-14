@@ -20,7 +20,7 @@ public interface IFolders
     /// <summary>The files directly in <paramref name="path"/>, none of the folders beneath it; nothing when the folder is missing.</summary>
     IEnumerable<string> FilesIn(string path);
 
-    /// <summary>True when the folder holds neither files nor folders.</summary>
+    /// <summary>True when the folder holds neither files nor folders; false for one that holds something, has gone or cannot be read.</summary>
     bool IsEmpty(string path);
 
     IEnumerable<string> Lines(string file);

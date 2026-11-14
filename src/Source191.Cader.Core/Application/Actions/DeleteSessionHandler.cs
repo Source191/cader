@@ -60,8 +60,8 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         return await remover.CarryOutAsync(row, decision, createdHere: true, cancellationToken) switch
         {
             RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason, tabClosed),
-            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch, tabClosed),
-            RemoveWorktreeOutcome.BranchKept kept => new DeleteSessionOutcome.BranchNotMerged(name, kept.Branch, tabClosed),
+            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch, tabClosed, removed.FolderLeft),
+            RemoveWorktreeOutcome.BranchKept kept => new DeleteSessionOutcome.BranchNotMerged(name, kept.Branch, tabClosed, kept.FolderLeft),
             RemoveWorktreeOutcome.InUse inUse => new DeleteSessionOutcome.WorktreeInUse(name, inUse.FolderName, tabClosed),
             RemoveWorktreeOutcome other => new DeleteSessionOutcome.RemovedWorktree(name, other, tabClosed),
         };

@@ -32,16 +32,21 @@ After `GitException.InUse`, the remover calls `IFolderDeleter.DeleteTree` on the
 - **Alternative: wait before running git.** Rejected: nothing tells Cader what to wait for, and most removals are not held.
 - **Alternative: retry inside the `Folders` adapter.** Rejected: it would also slow every held leftover delete, and the logic could not be tested in the in-memory suite.
 
+### Check git really dropped the registration before deleting anything
+`GitCli` marks any failure whose words hold "Permission denied" or "Directory not empty" as `InUse`. Before this change that chose only a message; now it leads to a delete. So after `InUse` the remover first asks `ListWorktreesAsync` whether the repository still lists the worktree's path. Only when it no longer does (git removed the registration, as `GitWorktreeRemoveShould` shows for a held folder) does the wait and the finished removal follow. When the worktree is still listed, or the listing itself fails, the remover returns `RemoveWorktreeOutcome.InUse` as before and touches nothing: no folder, record or branch. A later remove then sees the same worktree and tries again.
+- **Why:** git may print those words for a failure that happens before it removes anything, such as a file it cannot read. Deleting a folder that git still treats as a worktree would destroy what the removal rules protect.
+- **Found during implementation** (review of the first pass); it adds one git call to a removal that fails as in use, and none to any other.
+
 ### Finish the removal whether or not the folder went
 After the wait, the remover runs what follows a successful `git worktree remove` today: forget the created-worktree record, then delete the branch, ask about it, or do neither, as `RemovalDecision.Branch` and the head say. The branch is no longer checked out anywhere, so `git branch -d` works. The outcome says whether the folder was left:
 - `RemoveWorktreeOutcome.Removed`, `RemovedAndDeletedBranch` and `BranchKept` gain `bool FolderLeft = false`.
 - `DeleteSessionOutcome.RemovedWorktreeAndBranch` and `BranchNotMerged` gain `bool FolderLeft = false`, which `DeleteSessionHandler` copies across. A plain `Removed` (detached or unknown head) already reaches the delete as the `RemovedWorktree` wrapper, which describes it in the remover's own words.
-- `RemoveWorktreeOutcome.InUse` and `DeleteSessionOutcome.WorktreeInUse` stay, now raised only when deleting a leftover row's folder fails. Their words ("close it and remove again", "remove the folder from the worktrees view") are true there, because the row stays listed.
+- `RemoveWorktreeOutcome.InUse` and `DeleteSessionOutcome.WorktreeInUse` stay. They are now raised when deleting a leftover row's folder fails, or when git reports a folder in use but still lists the worktree. Their words ("close it and remove again", "remove the folder from the worktrees view") are true in both cases, because the row stays listed.
 - **Why a flag and not new cases:** the flag rides on the cases the screens already pattern-match (`BranchKept` and `BranchNotMerged` open the branch question), so `DialogEffects` needs no change. `CreatedHere` and `TabClosed` set the precedent for a bool on an outcome.
 - **Alternative: wrap the outcome in a "folder left" case.** Rejected: `DialogEffects` would have to look inside the wrapper to ask about the branch.
 
 ### Words and tones
-`WordingOfOutcomes` appends one sentence to each flagged case: "Its folder was left because a tab or program still has it open; close that and remove it from the worktrees view." For example: "Removed Northwind.Orders-fix-123 and deleted its merged branch fix-123. Its folder was left because …". The removal sentences already name the folder; the session-delete sentences say "the worktree", as they do today. A flagged case's tone is Notice instead of Success, in `ToneOf` for both outcome families, with a line each in `StatusTonesShould`. The wording drops the old claim that git keeps the registration.
+`WordingOfOutcomes` appends one sentence to each flagged case: "The worktree's folder was left because a tab or program still has it open; close that and remove it from the worktrees view." For example: "Removed Northwind.Orders-fix-123 and deleted its merged branch fix-123. The worktree's folder was left because …". It says "the worktree's folder" rather than "its folder", which after "its merged branch" could be read as the branch's. The removal sentences already name the folder; the session-delete sentences say "the worktree", as they do today. A flagged case's tone is Notice instead of Success, in `ToneOf` for both outcome families, with a line each in `StatusTonesShould`. The wording drops the old claim that git keeps the registration.
 
 ### List empty children of the worktree root
 `WorktreeRootCandidates` becomes a pass over the worktree root's children, when the worktree root exists and is not also a repository root, as it is now:
@@ -50,6 +55,8 @@ After the wait, the remover runs what follows a successful `git worktree remove`
 - Anything else is skipped.
 
 An empty child that some repository still registers (git lists it as prunable) is left to the registered row, health broken with "its .git file is gone", which prunes as it deletes. The empty rows are therefore added only for folders not in `registered`, the same filter the broken candidates pass through.
+
+`IFolders.IsEmpty` now runs on every child of the worktree root, after the registered rows' git calls, and a folder can be deleted in that gap. So the `Folders` adapter answers false for a folder that has gone or cannot be read, as `FilesIn` already does for a missing one. One such folder is then skipped rather than failing the whole scan.
 - **Why the worktree root as repository:** nothing on disc says which repository an empty folder belonged to, and guessing from the name is unreliable (`Northwind` and `Northwind.Orders` both prefix `Northwind.Orders-fix`). `ownerExists: false` keeps the prune key and pull request lookups away from it, and `RemovalDecision` already deletes an empty row without a prompt and without pruning.
 
 ### Pin git's behaviour with a real-git fact

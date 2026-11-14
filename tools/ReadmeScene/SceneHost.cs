@@ -84,7 +84,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);
-        WorktreeRemover remover = new(gitCli, store, fileFolders, settings);
+        WorktreeRemover remover = new(gitCli, store, fileFolders, settings, clock);
         DeleteSessionHandler deleteSession = new(claude, gitCli, store, sessionTabs, fileFolders, remover);
         RemoveWorktreeHandler removeWorktree = new(gitCli, store, fileFolders, remover);
         DialogEffects dialogs = new(

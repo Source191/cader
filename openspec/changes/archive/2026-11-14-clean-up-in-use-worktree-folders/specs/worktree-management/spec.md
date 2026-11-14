@@ -52,6 +52,10 @@ Removal SHALL be refused when the worktree has changed or untracked files, unpus
 - **WHEN** the user presses remove on a clean worktree Northwind.Orders-fix-123 under the worktree root while a PowerShell tab opened from the worktrees view sits in it
 - **THEN** after about five seconds the status line says Northwind.Orders-fix-123 was removed but its folder was left because a tab or program still has it open, the branch is dealt with as for any removal, and the worktrees view lists the empty folder with health empty, which the remove key deletes once that tab is closed
 
+#### Scenario: Git keeps the registration
+- **WHEN** git fails to remove a clean worktree with "Permission denied" but still lists it as a worktree of its repository
+- **THEN** nothing more is deleted, the branch and Cader's record of the worktree are left as they were, and the status line says the folder is still in use by a tab or program and to close it and remove again
+
 #### Scenario: Branch of a worktree whose folder stayed in use
 - **WHEN** the worktree whose folder stayed in use was created by Cader on the branch fix-123, which is merged
 - **THEN** the branch fix-123 is deleted, and the status line says so as well as naming the folder that was left

@@ -320,6 +320,26 @@ public sealed class WordingOfOutcomesShould
     }
 
     [Fact]
+    public void SayTheFolderWasLeftAfterARemoval()
+    {
+        const string Left = " The worktree's folder was left because a tab or program still has it open; close that and remove it from the worktrees view.";
+
+        Wording.Describe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: true)).ShouldBe("Removed Northwind.Orders-fix-123." + Left);
+        Wording.Describe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: true))
+            .ShouldBe("Removed Northwind.Orders-fix-123 and deleted its merged branch fix-123." + Left);
+        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false, FolderLeft: true))
+            .ShouldBe("Removed Northwind.Orders-fix-123; branch fix-123 was not created here, so it is kept." + Left);
+        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: true, FolderLeft: true))
+            .ShouldBe("Removed Northwind.Orders-fix-123; branch fix-123 is not merged." + Left);
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: true))
+            .ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123." + Left);
+        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: false, FolderLeft: true))
+            .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged." + Left);
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: true), TabClosed: false))
+            .ShouldBe("Deleted fix-123; removed Northwind.Orders-fix-123." + Left);
+    }
+
+    [Fact]
     public void SayABrokenWorktreeWasDeletedWithTheSession()
     {
         Wording.Describe(new DeleteSessionOutcome.RemovedWorktree(Listed.As("fix-123"), new RemoveWorktreeOutcome.DeletedFolderAndPruned("Northwind.Orders-fix-123", 1, "Northwind.Orders"), TabClosed: false))

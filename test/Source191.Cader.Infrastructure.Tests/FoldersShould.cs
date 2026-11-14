@@ -30,6 +30,13 @@ public sealed class FoldersShould : IDisposable
     }
 
     [Fact]
+    public void AnswerNotEmptyForAFolderThatHasGone()
+    {
+        folders.IsEmpty(Path.Combine(root, "empty")).ShouldBeTrue();
+        folders.IsEmpty(Path.Combine(root, "missing")).ShouldBeFalse();
+    }
+
+    [Fact]
     public void ListDirectChildFoldersAndEveryFileBeneath()
     {
         folders.Directories(root).Select(Path.GetFileName).ShouldBe(["empty", "Northwind.Orders"], ignoreOrder: true);

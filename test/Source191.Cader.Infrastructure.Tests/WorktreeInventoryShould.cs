@@ -53,6 +53,20 @@ public sealed class WorktreeInventoryShould : IDisposable
     }
 
     [Fact]
+    public async Task ListAnEmptyFolderUnderTheWorktreeRootAsEmpty()
+    {
+        await root.CreateRepositoryAsync("Northwind.Orders");
+        string leftover = Path.Combine(root.WorktreeRoot, "Northwind.Orders-fix-123");
+        Directory.CreateDirectory(leftover);
+
+        WorktreeRow row = (await Inventory.ScanAsync([], TestContext.Current.CancellationToken)).Single();
+
+        row.Path.Value.ShouldBe(leftover);
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Empty);
+        row.OwnerExists.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task LookUpOnlyTheBranchesWithRows()
     {
         string orders = await root.CreateRepositoryAsync("Northwind.Orders");

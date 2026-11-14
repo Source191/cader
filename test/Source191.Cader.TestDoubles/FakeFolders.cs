@@ -8,6 +8,7 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
     private readonly HashSet<string> directories = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> files = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> heldOpen = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> heldOpenForAttempts = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Declares a folder and every folder above it.</summary>
     public FakeFolders WithDirectory(string path)
@@ -35,6 +36,14 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
     public FakeFolders HeldOpen(string path)
     {
         heldOpen.Add(Normalise(path));
+
+        return this;
+    }
+
+    /// <summary>Makes <c>DeleteTree</c> of the folder throw an <see cref="IOException"/> for that many calls, then delete as usual, as a folder a closing program lets go of.</summary>
+    public FakeFolders HeldOpenFor(string path, int attempts)
+    {
+        heldOpenForAttempts[Normalise(path)] = attempts;
 
         return this;
     }
@@ -89,7 +98,7 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
     {
         RefuseRootsAndRelativePaths(path);
         string full = Normalise(path);
-        if (heldOpen.Contains(full))
+        if (heldOpen.Contains(full) || TakeAHeldAttempt(full))
         {
             throw new IOException($"The process cannot access the file '{full}' because it is being used by another process.");
         }
@@ -100,6 +109,19 @@ public sealed class FakeFolders : IFolders, IFolderDeleter
         {
             files.Remove(file);
         }
+    }
+
+    /// <summary>True while the folder is still held for another attempt, counting this one down.</summary>
+    private bool TakeAHeldAttempt(string full)
+    {
+        if (!heldOpenForAttempts.TryGetValue(full, out int remaining) || remaining == 0)
+        {
+            return false;
+        }
+
+        heldOpenForAttempts[full] = remaining - 1;
+
+        return true;
     }
 
     private static void RefuseRootsAndRelativePaths(string path)

@@ -156,11 +156,49 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     }
 
     [Fact]
-    public async Task NotLookForEmptyLeftoversUnderTheWorktreeRoot()
+    public async Task ListAnEmptyFolderUnderTheWorktreeRootAsEmpty()
     {
-        folders.WithDirectory(Path.Combine(WorktreeRoot, "Northwind.Orders.worktrees"));
+        string folder = Path.Combine(WorktreeRoot, "Northwind.Orders-fix-123");
+        folders.WithDirectory(folder);
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Path.Value.ShouldBe(folder);
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Empty);
+        row.Repository.Value.ShouldBe(WorktreeRoot);
+        row.OwnerExists.ShouldBeFalse();
+        row.LeftoverFileCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task SkipAFolderUnderTheWorktreeRootThatHoldsFilesButNoGitFile()
+    {
+        folders.WithFile(Path.Combine(WorktreeRoot, "Northwind.Notes", "notes.txt"));
 
         (await Inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LeaveAnEmptyFolderGitStillRegistersToItsRegisteredRow()
+    {
+        string folder = Path.Combine(WorktreeRoot, "Northwind.Orders-fix-123");
+        folders.WithDirectory(folder);
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/worktrees/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n", string.Empty));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Broken);
+        row.Health.Reason.ShouldBe(new HealthReason.GitFileGone());
+        row.Repository.Value.ShouldBe(Repository);
+    }
+
+    [Fact]
+    public async Task ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Billing"));
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, log);
+
+        (await inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
     }
 
     [Fact]

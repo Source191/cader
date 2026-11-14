@@ -10,7 +10,8 @@ namespace Source191.Cader.Application;
 /// <summary>
 /// Everything under the repository roots and the worktree root that is, or was, a worktree: git's own listing per repository, plus the
 /// leftovers git has forgotten (orphans under .claude\worktrees, folders under a root or the worktree root whose registration is gone, empty folders
-/// that worktree tools leave behind). Read-only: nothing here prunes, deletes or touches git state.
+/// that worktree tools leave behind, and any empty folder under the worktree root, which git leaves when a program held a worktree's folder as it
+/// was removed). Read-only: nothing here prunes, deletes or touches git state.
 /// </summary>
 public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests, DiagnosticLog log)
 {
@@ -50,7 +51,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
                         candidates.Add(child);
                         break;
                     case FolderKind.EmptyLeftover:
-                        rows.Add(Leftover(root, child, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false));
+                        rows.Add(EmptyLeftover(root, child));
                         break;
                     case FolderKind.Other:
                         break;
@@ -58,7 +59,8 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             }
         }
 
-        candidates.AddRange(WorktreeRootCandidates(snapshot));
+        IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
+        candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
         foreach (FolderPath repository in repositories)
         {
@@ -67,6 +69,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         }
 
         rows.AddRange(candidates.Where(candidate => !registered.Contains(candidate)).Select(BrokenWorktree));
+        rows.AddRange(underWorktreeRoot.Where(child => !registered.Contains(child) && folders.IsEmpty(child.Value)).Select(child => EmptyLeftover(snapshot.WorktreeRoot, child)));
 
         // Never awaited: the rows show what the catalogue already holds, and the next rescan picks up what lands.
         _ = pullRequests.RefreshStaleAsync(BranchesOf(rows));
@@ -109,10 +112,12 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private static IEnumerable<FolderPath> Paths(IEnumerable<string> texts) => texts.Parsed<FolderPath>();
 
     /// <summary>
-    /// The worktree root's children with a .git file: when no repository lists them, broken, or elsewhere when their gitdir
-    /// still exists (see <see cref="BrokenWorktree"/>). A root that is also a repository root was scanned already.
+    /// The worktree root's children. Those with a .git file are broken when no repository lists them, or elsewhere when
+    /// their gitdir still exists (see <see cref="BrokenWorktree"/>); empty ones are empty leftovers, which is what git
+    /// leaves when a program held a worktree's folder as it was removed. A root that is also a repository root was
+    /// scanned already.
     /// </summary>
-    private IEnumerable<FolderPath> WorktreeRootCandidates(Settings snapshot)
+    private IEnumerable<FolderPath> WorktreeRootChildren(Settings snapshot)
     {
         FolderPath worktreeRoot = snapshot.WorktreeRoot;
         if (snapshot.RepositoryRoots.Contains(worktreeRoot) || !folders.DirectoryExists(worktreeRoot.Value))
@@ -120,10 +125,12 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             return [];
         }
 
-        return Paths(folders.Directories(worktreeRoot.Value))
-            .Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git")))
-            .OrderBy(child => child.Key, StringComparer.Ordinal);
+        return Paths(folders.Directories(worktreeRoot.Value)).OrderBy(child => child.Key, StringComparer.Ordinal);
     }
+
+    /// <summary>An empty folder no repository explains, its root standing in for the repository nothing on disc names.</summary>
+    private WorktreeRow EmptyLeftover(FolderPath root, FolderPath folder) =>
+        Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false);
 
     private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, HashSet<FolderPath> registered, CancellationToken cancellationToken)
     {

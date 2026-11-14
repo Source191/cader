@@ -93,7 +93,7 @@ internal static class ConsoleComposition
     {
         ProblemReports reports = new(parts.Log, parts.Counts.Processes, parts.CrashFile, start, settings, TimeProvider.System);
         SessionTabs sessionTabs = new(parts.Store, parts.ProcessRegistry);
-        WorktreeRemover remover = new(launch.Git, parts.Store, folders, settings);
+        WorktreeRemover remover = new(launch.Git, parts.Store, folders, settings, TimeProvider.System);
         DeleteSessionHandler deleteSession = new(launch.Claude, launch.Git, parts.Store, sessionTabs, folders, remover);
         RemoveWorktreeHandler removeWorktree = new(launch.Git, parts.Store, folders, remover);
         RepositoryCatalogue repositories = new(folders, settings);
