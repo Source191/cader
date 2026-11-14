@@ -79,7 +79,7 @@ Build the self-contained program from your working copy, as winget would install
 
 The script publishes `<Version>-local.<timestamp>` (a prerelease, so it never offers an update) to `%LOCALAPPDATA%\Cader\local`, replacing the last local build and stopping it first if it runs, and prints the full path of its `cader.exe`. Run it by that path: nothing is added to the PATH, so `cader` still runs your winget install, which the script never touches. Settings and state are shared with the installed Cader, as they live beside it in `%LOCALAPPDATA%\Cader`.
 
-To try what a GitHub Actions run built, download the run's `cader-<version>-ci.<run number>-win-x64` artefact (the zip a release would attach) and extract it to the same place:
+To try what a GitHub Actions run built, download the run's `cader-<version>-ci.<run number>-win-x64` or `-win-arm64` artefact (the zip a release would attach; `install-local.ps1` takes the one for your machine) and extract it to the same place:
 
 ```powershell
 gh run download <run id> --name cader-0.21.0-ci.42-win-x64 --dir .\downloaded
@@ -180,7 +180,7 @@ After a Terminal.Gui update, check the dialog titles without a terminal: from `t
 
 `.github\workflows\pipeline.yml` runs on every pull request and push to `main` on a Windows runner, and its `check` job must pass, on a branch up to date with `main`, before a pull request can merge.
 
-- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, publishes the self-contained winget build and zips it as `cader_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `cader.exe`.
+- **What `check` does:** checks the version bump and the changelog line, builds in Release, runs every test, checks whitespace, publishes the self-contained winget build and zips it as `cader_<Version>-ci.<run number>_win-x64.zip`, uploads the zip as an artefact (see [Trying your build](#trying-your-build)), then extracts it and runs the smoke check against its `cader.exe`. A second leg, `check (win-arm64)`, does the same for `win-arm64` on the hosted `windows-11-arm` runner, without the tests, which do not depend on the architecture; the `check` that branch protection requires is the x64 leg.
 - **Documentation-only pull requests:** one that changes only files under `openspec\` or `.md` files outside `.github\` passes after the version and changelog checks without building. Run the tests yourself if you touched the README or the user guide, because `DocumentedMinimumShould` reads both.
 - **The hand-off job:** a second job, `handoff`, runs the hand-off check against a real throwaway session when the repository's Claude Code token is available; it never blocks a merge.
 - **CodeQL:** `.github\workflows\codeql.yml` scans the C# and the workflows; it is not a required check.
