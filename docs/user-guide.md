@@ -116,9 +116,9 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
   - **When it does not work:** the session still starts, from the branch as last fetched, and the status line says what failed. If origin's default branch has been renamed, run `git remote set-head origin --auto` in the repository.
 - **Default place:** where the wizard starts a session: a new worktree, or the repository's current branch.
 - **Check for updates:** whether to ask the winget community repository once a day for a newer release.
-- **Diagnostic log:** whether Cader also writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log`; Enter turns it on or off at once. It is off until you turn it on.
+- **Diagnostic log:** whether Cader also writes its diagnostic log to a file, named on the Diagnostic log file row; Enter turns it on or off at once. It is off until you turn it on.
 
-Every row also answers `c` (copy the path) and `f` (open its folder).
+Under the Setup heading the grey rows are read, not edited. **Settings file** and **Diagnostic log file** show the full path of `config.json` and of `%LOCALAPPDATA%\Cader\cader.log` as plain text you can select and copy from the terminal; the log row also says whether the log is on or off, and whether anything has been written to it yet. Every row answers `c` (copy the path) and `f`: on the Settings file and Diagnostic log file rows `f` opens the file itself in the editor chosen above (a log that does not exist yet is reported, and Diagnostic log turns it on), and on any other row it opens the folder.
 
 ## Notifications and profiles
 
@@ -150,7 +150,7 @@ The key bar shows the keys for the selected row. Left and Right switch tabs on e
 | o | | Open a PowerShell tab there | |
 | m | What its memory is made of | | |
 | c | Copy the folder path | Copy the folder path | Copy the path |
-| f | Open the folder in your editor | Open the folder in your editor | Open the folder |
+| f | Open the folder in your editor | Open the folder in your editor | Open the folder, or the settings or log file |
 | s | Open its solution | Open its solution | |
 | p | Open its pull request | Open its pull request | |
 | / | Filter | Filter | Filter |
@@ -164,9 +164,9 @@ It sends nothing but a daily, anonymous check of the winget community repository
 
 ## Troubleshooting
 
-- **Report a problem:** `!` previews the diagnostics it would send, then opens a GitHub issue with them filled in; nothing is sent until you submit it.
+- **Report a problem:** `!` previews the diagnostics it would send, then opens a GitHub issue with them filled in; nothing is sent until you submit it. A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on), the last crash and the child program counts. Cader never attaches cader.log to a report. cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log file row (Config tab), then give it to Claude or attach it to the issue by hand.
 - **After a crash:** `%LOCALAPPDATA%\Cader\last-crash.log` is written; the next problem report includes it.
-- **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`.
+- **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`; the Diagnostic log file row shows its path and `f` opens it.
 - **Monochrome tabs:** Cader was started inside a Claude Code session; start it from an ordinary tab.
 - **"Workspace not trusted":** Claude Code asks for trust once per repository; Cader opens a tab in that folder so you can accept it, then start the session again.
 - **Security:** to report a vulnerability, see [SECURITY.md](../SECURITY.md).
