@@ -63,8 +63,7 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
     {
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         int start = ByteOrderMarkLength(bytes);
-        RefuseWithoutAProfileList(bytes);
-        ListPlace place = FindList(bytes.AsSpan(start));
+        ListPlace place = PlaceOfTheList(bytes, start);
         string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
         byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
         byte[] written = [.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)];
@@ -81,13 +80,15 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         }
     }
 
-    /// <summary>The whole file must be JSON with a profile list before anything is inserted into it.</summary>
-    private void RefuseWithoutAProfileList(byte[] bytes)
+    /// <summary>Where the profile list is, once the whole file is known to be JSON with one; refused as an IOException otherwise.</summary>
+    private ListPlace PlaceOfTheList(byte[] bytes, int start)
     {
         try
         {
             using JsonDocument document = Parse(bytes);
             _ = ProfileList(document.RootElement);
+
+            return FindList(bytes.AsSpan(start));
         }
         catch (JsonException exception)
         {
