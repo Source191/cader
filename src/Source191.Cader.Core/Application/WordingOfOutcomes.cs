@@ -272,8 +272,8 @@ public static partial class Wording
             DeleteSessionOutcome.Deleted deleted => $"{Gone(deleted, deleted.Name)}.",
             DeleteSessionOutcome.KeptWorktree { Reason: RemovalReason.LeftoverFilesWouldBeLost } kept => $"{Gone(kept, kept.Name)}; kept its worktree because {Describe(kept.Reason)}; force remove (D) on the Worktrees tab deletes it.",
             DeleteSessionOutcome.KeptWorktree kept => $"{Gone(kept, kept.Name)}; kept its worktree because {Describe(kept.Reason)}.",
-            DeleteSessionOutcome.RemovedWorktreeAndBranch removed => $"{Gone(removed, removed.Name)}{(removed.TabClosed ? "," : string.Empty)} and removed the worktree and branch {removed.Branch}.",
-            DeleteSessionOutcome.BranchNotMerged unmerged => $"{Gone(unmerged, unmerged.Name)}{(unmerged.TabClosed ? "," : string.Empty)} and removed the worktree; branch {unmerged.Branch.Branch} is not merged.",
+            DeleteSessionOutcome.RemovedWorktreeAndBranch removed => $"{Gone(removed, removed.Name)}{(removed.TabClosed ? "," : string.Empty)} and removed the worktree and branch {removed.Branch}.{FolderLeft(removed.FolderLeft)}",
+            DeleteSessionOutcome.BranchNotMerged unmerged => $"{Gone(unmerged, unmerged.Name)}{(unmerged.TabClosed ? "," : string.Empty)} and removed the worktree; branch {unmerged.Branch.Branch} is not merged.{FolderLeft(unmerged.FolderLeft)}",
             DeleteSessionOutcome.RemovedWorktree removed => $"{Gone(removed, removed.Name)}; {Lowered(Describe(removed.Worktree))}",
             DeleteSessionOutcome.WorktreeInUse inUse => $"{Gone(inUse, inUse.Name)}; its worktree folder {inUse.FolderName} is still in use by a tab or program: close it and remove the folder from the worktrees view.",
             _ => outcome.ToString(),
@@ -286,10 +286,10 @@ public static partial class Wording
         {
             RemoveWorktreeOutcome.Refused refused => $"Not removed: {Describe(refused.Reason)}.",
             RemoveWorktreeOutcome.InUse inUse => $"Not removed: the folder {inUse.FolderName} is still in use by a tab or program; close it and remove again.",
-            RemoveWorktreeOutcome.Removed removed => $"Removed {removed.FolderName}.",
-            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => $"Removed {removed.FolderName} and deleted its merged branch {removed.Branch}.",
-            RemoveWorktreeOutcome.BranchKept { CreatedHere: true } kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} is not merged.",
-            RemoveWorktreeOutcome.BranchKept kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} was not created here, so it is kept.",
+            RemoveWorktreeOutcome.Removed removed => $"Removed {removed.FolderName}.{FolderLeft(removed.FolderLeft)}",
+            RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => $"Removed {removed.FolderName} and deleted its merged branch {removed.Branch}.{FolderLeft(removed.FolderLeft)}",
+            RemoveWorktreeOutcome.BranchKept { CreatedHere: true } kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} is not merged.{FolderLeft(kept.FolderLeft)}",
+            RemoveWorktreeOutcome.BranchKept kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} was not created here, so it is kept.{FolderLeft(kept.FolderLeft)}",
             RemoveWorktreeOutcome.DeletedFolder deleted => $"Deleted the folder {deleted.FolderName}.",
             RemoveWorktreeOutcome.DeletedFolderAndPruned pruned =>
                 $"Deleted the folder {pruned.FolderName} and pruned {Registrations(pruned.Pruned)} from {pruned.RepositoryName}.",
@@ -326,6 +326,11 @@ public static partial class Wording
     private static string Started(string name, string jobId) => $"Started {name} ({jobId}).";
 
     private static string Registrations(int number) => number == 1 ? "1 stale registration" : $"{number} stale registrations";
+
+    /// <summary>The sentence after a removal whose worktree git removed but whose folder a tab or program still holds.</summary>
+    private static string FolderLeft(bool left) => left
+        ? " The worktree's folder was left because a tab or program still has it open; close that and remove it from the worktrees view."
+        : string.Empty;
 
     private static string Count(int number, string noun) => number == 1 ? $"1 {noun}" : $"{number} {noun}s";
 
