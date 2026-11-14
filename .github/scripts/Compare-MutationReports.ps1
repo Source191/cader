@@ -16,7 +16,8 @@ param(
     [Parameter(Mandatory)] [string] $BaselinePath,
     [Parameter(Mandatory)] [string] $ComparisonPath,
     [string] $BaselineName = 'baseline',
-    [string] $ComparisonName = 'comparison'
+    [string] $ComparisonName = 'comparison',
+    [int] $Top = 10
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,6 +44,14 @@ function Get-KeyedMutants($report) {
     $keyed
 }
 
+function Get-Group($pairs) {
+    foreach ($file in $pairs | Group-Object { $_.Baseline.File }) {
+        foreach ($mutator in $file.Group | Group-Object { $_.Baseline.Mutator }) {
+            [pscustomobject]@{ File = $file.Name; Mutator = $mutator.Name; Count = $mutator.Count }
+        }
+    }
+}
+
 function Get-StatusCounts($mutants) {
     $counts = [ordered]@{}
     foreach ($status in $statuses) { $counts[$status] = @($mutants | Where-Object Status -eq $status).Count }
@@ -55,10 +64,20 @@ $comparison = Get-KeyedMutants (Read-MutationReport $ComparisonPath)
 $paired = @($baseline.Keys | Where-Object { $comparison.Contains($_) } |
     ForEach-Object { [pscustomobject]@{ Baseline = $baseline[$_]; Comparison = $comparison[$_] } })
 
+$changes = @($paired | Where-Object { $_.Baseline.Status -ne $_.Comparison.Status } |
+    Group-Object { "$($_.Baseline.Status) -> $($_.Comparison.Status)" } | Sort-Object @{ e = 'Count'; Descending = $true }, Name |
+    ForEach-Object {
+        [pscustomobject]@{
+            Change = $_.Name; Count = $_.Count
+            Groups = @(Get-Group $_.Group | Sort-Object @{ e = 'Count'; Descending = $true }, File, Mutator | Select-Object -First $Top)
+        }
+    })
+
 [pscustomobject]@{
     Baseline    = [pscustomobject]@{ Name = $BaselineName; Total = $baseline.Count; Statuses = Get-StatusCounts $baseline.Values; Score = Get-MutationScore $baseline.Values }
     Comparison  = [pscustomobject]@{ Name = $ComparisonName; Total = $comparison.Count; Statuses = Get-StatusCounts $comparison.Values; Score = Get-MutationScore $comparison.Values }
     Paired      = $paired.Count
     IdsAgreeing = @($paired | Where-Object { $_.Baseline.Id -eq $_.Comparison.Id }).Count
+    Changes     = $changes
     OneSided    = @()
 }
