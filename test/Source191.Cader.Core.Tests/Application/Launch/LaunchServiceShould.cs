@@ -29,13 +29,14 @@ public sealed class LaunchServiceShould
         get
         {
             GitCli git = new(processes, "git");
-            return new LaunchService(new ClaudeCli(processes, Claude), git, store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
+            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
         }
     }
 
     private LaunchService ServiceWith(FakeWorktreeIncludeCopier copier)
     {
-        return new LaunchService(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, store, copier, new FakeTimeProvider(Fixtures.Noon));
+        GitCli git = new(processes, "git");
+        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, copier, new FakeTimeProvider(Fixtures.Noon));
     }
 
     private static readonly PlannedWorktree FlakyTests = new(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"), BranchName.From("fix-flaky-tests"));
@@ -130,6 +131,68 @@ public sealed class LaunchServiceShould
     }
 
     [Fact]
+    public async Task FetchTheBaseBeforeAddingTheWorktreeAndBranchFromIt()
+    {
+        LaunchOutcome outcome = await Service.LaunchAsync(NewWorktree, CancellationToken.None);
+
+        IReadOnlyList<ProcessRequest> requests = processes.CapturedRequests;
+        int fetch = Index(requests, IsFetchFromOrigin);
+        int add = Index(requests, request => request.Arguments.Contains("add"));
+        fetch.ShouldBeGreaterThanOrEqualTo(0);
+        fetch.ShouldBeLessThan(add);
+        requests[fetch].Arguments.ShouldBe(["fetch", "origin", "+refs/heads/main:refs/remotes/origin/main"]);
+        requests[fetch].WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\repos\Northwind.Orders"));
+        requests[add].Arguments[^1].ShouldBe("origin/main");
+        outcome.ShouldBeAssignableTo<LaunchOutcome.Started>().ShouldNotBeNull().Update.ShouldBe(new BaseUpdate.Current());
+    }
+
+    [Fact]
+    public async Task FetchNothingWhenBeforeBranchingIsNothing()
+    {
+        await Service.LaunchAsync(NewWorktree with { BeforeBranching = BeforeBranching.None }, CancellationToken.None);
+
+        processes.CapturedRequests.ShouldNotContain(request => IsFetchFromOrigin(request));
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("add")).Arguments[^1].ShouldBe("origin/main");
+    }
+
+    [Fact]
+    public async Task FetchNothingAndBranchFromHeadWhenOriginHasNoHead()
+    {
+        processes.Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(128, string.Empty, "fatal: ref refs/remotes/origin/HEAD is not a symbolic ref"));
+
+        LaunchOutcome outcome = await Service.LaunchAsync(NewWorktree with { BeforeBranching = BeforeBranching.Pull }, CancellationToken.None);
+
+        processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("fetch"));
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("add")).Arguments[^1].ShouldBe("HEAD");
+        outcome.ShouldBeAssignableTo<LaunchOutcome.Started>().ShouldNotBeNull().Update.ShouldBe(new BaseUpdate.Current());
+    }
+
+    [Fact]
+    public async Task FetchNothingForTheHeadBaseTheCurrentBranchOrAWorktreeThatExists()
+    {
+        await Service.LaunchAsync(NewWorktree with { Base = WorktreeBase.Head, BeforeBranching = BeforeBranching.Pull }, CancellationToken.None);
+        await Service.LaunchAsync(CurrentBranch with { BeforeBranching = BeforeBranching.Pull }, CancellationToken.None);
+        await Service.LaunchAsync(NewWorktree with { Place = new LaunchPlace.ExistingWorktree(FlakyTests), BeforeBranching = BeforeBranching.Pull }, CancellationToken.None);
+
+        processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("fetch") || request.Arguments.Contains("merge"));
+    }
+
+    [Fact]
+    public async Task StillCreateTheWorktreeAndStartTheSessionWhenTheFetchFails()
+    {
+        processes.Answer(IsFetchFromOrigin, new ProcessResult(128, string.Empty, "fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com"));
+
+        LaunchOutcome outcome = await Service.LaunchAsync(NewWorktree, CancellationToken.None);
+
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("add")).Arguments[^1].ShouldBe("origin/main");
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("--bg"));
+        (await store.ReadCreatedWorktreesAsync()).ShouldHaveSingleItem();
+        BaseUpdate.NotFetched notFetched = outcome.ShouldBeOfType<LaunchOutcome.Listed>().Update.ShouldBeOfType<BaseUpdate.NotFetched>();
+        notFetched.Base.ShouldBe(RemoteBranch.From("origin/main"));
+        notFetched.Reason.ShouldContain("Could not resolve host: github.com");
+    }
+
+    [Fact]
     public async Task SkipCreationWhenReusingAnExistingWorktree()
     {
         await Service.LaunchAsync(NewWorktree with { Place = new LaunchPlace.ExistingWorktree(FlakyTests) }, CancellationToken.None);
@@ -163,7 +226,7 @@ public sealed class LaunchServiceShould
 
         LaunchOutcome outcome = await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
 
-        outcome.ShouldBe(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9")));
+        outcome.ShouldBe(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()));
     }
 
     [Fact]
@@ -185,6 +248,10 @@ public sealed class LaunchServiceShould
 
         outcome.ShouldBe(new LaunchOutcome.Failed("Couldn't start the background service"));
     }
+
+    private static bool IsFetchFromOrigin(ProcessRequest request) => request.Arguments is ["fetch", "origin", ..];
+
+    private static int Index(IReadOnlyList<ProcessRequest> requests, Func<ProcessRequest, bool> matches) => requests.Select((request, index) => matches(request) ? index : -1).FirstOrDefault(index => index >= 0, -1);
 
     [Fact]
     public async Task ReportAGitRefusalAsAFailureWithItsMessage()
