@@ -14,6 +14,8 @@ public abstract record SettingsScope(SettingsField Field)
 
     public sealed record Place() : SettingsScope(SettingsField.Place);
 
+    public sealed record BeforeBranching() : SettingsScope(SettingsField.BeforeBranching);
+
     /// <summary>The scope that edits a setting row; the update check and the setup rows have no dialog.</summary>
     public static SettingsScope For(ConfigRow row)
     {
@@ -24,6 +26,7 @@ public abstract record SettingsScope(SettingsField Field)
             ConfigRow.OpenFolderWith => new Editor(),
             ConfigRow.DefaultBase => new Base(),
             ConfigRow.DefaultPlace => new Place(),
+            ConfigRow.BeforeBranching => new BeforeBranching(),
             _ => throw new ArgumentException($"A {row.GetType().Name} row has no dialog.", nameof(row)),
         };
     }

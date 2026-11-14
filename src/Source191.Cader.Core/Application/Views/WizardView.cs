@@ -23,6 +23,7 @@ public static class WizardView
             WizardInput.NameChanged changed => Changed(state with { Name = changed.Text }),
             WizardInput.ModeChanged changed => Changed(state with { Mode = changed.Mode }),
             WizardInput.BaseChanged changed => Changed(state with { Base = changed.Base }),
+            WizardInput.BeforeBranchingChanged changed => Changed(state with { BeforeBranching = changed.Choice }),
             WizardInput.PromptChanged changed => Changed(state with { Prompt = changed.Text }),
             WizardInput.FieldFocused focused => Changed(state with { Focus = focused.Field }),
             WizardInput.ConfirmRepository => Changed(Confirmed(state)),
@@ -65,7 +66,7 @@ public static class WizardView
             : state with { Problem = new WizardProblem.None(), Focus = WizardField.Name };
     }
 
-    /// <summary>Enter moves through the form in its order: the name to the Where choice when it shows, Where to the base, the base to the prompt; the prompt keeps it.</summary>
+    /// <summary>Enter moves through the form in its order: the name to the Where choice when it shows, Where to the base, the base to Before branching, that to the prompt; the prompt keeps it.</summary>
     private static WizardField Next(WizardState state)
     {
         return state.Focus switch
@@ -74,7 +75,8 @@ public static class WizardView
             WizardField.RepositoryFilter => WizardField.RepositoryFilter,
             WizardField.RepositoryList => WizardField.RepositoryList,
             WizardField.Mode => WizardField.Base,
-            WizardField.Base => WizardField.Prompt,
+            WizardField.Base => WizardField.BeforeBranching,
+            WizardField.BeforeBranching => WizardField.Prompt,
             WizardField.Prompt => WizardField.Prompt,
         };
     }

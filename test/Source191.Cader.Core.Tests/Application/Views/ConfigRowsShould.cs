@@ -21,12 +21,13 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, TestSettings.DiagnosticLogFile);
 
-        rows.Take(7).ShouldBe(
+        rows.Take(8).ShouldBe(
         [
             new ConfigRow.RepositoryRoot(0, FolderPath.From(Repos)),
             new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")),
             new ConfigRow.OpenFolderWith(EditorChoice.VsCode),
             new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault),
+            new ConfigRow.BeforeBranching(BeforeBranching.Fetch),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
             new ConfigRow.CheckForUpdates(On: true),
             new ConfigRow.DiagnosticLog(On: false, File: TestSettings.DiagnosticLogFile),
@@ -81,7 +82,7 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, TestSettings.DiagnosticLogFile);
 
-        rows.Skip(8).ShouldBe(
+        rows.Skip(9).ShouldBe(
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)),
@@ -97,11 +98,11 @@ public sealed class ConfigRowsShould
         IReadOnlyList<ConfigRow> saved = ConfigRows.For(TestSettings.For([Repos], @"D:\worktrees"), AllSetUp, TestSettings.DiagnosticLogFile);
 
         rows.OfType<ConfigRow.Heading>().Count().ShouldBe(1);
-        rows[5].ShouldBeOfType<ConfigRow.CheckForUpdates>();
-        rows[6].ShouldBeOfType<ConfigRow.DiagnosticLog>();
-        rows[7].ShouldBeOfType<ConfigRow.Heading>();
-        rows[8].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
-        saved[7].Key.ShouldBe(rows[7].Key);
+        rows[6].ShouldBeOfType<ConfigRow.CheckForUpdates>();
+        rows[7].ShouldBeOfType<ConfigRow.DiagnosticLog>();
+        rows[8].ShouldBeOfType<ConfigRow.Heading>();
+        rows[9].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
+        saved[8].Key.ShouldBe(rows[8].Key);
     }
 
     [Fact]

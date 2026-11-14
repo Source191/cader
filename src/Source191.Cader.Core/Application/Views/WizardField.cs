@@ -8,5 +8,6 @@ public enum WizardField
     Name,
     Mode,
     Base,
+    BeforeBranching,
     Prompt,
 }
