@@ -33,7 +33,7 @@
 
 ## 6. Integration checks
 
-- [ ] 6.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate honour-claude-config-folder --strict`. **Verify:** each exits 0.
+- [x] 6.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate honour-claude-config-folder --strict`. **Verify:** each exits 0.
 - [ ] 6.2 **Manual (owner):** in a local install started from a shell with `CLAUDE_CONFIG_DIR` set to a second, logged-in account's folder, see the Claude folder row name it, adopt or resume one of that account's sessions, and run `cader setup-terminal` and see the plan name that folder's `settings.json`. **Verify:** by eye.
 
 ## Workflow follow-up
