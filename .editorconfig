@@ -95,7 +95,7 @@ dotnet_diagnostic.CA1511.severity = warning
 dotnet_diagnostic.CA1512.severity = warning
 dotnet_diagnostic.CA1513.severity = warning
 
-# A class that can be sealed is sealed (CA1852, a warning under AnalysisLevel 10.0-recommended). The rule skips an
+# A class that can be sealed is sealed (CA1852, a warning under AnalysisLevel 11.0-recommended). The rule skips an
 # assembly with InternalsVisibleTo unless told otherwise; SealedTypesShould covers the public types.
 dotnet_code_quality.CA1852.ignore_internalsvisibleto = true
 

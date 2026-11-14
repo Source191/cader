@@ -36,7 +36,7 @@ outputs:
 runs:
   using: composite
   steps:
-    # The runner image carries the .NET SDKs, and global.json (10.0.301, latestMinor) picks one, so nothing is
+    # The runner image carries the .NET SDKs, and global.json (11.0.100, latestMinor) picks one, so nothing is
     # downloaded; an image without a suitable SDK fails here with the SDK's own message. The line records which
     # SDK built this run (https://learn.microsoft.com/dotnet/core/tools/global-json).
     - name: Show the .NET SDK

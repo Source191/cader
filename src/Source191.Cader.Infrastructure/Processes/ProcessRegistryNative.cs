@@ -58,7 +58,8 @@ public sealed partial class ProcessRegistry
 
         public override readonly string ToString()
         {
-            ReadOnlySpan<char> text = MemoryMarshal.Cast<ushort, char>(this);
+            ReadOnlySpan<ushort> units = this;
+            ReadOnlySpan<char> text = MemoryMarshal.Cast<ushort, char>(units);
             int end = text.IndexOf('\0');
 
             return new string(end < 0 ? text : text[..end]);
