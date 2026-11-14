@@ -19,6 +19,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- A Cader profile deleted in Windows Terminal's settings no longer stays hidden after cader setup-terminal: setup now shows the one entry Terminal needs to show it again and, if you agree, adds it to Terminal's settings file and changes nothing else there; the Config tab's Windows Terminal profiles row says when Terminal is hiding one (#218, #PR)
 - Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
 - Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds for it, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes (#261)
 
