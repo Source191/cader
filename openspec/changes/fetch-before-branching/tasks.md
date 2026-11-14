@@ -2,24 +2,24 @@
 
 ## 1. Domain rules
 
-- [ ] 1.1 **Red:** `RemoteBranchShould` facts.
+- [x] 1.1 **Red:** `RemoteBranchShould` facts.
   - `TryParse("origin/main")` gives remote `origin` and branch `main`.
   - `origin/release/2026` gives branch `release/2026`.
   - Blank text, null, `main` with no remote and `origin/` answer false.
   - `From` throws for text that does not parse.
 
   **Green:** `Domain\RemoteBranch` as an `ITextValue<RemoteBranch>` with `From` and `TryParse`. **Verify:** the facts pass, along with `TextValuesShould`, `NullFreeModelsShould` and `SealedTypesShould`.
-- [ ] 1.2 **Red:** `SettingsShould` facts that `Resolve` with no before-branching argument gives `Fetch`, that `Validate` keeps the `SettingsText`'s value, that `ToText` writes it back, and that `Equals` tells two values apart. **Green:** `Domain\BeforeBranching { Fetch, Pull, None }`, `Settings.BeforeBranchingWhenUnset`, and the member in `Settings` (constructor, `Resolve`, `Validated`, `ToText`, `Equals`, `WithUpdateCheckToggled`) and `SettingsText`. **Verify:** `SettingsShould` passes, and every switch over the new enum names all three members (the build fails with CS8509 otherwise).
+- [x] 1.2 **Red:** `SettingsShould` facts that `Resolve` with no before-branching argument gives `Fetch`, that `Validate` keeps the `SettingsText`'s value, that `ToText` writes it back, and that `Equals` tells two values apart. **Green:** `Domain\BeforeBranching { Fetch, Pull, None }`, `Settings.BeforeBranchingWhenUnset`, and the member in `Settings` (constructor, `Resolve`, `Validated`, `ToText`, `Equals`, `WithUpdateCheckToggled`) and `SettingsText`. **Verify:** `SettingsShould` passes, and every switch over the new enum names all three members (the build fails with CS8509 otherwise).
 
 ## 2. Settings file
 
-- [ ] 2.1 **Red:** `SettingsFileShould` facts.
+- [x] 2.1 **Red:** `SettingsFileShould` facts.
   - A config with no `beforeBranching` reads `Fetch`; `Pull` reads `Pull`.
   - A number (`7`) and an undefined name read `Fetch` and leave the roots as given.
   - `ToConfig` names the current value.
 
   **Green:** `UserConfig.BeforeBranching` (nullable, as the other members are, with its `Equals`, `GetHashCode` and the "names all seven" comment), and `SettingsFile.From`/`ToConfig` through `DefinedOr`. Add a `NullFreeModelsShould` `Kept` entry for `UserConfig.BeforeBranching` ("config.json may leave the property out"). **Verify:** `SettingsFileShould` and `NullFreeModelsShould` pass.
-- [ ] 2.2 **Red:** `JsonFileStoreShould` facts (temporary folder).
+- [x] 2.2 **Red:** `JsonFileStoreShould` facts (temporary folder).
   - `beforeBranching` of `"Rebase"` or `7` reads as a corrupt file does, `UserConfig.Missing`, without throwing.
   - A written config holds `"beforeBranching": "Fetch"`.
 
@@ -28,24 +28,24 @@
 ## 3. Process and git adapters
 
 - [x] 3.1 **Spike (owner, recorded, before any port change):** on a developer machine with git 2.55 and Git Credential Manager, run `git fetch` against an HTTPS remote that has no stored credential, with `GIT_TERMINAL_PROMPT=0` and `GCM_INTERACTIVE=false` set and output captured. Check that it fails within a few seconds, that no window or prompt appears, and that its stderr is readable. Record the fact with its date and versions in `.claude\rules\windows.md`. If it prompts or hangs, revisit design decision 2 before 3.2. **Verify:** the rule line is present.
-- [ ] 3.2 **Red:** `ProcessRunnerIntegrationShould` facts.
+- [x] 3.2 **Red:** `ProcessRunnerIntegrationShould` facts.
   - A captured child given `Variables` of `GIT_TERMINAL_PROMPT=0` sees that value, even when the test sets `GIT_TERMINAL_PROMPT` in its own environment, so the variable is dropped first and then set.
   - A request without `Variables` passes nothing extra.
 
   **Green:** an init-only `ProcessRequest.Variables`, empty by default, applied in `ProcessRunner.StartInfo` after the `InheritedEnvironment` drop. **Verify:** `ProcessRunnerIntegrationShould`, `InheritedEnvironmentShould`, `FakeProcessRunnerShould` and `NullFreeModelsShould` pass.
-- [ ] 3.3 **Red:** `GitCliShould` facts over `FakeProcessRunner`.
+- [x] 3.3 **Red:** `GitCliShould` facts over `FakeProcessRunner`.
   - `FetchBranchAsync` runs `fetch origin +refs/heads/main:refs/remotes/origin/main` in the repository, with `GIT_TERMINAL_PROMPT=0` and `GCM_INTERACTIVE=false` in its `Variables`.
   - A non-zero exit throws `GitException` carrying git's error.
 
   **Green:** the `IGit` member, its convention line in the doc comment, and `GitCli`. **Verify:** `GitCliShould` passes.
-- [ ] 3.4 **Red:** `GitCliShould` facts.
+- [x] 3.4 **Red:** `GitCliShould` facts.
   - `BranchExistsAsync` runs `rev-parse --verify --quiet refs/heads/main` and answers true on exit 0 and false otherwise.
   - `FastForwardCheckoutAsync` runs `merge --ff-only refs/remotes/origin/main` in the checkout.
   - `FastForwardBranchAsync` runs `fetch . refs/remotes/origin/main:refs/heads/main`.
   - Both fast-forwards throw `GitException` on a non-zero exit.
 
   **Green:** the three `IGit` members and `GitCli`. Update `PortParametersShould`'s `Kept` reason for `IGit`, which counts its methods. **Verify:** `GitCliShould` and `PortParametersShould` pass.
-- [ ] 3.5 **Red:** `GitCliIntegrationShould` facts against a temporary bare repository as origin and a clone (real git, no network). Push a commit to origin from a second clone, then:
+- [x] 3.5 **Red:** `GitCliIntegrationShould` facts against a temporary bare repository as origin and a clone (real git, no network). Push a commit to origin from a second clone, then:
   - `FetchBranchAsync` moves `origin/main`.
   - `FastForwardCheckoutAsync` moves the checked-out `main` and its files, and leaves an uncommitted change to an untouched file in place.
   - It throws when an uncommitted change is in the way, and when local `main` has its own commit.
@@ -56,20 +56,20 @@
 
 ## 4. Base update rule
 
-- [ ] 4.1 **Red:** `FastForwardPlaceShould` facts over `GitWorktreeEntry` lists.
+- [x] 4.1 **Red:** `FastForwardPlaceShould` facts over `GitWorktreeEntry` lists.
   - The main entry on `main` gives `MainCheckout`.
   - A linked entry on `main` gives `ElsewhereAt` with its folder.
   - No entry on `main`, including a detached head, gives `NotCheckedOut`.
 
   **Green:** `Application\Launch\FastForwardPlace`. **Verify:** the facts pass, along with `NullFreeModelsShould`.
-- [ ] 4.2 **Red:** `BaseUpdaterShould` facts (a real `GitCli` over `FakeProcessRunner`).
+- [x] 4.2 **Red:** `BaseUpdaterShould` facts (a real `GitCli` over `FakeProcessRunner`).
   - `None` runs no git.
   - `Fetch` runs the fetch and answers `Current`.
   - A failed fetch answers `NotFetched` with git's words.
   - A `ProcessTimedOutException` answers `NotFetched` with the timeout's words.
 
   **Green:** `Application\Launch\BaseUpdater` and the `BaseUpdate` hierarchy. **Verify:** the facts pass, along with `NullFreeModelsShould` and `SealedTypesShould`.
-- [ ] 4.3 **Red:** `BaseUpdaterShould` facts for `Pull`.
+- [x] 4.3 **Red:** `BaseUpdaterShould` facts for `Pull`.
   - After the fetch, `MainCheckout` runs `merge --ff-only` in the repository and `NotCheckedOut` runs `fetch .`; both answer `Current`.
   - `ElsewhereAt` runs neither and answers `NotFastForwarded(main, CheckedOutElsewhere(folder))`.
   - A missing local branch runs neither and answers `Current`.
@@ -80,8 +80,8 @@
 
 ## 5. Launch
 
-- [ ] 5.1 **Red:** `LaunchPlanShould` facts that `LaunchPlanBuilder.Build` carries a request's `BeforeBranching` into the plan, and `HereCommandShould` that `cader here` plans `None`. **Green:** the member on `LaunchRequest` and `LaunchPlan`, copied by `LaunchPlanBuilder`; `HereCommand` passes `None`. **Verify:** both test classes pass.
-- [ ] 5.2 **Red:** `LaunchServiceShould` facts.
+- [x] 5.1 **Red:** `LaunchPlanShould` facts that `LaunchPlanBuilder.Build` carries a request's `BeforeBranching` into the plan, and `HereCommandShould` that `cader here` plans `None`. **Green:** the member on `LaunchRequest` and `LaunchPlan`, copied by `LaunchPlanBuilder`; `HereCommand` passes `None`. **Verify:** both test classes pass.
+- [x] 5.2 **Red:** `LaunchServiceShould` facts.
   - A new-worktree plan with the base `RemoteDefault` and `Fetch` fetches before `worktree add` and branches from `origin/main`.
   - With `None`, it runs no fetch.
   - With no `origin/HEAD`, it runs no fetch and branches from `HEAD`.
@@ -89,8 +89,8 @@
   - A failed fetch still creates the worktree, starts the session, and answers `Started` whose `Update` is `NotFetched`.
 
   **Green:** `LaunchService` takes a `BaseUpdater`, calls it in `CreateWorktreeAsync`, and `LaunchOutcome.Started` gains `Update`. **Verify:** `LaunchServiceShould` and `HereCommandRunnerShould` pass.
-- [ ] 5.3 **Red:** `StartSessionHandlerShould` facts that `StartedAndOpened` and `NotListedYet` carry the launch's `Update`. **Green:** the member on both outcome cases and the handler's pass-through. **Verify:** `StartSessionHandlerShould`, `EffectDispatcherShould` and `HandlersShould` pass.
-- [ ] 5.4 **Red:** `WordingOfOutcomesShould` facts.
+- [x] 5.3 **Red:** `StartSessionHandlerShould` facts that `StartedAndOpened` and `NotListedYet` carry the launch's `Update`. **Green:** the member on both outcome cases and the handler's pass-through. **Verify:** `StartSessionHandlerShould`, `EffectDispatcherShould` and `HandlersShould` pass.
+- [x] 5.4 **Red:** `WordingOfOutcomesShould` facts.
   - A started outcome whose update is `Current` reads exactly as today.
   - `NotFetched` appends that origin could not be fetched, with the reason.
   - `NotFastForwarded` with `CheckedOutElsewhere` names the branch and the folder.
@@ -109,6 +109,8 @@
   - The Default base tooltip names Before branching and contains neither "no fetch" nor "never fetches".
 
   **Green:** `WordingOfConfig`. **Verify:** `WordingOfConfigShould`, `SourceConventionsShould.SpellBritish` and `KeyHelpParityShould` pass.
+
+  **Done in part 1:** `Describe(WorktreeBase.RemoteDefault)` reads "origin's default branch", and the Default base tooltip reads "New worktrees branch from origin's default branch, fetched first by default, or from HEAD." (`WordingOfConfigShould.SayTheDefaultBaseIsFetchedFirstByDefault`); with the row in place, make it name Before branching.
 - [ ] 6.4 **Green (Tui binder, untested):** the Before branching `OptionSelector` in `SettingsControls`, laid out as Place's is. **Verify:** `dotnet build -c Debug`, then in a local install (`tools\install-local.ps1`) open the dialog from the row, change it, save, and see the row and `config.json` follow.
 
 ## 7. Wizard
@@ -121,6 +123,8 @@
   - Starting with a choice other than the setting leaves the settings unchanged.
 
   **Green:** `WizardState`, `WizardInput.BeforeBranchingChanged`, `WizardField.BeforeBranching` and `WizardView`. **Verify:** `WizardViewShould` and `ReducersShould` pass.
+
+  **Done in part 1:** `WizardState.BeforeBranching`, taken from the settings on `Open` and put in the `LaunchRequest` on start (`WizardViewShould.StartWithTheSavedBeforeBranching`), so `config.json` applies before the field exists.
 - [ ] 7.2 **Green (Tui binder, untested):**
   - In `WizardControls`, add the captioned three-option selector between the base and the preview, raise `FormRows` to 21, and move the `AnchorEnd` offsets.
   - Add its field to `Fields` and to `WhenEnterInSelectors`.
@@ -144,6 +148,8 @@
   - **Changed:** new worktrees now fetch origin's default branch first; set Before branching to Nothing for the old behaviour.
 
   **Verify:** `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
+
+  **Done in part 1:** a Changed line for the fetch, naming `beforeBranching` in `config.json`; reword it for the row and the wizard choice. Part 1 also made `tools\ReadmeScene`'s `SceneProcessRunner` answer a fetch from a remote itself, so remaking the GIF never reaches the network.
 
 ## 9. Integration checks
 
