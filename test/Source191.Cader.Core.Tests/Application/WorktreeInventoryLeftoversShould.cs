@@ -156,11 +156,18 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     }
 
     [Fact]
-    public async Task NotLookForEmptyLeftoversUnderTheWorktreeRoot()
+    public async Task ListAnEmptyFolderUnderTheWorktreeRootAsEmpty()
     {
-        folders.WithDirectory(Path.Combine(WorktreeRoot, "Northwind.Orders.worktrees"));
+        string folder = Path.Combine(WorktreeRoot, "Northwind.Orders-fix-123");
+        folders.WithDirectory(folder);
 
-        (await Inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Path.Value.ShouldBe(folder);
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Empty);
+        row.Repository.Value.ShouldBe(WorktreeRoot);
+        row.OwnerExists.ShouldBeFalse();
+        row.LeftoverFileCount.ShouldBe(0);
     }
 
     [Fact]
