@@ -96,7 +96,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         FolderLabels folderLabels = new(settings, home);
         SessionRowEnricher enricher = new(gitCli, store, processRegistry, clock, transcripts, pullRequests);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, log);
-        SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal")), ClaudeSettings.ForCurrentUser(), store, fileFolders, new ClaudeFolder.Unset(FolderPath.From(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude"))), store.ConfigFile, Path.Combine(folders.State, "cader.log"), log);
+        SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal")), new ClaudeSettings(folders.ClaudeHome), store, fileFolders, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, Path.Combine(folders.State, "cader.log"), log);
         ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, counts.Refreshes);
 
         SessionActivity activity = new(clock);
