@@ -1,6 +1,7 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Effects;
+using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.TestDoubles;
@@ -131,9 +132,26 @@ public sealed class StatusTonesShould
     [Fact]
     public void MarkAStartByWhatHappenedToItsTab()
     {
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound(Listed.As("fix-123")))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false), new BaseUpdate.Current())).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true), new BaseUpdate.Current())).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound(Listed.As("fix-123")), new BaseUpdate.Current())).ShouldBe(StatusTone.Notice);
+    }
+
+    public static TheoryData<BaseUpdate> UpdatesNotMade =>
+    [
+        new BaseUpdate.NotFetched(RemoteBranch.From("origin/main"), "fatal: Could not resolve host: github.com"),
+        new BaseUpdate.NotFastForwarded(BranchName.From("main"), new FastForwardRefusal.CheckedOutElsewhere(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-main"))),
+        new BaseUpdate.NotFastForwarded(BranchName.From("main"), new FastForwardRefusal.Refused("fatal: Not possible to fast-forward, aborting.")),
+    ];
+
+    [Theory]
+    [MemberData(nameof(UpdatesNotMade))]
+    public void MarkAStartWhoseBaseWasNotUpdatedAsANotice(BaseUpdate update)
+    {
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false), update)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.SwitchedTo(Listed.As("fix-123")), update)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.NotListedYet("fix-123", JobId.From("81cdb0f9"), update)).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.Failed("supervisor not running")).ShouldBe(StatusTone.Failure);
     }
 
     [Fact]

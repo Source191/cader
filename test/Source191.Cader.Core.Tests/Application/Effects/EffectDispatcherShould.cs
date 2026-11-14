@@ -76,7 +76,7 @@ public sealed class EffectDispatcherShould
         InMemoryState store = new();
         GitCli git = new(processes, "git");
         ClaudeCli claude = new(processes, Claude);
-        LaunchService launches = new(claude, git, store, store, new WorktreeIncludeCopier(git), clock);
+        LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile());
         EffectDispatcher dispatcher = Composition.Handlers(ports, launches, new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"), TestSettings.Current(), new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
         // A dialog effect that is dispatched itself once its dialog has been answered.

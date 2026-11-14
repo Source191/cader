@@ -117,7 +117,7 @@ public sealed class WizardViewShould
     [InlineData(LaunchMode.NewWorktree)]
     public void OpenOnTheDefaultPlace(LaunchMode place)
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
 
         WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, new WizardOrigin.Anywhere()).Mode.ShouldBe(place);
     }
@@ -127,7 +127,7 @@ public sealed class WizardViewShould
     [InlineData(LaunchMode.NewWorktree)]
     public void OpenAFixedFolderOnItsCurrentBranchWhateverTheDefaultPlace(LaunchMode place)
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
 
         WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, WizardOrigin.In(FolderPath.From(Billing))).Mode.ShouldBe(LaunchMode.CurrentBranch);
     }
@@ -215,6 +215,22 @@ public sealed class WizardViewShould
             plan => plan.Place.ShouldBeOfType<LaunchPlace.NewWorktree>(),
             plan => plan.Base.ShouldBe(WorktreeBase.Head),
             plan => plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Read the README")));
+    }
+
+    /// <summary>Until the wizard has a Before branching field of its own, the saved setting is what each launch does.</summary>
+    [Theory]
+    [InlineData(BeforeBranching.Fetch)]
+    [InlineData(BeforeBranching.Pull)]
+    [InlineData(BeforeBranching.None)]
+    public void StartWithTheSavedBeforeBranching(BeforeBranching choice)
+    {
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: choice);
+        WizardState opened = WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, new WizardOrigin.Anywhere());
+
+        WizardUpdate started = WizardView.Reduce(Reduce(opened, new WizardInput.NameChanged("Fix 123")), new WizardInput.Start());
+
+        opened.BeforeBranching.ShouldBe(choice);
+        started.Effect.ShouldBeOfType<WizardEffect.Launch>().Plan.BeforeBranching.ShouldBe(choice);
     }
 
     [Fact]

@@ -4,9 +4,9 @@ namespace Source191.Cader.Ports;
 
 /// <summary>
 /// config.json as written: every member is optional and may be missing or null, as it is in a file from an earlier version or one edited by
-/// hand, and <c>SettingsFile</c> resolves what is missing to its default. A file written by this version names all seven.
+/// hand, and <c>SettingsFile</c> resolves what is missing to its default. A file written by this version names all eight.
 /// </summary>
-public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, WorktreeBase? DefaultBase = null, string? WorktreeRoot = null, EditorSetting? Editor = null, bool? CheckForUpdates = null, LaunchMode? DefaultPlace = null, bool? DiagnosticLog = null)
+public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, WorktreeBase? DefaultBase = null, string? WorktreeRoot = null, EditorSetting? Editor = null, bool? CheckForUpdates = null, LaunchMode? DefaultPlace = null, bool? DiagnosticLog = null, BeforeBranching? BeforeBranching = null)
 {
     /// <summary>No config.json, or one that cannot be read: every member missing, so every setting reads as its default.</summary>
     public static readonly UserConfig Missing = new();
@@ -20,8 +20,9 @@ public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, W
             && CheckForUpdates == other.CheckForUpdates
             && DefaultPlace == other.DefaultPlace
             && DiagnosticLog == other.DiagnosticLog
+            && BeforeBranching == other.BeforeBranching
             && (RepositoryRoots ?? []).SequenceEqual(other.RepositoryRoots ?? []);
     }
 
-    public override int GetHashCode() => HashCode.Combine(DefaultBase, WorktreeRoot, CheckForUpdates, DefaultPlace, DiagnosticLog, RepositoryRoots?.Count);
+    public override int GetHashCode() => HashCode.Combine(DefaultBase, WorktreeRoot, CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, RepositoryRoots?.Count);
 }

@@ -15,7 +15,18 @@ public sealed class LaunchPlanShould
         NameText: "Fix #123: flaky tests!",
         Mode: LaunchMode.CurrentBranch,
         Base: WorktreeBase.RemoteDefault,
-        OpeningPromptText: string.Empty);
+        OpeningPromptText: string.Empty,
+        BeforeBranching: BeforeBranching.Fetch);
+
+    [Theory]
+    [InlineData(BeforeBranching.Fetch)]
+    [InlineData(BeforeBranching.Pull)]
+    [InlineData(BeforeBranching.None)]
+    public void CarryWhatHappensBeforeBranchingIntoThePlan(BeforeBranching choice)
+    {
+        LaunchPlanBuilder.Build(Default with { Mode = LaunchMode.NewWorktree, BeforeBranching = choice }, WorktreeRoot, _ => false).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.BeforeBranching.ShouldBe(choice);
+        LaunchPlanBuilder.Build(Default with { BeforeBranching = choice }, WorktreeRoot, _ => false).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.BeforeBranching.ShouldBe(choice);
+    }
 
     [Fact]
     public void StartInTheRepositoryOnTheCurrentBranchByDefault()

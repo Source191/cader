@@ -110,6 +110,12 @@ public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
             startInfo.Environment.Remove(name);
         }
 
+        // After the drop, so a variable the request sets on purpose (a fetch's GIT_TERMINAL_PROMPT=0) is not dropped with the inherited one.
+        foreach ((string name, string value) in request.Variables)
+        {
+            startInfo.Environment[name] = value;
+        }
+
         return startInfo;
     }
 }

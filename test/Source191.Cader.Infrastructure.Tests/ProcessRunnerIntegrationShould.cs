@@ -95,6 +95,49 @@ public sealed class ProcessRunnerIntegrationShould
         result.StandardOutput.Trim().ShouldBe(Environment.CurrentDirectory.TrimEnd('\\'), StringCompareShould.IgnoreCase);
     }
 
+    /// <summary>GIT_TERMINAL_PROMPT is one InheritedEnvironment drops, so a value set here reaches the child only if the request's own is set after the drop.</summary>
+    [Fact]
+    public async Task GiveACapturedChildTheVariablesItsRequestSetsAfterTheDrop()
+    {
+        string? previous = Environment.GetEnvironmentVariable("GIT_TERMINAL_PROMPT");
+        Environment.SetEnvironmentVariable("GIT_TERMINAL_PROMPT", "1");
+        try
+        {
+            ProcessRequest request = new("cmd.exe", ["/c", "echo %GIT_TERMINAL_PROMPT% %GCM_INTERACTIVE%"], WorkingFolder.Inherit)
+            {
+                Variables = new Dictionary<string, string> { ["GIT_TERMINAL_PROMPT"] = "0", ["GCM_INTERACTIVE"] = "false" },
+            };
+
+            ProcessResult result = await runner.RunAsync(request, TestContext.Current.CancellationToken);
+
+            result.StandardOutput.Trim().ShouldBe("0 false");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("GIT_TERMINAL_PROMPT", previous);
+        }
+    }
+
+    [Fact]
+    public async Task PassNothingExtraToAChildWhoseRequestSetsNoVariables()
+    {
+        string? previous = Environment.GetEnvironmentVariable("GIT_TERMINAL_PROMPT");
+        Environment.SetEnvironmentVariable("GIT_TERMINAL_PROMPT", "1");
+        try
+        {
+            ProcessRequest request = new("cmd.exe", ["/c", "echo %GIT_TERMINAL_PROMPT%"], WorkingFolder.Inherit);
+
+            ProcessResult result = await runner.RunAsync(request, TestContext.Current.CancellationToken);
+
+            request.Variables.ShouldBeEmpty();
+            result.StandardOutput.Trim().ShouldBe("%GIT_TERMINAL_PROMPT%", "cmd echoes the name of a variable that is not set");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("GIT_TERMINAL_PROMPT", previous);
+        }
+    }
+
     [Fact]
     public async Task ListTheMachineSessionsThroughTheRealClaudeCli()
     {

@@ -34,6 +34,21 @@ public sealed class FakeProcessRunnerShould
     }
 
     [Fact]
+    public async Task ThrowOnlyForTheRunsItWasToldToThrowFor()
+    {
+        ProcessRequest fetch = new("git", ["fetch", "origin"], WorkingFolder.Inherit);
+        FakeProcessRunner runner = new FakeProcessRunner()
+            .Throw(request => request.Arguments.Contains("fetch"), new ProcessTimedOutException("git.exe", TimeSpan.FromSeconds(60)))
+            .AnswerAll(new ProcessResult(0, "listed", string.Empty));
+
+        await Should.ThrowAsync<ProcessTimedOutException>(() => runner.RunAsync(fetch, CancellationToken.None));
+        string listed = (await runner.RunAsync(Listing, CancellationToken.None)).StandardOutput;
+
+        listed.ShouldBe("listed");
+        runner.CapturedRequests.ShouldBe([fetch, Listing]);
+    }
+
+    [Fact]
     public async Task CopyTheInteractiveRequests()
     {
         FakeProcessRunner runner = new();

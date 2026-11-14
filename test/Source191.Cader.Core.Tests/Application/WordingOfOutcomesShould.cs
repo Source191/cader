@@ -500,14 +500,53 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayASessionStartedAndWhereItsTabOpened()
     {
-        Wording.Describe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false)))
+        Wording.Describe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false), new BaseUpdate.Current()))
             .ShouldBe("Started Fix flaky tests (81cdb0f9). Opened Fix flaky tests in a red tab.");
+    }
+
+    [Fact]
+    public void SayOriginCouldNotBeFetchedAfterTheStartedWords()
+    {
+        BaseUpdate notFetched = new BaseUpdate.NotFetched(RemoteBranch.From("origin/main"), "git fetch origin +refs/heads/main:refs/remotes/origin/main failed: fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com");
+
+        Wording.Describe(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Red", ColourReused: false), notFetched))
+            .ShouldBe("Started fix-123 (81cdb0f9). Opened fix-123 in a red tab. Could not fetch origin, so the worktree branched from origin/main as last fetched: git fetch origin +refs/heads/main:refs/remotes/origin/main failed: fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com");
+        Wording.Describe(new StartSessionOutcome.NotListedYet("fix-123", JobId.From("81cdb0f9"), notFetched))
+            .ShouldStartWith("Started fix-123 (81cdb0f9). It is not listed yet: press Enter on it to open its tab. Could not fetch origin, so the worktree branched from origin/main as last fetched: ");
+    }
+
+    /// <summary>The reasons git gives on two lines when a remote needs signing in (the owner's spike, 14 November 2026), on the one line the status line wraps.</summary>
+    [Fact]
+    public void PutAReasonOfSeveralLinesOnOne()
+    {
+        BaseUpdate notFetched = new BaseUpdate.NotFetched(RemoteBranch.From("origin/main"), "git fetch origin +refs/heads/main:refs/remotes/origin/main failed: fatal: Cannot prompt because user interactivity has been disabled.\nfatal: could not read Username for 'https://gitlab.com': terminal prompts disabled");
+
+        Wording.Describe(new StartSessionOutcome.NotListedYet("fix-123", JobId.From("81cdb0f9"), notFetched))
+            .ShouldEndWith("as last fetched: git fetch origin +refs/heads/main:refs/remotes/origin/main failed: fatal: Cannot prompt because user interactivity has been disabled. fatal: could not read Username for 'https://gitlab.com': terminal prompts disabled");
+    }
+
+    [Fact]
+    public void SayWhichWorktreeHasTheBranchThatWasNotFastForwarded()
+    {
+        BaseUpdate elsewhere = new BaseUpdate.NotFastForwarded(BranchName.From("main"), new FastForwardRefusal.CheckedOutElsewhere(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-main")));
+
+        Wording.Describe(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Red", ColourReused: false), elsewhere))
+            .ShouldBe("Started fix-123 (81cdb0f9). Opened fix-123 in a red tab. main is checked out in Northwind.Orders-main, so it was not fast-forwarded.");
+    }
+
+    [Fact]
+    public void SayWhyGitRefusedToFastForward()
+    {
+        BaseUpdate refused = new BaseUpdate.NotFastForwarded(BranchName.From("main"), new FastForwardRefusal.Refused("git merge --ff-only refs/remotes/origin/main failed: error: Your local changes to the following files would be overwritten by merge:\n\tREADME.md\nPlease commit your changes or stash them before you merge.\nAborting"));
+
+        Wording.Describe(new StartSessionOutcome.NotListedYet("fix-123", JobId.From("81cdb0f9"), refused))
+            .ShouldBe("Started fix-123 (81cdb0f9). It is not listed yet: press Enter on it to open its tab. main could not be fast-forwarded: git merge --ff-only refs/remotes/origin/main failed: error: Your local changes to the following files would be overwritten by merge: README.md Please commit your changes or stash them before you merge. Aborting");
     }
 
     [Fact]
     public void SayHowToOpenATabForASessionNotListedYet()
     {
-        Wording.Describe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9")))
+        Wording.Describe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9"), new BaseUpdate.Current()))
             .ShouldBe("Started Fix flaky tests (81cdb0f9). It is not listed yet: press Enter on it to open its tab.");
     }
 
@@ -529,14 +568,14 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayWhereHereStartedTheSession()
     {
-        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders")), "fix-tests", @"C:\repos\Northwind.Orders")
+        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders"), new BaseUpdate.Current()), "fix-tests", @"C:\repos\Northwind.Orders")
             .ShouldBe(@"Started fix-tests (81cdb0f9) in C:\repos\Northwind.Orders.");
     }
 
     [Fact]
     public void SayWhereHereStartedTheSessionBeforeItIsListed()
     {
-        Wording.Here(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9")), "fix-tests", @"C:\repos\Northwind.Orders")
+        Wording.Here(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()), "fix-tests", @"C:\repos\Northwind.Orders")
             .ShouldBe(@"Started fix-tests (81cdb0f9) in C:\repos\Northwind.Orders.");
     }
 

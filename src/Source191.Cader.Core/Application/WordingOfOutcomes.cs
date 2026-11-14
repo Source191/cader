@@ -155,11 +155,13 @@ public static partial class Wording
         return closedSome && !leftSome ? StatusTone.Success : StatusTone.Notice;
     }
 
+    /// <summary>A started session whose base was not brought up to date is part of what was asked, so a notice, unless its tab already reads worse.</summary>
     private static StatusTone ToneOf(StartSessionOutcome outcome)
     {
         return outcome switch
         {
-            StartSessionOutcome.StartedAndOpened opened => ToneOf(opened.Tab),
+            StartSessionOutcome.StartedAndOpened { Update: BaseUpdate.Current } opened => ToneOf(opened.Tab),
+            StartSessionOutcome.StartedAndOpened opened => ToneOf(opened.Tab) == StatusTone.Failure ? StatusTone.Failure : StatusTone.Notice,
             StartSessionOutcome.NotTrusted or StartSessionOutcome.Failed => StatusTone.Failure,
             _ => StatusTone.Notice,
         };
@@ -316,8 +318,8 @@ public static partial class Wording
     {
         return outcome switch
         {
-            StartSessionOutcome.StartedAndOpened opened => $"{Started(opened.Name, opened.JobId.Value)} {Describe(opened.Tab)}",
-            StartSessionOutcome.NotListedYet unlisted => $"{Started(unlisted.Name, unlisted.JobId.Value)} It is not listed yet: press Enter on it to open its tab.",
+            StartSessionOutcome.StartedAndOpened opened => $"{Started(opened.Name, opened.JobId.Value)} {Describe(opened.Tab)}{Updated(opened.Update)}",
+            StartSessionOutcome.NotListedYet unlisted => $"{Started(unlisted.Name, unlisted.JobId.Value)} It is not listed yet: press Enter on it to open its tab.{Updated(unlisted.Update)}",
             StartSessionOutcome.NotTrusted untrusted =>
                 $"{untrusted.Directory.Name} is not a trusted workspace yet. A Claude tab was opened there: accept the trust prompt, exit, then retry.",
             StartSessionOutcome.Failed failed => $"Could not start: {failed.Message}",
@@ -326,6 +328,22 @@ public static partial class Wording
     }
 
     private static string Started(string name, string jobId) => $"Started {name} ({jobId}).";
+
+    /// <summary>What was not brought up to date before the worktree branched, as a sentence after the started words; nothing when it all was.</summary>
+    private static string Updated(BaseUpdate update)
+    {
+        return update switch
+        {
+            BaseUpdate.Current => string.Empty,
+            BaseUpdate.NotFetched notFetched => $" Could not fetch {notFetched.Base.Remote}, so the worktree branched from {notFetched.Base.Value} as last fetched: {OneLine(notFetched.Reason)}",
+            BaseUpdate.NotFastForwarded { Refusal: FastForwardRefusal.CheckedOutElsewhere elsewhere } kept => $" {kept.Branch.Value} is checked out in {elsewhere.Folder.Name}, so it was not fast-forwarded.",
+            BaseUpdate.NotFastForwarded { Refusal: FastForwardRefusal.Refused refused } kept => $" {kept.Branch.Value} could not be fast-forwarded: {OneLine(refused.Reason)}",
+            _ => throw new UnreachableException(),
+        };
+    }
+
+    /// <summary>Git's words, which can run over several lines and indent with tabs, on the one line the status line wraps.</summary>
+    private static string OneLine(string reason) => string.Join(' ', reason.Split(['\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
     private static string Registrations(int number) => number == 1 ? "1 stale registration" : $"{number} stale registrations";
 

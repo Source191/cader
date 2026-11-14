@@ -170,7 +170,7 @@ public sealed class DiagnosticsPrivacyShould
     private EffectDispatcher Dispatcher(ClaudeCli claude, GitCli git)
     {
         InMemoryState store = new();
-        LaunchService launches = new(claude, git, store, store, new WorktreeIncludeCopier(git), clock);
+        LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile());
 
         return Composition.Handlers(ports, launches, new TabScripts(Claude, OwnExecutable), TestSettings.Current(), new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
@@ -180,7 +180,7 @@ public sealed class DiagnosticsPrivacyShould
     {
         EffectDispatcher dispatcher = Dispatcher(claude, git);
         PlannedWorktree worktree = PlannedWorktree.For(FolderPath.From(WorktreeRoot), FolderPath.From(Repository), WorktreeSlug.From(Branch));
-        LaunchPlan plan = new(FolderPath.From(Repository), SessionName.From(Name), new LaunchPlace.NewWorktree(worktree), WorktreeBase.RemoteDefault, new OpeningPrompt.Text(Prompt), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true));
+        LaunchPlan plan = new(FolderPath.From(Repository), SessionName.From(Name), new LaunchPlace.NewWorktree(worktree), WorktreeBase.RemoteDefault, new OpeningPrompt.Text(Prompt), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true), BeforeBranching.Fetch);
 
         Outcome outcome = await dispatcher.DispatchAsync(new StartSession(plan), CancellationToken.None);
 

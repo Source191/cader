@@ -49,7 +49,7 @@ public static partial class Wording
         ConfigRow.RepositoryRoot => "A folder searched for git repositories; Enter edits every root, one per line.",
         ConfigRow.WorktreeRoot => "Where new worktrees go, each in a folder named <repository>-<slug> on a branch named <slug>.",
         ConfigRow.OpenFolderWith => "The program f opens a row's folder with: one of the known editors, or a program of your own.",
-        ConfigRow.DefaultBase => "New worktrees branch from origin's default branch as of your last git fetch (no fetch is made), or from HEAD.",
+        ConfigRow.DefaultBase => "New worktrees branch from origin's default branch, fetched first by default, or from HEAD.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
         ConfigRow.DiagnosticLog log => $"Writes the diagnostic log to {log.File}; Enter turns it on or off.",
@@ -89,12 +89,12 @@ public static partial class Wording
         };
     }
 
-    /// <summary>Where a new worktree's branch starts, as the Default base row, its dialog and the wizard name it: origin's remote-tracking branch as it stood at the last fetch (the console never fetches), or HEAD.</summary>
+    /// <summary>Where a new worktree's branch starts, as the Default base row, its dialog and the wizard name it: origin's remote-tracking branch, after the update config.json's beforeBranching chooses, or HEAD.</summary>
     public static string Describe(WorktreeBase worktreeBase)
     {
         return worktreeBase switch
         {
-            WorktreeBase.RemoteDefault => "origin's default branch, as last fetched",
+            WorktreeBase.RemoteDefault => "origin's default branch",
             WorktreeBase.Head => "the commit checked out now (HEAD)",
         };
     }

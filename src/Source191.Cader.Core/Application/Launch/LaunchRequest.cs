@@ -8,4 +8,5 @@ public sealed record LaunchRequest(
     string NameText,
     LaunchMode Mode,
     WorktreeBase Base,
-    string OpeningPromptText);
+    string OpeningPromptText,
+    BeforeBranching BeforeBranching);

@@ -283,7 +283,7 @@ public sealed class WordingOfScreensShould
 
     private static string Text(IReadOnlyList<TextPart> row) => string.Concat(row.Select(part => part.Text));
 
-    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"), checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
+    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"), checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
 
     private static WorktreeRow WorktreeIn(WorktreeHealthKind health, int index, int dirty = 0, int unpushed = 0)
     {

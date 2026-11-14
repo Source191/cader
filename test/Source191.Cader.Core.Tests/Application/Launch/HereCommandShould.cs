@@ -20,6 +20,12 @@ public sealed class HereCommandShould
     }
 
     [Fact]
+    public void NeverPlanAFetchOrAPull()
+    {
+        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), prompt: string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.BeforeBranching.ShouldBe(BeforeBranching.None);
+    }
+
+    [Fact]
     public void TakeANameAndAnOpeningPrompt()
     {
         LaunchPlan plan = HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), "Fix the failing tests", isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;

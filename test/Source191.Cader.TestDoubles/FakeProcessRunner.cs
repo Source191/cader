@@ -10,6 +10,7 @@ public sealed class FakeProcessRunner : IProcessRunner
 {
     private readonly Lock gate = new();
     private readonly List<Rule> rules = [];
+    private readonly List<Failure> failures = [];
     private readonly List<ProcessRequest> captured = [];
     private readonly List<ProcessRequest> interactive = [];
     private Exception? failure;
@@ -69,6 +70,13 @@ public sealed class FakeProcessRunner : IProcessRunner
         return this;
     }
 
+    /// <summary>Makes matching captured runs throw this, as a run the time limit ends does; checked before any answer.</summary>
+    public FakeProcessRunner Throw(Func<ProcessRequest, bool> matches, Exception exception)
+    {
+        failures.Insert(0, new Failure(matches, exception));
+        return this;
+    }
+
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         await Task.Yield();
@@ -76,9 +84,10 @@ public sealed class FakeProcessRunner : IProcessRunner
         lock (gate)
         {
             captured.Add(request);
-            if (failure is not null)
+            Exception? thrown = failure ?? failures.FirstOrDefault(rule => rule.Matches(request))?.Exception;
+            if (thrown is not null)
             {
-                throw failure;
+                throw thrown;
             }
 
             return rules.First(rule => rule.Matches(request)).Next();
@@ -95,6 +104,8 @@ public sealed class FakeProcessRunner : IProcessRunner
         OnInteractive(request);
         return Task.FromResult(InteractiveExitCode);
     }
+
+    private sealed record Failure(Func<ProcessRequest, bool> Matches, Exception Exception);
 
     private sealed class Rule(Func<ProcessRequest, bool> matches, Queue<ProcessResult> results)
     {

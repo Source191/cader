@@ -1,13 +1,38 @@
+using Source191.Cader.Domain;
+
 namespace Source191.Cader.Ports;
 
 /// <summary>
 /// The git commands the console needs. Every call names the directory it runs in; nothing depends on the current directory.
-/// The convention: every method but IsMerged and the nullable queries throws <see cref="GitException"/> when git fails
-/// or answers with something unreadable; the queries that return a nullable answer null instead; IsMerged answers
-/// false.
+/// The convention: every method but IsMerged, BranchExists and the nullable queries throws <see cref="GitException"/> when
+/// git fails or answers with something unreadable; the queries that return a nullable answer null instead; IsMerged and
+/// BranchExists answer false. The fetch is the one command that reaches the network, and it never prompts: a remote that
+/// needs signing in fails it at once.
 /// </summary>
 public interface IGit
 {
+    /// <summary>
+    /// Fetches <paramref name="branch"/>'s branch from its remote into that remote-tracking branch alone. Throws
+    /// <see cref="GitException"/> when git fails, as it does offline or when the remote needs credentials that are not stored.
+    /// </summary>
+    Task FetchBranchAsync(FolderPath repository, RemoteBranch branch, CancellationToken cancellationToken);
+
+    /// <summary>Whether the repository has the local branch; false when git fails.</summary>
+    Task<bool> BranchExistsAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Fast-forwards the branch checked out in <paramref name="checkout"/> to <paramref name="target"/>, updating its files,
+    /// and never merges. Throws <see cref="GitException"/> when git refuses: the branch has commits of its own, or a local
+    /// change would be overwritten.
+    /// </summary>
+    Task FastForwardCheckoutAsync(FolderPath checkout, RemoteBranch target, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Moves <paramref name="branch"/>, checked out in no worktree, to <paramref name="target"/> without touching any files.
+    /// Throws <see cref="GitException"/> when git refuses: the move is not a fast-forward, or a worktree has the branch checked out.
+    /// </summary>
+    Task FastForwardBranchAsync(FolderPath repository, BranchName branch, RemoteBranch target, CancellationToken cancellationToken);
+
     /// <summary>Throws <see cref="GitException"/> when git fails.</summary>
     Task<IReadOnlyList<GitWorktreeEntry>> ListWorktreesAsync(string repository, CancellationToken cancellationToken);
 

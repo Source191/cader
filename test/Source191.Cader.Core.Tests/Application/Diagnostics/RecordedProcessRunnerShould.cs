@@ -33,6 +33,21 @@ public sealed class RecordedProcessRunnerShould
         log.Snapshot().ShouldBeEmpty();
     }
 
+    /// <summary>A fetch's GIT_TERMINAL_PROMPT=0 and GCM_INTERACTIVE=false reach the real runner only if this one hands the request on as it is.</summary>
+    [Fact]
+    public async Task HandTheRequestOnWithItsVariables()
+    {
+        ProcessRequest fetch = new("git", ["fetch", "origin", "+refs/heads/main:refs/remotes/origin/main"], new WorkingFolder.At(@"C:\Users\me\source\repos\Northwind.Orders"))
+        {
+            Variables = new Dictionary<string, string> { ["GIT_TERMINAL_PROMPT"] = "0", ["GCM_INTERACTIVE"] = "false" },
+        };
+
+        await Runner(TimeSpan.FromMilliseconds(41)).RunAsync(fetch, CancellationToken.None);
+
+        processes.CapturedRequests.ShouldHaveSingleItem().Variables["GCM_INTERACTIVE"].ShouldBe("false");
+        processes.CapturedRequests[0].Variables["GIT_TERMINAL_PROMPT"].ShouldBe("0");
+    }
+
     [Fact]
     public async Task CountAFastRunWithoutALine()
     {
