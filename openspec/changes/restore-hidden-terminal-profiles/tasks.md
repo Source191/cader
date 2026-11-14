@@ -32,7 +32,7 @@
 ## 6. Documentation and release
 
 - [x] 6.1 Add a troubleshooting line to `docs\user-guide.md`: the Cader profiles do not appear after `cader setup-terminal` because they were deleted in Windows Terminal's settings, and running `cader setup-terminal` again offers to show them; and say in its Notifications and profiles section that setup changes Terminal's settings file only to bring back a deleted profile, after asking. Verify by reading both back against the specs.
-- [ ] 6.2 Raise `Version` one minor step in `src\Source191.Cader\Source191.Cader.csproj` and add a `### Fixed` line under Unreleased in `CHANGELOG.md` ending with the pull request number. Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
+- [x] 6.2 Raise `Version` one minor step in `src\Source191.Cader\Source191.Cader.csproj` and add a `### Fixed` line under Unreleased in `CHANGELOG.md` ending with the pull request number. Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
 
 ## 7. Checks
 
