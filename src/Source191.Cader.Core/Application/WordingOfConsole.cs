@@ -23,7 +23,7 @@ public static partial class Wording
     public static IReadOnlyList<TextPart> ConfigCounts(IReadOnlyList<ConfigRow> rows)
     {
         int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading));
-        int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp });
+        int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp or SetupState.HiddenByTerminal });
 
         return [new TextPart(Count(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];
     }

@@ -175,6 +175,7 @@ public static partial class Wording
             (_, SetupState.Unreadable) => "could not be read",
             (SetupItem.TerminalProfiles, SetupState.At at) => $"installed, {at.Path}",
             (SetupItem.TerminalProfiles, SetupState.NotSetUp) => $"not set up, {SetupTerminal}",
+            (SetupItem.TerminalProfiles, SetupState.HiddenByTerminal) => $"hidden by Windows Terminal, {SetupTerminal}",
             (_, SetupState.NotSetUp) => $"not set, {SetupTerminal}",
             (_, SetupState.LogOff off) => $"off, {off.Path}",
             (_, SetupState.LogFile { Exists: true } file) => $"on, {file.Path}",
