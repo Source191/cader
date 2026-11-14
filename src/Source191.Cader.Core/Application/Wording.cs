@@ -414,11 +414,23 @@ public static partial class Wording
 
     public static string ClaudeSettingsUnreadable(string settingsPath, string reason) => $"Could not read {settingsPath} ({reason}), so it was left alone.";
 
-    public static string ShowHiddenProfilesQuestion => string.Empty;
+    public static string ShowHiddenProfilesQuestion => "Show the hidden profiles again? [y/N] ";
 
-    public static string HiddenProfilesPlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    /// <summary>Which profiles Windows Terminal hides, why, and the entry setup would add for each, as it would write it.</summary>
+    public static string HiddenProfilesPlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        string names = string.Join(" and ", entries.Select(entry => entry.Name));
+        string which = entries.Count == 1 ? $"the {names} profile" : $"the {names} profiles";
+        string adds = entries.Count == 1 ? "an entry" : "an entry for each";
 
-    public static string HiddenProfilesShown(string settingsPath) => string.Empty;
+        return string.Join(Environment.NewLine, [
+            $"Windows Terminal is hiding {which}: it keeps a profile deleted from its settings hidden, however often the fragment is written.",
+            $"This adds {adds} to the profile list in {settingsPath} and keeps everything else in the file as it is:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    public static string HiddenProfilesShown(string settingsPath) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 
