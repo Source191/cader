@@ -34,7 +34,7 @@
 ## 7. Docs and release
 
 - [x] 7.1 Update `.claude\rules\windows.md`'s line on git's "Permission denied" with the verified fact (13 November 2026, git 2.56.0.windows.4: git deletes the contents, the `.git` file and the registration, then fails on the held folder, so `WorktreeRemover` waits and finishes the removal), and add a **Folder in use** bullet to the Worktrees section of `docs\user-guide.md`. Verify by reading both.
-- [ ] 7.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add a `### Fixed` line under Unreleased in `CHANGELOG.md` ("Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes"). Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
+- [x] 7.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add a `### Fixed` line under Unreleased in `CHANGELOG.md` ("Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes"). Verify `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `main`.
 
 ## 8. Integration
 
