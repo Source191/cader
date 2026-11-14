@@ -31,7 +31,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         exitCode.ShouldBe(0);
         fragment.Written.ShouldBeEmpty();
         settings.Enabled.ShouldBe(0);
-        output.ToString().ShouldContain(Wording.TerminalSetupPlan(fragment.Location, new TerminalProfiles(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification))));
+        output.ToString().ShouldContain(Wording.TerminalSetupPlan(fragment.Location, DefaultProfiles, terminalHidesAProfile: false));
         output.ToString().ShouldContain(Wording.WriteProfilesQuestion);
         output.ToString().ShouldContain(Wording.NothingWritten);
     }
@@ -333,6 +333,83 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location));
         settings.Enabled.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task AddNothingToTerminalsSettingsWhenDeclined()
+    {
+        fragment.Installed();
+        terminal = Hiding(SessionEntry);
+
+        int exitCode = await RunAsync("y\nn\nn\n");
+
+        exitCode.ShouldBe(0);
+        terminal.Added.ShouldBeEmpty();
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+    }
+
+    [Fact]
+    public async Task AddBothEntriesWithoutAskingWhenToldYes()
+    {
+        terminal = Hiding(CaderEntry, SessionEntry);
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(0);
+        terminal.Added.ShouldBe([[CaderEntry, SessionEntry]]);
+        output.ToString().ShouldNotContain(Wording.ShowHiddenProfilesQuestion);
+    }
+
+    [Fact]
+    public async Task SayTerminalsSettingsAreNotChangedAndAskNothingOfThemWhenNothingIsHidden()
+    {
+        fragment.Installed();
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Read(new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>([CaderEntry.Id])));
+
+        await RunAsync("y\ny\n");
+
+        output.ToString().ShouldContain(Wording.TerminalSetupPlan(fragment.Location, DefaultProfiles, terminalHidesAProfile: false));
+        output.ToString().ShouldContain("Your Windows Terminal settings file is not changed.");
+        output.ToString().ShouldNotContain(Wording.ShowHiddenProfilesQuestion);
+        terminal.Added.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LeaveOutThatTerminalsSettingsAreNotChangedWhenAProfileIsHidden()
+    {
+        terminal = Hiding(CaderEntry);
+
+        await RunAsync("n\nn\n");
+
+        output.ToString().ShouldContain(Wording.TerminalSetupPlan(fragment.Location, DefaultProfiles, terminalHidesAProfile: true));
+        output.ToString().ShouldNotContain("Your Windows Terminal settings file is not changed.");
+    }
+
+    [Fact]
+    public async Task SayNothingWasWrittenOnlyWhenEveryStepWasSkipped()
+    {
+        terminal = Hiding(SessionEntry);
+
+        await RunAsync("n\nn\n");
+
+        output.ToString().ShouldContain(Wording.NothingWritten);
+    }
+
+    [Fact]
+    public async Task NotSayNothingWasWrittenWhenOnlyTheHiddenProfilesWereShown()
+    {
+        fragment.Installed();
+        terminal = Hiding(SessionEntry);
+
+        await RunAsync("n\ny\nn\n");
+
+        terminal.Added.ShouldBe([[SessionEntry]]);
+        fragment.Written.ShouldBeEmpty();
+        output.ToString().ShouldNotContain(Wording.NothingWritten);
+    }
+
+    private static TerminalProfiles DefaultProfiles => new(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification));
+
+    private static TerminalProfileEntry CaderEntry => TerminalProfiles.Entries[0];
 
     private static TerminalProfileEntry SessionEntry => TerminalProfiles.Entries[1];
 
