@@ -11,7 +11,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
-- A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set beforeBranching in config.json to None for the old behaviour, or to Pull to fast-forward your local default branch as well
+- A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set beforeBranching in config.json to None for the old behaviour, or to Pull to fast-forward your local default branch as well (#270)
 - CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
