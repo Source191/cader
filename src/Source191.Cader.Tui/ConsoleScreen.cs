@@ -641,7 +641,7 @@ public sealed class ConsoleScreen(
         }
 
         /// <summary>What the status line shows: nothing yet, or a message with whether its action runs, the width it was laid out at and the tab that showed it.</summary>
-        private abstract record StatusShown
+        private closed record StatusShown
         {
             public sealed record Nothing : StatusShown;
 
