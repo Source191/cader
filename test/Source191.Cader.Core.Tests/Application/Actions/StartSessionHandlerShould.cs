@@ -50,7 +50,7 @@ public sealed class StartSessionHandlerShould
     {
         Outcome outcome = await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
 
-        outcome.ShouldBe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false)));
+        outcome.ShouldBe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false), new BaseUpdate.Current()));
         TabLaunch tab = terminal.Opened.Single();
         tab.Title.ShouldBe("Fix flaky tests");
         tab.Script.ShouldContain($"& '{Claude}' 'attach' '81cdb0f9'");
@@ -63,8 +63,46 @@ public sealed class StartSessionHandlerShould
 
         Outcome outcome = await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
 
-        outcome.ShouldBe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9")));
+        outcome.ShouldBe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9"), new BaseUpdate.Current()));
         terminal.Opened.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CarryAFailedFetchOnTheOpenedSession()
+    {
+        OriginCannotBeFetched();
+
+        Outcome outcome = await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+
+        StartSessionOutcome.StartedAndOpened opened = outcome.ShouldBeOfType<StartSessionOutcome.StartedAndOpened>();
+        opened.Update.ShouldBe(new BaseUpdate.NotFetched(RemoteBranch.From("origin/main"), $"git fetch origin +refs/heads/main:refs/remotes/origin/main failed: {Unreachable}"));
+        terminal.Opened.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task CarryAFailedFetchOnASessionNotListedYet()
+    {
+        OriginCannotBeFetched();
+        processes.Answer(request => request.Arguments.Contains("agents"), new ProcessResult(0, "[]", string.Empty));
+
+        Outcome outcome = await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+
+        outcome.ShouldBeOfType<StartSessionOutcome.NotListedYet>().Update.ShouldBeOfType<BaseUpdate.NotFetched>().Base.ShouldBe(RemoteBranch.From("origin/main"));
+    }
+
+    private const string Unreachable = "fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com";
+
+    private static LaunchPlan InANewWorktree => Plan with
+    {
+        Directory = FolderPath.From(Worktree),
+        Place = new LaunchPlace.NewWorktree(new PlannedWorktree(FolderPath.From(Worktree), BranchName.From("fix-flaky-tests"))),
+    };
+
+    private void OriginCannotBeFetched()
+    {
+        processes
+            .Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty))
+            .Answer(request => request.Arguments is ["fetch", "origin", ..], new ProcessResult(128, string.Empty, Unreachable));
     }
 
     [Fact]
