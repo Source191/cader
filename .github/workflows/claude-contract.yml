@@ -52,7 +52,13 @@ jobs:
         with:
           persist-credentials: false
 
-      # The runner image's SDK, chosen by global.json, as in the build-test-pack action; the line records which.
+      # The SDK global.json names, installed as in the build-test-pack action, which says why; the line records which.
+      - name: Install the .NET SDK
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
       - name: Show the .NET SDK
         if: steps.gate.outputs.enabled == 'true'
         shell: pwsh

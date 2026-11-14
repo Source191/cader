@@ -14,7 +14,10 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: github-actions
-    directory: /
+    # The workflows, and the composite action whose setup-dotnet pin they share.
+    directories:
+      - /
+      - /.github/actions/build-test-pack
     schedule:
       interval: weekly
     # CodeQL fails when its init and analyze steps run different versions, so they are bumped in one pull request.
