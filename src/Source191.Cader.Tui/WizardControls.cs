@@ -11,7 +11,7 @@ namespace Source191.Cader.Tui;
 /// <summary>
 /// The new-session wizard's controls and where they sit, in one column read top to bottom, which Tab visits in order:
 /// the repository filter with the list under it, taking the rows the form leaves, then the form anchored to the bottom
-/// (the name, Where, the base, the preview, the prompt, the problem and the hint). A fixed folder has no chooser, so its
+/// (the name, Where, the base, Before branching, the preview, the prompt, the problem and the hint). A fixed folder has no chooser, so its
 /// form (the directory, the name, the preview and the prompt) starts at the top and closes up. <see cref="LaunchWizardDialog"/>
 /// binds them to the reducer.
 /// </summary>
@@ -21,13 +21,13 @@ internal sealed class WizardControls
     private const int ColumnWidth = 76;
 
     /// <summary>The rows the one-column form takes under the repository list, counted up from the dialog's bottom.</summary>
-    private const int FormRows = 17;
+    private const int FormRows = 21;
 
     public WizardControls(WizardState state)
     {
         Mode.Value = OptionSelectors.Index(state.Mode);
         BaseRef.Value = OptionSelectors.Index(state.Base);
-        Hint.Text = Wording.WizardHint(state);
+        Before.Value = OptionSelectors.Index(state.BeforeBranching);        Hint.Text = Wording.WizardHint(state);
         Fields = new Dictionary<WizardField, View>
         {
             [WizardField.RepositoryFilter] = Filter,
@@ -35,7 +35,7 @@ internal sealed class WizardControls
             [WizardField.Name] = Name,
             [WizardField.Mode] = Mode,
             [WizardField.Base] = BaseRef,
-            [WizardField.Prompt] = Prompt,
+            [WizardField.BeforeBranching] = Before,            [WizardField.Prompt] = Prompt,
         };
         All = state.ShowsChooser ? OneColumn() : FixedFolder(state);
     }
@@ -52,6 +52,8 @@ internal sealed class WizardControls
     public OptionSelector Mode { get; } = OptionSelectors.For<LaunchMode>(LeftColumn, 0, Wording.Describe);
 
     public OptionSelector BaseRef { get; } = OptionSelectors.For<WorktreeBase>(LeftColumn, 0, Wording.Describe);
+
+    public OptionSelector Before { get; } = OptionSelectors.For<BeforeBranching>(LeftColumn, 0, Wording.Describe);
 
     public Label Preview { get; } = Text(LeftColumn, 6, Palette.Cyan, Dim.Fill(1));
 
@@ -78,9 +80,10 @@ internal sealed class WizardControls
     /// </summary>
     private View[] OneColumn()
     {
-        Name.Y = Pos.AnchorEnd(16);
-        Mode.Y = Pos.AnchorEnd(14);
-        BaseRef.Y = Pos.AnchorEnd(11);
+        Name.Y = Pos.AnchorEnd(20);
+        Mode.Y = Pos.AnchorEnd(18);
+        BaseRef.Y = Pos.AnchorEnd(15);
+        Before.Y = Pos.AnchorEnd(12);
         Preview.Y = Pos.AnchorEnd(9);
         Preview.Height = 2;
         Prompt.Y = Pos.AnchorEnd(6);
@@ -93,10 +96,12 @@ internal sealed class WizardControls
             Repositories,
             Caption(LeftColumn, Pos.AnchorEnd(FormRows), "Session name (required)"),
             Name,
-            Caption(LeftColumn, Pos.AnchorEnd(15), "Where (↑↓ to change)"),
+            Caption(LeftColumn, Pos.AnchorEnd(19), "Where (↑↓ to change)"),
             Mode,
-            Caption(LeftColumn, Pos.AnchorEnd(12), "Worktree base (↑↓ to change)"),
+            Caption(LeftColumn, Pos.AnchorEnd(16), "Worktree base (↑↓ to change)"),
             BaseRef,
+            Caption(LeftColumn, Pos.AnchorEnd(13), Wording.WizardBeforeBranchingCaption),
+            Before,
             Preview,
             Caption(LeftColumn, Pos.AnchorEnd(7), PromptCaption),
             Prompt,
@@ -143,10 +148,10 @@ internal sealed class WizardControls
         }
     }
 
-    /// <summary>Runs the action for Enter on any option of the Where and base selectors, instead of the option taking it.</summary>
+    /// <summary>Runs the action for Enter on any option of the Where, base and Before branching selectors, instead of the option taking it.</summary>
     public void WhenEnterInSelectors(Action next)
     {
-        foreach (View option in Mode.SubViews.Concat(BaseRef.SubViews).Append(Mode).Append(BaseRef))
+        foreach (View option in Mode.SubViews.Concat(BaseRef.SubViews).Concat(Before.SubViews).Append(Mode).Append(BaseRef).Append(Before))
         {
             option.KeyDown += (_, key) => key.Handled = key == GuiKey.Enter && DialogButtons.Handled(next);
         }

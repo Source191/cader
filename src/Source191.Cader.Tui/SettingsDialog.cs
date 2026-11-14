@@ -156,6 +156,7 @@ internal static class SettingsDialog
         controls.Executable.TextChanging += (_, changing) => Apply(new SettingsInput.ExecutableChanged(changing.Result ?? string.Empty));
         controls.Arguments.TextChanging += (_, changing) => Apply(new SettingsInput.ArgumentsChanged(changing.Result ?? string.Empty));
         controls.BaseRef.ValueChanged += (_, _) => Apply(new SettingsInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
+        controls.Before.ValueChanged += (_, _) => Apply(new SettingsInput.BeforeBranchingChanged(OptionSelectors.At<BeforeBranching>(controls.Before.Value)));
         controls.Place.ValueChanged += (_, _) => Apply(new SettingsInput.PlaceChanged(OptionSelectors.At<LaunchMode>(controls.Place.Value)));
         // Enter in a one-line field does nothing by itself: only Save (F5) saves.
         controls.WorktreeRoot.Accepting += (_, accepting) => accepting.Handled = true;

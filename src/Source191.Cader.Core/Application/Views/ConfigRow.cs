@@ -17,6 +17,8 @@ public abstract record ConfigRow(string Key)
 
     public sealed record DefaultBase(WorktreeBase Base) : ConfigRow("default-base");
 
+    public sealed record BeforeBranching(Domain.BeforeBranching Choice) : ConfigRow("before-branching");
+
     public sealed record DefaultPlace(LaunchMode Place) : ConfigRow("default-place");
 
     public sealed record CheckForUpdates(bool On) : ConfigRow("check-for-updates");

@@ -91,6 +91,7 @@ internal static class LaunchWizardDialog
         controls.Repositories.ValueChanged += (_, _) => Apply(new WizardInput.ChoiceSelected(controls.Repositories.SelectedItem ?? -1));
         controls.Name.TextChanging += (_, changing) => Apply(new WizardInput.NameChanged(changing.Result ?? string.Empty));
         controls.Mode.ValueChanged += (_, _) => Apply(new WizardInput.ModeChanged(OptionSelectors.At<LaunchMode>(controls.Mode.Value)));
+        controls.Before.ValueChanged += (_, _) => Apply(new WizardInput.BeforeBranchingChanged(OptionSelectors.At<BeforeBranching>(controls.Before.Value)));
         controls.BaseRef.ValueChanged += (_, _) => Apply(new WizardInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
         controls.Prompt.ContentsChanged += (_, _) => Apply(new WizardInput.PromptChanged(controls.Prompt.Text));
         // Arrow and page keys typed in the filter drive the list; a letter or Backspace typed in the list is typing in the filter.
