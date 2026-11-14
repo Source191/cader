@@ -3,7 +3,7 @@
 ## 1. Facts and the domain rule
 
 - [x] 1.1 **Spike (recorded, before any code):** with Claude Code 2.1.3xx, start `claude --version` and `claude agents --json` with `CLAUDE_CONFIG_DIR` set to a scratch folder as a full path, a `~\` path, a relative path, a full path with a trailing `\`, and a folder that does not exist. Note which folder each one reads and whether a missing folder is created. Use a scratch folder under `%TEMP%`, never a real account's folder, and do not log in. Record the facts with the date and version in `.claude\rules\claude-code.md`. **Verify:** the rule lines are present.
-- [ ] 1.2 **Red:** `ClaudeFolderShould` facts over `C:\Users\me` as home.
+- [x] 1.2 **Red:** `ClaudeFolderShould` facts over `C:\Users\me` as home.
   - Unset and blank give `Default` at `C:\Users\me\.claude`.
   - `C:\Users\me\.claude-personal` gives `FromVariable` at that folder; a trailing `\` reads the same folder.
   - A relative value gives `NotUsable` with the default folder and the text refused.

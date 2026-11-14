@@ -20,6 +20,20 @@ public sealed class ClaudeTranscriptsShould : IDisposable
     }
 
     [Fact]
+    public void LookOnlyInTheFolderItWasGiven()
+    {
+        string other = Path.Combine(home, "other-account");
+        string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
+        Directory.CreateDirectory(project);
+        Directory.CreateDirectory(other);
+        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), "{}\n");
+        SessionId session = SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63");
+
+        new ClaudeTranscripts(home).HasMessages(session).ShouldBeTrue();
+        new ClaudeTranscripts(other).HasMessages(session).ShouldBeFalse();
+    }
+
+    [Fact]
     public void TreatAMissingProjectsFolderAsNoMessages()
     {
         ClaudeTranscripts transcripts = new(home);

@@ -34,6 +34,12 @@ public sealed class ClaudeSettingsShould : IDisposable
     }
 
     [Fact]
+    public void KeepItsSettingsInTheFolderItWasGiven()
+    {
+        new ClaudeSettings(@"C:\Users\me\.claude-personal").Location.ShouldBe(@"C:\Users\me\.claude-personal\settings.json");
+    }
+
+    [Fact]
     public async Task ReadAFileWithoutTheSettingAsUnset()
     {
         await GivenAsync("{\n  \"model\": \"opus\"\n}\n");
