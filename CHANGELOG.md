@@ -13,6 +13,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
+- Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#PR)
 - A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set Before branching to Nothing for the old behaviour, or to Pull default branch to fast-forward your local default branch as well (#270, #273)
 - CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
