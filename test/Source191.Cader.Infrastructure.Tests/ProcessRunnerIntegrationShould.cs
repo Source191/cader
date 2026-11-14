@@ -10,6 +10,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 /// Runs real child processes. The Claude Code check skips cleanly when the CLI is not installed.
 /// </summary>
 [Trait("Category", "Integration")]
+[Collection("Machine-wide pings")]
 public sealed class ProcessRunnerIntegrationShould
 {
     private readonly ProcessRunner runner = new(TimeSpan.FromMinutes(1));
