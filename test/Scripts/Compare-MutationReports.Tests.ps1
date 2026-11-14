@@ -28,9 +28,11 @@ Describe 'Compare-MutationReports' {
         $result = Invoke-Compare
 
         $result.Changes.Change | Should -Be @('Survived -> Killed', 'Killed -> Timeout', 'Survived -> NoCoverage')
-        $result.Changes.Count | Should -Be @(4, 1, 1)
+        $result.Changes | ForEach-Object { $_.Count } | Should -Be @(4, 1, 1)
         $result.Changes[0].Groups | ForEach-Object { "$($_.File) $($_.Mutator) $($_.Count)" } | Should -Be @(
-            'Domain\Alpha.cs Equality mutation 2', 'Application\Beta.cs String mutation 1', 'Domain\Alpha.cs Boolean mutation 1')
+            'Source191.Cader.Core\Domain\Alpha.cs Equality mutation 2',
+            'Source191.Cader.Core\Application\Beta.cs String mutation 1',
+            'Source191.Cader.Core\Domain\Alpha.cs Boolean mutation 1')
     }
 
     It 'shows only the Top largest groups of a change' {
