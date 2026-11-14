@@ -6,7 +6,7 @@
 
 ## 2. The fake a folder that is let go
 
-- [ ] 2.1 Add `FakeFolders.HeldOpenFor(string path, int attempts)`: `DeleteTree` of that folder throws `IOException` for that many calls, then deletes as usual (`HeldOpen` stays "always"). It is a test double, so it is covered by the remover's tests in group 3. Verify `dotnet build -c Debug`.
+- [x] 2.1 Add `FakeFolders.HeldOpenFor(string path, int attempts)`: `DeleteTree` of that folder throws `IOException` for that many calls, then deletes as usual (`HeldOpen` stays "always"). It is a test double, so it is covered by the remover's tests in group 3. Verify `dotnet build -c Debug`.
 
 ## 3. The remover finishes a held removal
 
