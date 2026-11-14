@@ -95,6 +95,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 ## Worktrees
 
 - **Remove:** `d` removes a worktree, refused when it holds work that would be lost. `D` removes it whatever it holds, after you type its name.
+- **Folder in use:** when a tab or program still has the worktree's folder open, Cader waits a few seconds for it, then removes the worktree and deals with its branch anyway. A folder still held is left behind, empty, and listed as □ empty, so `d` deletes it once that tab or program is closed.
 - **Prune:** `P` prunes the stale worktree registrations of the row's repository.
 - **New session here:** `n` starts a session in the worktree, on the branch checked out there.
 - **Shell:** `o` opens a PowerShell tab in the worktree's folder.
