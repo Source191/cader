@@ -16,7 +16,7 @@ public sealed class PortParametersShould
     /// <summary>The interfaces kept on purpose, each with its reason. Fixing one removes its entry; <see cref="KeepNoStaleEntry"/> says so.</summary>
     private static readonly Dictionary<Type, string> Kept = new()
     {
-        [typeof(IGit)] = "seventeen methods and about forty call sites; migrates in its own change",
+        [typeof(IGit)] = "twenty-one methods, the seventeen older ones taking strings, and about forty call sites; migrates in its own change",
     };
 
     [Fact]

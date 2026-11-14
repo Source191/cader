@@ -254,6 +254,54 @@ public sealed class GitCliShould
         exception.Message.ShouldContain("Could not resolve host: github.com");
     }
 
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    [InlineData(128, false)]
+    public async Task AnswerWhetherALocalBranchExists(int exitCode, bool expected)
+    {
+        processes.AnswerAll(new ProcessResult(exitCode, string.Empty, string.Empty));
+
+        bool exists = await Git.BranchExistsAsync(FolderPath.From(Repository), BranchName.From("main"), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["rev-parse", "--verify", "--quiet", "refs/heads/main"]));
+        exists.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task FastForwardTheCheckedOutBranchOnly()
+    {
+        await Git.FastForwardCheckoutAsync(FolderPath.From(Repository), RemoteBranch.From("origin/main"), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["merge", "--ff-only", "refs/remotes/origin/main"]));
+    }
+
+    [Fact]
+    public async Task FastForwardABranchThatIsNotCheckedOutWithoutAForce()
+    {
+        await Git.FastForwardBranchAsync(FolderPath.From(Repository), BranchName.From("main"), RemoteBranch.From("origin/main"), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["fetch", ".", "refs/remotes/origin/main:refs/heads/main"]));
+    }
+
+    [Fact]
+    public async Task ThrowGitsWordsWhenAFastForwardIsRefused()
+    {
+        processes.AnswerAll(new ProcessResult(128, string.Empty, "fatal: Not possible to fast-forward, aborting.\n"));
+
+        GitException checkout = await Should.ThrowAsync<GitException>(() => Git.FastForwardCheckoutAsync(FolderPath.From(Repository), RemoteBranch.From("origin/main"), CancellationToken.None));
+        GitException branch = await Should.ThrowAsync<GitException>(() => Git.FastForwardBranchAsync(FolderPath.From(Repository), BranchName.From("main"), RemoteBranch.From("origin/main"), CancellationToken.None));
+
+        checkout.Message.ShouldContain("Not possible to fast-forward");
+        branch.Message.ShouldContain("Not possible to fast-forward");
+    }
+
     [Fact]
     public async Task SetNoVariablesForAnyOtherCommand()
     {
