@@ -7,9 +7,11 @@ namespace Source191.Cader.Application.Actions;
 
 /// <summary>
 /// Carries out a removal decision for a worktree, the one way both views remove one: refuse, delete a leftover folder
-/// (pruning its registration when the decision says so), or remove it through git and then deal with its branch. The
-/// last guard before a folder is deleted from disc is that it lies inside a repository root or the worktree root, read
-/// from the settings as they are now, whoever asked and whatever the decision said.
+/// (pruning its registration when the decision says so), or remove it through git and then deal with its branch. When
+/// git cannot delete a worktree's folder because something holds it, git has already removed the worktree, so the
+/// folder is waited for and the removal finished either way. The last guard before a folder is deleted from disc is
+/// that it lies inside a repository root or the worktree root, read from the settings as they are now, whoever asked
+/// and whatever the decision said.
 /// </summary>
 public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees, IFolderDeleter deleter, CurrentSettings settings, TimeProvider clock)
 {
@@ -53,6 +55,8 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         }
         catch (GitException exception) when (exception.InUse)
         {
+            // Git has already deleted the contents, the .git file and the registration and failed only on the folder
+            // itself (GitWorktreeRemoveShould), so what is left is a plain folder that no later remove would see.
             return !InsideTheRoots(row.Path) || !await DeleteWhenLetGoAsync(row.Path, cancellationToken);
         }
     }
@@ -76,6 +80,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         return TryDelete(folder);
     }
 
+    /// <summary>Deletes a folder; false when a tab or program still has it open.</summary>
     private bool TryDelete(FolderPath folder)
     {
         try
@@ -103,11 +108,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
             return new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(row.Path));
         }
 
-        try
-        {
-            deleter.DeleteTree(row.Path.Value);
-        }
-        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+        if (!TryDelete(row.Path))
         {
             return new RemoveWorktreeOutcome.InUse(row.FolderName);
         }
