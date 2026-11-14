@@ -76,6 +76,13 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props', 'nuget.config', 'global.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      # The SDK global.json names, installed as in the build-test-pack action, which says why.
+      - name: Install the .NET SDK
+        if: steps.range.outputs.kind != 'skip'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
       - name: Restore Stryker
         if: steps.range.outputs.kind != 'skip'
         shell: pwsh
