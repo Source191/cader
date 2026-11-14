@@ -1,6 +1,6 @@
 # Implementation plan for the open changes
 
-Written 2026-11-13 against `main` at 0.21.0 (`db89b8aa`). Each open change carries the same `## Implementation plan` block at the end of its `tasks.md` (grep for that heading); this file is the whole picture. It changes no code, so it needs no version bump.
+Written 2026-11-13 (N to S added 2026-11-14) against `main` at 0.21.0 (`db89b8aa`). Each open change carries the same `## Implementation plan` block at the end of its `tasks.md` (grep for that heading); this file is the whole picture. It changes no code, so it needs no version bump.
 
 ## Contents
 
@@ -39,6 +39,12 @@ Step numbers are the order of merge; pull requests in the same step are independ
 | 6 | K: .NET 11 process APIs | upgrade-to-net11 (2.1 to 2.6) | opus | xhigh |
 | 6 | L: C# 15 and house style | upgrade-to-net11 (3.1 to 3.9) | opus | high |
 | 7 | M: .NET 11 release and docs | upgrade-to-net11 (4.1 to 4.5, archive) | sonnet | medium |
+| 8 | N: explain the mutation score gap | explain-mutation-score-gap (all) | sonnet | high |
+| 9 | O: close mutation gaps, batches Domain and Ports | close-mutation-gaps (1 to 3) | sonnet | high |
+| 10 | P: close mutation gaps, batches Diagnostics and WorktreeInventory | close-mutation-gaps (4, 5) | sonnet | high |
+| 11 | Q: close mutation gaps, batch rest of Application | close-mutation-gaps (6) | sonnet | high |
+| 12 | R: close mutation gaps, batches Views to Launch | close-mutation-gaps (7, 8) | sonnet | high |
+| 13 | S: strict release runs | close-mutation-gaps (9, 10, archive) | opus | medium |
 
 ## Dependencies and what can run in parallel
 
@@ -48,7 +54,9 @@ Step numbers are the order of merge; pull requests in the same step are independ
 - **G (signing) after E:** both edit `pipeline.yml` and `publish.yml`, and signing must cover both zips. G's tasks are amended to say so (see its block). G can run beside H.
 - **H and I (fetch) after F and C:** F and H both add a property to `Settings`, `UserConfig`, `SettingsFile` and a row to `ConfigRows`, so H takes F's shape and rebases its constructor and `Equals` edits. I follows H because the Config tab and wizard raise what H builds.
 - **J to M (.NET 11) last:** its own Order section says it follows quiet-editor-start, stricter-state-files, mutation-testing-in-ci and install-with-winget; this plan adds diagnostic-log-setting and fetch-before-branching, because the C# 15 sweep touches 59 files and the settings and launch code would otherwise be swept twice. It does not wait for arm64 or signing, which are workflow-only and may be held up by owner gates: whichever of J, E and G merges second rebases the `pipeline.yml` output paths. K and L are independent (Infrastructure processes against Domain, Ports and switches) and can run together; M follows both.
-- **Longest chain:** A, then C, then F, then H, then I, then J, then K or L, then M.
+- **N (mutation score gap) after D:** the script reuses D's `MutationReport.ps1` and the runner's full run needs D's workflow. It touches only `.github\scripts`, `test\Scripts` and `checks.md`, so it is file-disjoint from J to M and could start earlier. It is numbered after M so the .NET 11 steps (J to M, which retarget and sweep Core) do not move Core's code and tests between the paired runner and local runs; `upgrade-to-net11` records its own before and after scores in one environment, so it is self-consistent, but if N finds that the machine matters, read J's scores in that light.
+- **O to S (close mutation gaps) after N, and after M:** N's finding says which environment owns the break score, so the batches' baseline is trustworthy; M finishes the 59-file C# 15 sweep of Core, which would otherwise move the survivors and marks under the batches. O, P, Q and R are sequential because each ratchets the one `break` line in `stryker-config.json` and appends to the same `checks.md` ledger; each batch that adds a Stryker mark under `src\` raises `Version` and adds a `### Internal` line, like any other pull request there. S follows R and changes `Write-MutationRun.ps1` and `mutation.yml`, and is archived with the change.
+- **Longest chain:** A, then C, then F, then H, then I, then J, then K or L, then M, then N, then O, P, Q, R and S.
 
 ## Owner gates
 
@@ -58,18 +66,21 @@ Blocking (the pull request cannot start or finish without them):
 - **G:** 1.1 and 1.2 (signing service, identity, cost and account, the Entra federated credential, the `signing` environment limited to `main`).
 - **H:** 3.1 (the `git fetch` credential spike on a developer machine), before any port change.
 - **D:** 2.2 (the owner agrees the timings and break score from the measured baseline).
+- **N:** 2.1 and 2.2 (the owner dispatches the runner full run, or gives its id, and makes a full run in an ordinary clone, not a linked worktree, at the same commit, then puts its `mutation-report.json` in `$env:TEMP\mutation-gap\local`; never committed, because it holds absolute paths and the user name; only the made-up fixtures are kept). The owner also decides how many runner samples (default two). The existing runner run's `stryker-output` expires about 13 December 2026.
+- **O:** the reference run's environment (from N's finding) and whether `Accepted:` marks are allowed. **S:** 9.1 (no unmarked survivor left, or the owner's decision on the rest).
 
 After merge (the change is archived without them, but they are not forgotten):
 
 - **A:** install-with-winget 8.1 to 8.3 (clean VM install, upgrade with `U`, retire the nuget.org package) and readme-front-page's sponsor button check.
 - **E:** 5.1. **G:** 5.1, 5.2. **B:** 3.2. **F:** 5.4. **I:** 9.2.
+- **S:** the first release run that counts 20 or more mutants shows the strict rule working, checked once with a deliberately weak test on a branch, and the resulting `mutation` issue closed.
 
 ## Why these models and efforts
 
 - **Opus, xhigh:** H (git behaviour that can hang on a credential prompt or lose local work, written test first against real git) and K (process semantics that the `ConfirmedProcess` rules depend on, where a wrong adoption is a security regression).
 - **Opus, high:** G (a signing pipeline that must never leak a credential or sign from a pull request), J (judging every package and breaking change), L (a 59-file sweep with a union spike that has a decline path).
-- **Opus, medium:** B (small, but the PowerShell quoting rules in `security.md` are exact).
-- **Sonnet, high:** C, D, F, I, A. Each follows an established house pattern (a setting and its row, a handler, a workflow beside `claude-contract.yml`, a spec archive) where care matters more than design.
+- **Opus, medium:** B (small, but the PowerShell quoting rules in `security.md` are exact), and S (a small script and workflow-step change, but its thresholds and the workflow's rights are exact).
+- **Sonnet, high:** C, D, F, I, A, N, O, P, Q and R. Each follows an established house pattern (a setting and its row, a handler, a workflow beside `claude-contract.yml`, a spec archive) where care matters more than design.
 - **Sonnet, medium:** E and M. Mostly mechanical once the premises are confirmed or the measurements taken.
 - **Not used:** haiku (the house rules and reflection facts punish small mistakes) and `max` effort (nothing here is an open-ended design question).
 
@@ -78,4 +89,5 @@ After merge (the change is archived without them, but they are not forgotten):
 - **Fetch is split in two** so that the owner's spike and the git work are reviewed apart from the screens; part 1 changes the words that say Cader never fetches, so no release says something untrue.
 - **.NET 11 is split in four** on its own task sections; each slice builds and passes on `net11.0` or leaves `net11.0` untouched, so `main` is always releasable. The minor `Version` bump and the `CHANGELOG.md` summary are in M.
 - **Signing and arm64:** arm64 first, then signing amended to sign and verify both zips.
+- **The mutation follow-ups are two changes, in order:** `explain-mutation-score-gap` first, because a break score or a ratchet cannot be trusted while the runner scores 4.4 points above the developer machine on the same code; then `close-mutation-gaps`, in four batch pull requests and a last one that makes release runs strict only once no unmarked survivor is left.
 - **This plan is not an OpenSpec change** because it changes no behaviour, tooling or code, only schedules existing changes.
