@@ -13,6 +13,10 @@ public sealed record TerminalProfiles(string ConsoleExecutable, BellSound Consol
 
     public const string SessionCommandLine = "pwsh.exe -NoLogo";
 
+    public const string Source = "";
+
+    public static IReadOnlyList<TerminalProfileEntry> Entries { get; } = [];
+
     /// <summary>
     /// <see href="https://learn.microsoft.com/windows/terminal/customize-settings/profile-advanced">Sound, flash the window,
     /// flash the taskbar</see>.
