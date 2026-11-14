@@ -230,6 +230,39 @@ public sealed class GitCliShould
     }
 
     [Theory]
+    [InlineData("origin/main", "+refs/heads/main:refs/remotes/origin/main")]
+    [InlineData("origin/release/2026", "+refs/heads/release/2026:refs/remotes/origin/release/2026")]
+    public async Task FetchOneBranchFromItsRemoteWithoutEverPrompting(string remoteBranch, string refspec)
+    {
+        await Git.FetchBranchAsync(FolderPath.From(Repository), RemoteBranch.From(remoteBranch), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["fetch", "origin", refspec]),
+            request => request.Variables.Count.ShouldBe(2),
+            request => request.Variables["GIT_TERMINAL_PROMPT"].ShouldBe("0"),
+            request => request.Variables["GCM_INTERACTIVE"].ShouldBe("false"));
+    }
+
+    [Fact]
+    public async Task ThrowGitsWordsWhenAFetchFails()
+    {
+        processes.AnswerAll(new ProcessResult(128, string.Empty, "fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com\n"));
+
+        GitException exception = await Should.ThrowAsync<GitException>(() => Git.FetchBranchAsync(FolderPath.From(Repository), RemoteBranch.From("origin/main"), CancellationToken.None));
+
+        exception.Message.ShouldContain("Could not resolve host: github.com");
+    }
+
+    [Fact]
+    public async Task SetNoVariablesForAnyOtherCommand()
+    {
+        await Git.ListWorktreesAsync(Repository, CancellationToken.None);
+
+        Only.Variables.ShouldBeEmpty();
+    }
+
+    [Theory]
     [InlineData(0, true)]
     [InlineData(1, false)]
     public async Task DecideMergedByWhetherTheBranchIsAnAncestor(int exitCode, bool expected)
