@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Source191.Cader.Infrastructure\Source191.Cader.Infrastructure.csproj" />
     <ProjectReference Include="..\Source191.Cader.NoisyEditor\Source191.Cader.NoisyEditor.csproj" />
+    <ProjectReference Include="..\Source191.Cader.ParentStandIn\Source191.Cader.ParentStandIn.csproj" />
     <ProjectReference Include="..\Source191.Cader.TestDoubles\Source191.Cader.TestDoubles.csproj" />
   </ItemGroup>
 
