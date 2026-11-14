@@ -13,6 +13,12 @@ public abstract record SetupState
     /// <summary>In place at this path: the settings file, the profiles' fragment, the diagnostic log.</summary>
     public sealed record At(string Path) : SetupState;
 
+    /// <summary>The diagnostic log file with the setting on: its path, and whether anything has been written to it yet.</summary>
+    public sealed record LogFile(string Path, bool Exists) : SetupState;
+
+    /// <summary>The diagnostic log file with the setting off: its path only.</summary>
+    public sealed record LogOff(string Path) : SetupState;
+
     /// <summary>Not set up: the advice is to run <c>cader setup-terminal</c>.</summary>
     public sealed record NotSetUp : SetupState;
 

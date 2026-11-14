@@ -171,6 +171,13 @@ public sealed class WordingOfKeysAndColumnsShould
             Changes   changed files, unpushed commits and the last commit there
             Memory    what the session and everything it started use; m for the breakdown
 
+            Report a problem (!)
+            A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),
+            the last crash and the child program counts.
+            Cader never attaches cader.log to a report.
+            cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log
+            file row (Config tab), then give it to Claude or attach it to the issue by hand.
+
             Claude Code: C:\Users\me\.local\bin\claude.exe
             """.ReplaceLineEndings("\n"));
     }
@@ -209,6 +216,13 @@ public sealed class WordingOfKeysAndColumnsShould
             Created   when Cader created it, or not by Cader
             Changes   changed or untracked files, and commits on its branch that no remote has
             Unpushed  the newest five unpushed commits, or the changed files when none, and how many more
+
+            Report a problem (!)
+            A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),
+            the last crash and the child program counts.
+            Cader never attaches cader.log to a report.
+            cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log
+            file row (Config tab), then give it to Claude or attach it to the issue by hand.
             """.ReplaceLineEndings("\n"));
     }
 
@@ -220,7 +234,7 @@ public sealed class WordingOfKeysAndColumnsShould
             Enter  edit the setting, or say how to set up         Esc    back to sessions (clears a filter first)
             /      filter                                         ?      help
             q      quit                                           c      copy the path
-            f      open the folder, or the one holding the file   U      update in a new tab
+            f      open the folder, or the settings or log file   U      update in a new tab
             !      report a problem on GitHub                     ←      the tab to the left
             →      the tab to the right                           <      scroll the columns left
             >      scroll the columns right
@@ -228,6 +242,13 @@ public sealed class WordingOfKeysAndColumnsShould
             Columns
             SETTING  a setting kept in config.json, or, under the Setup heading, setup it reads but does not change
             VALUE    its value; a setup row that needs attention says what to run
+
+            Report a problem (!)
+            A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),
+            the last crash and the child program counts.
+            Cader never attaches cader.log to a report.
+            cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log
+            file row (Config tab), then give it to Claude or attach it to the issue by hand.
             """.ReplaceLineEndings("\n"));
     }
 
