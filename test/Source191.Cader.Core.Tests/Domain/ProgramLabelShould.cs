@@ -6,7 +6,7 @@ namespace Source191.Cader.Core.Tests.Domain;
 public sealed class ProgramLabelShould
 {
     [Theory]
-    [InlineData("cmd", "cmd /c npx -y @azure-devops/mcp m-kopa", "@azure-devops/mcp")]
+    [InlineData("cmd", "cmd /c npx -y @azure-devops/mcp northwind", "@azure-devops/mcp")]
     [InlineData("cmd", """C:\windows\system32\cmd.exe /d /s /c "npx ^"@playwright/mcp@latest^"" """, "@playwright/mcp")]
     [InlineData("cmd", """C:\windows\system32\cmd.exe /d /s /c "npx ^"@playwright/mcp@latest^" ^"--extension^"" """, "@playwright/mcp")]
     [InlineData("cmd", """C:\windows\system32\cmd.exe /d /s /c "npx ^"-y^" ^"@azure/mcp@latest^" ^"server^" ^"start^"" """, "@azure/mcp")]
