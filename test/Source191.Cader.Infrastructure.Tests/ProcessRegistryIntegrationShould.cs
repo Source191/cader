@@ -157,6 +157,25 @@ public sealed class ProcessRegistryIntegrationShould
     }
 
     [Fact]
+    public void LeaveAProcessThatHasGoneAlone()
+    {
+        ConfirmedProcess gone = TestProcesses.Confirmed(int.MaxValue - 7, TimeProvider.System.GetUtcNow());
+
+        Should.NotThrow(() => registry.Terminate(gone));
+        Should.NotThrow(() => registry.EndCleanly(gone));
+    }
+
+    /// <summary>
+    /// The System process refuses to be ended by anyone. Only a clean end is aimed at it: ending a tree goes on to the
+    /// children of a process that refused, and System's are not this test's to try.
+    /// </summary>
+    [Fact]
+    public void LeaveAProtectedProcessThatRefusesToEndAlone()
+    {
+        Should.NotThrow(() => registry.EndCleanly(TestProcesses.Confirmed(4, TimeProvider.System.GetUtcNow())));
+    }
+
+    [Fact]
     public void EndATreeWhoseChildHasAlreadyGoneWithoutThrowing()
     {
         ProcessStartInfo start = new("cmd.exe", ["/c", "cmd /c exit 0 & ping -n 30 127.0.0.1 > nul"]) { UseShellExecute = false, CreateNoWindow = true };
