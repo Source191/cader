@@ -49,5 +49,5 @@ public sealed class OncePerFolderShould
         log.Snapshot().ShouldBeEmpty();
     }
 
-    private static Task<string> Fail(OncePerFolder gate, FolderPath folder) => gate.RunAsync<string>(folder, () => throw new GitException("x"), exception => exception is GitException, _ => "blank");
+    private static Task<string> Fail(OncePerFolder gate, FolderPath folder) => gate.RunAsync<string>(folder, () => throw new GitException("x", inUse: false), exception => exception is GitException, _ => "blank");
 }

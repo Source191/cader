@@ -13,12 +13,15 @@ public sealed class SettingsShould
         EditorPreset.VsCode,
         Executable: string.Empty,
         Arguments: string.Empty,
-        WorktreeBase.RemoteDefault);
+        WorktreeBase.RemoteDefault,
+        CheckForUpdates: Settings.ChecksForUpdatesWhenUnset,
+        Place: Settings.PlaceWhenUnset,
+        DiagnosticLog: Settings.DiagnosticLogWhenUnset);
 
     [Fact]
     public void ResolveAMissingFileToEveryDefault()
     {
-        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, Settings.BaseWhenUnset, Home);
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, Settings.BaseWhenUnset, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.RepositoryRoots.ShouldBe([FolderPath.From(Root)]);
         settings.WorktreeRoot.ShouldBe(FolderPath.From(@"C:\Users\me\source\worktrees"));
@@ -38,7 +41,7 @@ public sealed class SettingsShould
     [Fact]
     public void ResolveAFileFromAnEarlierVersion()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(@"D:\work")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.Head, Home);
+        Settings settings = Settings.Resolve([FolderPath.From(@"D:\work")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.Head, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.RepositoryRoots.ShouldBe([FolderPath.From(@"D:\work")]);
         settings.WorktreeRoot.ShouldBe(FolderPath.From(@"D:\worktrees"));
@@ -50,16 +53,16 @@ public sealed class SettingsShould
     [Fact]
     public void KeepADefaultPlaceThatIsGiven()
     {
-        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, defaultPlace: LaunchMode.CurrentBranch);
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
-        settings.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
+        settings.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset));
     }
 
     [Fact]
     public void ResolveAnEmptyRootListToTheDefaultRoot()
     {
-        Settings settings = Settings.Resolve([], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);
+        Settings settings = Settings.Resolve([], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.RepositoryRoots.ShouldBe([FolderPath.From(Root)]);
     }
@@ -67,7 +70,7 @@ public sealed class SettingsShould
     [Fact]
     public void PutTheWorktreeRootInsideARootWithNoParent()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(@"D:\")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);
+        Settings settings = Settings.Resolve([FolderPath.From(@"D:\")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.WorktreeRoot.ShouldBe(FolderPath.From(@"D:\worktrees"));
     }
@@ -75,7 +78,7 @@ public sealed class SettingsShould
     [Fact]
     public void KeepAWorktreeRootThatIsGiven()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.WorktreeRoot.ShouldBe(FolderPath.From(@"E:\trees"));
     }
@@ -83,8 +86,8 @@ public sealed class SettingsShould
     [Fact]
     public void CompareByValue()
     {
-        Settings first = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.Custom(@"C:\Tools\subl.exe", ["{folder}"]), WorktreeBase.RemoteDefault, Home);
-        Settings second = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.Custom(@"C:\Tools\subl.exe", ["{folder}"]), WorktreeBase.RemoteDefault, Home);
+        Settings first = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.Custom(@"C:\Tools\subl.exe", ["{folder}"]), WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
+        Settings second = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.Custom(@"C:\Tools\subl.exe", ["{folder}"]), WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         first.ShouldBe(second);
     }
@@ -204,47 +207,47 @@ public sealed class SettingsShould
     [Fact]
     public void TurnTheUpdateCheckOffAndOn()
     {
-        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home);
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.WithUpdateCheckToggled().CheckForUpdates.ShouldBeFalse();
         settings.WithUpdateCheckToggled().WithUpdateCheckToggled().ShouldBe(settings);
-        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, defaultPlace: LaunchMode.CurrentBranch).WithUpdateCheckToggled().DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
+        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset).WithUpdateCheckToggled().DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
     }
 
     [Fact]
     public void GiveBackTheTextItWasTypedFrom()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, defaultPlace: LaunchMode.CurrentBranch);
+        Settings settings = Settings.Resolve([FolderPath.From(Root), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
-        settings.ToText().ShouldBe(new SettingsText($"{Root}\nD:\\work", @"E:\trees", EditorPreset.Custom, @"C:\Tools\subl.exe", "-n {folder}", WorktreeBase.Head, Place: LaunchMode.CurrentBranch));
+        settings.ToText().ShouldBe(new SettingsText($"{Root}\nD:\\work", @"E:\trees", EditorPreset.Custom, @"C:\Tools\subl.exe", "-n {folder}", WorktreeBase.Head, CheckForUpdates: Settings.ChecksForUpdatesWhenUnset, Place: LaunchMode.CurrentBranch, DiagnosticLog: Settings.DiagnosticLogWhenUnset));
     }
 
     [Fact]
     public void CheckForUpdatesUnlessTurnedOff()
     {
-        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home).CheckForUpdates.ShouldBeTrue();
-        Settings off = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false);
+        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset).CheckForUpdates.ShouldBeTrue();
+        Settings off = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         off.CheckForUpdates.ShouldBeFalse();
         off.ToText().CheckForUpdates.ShouldBeFalse();
-        off.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
+        off.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset));
     }
 
     [Fact]
     public void LeaveTheDiagnosticLogOffUnlessTurnedOn()
     {
-        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home).DiagnosticLog.ShouldBeFalse();
-        Settings on = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, diagnosticLog: true);
+        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset).DiagnosticLog.ShouldBeFalse();
+        Settings on = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: true);
 
         on.DiagnosticLog.ShouldBeTrue();
         on.ToText().DiagnosticLog.ShouldBeTrue();
-        on.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
+        on.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset));
     }
 
     [Fact]
     public void TurnTheDiagnosticLogOnAndOff()
     {
-        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false, defaultPlace: LaunchMode.CurrentBranch);
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
         settings.WithDiagnosticLogToggled().DiagnosticLog.ShouldBeTrue();
         settings.WithDiagnosticLogToggled().WithDiagnosticLogToggled().ShouldBe(settings);
