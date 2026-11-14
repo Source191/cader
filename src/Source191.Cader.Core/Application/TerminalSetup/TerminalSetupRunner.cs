@@ -56,7 +56,7 @@ public sealed class TerminalSetupRunner(
             return 1;
         }
 
-        await output.WriteLineAsync(removed ? Wording.ProfilesRemoved(fragment.Location) : Wording.NothingToRemove);
+        await output.WriteLineAsync(removed ? Wording.ProfilesRemoved(fragment.Location) : Wording.NothingToRemove, cancellationToken);
 
         return 0;
     }
@@ -71,7 +71,7 @@ public sealed class TerminalSetupRunner(
 
         TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
         TerminalProfiles profiles = await ChooseProfilesAsync(request);
-        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles, terminalHidesAProfile: HiddenTerminalProfiles.Of(records).Count > 0));
+        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles, terminalHidesAProfile: HiddenTerminalProfiles.Of(records).Count > 0), cancellationToken);
         Step profileStep = await WriteProfilesAsync(request, profiles, cancellationToken);
         Step hiddenStep = profileStep == Step.Failed || !fragment.Exists ? Step.Skipped : await ShowHiddenProfilesAsync(request, records, cancellationToken);
         Step bellStep = profileStep == Step.Failed ? Step.Skipped : await OfferBellAsync(request, cancellationToken);
@@ -83,7 +83,7 @@ public sealed class TerminalSetupRunner(
 
         if (steps.All(step => step == Step.Skipped))
         {
-            await output.WriteLineAsync(Wording.NothingWritten);
+            await output.WriteLineAsync(Wording.NothingWritten, cancellationToken);
         }
 
         return 0;
@@ -141,7 +141,7 @@ public sealed class TerminalSetupRunner(
         Step step = await TryWriteAsync(fragment.Location, () => fragment.WriteAsync(profiles, cancellationToken));
         if (step == Step.Written)
         {
-            await output.WriteLineAsync(Wording.ProfilesWritten(fragment.Location));
+            await output.WriteLineAsync(Wording.ProfilesWritten(fragment.Location), cancellationToken);
         }
 
         return step;
@@ -152,7 +152,7 @@ public sealed class TerminalSetupRunner(
     {
         if (records is TerminalProfileRecords.Unreadable unreadable)
         {
-            await output.WriteLineAsync(Wording.TerminalSettingsUnreadable(terminalSettings.Location, unreadable.Reason));
+            await output.WriteLineAsync(Wording.TerminalSettingsUnreadable(terminalSettings.Location, unreadable.Reason), cancellationToken);
             return Step.Skipped;
         }
 
@@ -162,7 +162,7 @@ public sealed class TerminalSetupRunner(
             return Step.Skipped;
         }
 
-        await output.WriteLineAsync(Wording.HiddenProfilesPlan(terminalSettings.Location, hidden));
+        await output.WriteLineAsync(Wording.HiddenProfilesPlan(terminalSettings.Location, hidden), cancellationToken);
         if (!await ConfirmedAsync(request, Wording.ShowHiddenProfilesQuestion))
         {
             return Step.Skipped;
@@ -171,7 +171,7 @@ public sealed class TerminalSetupRunner(
         Step step = await AddEntriesAsync(hidden, cancellationToken);
         if (step == Step.Written)
         {
-            await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location));
+            await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location), cancellationToken);
         }
 
         return step;
@@ -186,7 +186,7 @@ public sealed class TerminalSetupRunner(
         }
         catch (SettingsFileIsALinkException)
         {
-            await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, hidden));
+            await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, hidden), cancellationToken);
 
             return Step.Failed;
         }
@@ -197,10 +197,10 @@ public sealed class TerminalSetupRunner(
         switch (state)
         {
             case NotificationChannelState.Configured { Value: NotificationChannelState.TerminalBell }:
-                await output.WriteLineAsync(Wording.ClaudeBellAlreadyOn);
+                await output.WriteLineAsync(Wording.ClaudeBellAlreadyOn, cancellationToken);
                 return Step.Skipped;
             case NotificationChannelState.Unreadable unreadable:
-                await output.WriteLineAsync(Wording.ClaudeSettingsUnreadable(claudeSettings.Location, unreadable.Reason));
+                await output.WriteLineAsync(Wording.ClaudeSettingsUnreadable(claudeSettings.Location, unreadable.Reason), cancellationToken);
                 return Step.Skipped;
             default:
                 return await AskAndEnableBellAsync(state, request, cancellationToken);
@@ -210,7 +210,7 @@ public sealed class TerminalSetupRunner(
     private async Task<Step> AskAndEnableBellAsync(NotificationChannelState state, TerminalSetupRequest request, CancellationToken cancellationToken)
     {
         string? replacing = (state as NotificationChannelState.Configured)?.Value;
-        await output.WriteLineAsync(Wording.ClaudeBellPlan(claudeSettings.Location, replacing));
+        await output.WriteLineAsync(Wording.ClaudeBellPlan(claudeSettings.Location, replacing), cancellationToken);
         if (!await ConfirmedAsync(request, Wording.TurnOnClaudeBellQuestion))
         {
             return Step.Skipped;
@@ -219,7 +219,7 @@ public sealed class TerminalSetupRunner(
         Step step = await TryWriteAsync(claudeSettings.Location, () => claudeSettings.EnableTerminalBellAsync(cancellationToken));
         if (step == Step.Written)
         {
-            await output.WriteLineAsync(Wording.ClaudeBellEnabled(claudeSettings.Location));
+            await output.WriteLineAsync(Wording.ClaudeBellEnabled(claudeSettings.Location), cancellationToken);
         }
 
         return step;
