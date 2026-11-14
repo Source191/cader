@@ -471,6 +471,21 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         settings.Enabled.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.FailTheWriteWith = new SettingsFileIsALinkException(terminal.Location);
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsLinked(terminal.Location, [SessionEntry]));
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
     private static TerminalProfiles DefaultProfiles => new(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification));
 
     private static TerminalProfileEntry CaderEntry => TerminalProfiles.Entries[0];

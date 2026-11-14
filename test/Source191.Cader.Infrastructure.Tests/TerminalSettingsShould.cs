@@ -341,6 +341,30 @@ public sealed class TerminalSettingsShould : IDisposable
     }
 
     [Fact]
+    public async Task RefuseASettingsFileThatIsALinkAndWriteNothing()
+    {
+        string original = """{ "profiles": [] }""";
+        string dotfiles = Path.Combine(root, "dotfiles");
+        Directory.CreateDirectory(dotfiles);
+        string target = Path.Combine(dotfiles, "settings.json");
+        Given(target, original);
+        try
+        {
+            File.CreateSymbolicLink(settings.Location, target);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Assert.Skip("Windows refused a symbolic link: it needs Developer Mode or an administrator.");
+        }
+
+        await Should.ThrowAsync<SettingsFileIsALinkException>(() => settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken));
+
+        new FileInfo(settings.Location).LinkTarget.ShouldBe(target);
+        (await File.ReadAllTextAsync(target, TestContext.Current.CancellationToken)).ShouldBe(original);
+        Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
+    }
+
+    [Fact]
     public async Task RefuseAReadOnlyFileAndLeaveItAlone()
     {
         string original = """{ "profiles": [] }""";

@@ -18,7 +18,7 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
     public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Added => added;
 
     /// <summary>When set, the next write throws it.</summary>
-    public IOException? FailTheWriteWith { get; set; }
+    public Exception? FailTheWriteWith { get; set; }
 
     public Task<TerminalProfileRecords> ReadAsync(CancellationToken cancellationToken) => Task.FromResult(records);
 
