@@ -26,6 +26,7 @@ public sealed class SmokeScriptShould
             Wording.TabTitleDuring(DialogName.ProblemReport), Wording.TabTitle,
             Wording.TabTitleDuring(DialogName.Settings), Wording.TabTitleDuring(DialogName.FolderPicker), Wording.TabTitleDuring(DialogName.Settings), Wording.TabTitle,
             Wording.TabTitleDuring(DialogName.Settings), Wording.TabTitleDuring(DialogName.FilePicker), Wording.TabTitleDuring(DialogName.Settings), Wording.TabTitle,
+            Wording.TabTitleDuring(DialogName.Settings), Wording.TabTitle,
             Wording.TabTitleDuring(DialogName.Keys), Wording.TabTitle,
             Wording.TabTitleDuring(DialogName.ForceRemove), Wording.TabTitle,
             Wording.TabTitle,
@@ -40,15 +41,19 @@ public sealed class SmokeScriptShould
         string[] worktrees = [.. Wording.WorktreesColumns.Select(column => column.Name)];
         string[] texts = [.. Steps.Select(step => step.Marker).OfType<CaptureMarker.ScreenText>().Select(text => text.Text)];
 
-        texts.Length.ShouldBe(6);
+        texts.Length.ShouldBe(10);
         texts[0].ShouldBeOneOf(sessions);
         texts[0].ShouldNotBeOneOf(worktrees);
-        texts[1].ShouldBe("SETTING", "the Config tab is recognised by a column neither other view has");
-        texts[2].ShouldBeOneOf(worktrees);
-        texts[2].ShouldNotBeOneOf(sessions);
-        texts[3].ShouldBe(", selected: ", "the scan has finished once the table's title names a selection; the WORKTREE cell no longer shows the folder name");
-        texts[4].ShouldBe($"New session in {Worktree}", "the fixed-folder wizard is recognised by its own title");
-        texts[5].ShouldBe(texts[0]);
+        texts[1].ShouldBe(Wording.WizardBeforeBranchingCaption, "the wizard's Before branching choice must fit the dialog");
+        texts[2].ShouldBe("Nothing", "its last choice is the bottom of the selector");
+        texts[3].ShouldBe("SETTING", "the Config tab is recognised by a column neither other view has");
+        texts[4].ShouldBe(Wording.BeforeBranchingCaption);
+        texts[5].ShouldBe("Nothing");
+        texts[6].ShouldBeOneOf(worktrees);
+        texts[6].ShouldNotBeOneOf(sessions);
+        texts[7].ShouldBe(", selected: ", "the scan has finished once the table's title names a selection; the WORKTREE cell no longer shows the folder name");
+        texts[8].ShouldBe($"New session in {Worktree}", "the fixed-folder wizard is recognised by its own title");
+        texts[9].ShouldBe(texts[0]);
     }
 
     [Fact]
@@ -59,10 +64,11 @@ public sealed class SmokeScriptShould
         keys.ShouldBe(
         [
             Key(Wording.SessionsKeys, "Help"), Escape,
-            Key(Wording.SessionsKeys, "New session"), Escape,
+            Key(Wording.SessionsKeys, "New session"), string.Empty, string.Empty, Escape,
             Key(Wording.SessionsKeys, "Report"), Escape,
             Right + Right, Key(Wording.ConfigKeys, "Edit"), F3, Escape, Escape,
             Key(Wording.ConfigKeys, "Filter") + "with", "\r", Key(Wording.ConfigKeys, "Edit"), Down + Down + Down + Down + " " + F3, Escape, Escape,
+            Key(Wording.ConfigKeys, "Filter") + "branching", "\r", Key(Wording.ConfigKeys, "Edit"), string.Empty, string.Empty, Escape,
             Left, string.Empty,
             Key(Wording.WorktreesKeys, "Help"), Escape,
             Key(Wording.WorktreesKeys, "Filter") + Worktree, "\r",
@@ -77,22 +83,24 @@ public sealed class SmokeScriptShould
     [Fact]
     public void SendEnterAndDForceRemoveWithoutAMarkerOfTheirOwn()
     {
-        Steps[22].Marker.ShouldBe(CaptureMarker.Nothing);
-        Steps[23].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[30].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[31].Marker.ShouldBe(CaptureMarker.Nothing);
     }
 
     [Fact]
     public void EndTheConfigFilterAndEditTheRowWithoutAMarkerOfTheirOwn()
     {
-        Steps[12].Marker.ShouldBe(CaptureMarker.Nothing);
-        Steps[13].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[14].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[15].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[20].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[21].Marker.ShouldBe(CaptureMarker.Nothing);
     }
 
     [Fact]
     public void ChooseCustomTheLastEditorBeforeBrowsingForAFile()
     {
         Enum.GetValues<Source191.Cader.Domain.EditorPreset>()[^1].ShouldBe(Source191.Cader.Domain.EditorPreset.Custom, "the smoke reaches Custom by Down presses from the first choice");
-        Steps[14].Keys.ShouldEndWith(" " + F3);
+        Steps[16].Keys.ShouldEndWith(" " + F3);
     }
 
     [Fact]
@@ -101,8 +109,8 @@ public sealed class SmokeScriptShould
         TimeSpan[] timeouts = [.. Steps.Select(step => step.Timeout)];
 
         timeouts[0].ShouldBe(TimeSpan.FromSeconds(60));
-        timeouts[19].ShouldBe(TimeSpan.FromSeconds(60));
-        timeouts.Where((_, index) => index is not 0 and not 19).ShouldAllBe(timeout => timeout == TimeSpan.FromSeconds(20));
+        timeouts[27].ShouldBe(TimeSpan.FromSeconds(60));
+        timeouts.Where((_, index) => index is not 0 and not 27).ShouldAllBe(timeout => timeout == TimeSpan.FromSeconds(20));
     }
 
     [Fact]
