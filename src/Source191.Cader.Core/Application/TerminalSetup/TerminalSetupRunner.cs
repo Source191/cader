@@ -5,8 +5,8 @@ namespace Source191.Cader.Application.TerminalSetup;
 
 /// <summary>
 /// <c>cader setup-terminal</c> from start to finish, once the command line is parsed: check the request and the sounds, show what will be written, ask, write
-/// the Windows Terminal fragment, then offer Claude Code's terminal bell. Exit 0 when done, declined or nothing to
-/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment and one Claude setting, nothing else.
+/// the Windows Terminal fragment, offer to show again a Cader profile Windows Terminal hides as deleted, then offer Claude Code's terminal bell. Exit 0 when done, declined or nothing to
+/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment, one Claude setting and, only to add a hidden profile's entry, Windows Terminal's settings file; nothing else.
 /// </summary>
 public sealed class TerminalSetupRunner(
     IFolders folders,
