@@ -43,7 +43,7 @@ cd cader
 dotnet build -c Debug
 ```
 
-- **SDK:** `global.json` chooses the SDK (10.0.301, rolling forward to the latest minor) and Microsoft.Testing.Platform as the test runner.
+- **SDK:** `global.json` chooses the SDK (11.0.100, rolling forward to the latest minor) and Microsoft.Testing.Platform as the test runner.
 - **Claude Code:** the `/opsx:*` commands and the OpenSpec skills under `.claude\` work in any Claude Code session opened in the repository; the `openspec` CLI does the same work by hand. Trust the clone in Claude Code once (run `claude` in it and accept the prompt) if you will run the contract tests or the hand-off check.
 - **Your environment:** never start `cader`, or anything that opens tabs, from inside a Claude Code session without clearing `NO_COLOR`, `CLAUDECODE`, `CLAUDE_PID` and `CLAUDE_CODE_*`. Windows Terminal hands the caller's environment to new tabs, and everything in them then runs monochrome.
 

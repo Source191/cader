@@ -5,10 +5,10 @@ namespace Source191.Cader.TestDoubles;
 /// <summary>An in-memory folder tree for the read models and worktree actions, keyed case-insensitively like Windows paths.</summary>
 public sealed class FakeFolders : IFolders, IFolderDeleter
 {
-    private readonly HashSet<string> directories = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, string> files = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> heldOpen = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, int> heldOpenForAttempts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> directories = [with(StringComparer.OrdinalIgnoreCase)];
+    private readonly Dictionary<string, string> files = [with(StringComparer.OrdinalIgnoreCase)];
+    private readonly HashSet<string> heldOpen = [with(StringComparer.OrdinalIgnoreCase)];
+    private readonly Dictionary<string, int> heldOpenForAttempts = [with(StringComparer.OrdinalIgnoreCase)];
 
     /// <summary>Declares a folder and every folder above it.</summary>
     public FakeFolders WithDirectory(string path)

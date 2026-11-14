@@ -26,6 +26,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
+- Cader is built for .NET 11 and its SDK 11.0.100: every project targets net11.0, the CI jobs install that SDK, and the packages and breaking changes are checked, with the Microsoft.Extensions assemblies .NET 11 now carries left out of the build (#277)
 - No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
 
 ## 0.21.1 - 2026-11-13

@@ -25,7 +25,7 @@ public sealed class HandoffCheck(ClaudeJobs jobs)
 
     public async Task<int> RunAsync(IReadOnlyList<string> rest)
     {
-        string exe = Path.GetFullPath(rest.Count > 0 ? rest[0] : @"..\..\src\Source191.Cader\bin\Release\net10.0\cader.exe");
+        string exe = Path.GetFullPath(rest.Count > 0 ? rest[0] : @"..\..\src\Source191.Cader\bin\Release\net11.0\cader.exe");
         string repository = Path.GetFullPath(rest.Count > 1 ? rest[1] : @"..\..");
         if (!File.Exists(exe))
         {

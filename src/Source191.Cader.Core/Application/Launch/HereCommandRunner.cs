@@ -38,7 +38,7 @@ public sealed class HereCommandRunner(IFolders folders, LaunchService launches, 
     /// <summary>Listed yet or not, the session is attached to in this tab.</summary>
     private async Task<int> AttachAsync(string said, JobId jobId, CancellationToken cancellationToken)
     {
-        await output.WriteLineAsync(said);
+        await output.WriteLineAsync(said, cancellationToken);
         try
         {
             await effects.RunAsync(new AttachToSession(jobId), cancellationToken);

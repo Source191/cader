@@ -15,7 +15,7 @@ public sealed record DriverOptions(bool PretendWindowsTerminal, bool AnswerQueri
 
     public IReadOnlyDictionary<string, string> ChildEnvironment()
     {
-        Dictionary<string, string> environment = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> environment = [with(StringComparer.OrdinalIgnoreCase)];
         foreach (System.Collections.DictionaryEntry entry in Environment.GetEnvironmentVariables())
         {
             environment[(string)entry.Key] = (string?)entry.Value ?? string.Empty;

@@ -66,7 +66,8 @@ public sealed class CapturedRun : IDisposable
         }
 
         console.Close();
-        await Task.WhenAny(reader, Task.Delay(2000));
+        // Wait up to two seconds for the reader to drain, and go on whether it finished, failed or not.
+        await reader.WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         string captured = Captured();
         await File.WriteAllTextAsync(captureFile, captured, new UTF8Encoding(false));
