@@ -2,7 +2,7 @@
 
 ## 1. Git's behaviour, pinned
 
-- [ ] 1.1 Red-green: `GitWorktreeRemoveShould.DropTheRegistrationAndEmptyTheFolderWhenAProgramHoldsIt` (Infrastructure, real git over `TemporaryGitRoot`): add a worktree, start a child process (`pwsh -NoProfile -Command Start-Sleep 30`) with the worktree as its working directory, call `GitCli.RemoveWorktreeAsync`, and assert the `GitException` has `InUse` true, the folder exists and is empty, and `ListWorktreesAsync` no longer lists it; the child is killed in a `finally`. It passes against today's code (it pins git, not Cader). Verify with `dotnet test test\Source191.Cader.Infrastructure.Tests -c Debug --no-build --filter-class *GitWorktreeRemoveShould`.
+- [x] 1.1 Red-green: `GitWorktreeRemoveShould.DropTheRegistrationAndEmptyTheFolderWhenAProgramHoldsIt` (Infrastructure, real git over `TemporaryGitRoot`): add a worktree, start a child process (`pwsh -NoProfile -Command Start-Sleep 30`) with the worktree as its working directory, call `GitCli.RemoveWorktreeAsync`, and assert the `GitException` has `InUse` true, the folder exists and is empty, and `ListWorktreesAsync` no longer lists it; the child is killed in a `finally`. It passes against today's code (it pins git, not Cader). Verify with `dotnet test test\Source191.Cader.Infrastructure.Tests -c Debug --no-build --filter-class *GitWorktreeRemoveShould`.
 
 ## 2. The fake a folder that is let go
 
