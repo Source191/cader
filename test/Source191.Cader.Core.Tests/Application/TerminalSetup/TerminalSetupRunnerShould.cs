@@ -407,6 +407,70 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         output.ToString().ShouldNotContain(Wording.NothingWritten);
     }
 
+    [Fact]
+    public async Task SayTerminalsUnreadableSettingsWereLeftAloneAndCarryOn()
+    {
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Unreadable("bad json"));
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(Wording.TerminalSettingsUnreadable(terminal.Location, "bad json"));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SayNothingOfTerminalsSettingsWhenTheyAreMissing()
+    {
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldNotContain(terminal.Location);
+        terminal.Added.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ReportNothingHiddenWhenTheFragmentIsDeclined()
+    {
+        terminal = Hiding(SessionEntry);
+
+        int exitCode = await RunAsync("n\nn\n");
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesPlan(terminal.Location, [SessionEntry]));
+        terminal.Added.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SkipEverythingAfterAFailedFragmentWrite()
+    {
+        fragment.Installed();
+        fragment.FailTheWriteWith = new IOException("disk full");
+        terminal = Hiding(SessionEntry);
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        terminal.Added.ShouldBeEmpty();
+        settings.Enabled.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task ReportAFailedEntryWriteAndStillOfferTheBell()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.FailTheWriteWith = new IOException("read-only");
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "read-only"));
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
     private static TerminalProfiles DefaultProfiles => new(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification));
 
     private static TerminalProfileEntry CaderEntry => TerminalProfiles.Entries[0];
