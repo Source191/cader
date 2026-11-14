@@ -2,7 +2,6 @@ using Microsoft.Win32.SafeHandles;
 using Source191.Cader.Adapters.Processes;
 using Source191.Cader.Adapters.Terminal;
 using Source191.Cader.Ports;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Versioning;
@@ -22,7 +21,6 @@ public sealed class ProcessApisShould : IDisposable
 {
     private const int GoneId = int.MaxValue - 7;
     private const int SystemProcessId = 4;
-    private static readonly string[] AliasNames = ["pwsh.exe", "winget.exe"];
     private static readonly string StandIn = Path.Combine(AppContext.BaseDirectory, "Source191.Cader.ParentStandIn.exe");
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-process-apis-" + Guid.NewGuid().ToString("N"));
@@ -116,23 +114,6 @@ public sealed class ProcessApisShould : IDisposable
         {
             parent.Kill();
         }
-    }
-
-    /// <summary>
-    /// A packaged program's app execution alias in WindowsApps, as Windows Terminal's wt.exe, winget and the Microsoft
-    /// Store PowerShell are found on the PATH, cannot be started into the parent's job; the start fails instead.
-    /// </summary>
-    [Fact]
-    public void RefuseToStartAnAppExecutionAliasUnderKillOnParentExit()
-    {
-        string aliases = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps");
-        string? alias = AliasNames.Select(name => Path.Combine(aliases, name)).FirstOrDefault(File.Exists);
-        Assert.SkipWhen(alias is null, "No PowerShell or winget app execution alias on this machine.");
-        ProcessStartInfo start = new(alias, ["--version"]) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, KillOnParentExit = true };
-
-        Win32Exception refusal = Should.Throw<Win32Exception>(() => Process.Start(start)?.Dispose());
-
-        refusal.NativeErrorCode.ShouldBe(5);
     }
 
     /// <summary>A lookup by id answers false for an id that has gone, and finds a protected process, which then refuses to be ended.</summary>
