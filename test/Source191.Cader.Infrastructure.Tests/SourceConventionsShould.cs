@@ -11,6 +11,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 /// </summary>
 public sealed class SourceConventionsShould
 {
+    private const string CoreFolder = @"src\Source191.Cader.Core\";
     private const string ApplicationFolder = @"src\Source191.Cader.Core\Application";
     private const string SharedSnapshotFile = @"src\Source191.Cader.Core\Application\SharedSnapshot.cs";
 
@@ -101,6 +102,26 @@ public sealed class SourceConventionsShould
         bool inApplication = string.Equals(Path.GetDirectoryName(relativePath), ApplicationFolder, StringComparison.Ordinal);
 
         return inApplication && (name == "CommandLine.cs" || name.StartsWith("Wording", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// A hierarchy outside Core is a <c>closed</c> record, so its switches need no discard arm. Core is held at C# 14 until
+    /// Stryker compiles C# 15 (its README), and its hierarchies stay abstract until then.
+    /// </summary>
+    [Fact]
+    public void DeclareEveryHierarchyOutsideCoreClosed()
+    {
+        List<string> offenders = [.. Find(["src", "tools"], IsAbstractRecordOutsideCore).Select(found => $"{Describe(found)}: {found.Text.Split('\n')[0].Trim()}")];
+
+        offenders.ShouldBeEmpty($"{offenders.Count} abstract records outside Core:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private static bool IsAbstractRecordOutsideCore(SyntaxNodeOrToken item)
+    {
+        bool isAbstractRecord = item.AsNode() is RecordDeclarationSyntax record && record.Modifiers.Any(SyntaxKind.AbstractKeyword);
+        string file = item.SyntaxTree?.FilePath ?? string.Empty;
+
+        return isAbstractRecord && !file.StartsWith(CoreFolder, StringComparison.Ordinal);
     }
 
     private static string Describe(Found found) => $"{found.RelativePath}({found.Line})";
