@@ -128,7 +128,7 @@ public sealed class DeleteSessionHandlerShould
     }
 
     [Fact]
-    public async Task ReportAWorktreeStillInUse()
+    public async Task FinishTheWorktreeAndSayItsFolderWasLeftWhenItStaysHeld()
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
@@ -137,7 +137,7 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
-        outcome.ShouldBe(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123", TabClosed: false));
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false));
     }
 
     /// <summary>Deletes with the clock moving on until the delete finishes, however long it waits for a held folder.</summary>

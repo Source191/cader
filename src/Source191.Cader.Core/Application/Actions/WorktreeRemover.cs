@@ -31,26 +31,30 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, CancellationToken cancellationToken)
     {
-        try
-        {
-            await git.RemoveWorktreeAsync(row.Repository.Value, row.Path.Value, decision.Forced, cancellationToken);
-        }
-        catch (GitException exception) when (exception.InUse)
-        {
-            if (!await DeleteWhenLetGoAsync(row.Path, cancellationToken))
-            {
-                return new RemoveWorktreeOutcome.InUse(row.FolderName);
-            }
-        }
+        bool folderLeft = await FolderLeftByGitAsync(row, decision.Forced, cancellationToken);
 
         await createdWorktrees.ForgetCreatedWorktreeAsync(row.Path);
         return (decision.Branch, row.Head) switch
         {
-            (BranchAction.Delete, Head.OnBranch merged) => await DeleteBranchAsync(row, merged.Branch, cancellationToken),
-            (BranchAction.Ask, Head.OnBranch kept) => new RemoveWorktreeOutcome.BranchKept(row.FolderName, new BranchToConfirm(row.Repository, kept.Branch), createdHere),
-            (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName),
+            (BranchAction.Delete, Head.OnBranch merged) => await DeleteBranchAsync(row, merged.Branch, folderLeft, cancellationToken),
+            (BranchAction.Ask, Head.OnBranch kept) => new RemoveWorktreeOutcome.BranchKept(row.FolderName, new BranchToConfirm(row.Repository, kept.Branch), createdHere, folderLeft),
+            (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName, folderLeft),
             _ => throw new UnreachableException(),
         };
+    }
+
+    /// <summary>Removes the worktree through git; true when its folder was left behind because something still holds it.</summary>
+    private async Task<bool> FolderLeftByGitAsync(WorktreeRow row, bool forced, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await git.RemoveWorktreeAsync(row.Repository.Value, row.Path.Value, forced, cancellationToken);
+            return false;
+        }
+        catch (GitException exception) when (exception.InUse)
+        {
+            return !await DeleteWhenLetGoAsync(row.Path, cancellationToken);
+        }
     }
 
     /// <summary>
@@ -85,11 +89,11 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         }
     }
 
-    private async Task<RemoveWorktreeOutcome> DeleteBranchAsync(WorktreeRow row, BranchName branch, CancellationToken cancellationToken)
+    private async Task<RemoveWorktreeOutcome> DeleteBranchAsync(WorktreeRow row, BranchName branch, bool folderLeft, CancellationToken cancellationToken)
     {
         await git.DeleteBranchAsync(row.Repository.Value, branch.Value, force: false, cancellationToken);
 
-        return new RemoveWorktreeOutcome.RemovedAndDeletedBranch(row.FolderName, branch);
+        return new RemoveWorktreeOutcome.RemovedAndDeletedBranch(row.FolderName, branch, folderLeft);
     }
 
     private async Task<RemoveWorktreeOutcome> DeleteFolderAsync(WorktreeRow row, RemovalDecision.DeleteFolder decision, CancellationToken cancellationToken)

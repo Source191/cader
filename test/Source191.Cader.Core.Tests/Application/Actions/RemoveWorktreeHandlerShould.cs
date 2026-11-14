@@ -84,14 +84,18 @@ public sealed class RemoveWorktreeHandlerShould
     }
 
     [Fact]
-    public async Task ReportAWorktreeStillInUse()
+    public async Task FinishTheRemovalAndSayTheFolderWasLeftWhenItStaysHeld()
     {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
         folders.WithDirectory(Worktree).HeldOpen(Worktree);
 
         RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
 
-        outcome.ShouldBe(new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: true));
+        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "fix-123"]);
+        (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
+        folders.DirectoryExists(Worktree).ShouldBeTrue();
     }
 
     [Fact]
