@@ -38,7 +38,7 @@
 
 ## 8. Integration
 
-- [ ] 8.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes`. Verify all pass, with the counts reported.
+- [x] 8.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes`. Verify all pass, with the counts reported.
 - [ ] 8.2 Manual (owner): on a local build (`tools\install-local.ps1`), open a worktree's shell with `o`, press `d` on it, and check the status line says the folder was left and the empty row appears; close the tab and press `d` on the empty row. Then check the 34 existing empty folders are listed as empty. Verify by eye.
 
 ## Workflow follow-up
