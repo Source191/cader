@@ -30,7 +30,7 @@ internal static class ConsoleComposition
         FolderPath home = FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
         CurrentSettings settings = await CurrentSettings.LoadAsync(parts.Store, home);
         parts.LogSwitch.PointAt(() => settings.Value.DiagnosticLog);
-        ClaudeTranscripts transcripts = ClaudeTranscripts.ForCurrentUser();
+        ClaudeTranscripts transcripts = new(parts.ClaudeFolder.Folder.Value);
         Folders folders = new();
 
         // Started before the rest of start-up and awaited just before the first screen, so it overlaps it.
@@ -124,7 +124,7 @@ internal static class ConsoleComposition
     {
         SessionRowEnricher enricher = new(launch.Git, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
-        SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, ClaudeSettings.ForCurrentUser(), parts.Store, folders, new ClaudeFolder.Unset(FolderPath.From(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude"))), parts.Store.ConfigFile, parts.LogFile, parts.Log);
+        SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, new ClaudeSettings(parts.ClaudeFolder.Folder.Value), parts.Store, folders, parts.ClaudeFolder, parts.Store.ConfigFile, parts.LogFile, parts.Log);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
