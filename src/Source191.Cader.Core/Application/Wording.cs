@@ -433,7 +433,7 @@ public static partial class Wording
 
     public static string HiddenProfilesShown(string settingsPath) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
 
-    public static string TerminalSettingsUnreadable(string settingsPath, string reason) => string.Empty;
+    public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 

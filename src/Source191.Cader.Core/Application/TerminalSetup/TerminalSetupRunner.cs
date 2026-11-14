@@ -150,6 +150,12 @@ public sealed class TerminalSetupRunner(
     /// <summary>Once the fragment exists: adds the entry of each Cader profile Windows Terminal hides, after showing it and asking.</summary>
     private async Task<Step> ShowHiddenProfilesAsync(TerminalSetupRequest request, TerminalProfileRecords records, CancellationToken cancellationToken)
     {
+        if (records is TerminalProfileRecords.Unreadable unreadable)
+        {
+            await output.WriteLineAsync(Wording.TerminalSettingsUnreadable(terminalSettings.Location, unreadable.Reason));
+            return Step.Skipped;
+        }
+
         IReadOnlyList<TerminalProfileEntry> hidden = HiddenTerminalProfiles.Of(records);
         if (hidden.Count == 0)
         {
