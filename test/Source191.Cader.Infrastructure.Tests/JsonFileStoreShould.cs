@@ -363,6 +363,28 @@ public sealed class JsonFileStoreShould : IDisposable
         (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
     }
 
+    [Theory]
+    [InlineData("\"Rebase\"")]
+    [InlineData("7")]
+    public async Task ReadAConfigHoldingAnUnknownBeforeBranchingAsMissing(string value)
+    {
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), $$"""{ "repositoryRoots": ["D:\\work"], "beforeBranching": {{value}} }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task ReadAndWriteBeforeBranchingByName()
+    {
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), BeforeBranching: BeforeBranching.Pull);
+
+        await Store.WriteConfigAsync(saved);
+
+        (await Store.ReadConfigAsync()).ShouldBe(saved);
+        (await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken)).ShouldContain("\"beforeBranching\": \"Pull\"");
+    }
+
     [Fact]
     public async Task ReadAConfigHoldingTextForTheDiagnosticLogAsMissing()
     {
