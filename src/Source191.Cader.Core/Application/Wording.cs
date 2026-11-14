@@ -414,6 +414,12 @@ public static partial class Wording
 
     public static string ClaudeSettingsUnreadable(string settingsPath, string reason) => $"Could not read {settingsPath} ({reason}), so it was left alone.";
 
+    public static string ShowHiddenProfilesQuestion => string.Empty;
+
+    public static string HiddenProfilesPlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+
+    public static string HiddenProfilesShown(string settingsPath) => string.Empty;
+
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 
     /// <summary>An exception's message reports what failed, here and nowhere as a reason.</summary>

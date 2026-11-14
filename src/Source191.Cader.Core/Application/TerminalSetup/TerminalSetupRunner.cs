@@ -11,6 +11,7 @@ namespace Source191.Cader.Application.TerminalSetup;
 public sealed class TerminalSetupRunner(
     IFolders folders,
     ITerminalFragment fragment,
+    ITerminalSettings terminalSettings,
     IClaudeSettings claudeSettings,
     string consoleExecutable,
     string windowsMediaFolder,
@@ -68,6 +69,7 @@ public sealed class TerminalSetupRunner(
             return 2;
         }
 
+        _ = terminalSettings.Location;
         TerminalProfiles profiles = await ChooseProfilesAsync(request);
         await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles));
         Step profileStep = await WriteProfilesAsync(request, profiles, cancellationToken);
