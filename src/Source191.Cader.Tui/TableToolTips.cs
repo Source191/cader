@@ -95,7 +95,7 @@ internal sealed class TableToolTips<TRow>
     }
 
     /// <summary>What the pointer rests on, so a tooltip is shown once per header or row it enters.</summary>
-    private abstract record PointerOver
+    private closed record PointerOver
     {
         public sealed record Nothing : PointerOver;
 
