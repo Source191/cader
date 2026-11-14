@@ -1,4 +1,6 @@
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -14,6 +16,19 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     // Windows' "The directory name is invalid": the working directory given to CreateProcess does not exist
     // (ERROR_DIRECTORY, https://learn.microsoft.com/windows/win32/debug/system-error-codes--0-499-).
     private const int ErrorDirectory = 267;
+
+    // GIT_TERMINAL_PROMPT=0 stops git's own credential prompt and GCM_INTERACTIVE=false Git Credential Manager's prompts and
+    // sign-in window, so a fetch that needs signing in fails at once with git's words (checked 14 November 2026, windows.md;
+    // https://github.com/git-ecosystem/git-credential-manager/blob/main/docs/environment.md).
+    private static readonly IReadOnlyDictionary<string, string> NoPrompts = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["GIT_TERMINAL_PROMPT"] = "0",
+        ["GCM_INTERACTIVE"] = "false",
+    };
+
+    /// <summary>The explicit refspec updates exactly that remote-tracking branch, whatever remote.origin.fetch says; the + is git's default refspec's, which forces it.</summary>
+    public Task FetchBranchAsync(FolderPath repository, RemoteBranch branch, CancellationToken cancellationToken) =>
+        RunOrThrowAsync(repository.Value, ["fetch", branch.Remote, $"+refs/heads/{branch.Branch.Value}:{TrackingRef(branch)}"], NoPrompts, cancellationToken);
 
     public async Task<IReadOnlyList<GitWorktreeEntry>> ListWorktreesAsync(string repository, CancellationToken cancellationToken)
     {
@@ -168,9 +183,12 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         return NulSeparated(result.StandardOutput);
     }
 
-    private async Task<ProcessResult> RunOrThrowAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    private Task<ProcessResult> RunOrThrowAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken) =>
+        RunOrThrowAsync(directory, arguments, ReadOnlyDictionary<string, string>.Empty, cancellationToken);
+
+    private async Task<ProcessResult> RunOrThrowAsync(string directory, IReadOnlyList<string> arguments, IReadOnlyDictionary<string, string> variables, CancellationToken cancellationToken)
     {
-        ProcessResult result = await RunAsync(directory, arguments, cancellationToken);
+        ProcessResult result = await RunAsync(directory, arguments, variables, cancellationToken);
         if (result.ExitCode != 0)
         {
             throw new GitException($"git {string.Join(' ', arguments)} failed: {result.StandardError.Trim()}");
@@ -179,14 +197,17 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         return result;
     }
 
+    private Task<ProcessResult> RunAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken) =>
+        RunAsync(directory, arguments, ReadOnlyDictionary<string, string>.Empty, cancellationToken);
+
     // A folder deleted by hand (a removed worktree) stops git starting at all, so it answers like any failed git run.
     // Any other start failure (git not installed is ERROR_FILE_NOT_FOUND) still surfaces
     // (https://learn.microsoft.com/windows/win32/debug/system-error-codes--0-499-).
-    private async Task<ProcessResult> RunAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    private async Task<ProcessResult> RunAsync(string directory, IReadOnlyList<string> arguments, IReadOnlyDictionary<string, string> variables, CancellationToken cancellationToken)
     {
         try
         {
-            return await processes.RunAsync(new ProcessRequest(executable, arguments, new WorkingFolder.At(directory)), cancellationToken);
+            return await processes.RunAsync(new ProcessRequest(executable, arguments, new WorkingFolder.At(directory)) { Variables = variables }, cancellationToken);
         }
         catch (Win32Exception exception) when (exception.NativeErrorCode == ErrorDirectory)
         {
@@ -200,6 +221,8 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     private static List<string> NulSeparated(string output) => [.. output.Split('\0', StringSplitOptions.RemoveEmptyEntries)];
 
     private static string ToWindowsPath(string output) => output.Trim().Replace('/', Path.DirectorySeparatorChar);
+
+    private static string TrackingRef(RemoteBranch branch) => $"refs/remotes/{branch.Remote}/{branch.Branch.Value}";
 
     /// <summary>A hash, a commit time and a subject, tab-separated; a line that is not is skipped.</summary>
     private static UnpushedCommit? UnpushedCommitOf(string line)
