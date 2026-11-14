@@ -6,7 +6,7 @@ namespace Source191.Cader.HeadlessTerminal;
 
 /// <summary>
 /// The smoke run's steps, built from Wording so a renamed title or a rebound key needs no change here: open and cancel
-/// the Keys help, the new-session wizard and the problem report on the sessions view, the repository roots dialog and its folder picker and the Open folder with dialog and its file picker (Custom chosen) on the Config tab, then on the worktrees view its help,
+/// the Keys help, the new-session wizard (checking its Before branching choice shows whole) and the problem report on the sessions view, the repository roots dialog and its folder picker, the Open folder with dialog and its file picker (Custom chosen) and the Before branching dialog on the Config tab, then on the worktrees view its help,
 /// the force-remove confirmation, the fixed-folder wizard and the solution chooser for the named worktree, and quit. Dialogs are recognised by the tab title each one sets,
 /// views by a column only that view has; a key is looked up by its hint, and a lost hint fails with its name.
 /// </summary>
@@ -17,6 +17,9 @@ public static class SmokeScript
 
     /// <summary>F3, which opens the folder picker from the repository roots dialog (its button reads <see cref="Wording.BrowseButton"/>).</summary>
     private const string Browse = "\u001bOR";
+
+    /// <summary>The last choice of Before branching, which shows only when the whole selector fits its dialog.</summary>
+    private static readonly string LastBeforeBranching = Wording.Describe(Enum.GetValues<BeforeBranching>()[^1]);
 
     /// <summary>The Down arrow, which moves between the Open folder with dialog's choices.</summary>
     private const string Down = "\u001b[B";
@@ -38,7 +41,10 @@ public static class SmokeScript
             new SmokeStep(sessionsView, KeyFor(sessions, "Help"), Slow),
             new SmokeStep(Opened(DialogName.Keys), escape, Usual),
             new SmokeStep(closed, KeyFor(sessions, "New session"), Usual),
-            new SmokeStep(Opened(DialogName.NewSession), escape, Usual),
+            // The wizard's Before branching choice sits low in the form, so its caption and last choice show only while the dialog is tall enough.
+            new SmokeStep(Opened(DialogName.NewSession), string.Empty, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(Wording.WizardBeforeBranchingCaption), string.Empty, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(LastBeforeBranching), escape, Usual),
             new SmokeStep(closed, KeyFor(sessions, "Report"), Usual),
             new SmokeStep(Opened(DialogName.ProblemReport), escape, Usual),
             new SmokeStep(closed, TabKeys(sessions, ConsoleTab.Sessions, ConsoleTab.Config), Usual),
@@ -55,6 +61,13 @@ public static class SmokeScript
             new SmokeStep(Opened(DialogName.Settings), string.Concat(Enumerable.Repeat(Down, Enum.GetValues<EditorPreset>().Length - 1)) + " " + Browse, Usual),
             new SmokeStep(Opened(DialogName.FilePicker), escape, Usual),
             new SmokeStep(Opened(DialogName.Settings), escape, Usual),
+            // Before branching is found the same way, by the last word of its name; its dialog has three choices, the last of which must show.
+            new SmokeStep(closed, KeyFor(config, "Filter") + Wording.ConfigSetting(new ConfigRow.BeforeBranching(BeforeBranching.Fetch)).Split(' ')[^1], Usual),
+            new SmokeStep(CaptureMarker.Nothing, Sequence("enter"), Usual),
+            new SmokeStep(CaptureMarker.Nothing, KeyFor(config, "Edit"), Usual),
+            new SmokeStep(Opened(DialogName.Settings), string.Empty, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(Wording.BeforeBranchingCaption), string.Empty, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(LastBeforeBranching), escape, Usual),
             new SmokeStep(closed, TabKeys(config, ConsoleTab.Config, ConsoleTab.Worktrees), Usual),
             new SmokeStep(worktreesView, string.Empty, Usual),
             // The scan has finished once the table's title names a selection; keys typed into the filter before then are lost.

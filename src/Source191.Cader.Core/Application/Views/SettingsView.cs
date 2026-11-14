@@ -27,6 +27,7 @@ public static class SettingsView
             SettingsInput.ArgumentsChanged changed => Changed(state with { Text = state.Text with { Arguments = changed.Text } }),
             SettingsInput.BaseChanged changed => Changed(state with { Text = state.Text with { Base = changed.Base } }),
             SettingsInput.PlaceChanged changed => Changed(state with { Text = state.Text with { Place = changed.Place } }),
+            SettingsInput.BeforeBranchingChanged changed => Changed(state with { Text = state.Text with { BeforeBranching = changed.Choice } }),
             SettingsInput.FieldFocused focused => Changed(state with { Focus = focused.Field }),
             SettingsInput.Save => Saved(state),
             SettingsInput.Cancel => new SettingsUpdate(state, new SettingsEffect.Close()),

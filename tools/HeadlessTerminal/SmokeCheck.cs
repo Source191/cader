@@ -13,8 +13,8 @@ public sealed class SmokeCheck(StepRunner runner)
 {
     public const int CouldNotStart = 2;
 
-    /// <summary>As a user runs the console: inside Windows Terminal, which answers its queries.</summary>
-    public static readonly DriverOptions Options = new(PretendWindowsTerminal: true, AnswerQueries: true, XtversionDelayMs: 0);
+    /// <summary>As a user runs the console: inside Windows Terminal, which answers its queries, in a window of 120 by 36, where the wizard must still show its whole form.</summary>
+    public static readonly DriverOptions Options = new(PretendWindowsTerminal: true, AnswerQueries: true, XtversionDelayMs: 0, Columns: 120, Rows: 36);
 
     public Task<int> RunAsync(string exe, string worktreeFolder) => RunAsync(exe, SmokeScript.Build(worktreeFolder));
 

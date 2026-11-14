@@ -79,7 +79,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 
 ## Sessions
 
-- **Start one:** `n` opens the new-session wizard. Type to filter the repositories and press Enter, type a name, choose where (a new worktree, or the repository's current branch) and, for a worktree, what it branches from, then type an opening prompt if you like. Enter moves between the fields; F5 starts the session and opens it in a coloured tab named after it. With no prompt the session waits at its own prompt.
+- **Start one:** `n` opens the new-session wizard. Type to filter the repositories and press Enter, type a name, choose where (a new worktree, or the repository's current branch) and, for a worktree, what it branches from and what happens before it does (Fetch origin, Pull default branch or Nothing; see Before branching under [Configuration](#configuration)), then type an opening prompt if you like. Enter moves between the fields; F5 starts the session and opens it in a coloured tab named after it. With no prompt the session waits at its own prompt.
 - **Where it runs:** a new worktree goes to `<worktree root>\<repository>-<name>` on a branch named after the session, so sessions never trip over each other's changes. The gitignored files a `.worktreeinclude` at the repository's root names are copied in, as Claude Code does.
 - **Open it:** Enter opens the session in its own tab, or switches to that tab when it is already open.
 - **Run several:** each `n` is a new session in its own worktree and tab. They are all in one list, with the ones waiting for you in amber.
@@ -108,7 +108,12 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
 - **Repository roots:** the folders searched for git repositories; `~\source\repos` until you change it. Enter edits every root, one per line, and F3 browses for a folder.
 - **Worktree root:** where new worktrees go; a `worktrees` folder beside the first root until you change it.
 - **Open folder with:** the program `f` opens a row's folder with: VS Code, Visual Studio, Rider or a program of your own (F3 browses for it).
-- **Default base:** new worktrees branch from origin's default branch as of your last `git fetch` (Cader never fetches), or from HEAD.
+- **Default base:** new worktrees branch from origin's default branch or from HEAD. A branch from origin's default branch is updated first, as Before branching says.
+- **Before branching:** what happens before a new worktree branches from origin's default branch; the wizard's Before branching choice starts on it and changes it for that one session. It does nothing for a base of HEAD or a session on the current branch, and `cader here` never updates anything.
+  - **Fetch origin (the default):** fetches that one branch, so the session starts on an up-to-date base. It never prompts: a remote that needs signing in fails at once, and an SSH key that needs a passphrase waits for up to a minute, so use an SSH agent.
+  - **Pull default branch:** fetches, then fast-forwards your local branch of the same name too. It only ever fast-forwards, and git refuses when your local changes or commits are in the way, but it does change the files of the checkout that has the branch, so it can change files under a session running there. A branch checked out in another worktree is left alone and the status line says so.
+  - **Nothing:** the old behaviour; the worktree branches from origin's default branch as of your last `git fetch`.
+  - **When it does not work:** the session still starts, from the branch as last fetched, and the status line says what failed. If origin's default branch has been renamed, run `git remote set-head origin --auto` in the repository.
 - **Default place:** where the wizard starts a session: a new worktree, or the repository's current branch.
 - **Check for updates:** whether to ask the winget community repository once a day for a newer release.
 - **Diagnostic log:** whether Cader also writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log`; Enter turns it on or off at once. It is off until you turn it on.

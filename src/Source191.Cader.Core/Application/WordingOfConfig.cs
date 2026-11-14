@@ -24,6 +24,12 @@ public static partial class Wording
     /// <summary>The caption above the Default place dialog's choice.</summary>
     public static string PlaceCaption => "Where the wizard opened with n starts a session (↑↓ then Space)";
 
+    /// <summary>The caption above the Before branching choice, in its dialog and the wizard.</summary>
+    public static string BeforeBranchingCaption => "What happens before a new worktree branches from origin (↑↓ then Space)";
+
+    /// <summary>The caption above the wizard's Before branching choice.</summary>
+    public static string WizardBeforeBranchingCaption => "Before branching (↑↓ to change)";
+
     /// <summary>The SETTING cell.</summary>
     public static string ConfigSetting(ConfigRow row)
     {
@@ -34,6 +40,7 @@ public static partial class Wording
             ConfigRow.WorktreeRoot => "Worktree root",
             ConfigRow.OpenFolderWith => "Open folder with",
             ConfigRow.DefaultBase => "Default base",
+            ConfigRow.BeforeBranching => "Before branching",
             ConfigRow.DefaultPlace => "Default place",
             ConfigRow.CheckForUpdates => "Check for updates",
             ConfigRow.DiagnosticLog => "Diagnostic log",
@@ -49,7 +56,8 @@ public static partial class Wording
         ConfigRow.RepositoryRoot => "A folder searched for git repositories; Enter edits every root, one per line.",
         ConfigRow.WorktreeRoot => "Where new worktrees go, each in a folder named <repository>-<slug> on a branch named <slug>.",
         ConfigRow.OpenFolderWith => "The program f opens a row's folder with: one of the known editors, or a program of your own.",
-        ConfigRow.DefaultBase => "New worktrees branch from origin's default branch, fetched first by default, or from HEAD.",
+        ConfigRow.DefaultBase => "New worktrees branch from origin's default branch (see Before branching), or from HEAD.",
+        ConfigRow.BeforeBranching => "What happens before a new worktree branches from origin: fetch it, fetch and fast-forward, or nothing.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
         ConfigRow.DiagnosticLog log => $"Writes the diagnostic log to {log.File}; Enter turns it on or off.",
@@ -66,6 +74,7 @@ public static partial class Wording
             ConfigRow.WorktreeRoot worktreeRoot => worktreeRoot.Path.Value,
             ConfigRow.OpenFolderWith open => open.Editor.Preset == EditorPreset.Custom ? $"{open.Editor.Executable} {CommandArguments.Join(open.Editor.Arguments)}" : Describe(open.Editor.Preset),
             ConfigRow.DefaultBase defaultBase => Describe(defaultBase.Base),
+            ConfigRow.BeforeBranching before => Describe(before.Choice),
             ConfigRow.DefaultPlace place => Describe(place.Place),
             ConfigRow.CheckForUpdates check => check.On ? "on" : "off",
             ConfigRow.DiagnosticLog log => log.On ? "on" : "off",
@@ -85,6 +94,7 @@ public static partial class Wording
             SettingsScope.Editor => "Open folder with",
             SettingsScope.Base => "Worktree base",
             SettingsScope.Place => "Default place",
+            SettingsScope.BeforeBranching => "Before branching",
             _ => scope.ToString(),
         };
     }
@@ -96,6 +106,17 @@ public static partial class Wording
         {
             WorktreeBase.RemoteDefault => "origin's default branch",
             WorktreeBase.Head => "the commit checked out now (HEAD)",
+        };
+    }
+
+    /// <summary>What happens before a new worktree branches, as the Before branching row, its dialog and the wizard name it.</summary>
+    public static string Describe(BeforeBranching choice)
+    {
+        return choice switch
+        {
+            BeforeBranching.Fetch => "Fetch origin",
+            BeforeBranching.Pull => "Pull default branch",
+            BeforeBranching.None => "Nothing",
         };
     }
 

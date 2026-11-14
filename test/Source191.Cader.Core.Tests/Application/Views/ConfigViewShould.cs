@@ -40,6 +40,7 @@ public sealed class ConfigViewShould
     [InlineData("worktree-root")]
     [InlineData("open-folder-with")]
     [InlineData("default-base")]
+    [InlineData("before-branching")]
     [InlineData("default-place")]
     public void EditASettingOnEnter(string key)
     {
@@ -243,8 +244,8 @@ public sealed class ConfigViewShould
     {
         ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, TestSettings.DiagnosticLogFile))).State;
 
-        oneRoot.Title.Shown.ShouldBe(11);
-        oneRoot.Title.Total.ShouldBe(11);
+        oneRoot.Title.Shown.ShouldBe(12);
+        oneRoot.Title.Total.ShouldBe(12);
     }
 
     [Fact]

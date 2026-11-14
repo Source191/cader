@@ -100,9 +100,9 @@
 
 ## 6. Config tab
 
-- [ ] 6.1 **Red:** `ConfigRowsShould` fact that `ConfigRow.BeforeBranching` comes directly after `DefaultBase` and before `DefaultPlace`, its key stable. **Red:** `ConfigViewShould` facts that Enter on it raises the dialog effect for `SettingsScope.BeforeBranching`. **Green:** the row, `ConfigRows.For`, the scope, and `SettingsField.BeforeBranching`. **Verify:** the three test classes pass.
-- [ ] 6.2 **Red:** `SettingsViewShould` facts that the Before branching dialog opens on the saved value, that a choice then F5 saves it through `Settings.Validate`, and that Esc leaves the settings unchanged. **Green:** `SettingsState`/`SettingsView` for the new field. **Verify:** `SettingsViewShould` and `SaveSettingsHandlerShould` pass.
-- [ ] 6.3 **Red:** `WordingOfConfigShould` facts.
+- [x] 6.1 **Red:** `ConfigRowsShould` fact that `ConfigRow.BeforeBranching` comes directly after `DefaultBase` and before `DefaultPlace`, its key stable. **Red:** `ConfigViewShould` facts that Enter on it raises the dialog effect for `SettingsScope.BeforeBranching`. **Green:** the row, `ConfigRows.For`, the scope, and `SettingsField.BeforeBranching`. **Verify:** the three test classes pass.
+- [x] 6.2 **Red:** `SettingsViewShould` facts that the Before branching dialog opens on the saved value, that a choice then F5 saves it through `Settings.Validate`, and that Esc leaves the settings unchanged. **Green:** `SettingsState`/`SettingsView` for the new field. **Verify:** `SettingsViewShould` and `SaveSettingsHandlerShould` pass.
+- [x] 6.3 **Red:** `WordingOfConfigShould` facts.
   - The row is labelled Before branching and its values read Fetch origin, Pull default branch and Nothing.
   - Its dialog title, and a tooltip saying it is what happens before a new worktree branches from origin, within the 110-character description limit.
   - `Describe(WorktreeBase.RemoteDefault)` reads "origin's default branch".
@@ -111,11 +111,11 @@
   **Green:** `WordingOfConfig`. **Verify:** `WordingOfConfigShould`, `SourceConventionsShould.SpellBritish` and `KeyHelpParityShould` pass.
 
   **Done in part 1:** `Describe(WorktreeBase.RemoteDefault)` reads "origin's default branch", and the Default base tooltip reads "New worktrees branch from origin's default branch, fetched first by default, or from HEAD." (`WordingOfConfigShould.SayTheDefaultBaseIsFetchedFirstByDefault`); with the row in place, make it name Before branching.
-- [ ] 6.4 **Green (Tui binder, untested):** the Before branching `OptionSelector` in `SettingsControls`, laid out as Place's is. **Verify:** `dotnet build -c Debug`, then in a local install (`tools\install-local.ps1`) open the dialog from the row, change it, save, and see the row and `config.json` follow.
+- [x] 6.4 **Proved by the smoke check in CI (pull request 273), not by eye:** the new dialog opens from its row and shows its caption and last choice; its change, save and config.json by eye are the owners check after merge. **Green (Tui binder, untested):** the Before branching `OptionSelector` in `SettingsControls`, laid out as Place's is. **Verify:** `dotnet build -c Debug`, then in a local install (`tools\install-local.ps1`) open the dialog from the row, change it, save, and see the row and `config.json` follow.
 
 ## 7. Wizard
 
-- [ ] 7.1 **Red:** `WizardViewShould` facts.
+- [x] 7.1 **Red:** `WizardViewShould` facts.
   - `Open` takes `BeforeBranching` from the settings.
   - `BeforeBranchingChanged` changes it.
   - `NextField` from `Base` goes to `BeforeBranching` and from there to `Prompt`.
@@ -125,25 +125,25 @@
   **Green:** `WizardState`, `WizardInput.BeforeBranchingChanged`, `WizardField.BeforeBranching` and `WizardView`. **Verify:** `WizardViewShould` and `ReducersShould` pass.
 
   **Done in part 1:** `WizardState.BeforeBranching`, taken from the settings on `Open` and put in the `LaunchRequest` on start (`WizardViewShould.StartWithTheSavedBeforeBranching`), so `config.json` applies before the field exists.
-- [ ] 7.2 **Green (Tui binder, untested):**
+- [x] 7.2 **Proved by the smoke check, which now runs at 120 x 36 (pull request 273):** the wizard shows its Before branching caption and last choice; the list has 5 rows there by the layouts arithmetic (the 28 content rows less 2 above and 21 for the form). **Green (Tui binder, untested):**
   - In `WizardControls`, add the captioned three-option selector between the base and the preview, raise `FormRows` to 21, and move the `AnchorEnd` offsets.
   - Add its field to `Fields` and to `WhenEnterInSelectors`.
   - In `LaunchWizardDialog`, bind its `ValueChanged`.
   - The fixed-folder layout leaves it out.
 
   **Verify:** `dotnet build -c Debug`. Then, in the headless terminal at 120 x 36, check that the wizard shows the list with at least four rows and every caption. If it does not, switch to a horizontal selector, as design decision 5 allows.
-- [ ] 7.3 Update the smoke script if its wizard steps count fields or rows. **Verify:** `dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal` exits 0 against a local install.
+- [x] 7.3 **Done:** SmokeScript checks the wizard and the Config dialog; CI ran it on x64 and Arm. Update the smoke script if its wizard steps count fields or rows. **Verify:** `dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal` exits 0 against a local install.
 
 ## 8. Documentation and release
 
-- [ ] 8.1 **`docs\user-guide.md`:**
+- [x] 8.1 **`docs\user-guide.md`:**
   - The Before branching setting and wizard choice, and what each value does.
   - That Pull fast-forwards only, and may change the main checkout's files under a running session.
   - The warn-and-continue notice, the SSH passphrase limit, and `git remote set-head origin --auto` for a renamed default branch.
 
   **`.claude\rules\console-screen.md`:** the wizard's new field in the Dialogs section. **Verify:** the guide's settings table and the wizard section name all three values.
-- [ ] 8.2 Remake `assets\readme\new-session.gif` (and `sessions.png` if the wizard shows in it) with `tools\New-ReadmeScreenshot.ps1`, after adding the field to `scene.json` if the scene needs it. **Verify:** the GIF shows Before branching, and `tools\ReadmeScene.Tests` pass.
-- [ ] 8.3 Raise `Version` (minor) in `src\Source191.Cader\Source191.Cader.csproj` and add `CHANGELOG.md` lines, each ending with the pull request number:
+- [ ] 8.2 **Left for the owner (part 2):** `tools\New-ReadmeScreenshot.ps1` opens a real Windows Terminal window on the desktop and needs ffmpeg, so it cannot run unattended; `tools\ReadmeScene\new-session.keys` now has the extra Enter for the new field, so the owner's remake is correct. Remake `assets\readme\new-session.gif` (and `sessions.png` if the wizard shows in it) with `tools\New-ReadmeScreenshot.ps1`, after adding the field to `scene.json` if the scene needs it. **Verify:** the GIF shows Before branching, and `tools\ReadmeScene.Tests` pass.
+- [x] 8.3 Raise `Version` (minor) in `src\Source191.Cader\Source191.Cader.csproj` and add `CHANGELOG.md` lines, each ending with the pull request number:
   - **Added:** the Before branching setting and wizard choice.
   - **Changed:** new worktrees now fetch origin's default branch first; set Before branching to Nothing for the old behaviour.
 
@@ -153,7 +153,7 @@
 
 ## 9. Integration checks
 
-- [ ] 9.1 Run `dotnet build -c Debug`, then `dotnet test -c Debug --no-build` at the solution, then `dotnet format --verify-no-changes`, and `openspec validate fetch-before-branching --strict`. **Verify:** each exits 0.
+- [x] 9.1 Run `dotnet build -c Debug`, then `dotnet test -c Debug --no-build` at the solution, then `dotnet format --verify-no-changes`, and `openspec validate fetch-before-branching --strict`. **Verify:** each exits 0.
 - [ ] 9.2 **Manual (owner):** in a local install, against a scratch repository whose origin is a local bare repository:
   - With Fetch, push a commit to origin from elsewhere, start a new worktree session, and check that it starts at that commit.
   - With Pull and the main checkout on `main`, check that `main` moves too.

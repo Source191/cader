@@ -166,10 +166,12 @@ public sealed class WizardViewShould
         WizardState inName = Reduce(InAgents, new WizardInput.ConfirmRepository());
         WizardState inMode = Reduce(inName, new WizardInput.NextField());
         WizardState inBase = Reduce(inMode, new WizardInput.NextField());
-        WizardState inPrompt = Reduce(inBase, new WizardInput.NextField());
+        WizardState inBeforeBranching = Reduce(inBase, new WizardInput.NextField());
+        WizardState inPrompt = Reduce(inBeforeBranching, new WizardInput.NextField());
 
         inMode.Focus.ShouldBe(WizardField.Mode);
         inBase.Focus.ShouldBe(WizardField.Base);
+        inBeforeBranching.Focus.ShouldBe(WizardField.BeforeBranching);
         inPrompt.Focus.ShouldBe(WizardField.Prompt);
         Reduce(inPrompt, new WizardInput.NextField()).Focus.ShouldBe(WizardField.Prompt);
     }
@@ -217,7 +219,19 @@ public sealed class WizardViewShould
             plan => plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Read the README")));
     }
 
-    /// <summary>Until the wizard has a Before branching field of its own, the saved setting is what each launch does.</summary>
+    [Fact]
+    public void ChangeBeforeBranchingAndStartWithTheChoiceLeavingTheSettingsAlone()
+    {
+        WizardState named = Reduce(Reduce(InAgents, new WizardInput.NameChanged("Fix 123")), new WizardInput.BeforeBranchingChanged(BeforeBranching.None));
+
+        WizardUpdate started = WizardView.Reduce(named, new WizardInput.Start());
+
+        InAgents.BeforeBranching.ShouldBe(Settings.BeforeBranchingWhenUnset);
+        named.BeforeBranching.ShouldBe(BeforeBranching.None);
+        started.Effect.ShouldBeOfType<WizardEffect.Launch>().Plan.BeforeBranching.ShouldBe(BeforeBranching.None);
+    }
+
+    /// <summary>The saved setting is what the wizard opens on, and so what an unchanged launch does.</summary>
     [Theory]
     [InlineData(BeforeBranching.Fetch)]
     [InlineData(BeforeBranching.Pull)]
@@ -329,6 +343,7 @@ public sealed class WizardViewShould
         new WizardInput.NameChanged("Fix 123"),
         new WizardInput.ModeChanged(LaunchMode.CurrentBranch),
         new WizardInput.BaseChanged(WorktreeBase.Head),
+        new WizardInput.BeforeBranchingChanged(BeforeBranching.Pull),
         new WizardInput.PromptChanged("Read the README"),
         new WizardInput.FieldFocused(WizardField.Prompt),
         new WizardInput.ConfirmRepository(),
@@ -360,6 +375,7 @@ public sealed class WizardViewShould
         new WizardInput.NameChanged("Fix 123"),
         new WizardInput.ModeChanged(LaunchMode.CurrentBranch),
         new WizardInput.BaseChanged(WorktreeBase.Head),
+        new WizardInput.BeforeBranchingChanged(BeforeBranching.Pull),
         new WizardInput.PromptChanged("Read the README"),
         new WizardInput.FieldFocused(WizardField.Prompt),
         new WizardInput.ConfirmRepository(),

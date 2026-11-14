@@ -20,6 +20,9 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.OpenFolderWith(EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"])), "Open folder with", @"C:\Tools\subl.exe -n {folder}" },
         { new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault), "Default base", "origin's default branch" },
         { new ConfigRow.DefaultBase(WorktreeBase.Head), "Default base", "the commit checked out now (HEAD)" },
+        { new ConfigRow.BeforeBranching(BeforeBranching.Fetch), "Before branching", "Fetch origin" },
+        { new ConfigRow.BeforeBranching(BeforeBranching.Pull), "Before branching", "Pull default branch" },
+        { new ConfigRow.BeforeBranching(BeforeBranching.None), "Before branching", "Nothing" },
         { new ConfigRow.DefaultPlace(LaunchMode.NewWorktree), "Default place", "New worktree" },
         { new ConfigRow.DefaultPlace(LaunchMode.CurrentBranch), "Default place", "Current branch" },
         { new ConfigRow.CheckForUpdates(On: true), "Check for updates", "on" },
@@ -49,6 +52,7 @@ public sealed class WordingOfConfigShould
             new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")),
             new ConfigRow.OpenFolderWith(EditorChoice.VsCode),
             new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault),
+            new ConfigRow.BeforeBranching(BeforeBranching.Fetch),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
             new ConfigRow.CheckForUpdates(On: true),
             new ConfigRow.DiagnosticLog(On: true, File: LogFile),
@@ -138,6 +142,7 @@ public sealed class WordingOfConfigShould
         Wording.SettingsDialogTitle(new SettingsScope.Editor()).ShouldBe("Open folder with");
         Wording.SettingsDialogTitle(new SettingsScope.Base()).ShouldBe("Worktree base");
         Wording.SettingsDialogTitle(new SettingsScope.Place()).ShouldBe("Default place");
+        Wording.SettingsDialogTitle(new SettingsScope.BeforeBranching()).ShouldBe("Before branching");
     }
 
     /// <summary>A new worktree's base is fetched first unless config.json's beforeBranching says None, so no word may say Cader never fetches.</summary>
@@ -146,10 +151,25 @@ public sealed class WordingOfConfigShould
     {
         string tooltip = Wording.ConfigDescription(new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault));
 
-        tooltip.ShouldBe("New worktrees branch from origin's default branch, fetched first by default, or from HEAD.");
+        tooltip.ShouldBe("New worktrees branch from origin's default branch (see Before branching), or from HEAD.");
         Enum.GetValues<WorktreeBase>().Select(Wording.Describe).ShouldBe(["origin's default branch", "the commit checked out now (HEAD)"]);
         string[] words = [tooltip, .. Enum.GetValues<WorktreeBase>().Select(Wording.Describe), Wording.SettingsDialogTitle(new SettingsScope.Base())];
         words.ShouldAllBe(text => !text.Contains("no fetch") && !text.Contains("never fetches") && !text.Contains("last fetched"));
+    }
+
+    [Fact]
+    public void SayWhatBeforeBranchingDoes()
+    {
+        Wording.ConfigDescription(new ConfigRow.BeforeBranching(BeforeBranching.Fetch)).ShouldBe("What happens before a new worktree branches from origin: fetch it, fetch and fast-forward, or nothing.");
+        Enum.GetValues<BeforeBranching>().Select(Wording.Describe).ShouldBe(["Fetch origin", "Pull default branch", "Nothing"]);
+        Wording.WizardBeforeBranchingCaption.ShouldBe("Before branching (↑↓ to change)");
+        Wording.BeforeBranchingCaption.ShouldBe("What happens before a new worktree branches from origin (↑↓ then Space)");
+    }
+
+    [Fact]
+    public void NameBeforeBranchingInTheDefaultBaseTooltip()
+    {
+        Wording.ConfigDescription(new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault)).ShouldContain("Before branching");
     }
 
     [Fact]
