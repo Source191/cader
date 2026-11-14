@@ -55,6 +55,35 @@ public sealed class SettingsFileShould
     }
 
     [Fact]
+    public void FetchBeforeBranchingWhenTheFileSaysNothing()
+    {
+        SettingsFile.From(UserConfig.Missing, Home).BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+        SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null), Home).BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+    }
+
+    [Fact]
+    public void ReadAndWriteBeforeBranching()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null, BeforeBranching: BeforeBranching.Pull), Home);
+
+        settings.BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        SettingsFile.ToConfig(settings).BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home)).BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+    }
+
+    [Theory]
+    [InlineData(7)]
+    [InlineData(-1)]
+    public void ReadAnUndefinedBeforeBranchingAsFetchAndKeepTheRoots(int undefined)
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null, BeforeBranching: (BeforeBranching)undefined), Home);
+
+        settings.BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+        settings.RepositoryRoots.ShouldBe([FolderPath.From(@"D:\work")]);
+        settings.DefaultBase.ShouldBe(WorktreeBase.Head);
+    }
+
+    [Fact]
     public void ResolveAFileFromAnEarlierVersion()
     {
         Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], WorktreeBase.Head, WorktreeRoot: null, Editor: null), Home);
@@ -146,11 +175,12 @@ public sealed class SettingsFileShould
     [Fact]
     public void RoundTripThroughTheFileRecord()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(@"C:\repos"), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, defaultPlace: LaunchMode.CurrentBranch);
+        Settings settings = Settings.Resolve([FolderPath.From(@"C:\repos"), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, defaultPlace: LaunchMode.CurrentBranch, beforeBranching: BeforeBranching.None);
 
         UserConfig config = SettingsFile.ToConfig(settings);
 
-        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false));
+        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false, BeforeBranching: BeforeBranching.None));
+        config.ShouldNotBe(config with { BeforeBranching = BeforeBranching.Pull });
         SettingsFile.From(config, Home).ShouldBe(settings);
     }
 
