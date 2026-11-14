@@ -99,6 +99,18 @@ public sealed class RemoveWorktreeHandlerShould
     }
 
     [Fact]
+    public async Task AskAboutAHandMadeBranchWhenTheFolderStaysHeld()
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(Worktree).HeldOpen(Worktree);
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false, FolderLeft: true));
+        GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
+    }
+
+    [Fact]
     public async Task LeaveAHeldFolderOutsideTheRootsUntouchedAndStillFinish()
     {
         const string archive = @"D:\Northwind.Archive";
