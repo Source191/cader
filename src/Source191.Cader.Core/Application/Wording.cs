@@ -386,12 +386,13 @@ public static partial class Wording
 
     public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles, bool terminalHidesAProfile)
     {
-        return string.Join(Environment.NewLine,
+        return string.Join(Environment.NewLine, [
             $"Two Windows Terminal profiles will be written to {fragmentPath}",
-            "Your Windows Terminal settings file is not changed.",
+            .. terminalHidesAProfile ? Array.Empty<string>() : ["Your Windows Terminal settings file is not changed."],
             $"  {TerminalProfiles.ConsoleProfileName,-13}  runs {profiles.ConsoleExecutable}; bell sound {SoundText(profiles.ConsoleSound)}",
             $"  {TerminalProfiles.SessionProfileName,-13}  runs PowerShell; bell sound {SoundText(profiles.SessionSound)}",
-            "Both ring the bell and flash the window and the taskbar.");
+            "Both ring the bell and flash the window and the taskbar.",
+        ]);
     }
 
     public static string ProfilesWritten(string fragmentPath) => $"Wrote {fragmentPath}. Restart Windows Terminal to see the Cader and Cader session profiles.";
