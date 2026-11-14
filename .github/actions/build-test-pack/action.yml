@@ -1,11 +1,23 @@
 name: Build, test and pack
 description: >-
   Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
-  project against that build, checks whitespace formatting, then publishes the self-contained winget
-  build and zips it. Run by pipeline.yml's check job, whose zip on a release is the one the release job
+  project against that build (unless run-tests is false), checks whitespace formatting, then publishes the self-contained winget
+  build for the runtime identifier and zips it. Run by pipeline.yml's check job, whose zip on a release is the one the release job
   publishes, so the release never ships a build that the check did not see.
 
 inputs:
+  runtime-identifier:
+    description: >-
+      The winget build to publish and zip, win-x64 or win-arm64. The runner must be of that architecture, so the
+      smoke check can run the zip.
+    required: false
+    default: win-x64
+  run-tests:
+    description: >-
+      true runs the tests and the whitespace check. The tests do not depend on the architecture, so pipeline.yml runs
+      them on the win-x64 leg only.
+    required: false
+    default: 'true'
   version-suffix:
     description: >-
       Prerelease suffix added to the csproj Version in the zip's name, e.g. ci.42. Empty names it with
@@ -18,7 +30,7 @@ outputs:
     description: The version the zip is named for (csproj Version plus any suffix).
     value: ${{ steps.zip.outputs.version }}
   zip:
-    description: Path of the winget build's zip, cader_<version>_win-x64.zip, written to artifacts/winget.
+    description: Path of the winget build's zip, cader_<version>_<runtime identifier>.zip, written to artifacts/winget.
     value: ${{ steps.zip.outputs.zip }}
 
 runs:
@@ -36,8 +48,15 @@ runs:
       run: dotnet build -c Release
 
     - name: Test
+      if: inputs.run-tests == 'true'
       shell: pwsh
       run: dotnet test -c Release --no-build
+
+    # The build's own scripts (the zip, install-local), under test\Scripts, with the Pester the runner image carries.
+    - name: Script tests
+      if: inputs.run-tests == 'true'
+      shell: pwsh
+      run: Invoke-Pester -Path test\Scripts -CI
 
     # Whitespace only: EnforceCodeStyleInBuild and TreatWarningsAsErrors in Directory.Build.props already fail
     # the build on every style and analyser rule at warning, which is what dotnet format's style and analyzers
@@ -46,6 +65,7 @@ runs:
     # given. openspec is left out: its archive holds sample .cs files that are not part of the solution.
     # (https://learn.microsoft.com/dotnet/core/tools/dotnet-format)
     - name: Format (whitespace)
+      if: inputs.run-tests == 'true'
       shell: pwsh
       run: dotnet format whitespace --folder --verify-no-changes --exclude openspec
 
@@ -53,10 +73,12 @@ runs:
     # the program again for win-x64, so warnings are still errors; the assembly keeps the csproj Version.
     - name: Publish the winget build
       shell: pwsh
+      env:
+        RUNTIME_IDENTIFIER: ${{ inputs.runtime-identifier }}
       run: |
         $ErrorActionPreference = 'Stop'
         if (Test-Path artifacts\publish) { Remove-Item -Recurse -Force artifacts\publish }
-        dotnet publish src\Source191.Cader -p:PublishProfile=win-x64
+        dotnet publish src\Source191.Cader "-p:PublishProfile=$env:RUNTIME_IDENTIFIER"
         exit $LASTEXITCODE
 
     - name: Zip the winget build
@@ -64,14 +86,14 @@ runs:
       shell: pwsh
       env:
         VERSION_SUFFIX: ${{ inputs.version-suffix }}
+        RUNTIME_IDENTIFIER: ${{ inputs.runtime-identifier }}
       run: |
         $ErrorActionPreference = 'Stop'
         $version = (Select-Xml -Path src\Source191.Cader\Source191.Cader.csproj -XPath '//Version').Node.InnerText
         if (-not [string]::IsNullOrEmpty($env:VERSION_SUFFIX)) {
             $version = "$version-$env:VERSION_SUFFIX"
         }
-        $zip = Join-Path (Get-Location) "artifacts\winget\cader_$($version)_win-x64.zip"
-        .github/scripts/Compress-WingetBuild.ps1 -PublishFolder artifacts\publish -Destination $zip
+        $zip = .github/scripts/Compress-WingetBuild.ps1 -PublishFolder artifacts\publish -RuntimeIdentifier $env:RUNTIME_IDENTIFIER -Version $version -DestinationFolder artifacts\winget
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         "version=$version" >> $env:GITHUB_OUTPUT
         "zip=$zip" >> $env:GITHUB_OUTPUT

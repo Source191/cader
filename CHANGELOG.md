@@ -6,6 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Added
 
+- A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
 - A Diagnostic log setting on the Config tab: Enter turns the log file on or off at once, and its tooltip names %LOCALAPPDATA%\Cader\cader.log, which becomes cader.log.1 at 10 MB so at most about 20 MB is kept (#254)
 
 ### Changed
