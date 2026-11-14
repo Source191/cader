@@ -6,18 +6,18 @@
 - [x] 1.2 Add `test\Source191.Cader.Core.Tests\stryker-config.json`:
   - `project` and `test-runner: mtp`;
   - the `html`, `markdown`, `json` and `progress` reporters;
-  - `high` and `low` thresholds, with `break` 0 for now (set to the proposed 86 in 2.2, awaiting the owner).
+  - `high` and `low` thresholds, with `break` 0 for now (set to 86 in 2.2, decided by the owner; `low` must be at least `break`, so 90 and 95).
 
   Verify `dotnet stryker --mutate "**/Domain/NumberAwareOrder.cs"` from that folder runs with no other options and writes `mutation-report.md` (under `StrykerOutput<timestamp>eports`).
 
 ## 2. Measure before building the workflow
 
 - [x] 2.1 Time a full Core run locally (`dotnet stryker`), and a `--since:<previous v* tag>` run for the latest release. Record both times, the mutant counts and the whole-Core score in `.claude\rules\checks.md`'s Mutation testing section, with the date and Stryker version. Also check the field names the report job reads (`files.<path>.mutants[]`, `status`, `mutatorName`, `replacement`, `location.start.line`) against the run's `mutation-report.json`, and keep a trimmed copy as the report job's test fixture.
-- [ ] 2.2 Decide with the owner on the timings:
+- [x] 2.2 Decide with the owner on the timings:
   - **A `--since` run under 30 minutes:** keep the per-release trigger.
   - **Over 30 minutes:** keep only the weekly run, and update design.md before going on.
 
-  Set `break` in `stryker-config.json` from the baseline (design.md, Open Questions). Verified by the owner's recorded choice in design.md.
+  Set `break` in `stryker-config.json` from the baseline (design.md, Open Questions). Verified by the owner's recorded choice in design.md (14 November 2026: option A, break 86 for the full run only).
 
 ## 3. The workflow
 

@@ -94,7 +94,7 @@ Every Sunday at 03:00 UTC (`schedule`), and on `workflow_dispatch`, the same job
 
 - **Timeouts:** a per-release run is given 60 minutes, and the weekly run 300 (a hosted job's limit is 360).
 - **Report:** `mutation-report.md` is appended to `$GITHUB_STEP_SUMMARY`, and `StrykerOutput` is uploaded as an artefact kept 30 days.
-- **Break score:** `--break-at` comes from the config, so a score below it fails the run and GitHub sends its usual failed-run notice.
+- **Break score:** `--break-at` comes from the config for a full run, so a score below it fails the run and GitHub sends its usual failed-run notice. A release run overrides it with `--break-at 0`: its score covers only the mutants tested, and its survivors go to the issue.
 
 ### Findings go to one rolling `mutation` issue, from a job of its own
 
@@ -140,11 +140,11 @@ This follows `claude-contract.yml`'s `report` job.
 
 ## Open Questions
 
-- **The break score's value:** to be chosen after the baseline full run, for example the measured whole-Core score less five points, rounded down. It changes only one number in `stryker-config.json`, not the approach.
+- **The break score's value:** decided on 14 November 2026: 86 (see Found while building).
 
 ## Found while building
 
-- **The break score is proposed, not decided:** 86, from the 91.22 % full run on a runner on 13 November 2026 (less five points, rounded down; 86.78 % on the developer machine). Task 2.2 waits for the owner, who also decides whether it applies to a `--since` run, whose score covers only the mutants tested; as built it does, because the config holds it.
+- **The owner decided task 2.2 on 14 November 2026 (option A):** keep the per-release trigger and the weekly full run; the break score is 86, from the 91.22 % full run on a runner on 13 November 2026 (less five points, rounded down; 86.78 % on the developer machine); it applies to the weekly full run only, and a release (`--since`) run passes `--break-at 0`, since its score covers only the mutants tested; the weekly comparison keeps its 0.5 point tolerance.
 - **The timings favour the per-release trigger:** locally a `--since` run took 3 to 8 minutes and a full run 9 to 11 (`checks.md`), and a full run on a runner 15.5 minutes (91.22 %), so a `--since` run is under 30 minutes in every case measured.
 - **The weekly comparison has a tolerance of 0.5 points:** two full runs of the same code scored 86.78 and 86.95 %, so an exact "lower than before" would raise the issue by chance.
 - **A `--since` run barely narrows when tests change:** a changed test counts every mutant it covers, and the shared fixtures cover nearly everything, so the saving shows only for a release that changes no tests; a changed non-C# file in the test project, `stryker-config.json` included, tests everything.

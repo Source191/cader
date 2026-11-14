@@ -83,18 +83,21 @@ jobs:
           dotnet --version
           dotnet tool restore
 
-      # The settings, the break score among them, are in stryker-config.json, so a local run is the same run. The break
-      # score there (86) is a proposal from the runner baseline of 91.22 %, awaiting the owner's agreement; it applies to a
-      # --since run too, whose score covers only the mutants tested.
+      # The settings are in stryker-config.json, so a local run is the same run. Its break score (86, decided by the
+      # owner on 14 November 2026 from the runner baseline of 91.22 %) fails only a full run. A release run's score
+      # covers just the mutants tested, so one survivor in a small release could fail it; it reports its survivors on
+      # the mutation issue and never fails on score, so it overrides the break score with 0.
       - name: Mutate
         id: stryker
         if: steps.range.outputs.kind != 'skip'
         shell: pwsh
         working-directory: test\Source191.Cader.Core.Tests
         env:
+          KIND: ${{ steps.range.outputs.kind }}
           SINCE: ${{ steps.range.outputs.since }}
         run: |
           $arguments = @('--skip-version-check')
+          if ($env:KIND -eq 'release') { $arguments += @('--break-at', '0') }
           if ($env:SINCE) { $arguments += "--since:$env:SINCE" }
           dotnet stryker @arguments
 
