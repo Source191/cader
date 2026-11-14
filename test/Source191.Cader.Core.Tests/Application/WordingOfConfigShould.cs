@@ -18,7 +18,7 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")), "Worktree root", @"C:\Users\me\source\worktrees" },
         { new ConfigRow.OpenFolderWith(EditorChoice.VsCode), "Open folder with", "VS Code" },
         { new ConfigRow.OpenFolderWith(EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"])), "Open folder with", @"C:\Tools\subl.exe -n {folder}" },
-        { new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault), "Default base", "origin's default branch, as last fetched" },
+        { new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault), "Default base", "origin's default branch" },
         { new ConfigRow.DefaultBase(WorktreeBase.Head), "Default base", "the commit checked out now (HEAD)" },
         { new ConfigRow.DefaultPlace(LaunchMode.NewWorktree), "Default place", "New worktree" },
         { new ConfigRow.DefaultPlace(LaunchMode.CurrentBranch), "Default place", "Current branch" },
@@ -140,11 +140,16 @@ public sealed class WordingOfConfigShould
         Wording.SettingsDialogTitle(new SettingsScope.Place()).ShouldBe("Default place");
     }
 
+    /// <summary>A new worktree's base is fetched first unless config.json's beforeBranching says None, so no word may say Cader never fetches.</summary>
     [Fact]
-    public void SayTheDefaultBaseIsOriginAsLastFetchedWithNoFetch()
+    public void SayTheDefaultBaseIsFetchedFirstByDefault()
     {
-        Wording.ConfigDescription(new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault)).ShouldBe("New worktrees branch from origin's default branch as of your last git fetch (no fetch is made), or from HEAD.");
-        Enum.GetValues<WorktreeBase>().Select(Wording.Describe).ShouldBe(["origin's default branch, as last fetched", "the commit checked out now (HEAD)"]);
+        string tooltip = Wording.ConfigDescription(new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault));
+
+        tooltip.ShouldBe("New worktrees branch from origin's default branch, fetched first by default, or from HEAD.");
+        Enum.GetValues<WorktreeBase>().Select(Wording.Describe).ShouldBe(["origin's default branch", "the commit checked out now (HEAD)"]);
+        string[] words = [tooltip, .. Enum.GetValues<WorktreeBase>().Select(Wording.Describe), Wording.SettingsDialogTitle(new SettingsScope.Base())];
+        words.ShouldAllBe(text => !text.Contains("no fetch") && !text.Contains("never fetches") && !text.Contains("last fetched"));
     }
 
     [Fact]

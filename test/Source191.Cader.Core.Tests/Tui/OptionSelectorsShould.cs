@@ -10,7 +10,7 @@ public sealed class OptionSelectorsShould
     public void LabelEachMemberAsWordingDescribesIt()
     {
         OptionSelectors.Labels<LaunchMode>(Wording.Describe).ShouldBe(["Current branch", "New worktree"]);
-        OptionSelectors.Labels<WorktreeBase>(Wording.Describe).ShouldBe(["origin's default branch, as last fetched", "the commit checked out now (HEAD)"]);
+        OptionSelectors.Labels<WorktreeBase>(Wording.Describe).ShouldBe(["origin's default branch", "the commit checked out now (HEAD)"]);
         OptionSelectors.Labels<EditorPreset>(Wording.Describe).Count.ShouldBe(Enum.GetValues<EditorPreset>().Length);
     }
 
