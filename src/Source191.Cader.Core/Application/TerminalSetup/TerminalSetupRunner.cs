@@ -69,17 +69,19 @@ public sealed class TerminalSetupRunner(
             return 2;
         }
 
-        _ = terminalSettings.Location;
+        TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
         TerminalProfiles profiles = await ChooseProfilesAsync(request);
         await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles));
         Step profileStep = await WriteProfilesAsync(request, profiles, cancellationToken);
+        Step hiddenStep = profileStep == Step.Failed || !fragment.Exists ? Step.Skipped : await ShowHiddenProfilesAsync(request, records, cancellationToken);
         Step bellStep = profileStep == Step.Failed ? Step.Skipped : await OfferBellAsync(request, cancellationToken);
-        if (profileStep == Step.Failed || bellStep == Step.Failed)
+        Step[] steps = [profileStep, hiddenStep, bellStep];
+        if (steps.Contains(Step.Failed))
         {
             return 1;
         }
 
-        if (profileStep == Step.Skipped && bellStep == Step.Skipped)
+        if (steps.All(step => step == Step.Skipped))
         {
             await output.WriteLineAsync(Wording.NothingWritten);
         }
@@ -140,6 +142,30 @@ public sealed class TerminalSetupRunner(
         if (step == Step.Written)
         {
             await output.WriteLineAsync(Wording.ProfilesWritten(fragment.Location));
+        }
+
+        return step;
+    }
+
+    /// <summary>Once the fragment exists: adds the entry of each Cader profile Windows Terminal hides, after showing it and asking.</summary>
+    private async Task<Step> ShowHiddenProfilesAsync(TerminalSetupRequest request, TerminalProfileRecords records, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<TerminalProfileEntry> hidden = HiddenTerminalProfiles.Of(records);
+        if (hidden.Count == 0)
+        {
+            return Step.Skipped;
+        }
+
+        await output.WriteLineAsync(Wording.HiddenProfilesPlan(terminalSettings.Location, hidden));
+        if (!await ConfirmedAsync(request, Wording.ShowHiddenProfilesQuestion))
+        {
+            return Step.Skipped;
+        }
+
+        Step step = await TryWriteAsync(terminalSettings.Location, () => terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken));
+        if (step == Step.Written)
+        {
+            await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location));
         }
 
         return step;
