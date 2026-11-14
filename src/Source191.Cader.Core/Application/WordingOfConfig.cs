@@ -136,6 +136,7 @@ public static partial class Wording
         return item switch
         {
             SetupItem.SettingsFile => "This tab writes the settings file: edit a setting above to change it.",
+            SetupItem.ClaudeFolder => string.Empty,
             SetupItem.DiagnosticLogFile => "Turn the log on or off with Diagnostic log above; f opens this file and c copies its path.",
             SetupItem.TerminalProfiles => "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.",
             SetupItem.ClaudeBell => "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.",
@@ -148,6 +149,7 @@ public static partial class Wording
         return item switch
         {
             SetupItem.SettingsFile => "The file the settings above are kept in; f opens it in your editor.",
+            SetupItem.ClaudeFolder => string.Empty,
             SetupItem.DiagnosticLogFile => "Where the diagnostic log is written; it rolls at 10 MiB. f opens it in your editor, c copies its path.",
             SetupItem.TerminalProfiles => "Windows Terminal profiles that give the console's tabs a bell and the icon.",
             SetupItem.ClaudeBell => "Claude's terminal bell, which rings when a session finishes or needs permission while you are away.",
@@ -160,6 +162,7 @@ public static partial class Wording
         return item switch
         {
             SetupItem.SettingsFile => "Settings file",
+            SetupItem.ClaudeFolder => string.Empty,
             SetupItem.DiagnosticLogFile => "Diagnostic log file",
             SetupItem.TerminalProfiles => "Windows Terminal profiles",
             SetupItem.ClaudeBell => "Claude bell",

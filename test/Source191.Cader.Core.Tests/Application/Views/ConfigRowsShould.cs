@@ -46,9 +46,9 @@ public sealed class ConfigRowsShould
     }
 
     [Fact]
-    public void ListTheDiagnosticLogFileAfterTheSettingsFile()
+    public void ListTheClaudeFolderAfterTheSettingsFile()
     {
-        ConfigRows.For(TestSettings.For(Repos), AllSetUp).OfType<ConfigRow.Setup>().Select(row => row.Item).ShouldBe([SetupItem.SettingsFile, SetupItem.DiagnosticLogFile, SetupItem.TerminalProfiles, SetupItem.ClaudeBell, SetupItem.LastUpdateCheck]);
+        ConfigRows.For(TestSettings.For(Repos), AllSetUp).OfType<ConfigRow.Setup>().Select(row => row.Item).ShouldBe([SetupItem.SettingsFile, SetupItem.ClaudeFolder, SetupItem.DiagnosticLogFile, SetupItem.TerminalProfiles, SetupItem.ClaudeBell, SetupItem.LastUpdateCheck]);
     }
 
     [Fact]
@@ -103,6 +103,7 @@ public sealed class ConfigRowsShould
         rows.Skip(9).ShouldBe(
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)),
+            new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(TestSettings.DefaultClaudeFolder)),
             new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(LogFile)),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)),
             new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled()),
