@@ -32,7 +32,7 @@ Beside the tab titles the Config tab SHALL count its settings and, when any is m
 
 #### Scenario: Counts
 - **WHEN** there are two roots and the Windows Terminal profiles are not set up
-- **THEN** the counts read 8 settings · 1 to set up, the second part in amber
+- **THEN** the counts read 9 settings · 1 to set up, the second part in amber
 
 #### Scenario: Copy a long root
 - **WHEN** a repository root row's value is elided and the user presses c
@@ -94,4 +94,4 @@ Between the settings and the setup rows the Config tab's table SHALL have a head
 
 #### Scenario: The heading is not counted
 - **WHEN** there is one root and every piece of setup is in place
-- **THEN** the counts read 7 settings and the title counts 12 rows
+- **THEN** the counts read 8 settings and the title counts 13 rows

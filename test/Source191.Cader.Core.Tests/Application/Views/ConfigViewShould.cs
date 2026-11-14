@@ -9,14 +9,16 @@ public sealed class ConfigViewShould
     private const string Repos = @"C:\Users\me\source\repos";
     private const string Work = @"D:\work";
     private const string SettingsFile = @"C:\Users\me\AppData\Local\Cader\config.json";
+    private const string LogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
 
     private static readonly SetupFacts Facts = new(
         new SetupState.At(SettingsFile),
+        new SetupState.LogFile(LogFile, Exists: true),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),
         new SetupState.Never());
 
-    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, TestSettings.DiagnosticLogFile))).State;
+    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts))).State;
 
     [Fact]
     public void LoadTheRowsWithTheFirstSelected()
@@ -63,6 +65,7 @@ public sealed class ConfigViewShould
 
     [Theory]
     [InlineData(SetupItem.SettingsFile)]
+    [InlineData(SetupItem.DiagnosticLogFile)]
     [InlineData(SetupItem.TerminalProfiles)]
     [InlineData(SetupItem.ClaudeBell)]
     [InlineData(SetupItem.LastUpdateCheck)]
@@ -101,7 +104,32 @@ public sealed class ConfigViewShould
     public void OpenAFolderOrTheFolderHoldingAFile()
     {
         ConfigView.Reduce(At("worktree-root"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\source\worktrees"))]);
-        ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Cader"))]);
+        string fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
+        SetupFacts installed = Facts with { TerminalProfiles = new SetupState.At(fragment) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), installed))).State;
+
+        ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:TerminalProfiles") }, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader"))]);
+    }
+
+    [Fact]
+    public void OpenTheSettingsFileAndTheDiagnosticLogFileThemselves()
+    {
+        ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(SettingsFile))]);
+        ConfigView.Reduce(At("setup:DiagnosticLogFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile))]);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CopyTheDiagnosticLogFilesPathWhateverTheSettingAndTheFile(bool settingOn, bool fileExists)
+    {
+        Settings settings = settingOn ? TestSettings.For(Repos, Work).WithDiagnosticLogToggled() : TestSettings.For(Repos, Work);
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(LogFile, fileExists) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(settings, facts))).State;
+
+        ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile))]);
     }
 
     [Fact]
@@ -172,7 +200,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState state = At("worktree-root");
 
-        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts, TestSettings.DiagnosticLogFile))).State;
+        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts))).State;
 
         reloaded.Selected.ShouldBe(new ConfigRow.WorktreeRoot(FolderPath.From(@"E:\trees")));
     }
@@ -227,7 +255,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState up = ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Up)).State;
 
-        up.Selected.ShouldBe(new ConfigRow.DiagnosticLog(On: false, File: TestSettings.DiagnosticLogFile));
+        up.Selected.ShouldBe(new ConfigRow.DiagnosticLog(On: false));
     }
 
     [Fact]
@@ -242,10 +270,10 @@ public sealed class ConfigViewShould
     [Fact]
     public void LeaveTheSetupHeadingOutOfTheTitle()
     {
-        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, TestSettings.DiagnosticLogFile))).State;
+        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts))).State;
 
-        oneRoot.Title.Shown.ShouldBe(12);
-        oneRoot.Title.Total.ShouldBe(12);
+        oneRoot.Title.Shown.ShouldBe(13);
+        oneRoot.Title.Total.ShouldBe(13);
     }
 
     [Fact]

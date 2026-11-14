@@ -180,7 +180,12 @@ public static partial class Wording
     }
 
     /// <summary>Where another editor is chosen, named after any editor problem the editor key reports.</summary>
+    private const string DiagnosticLogFileName = "cader.log";
+
     private const string WhereEditorsAreChosen = "in Open folder with on the Config tab (3)";
+
+    /// <summary>The log is the one file that can be missing until a setting writes it.</summary>
+    private static string WhereTheLogComesFrom(string fileName) => string.Equals(fileName, DiagnosticLogFileName, StringComparison.Ordinal) ? " Diagnostic log on the Config tab turns it on." : string.Empty;
 
     private static string Describe(OpenInEditorOutcome outcome)
     {
@@ -190,6 +195,7 @@ public static partial class Wording
             OpenInEditorOutcome.EditorNotFound missing => $"Could not find {EditorName(missing.Editor)}; choose another {WhereEditorsAreChosen}.",
             OpenInEditorOutcome.EditorNotStarted refused => $"{EditorName(refused.Editor)} would not start: {refused.Reason.Trim().TrimEnd('.')}. Choose another {WhereEditorsAreChosen}.",
             OpenInEditorOutcome.FolderMissing gone => $"{gone.FolderName} no longer exists, so nothing was opened.",
+            OpenInEditorOutcome.FileMissing absent => $"{absent.FileName} does not exist yet, so nothing was opened.{WhereTheLogComesFrom(absent.FileName)}",
             _ => outcome.ToString(),
         };
     }
