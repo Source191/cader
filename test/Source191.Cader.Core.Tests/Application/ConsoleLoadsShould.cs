@@ -145,7 +145,7 @@ public sealed class ConsoleLoadsShould : IDisposable
         GitCli git = new(gitRuns, "git");
         SessionRowEnricher enricher = new(git, store, registry, clock, new FakeTranscripts(), catalogue);
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
-        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, folders, SettingsFile, TestSettings.DiagnosticLogFile, log);
+        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, folders, SettingsFile, TestSettings.DiagnosticLogFile, log);
 
         return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, refreshes);
     }
