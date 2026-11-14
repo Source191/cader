@@ -7,6 +7,10 @@ The tool package ships the libraries below beside it. Each is used under the lic
 Packages
 --------
 
+.NET runtime 11.0.0 (the self-contained runtime inside cader.exe: its System and Microsoft runtime assemblies, which since .NET 11 include Microsoft.Extensions.Caching.Abstractions, Microsoft.Extensions.Configuration.Abstractions, Microsoft.Extensions.DependencyInjection.Abstractions, Microsoft.Extensions.Diagnostics.Abstractions, Microsoft.Extensions.FileProviders.Abstractions, Microsoft.Extensions.Hosting.Abstractions, Microsoft.Extensions.Logging.Abstractions, Microsoft.Extensions.Options and Microsoft.Extensions.Primitives)
+  Licence: MIT
+  Copyright (c) .NET Foundation and Contributors
+
 ColorHelper 1.8.1 (ColorHelper.dll)
   Licence: MIT
   Copyright (c) 2020 Artyom Gritsuk
