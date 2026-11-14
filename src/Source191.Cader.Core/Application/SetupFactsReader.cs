@@ -9,12 +9,13 @@ namespace Source191.Cader.Application;
 /// Reads the setup the Config tab shows, through the ports that already read it for <c>cader setup-terminal</c> and the
 /// update check; a piece whose read fails is unreadable on its own, and never stops the others.
 /// </summary>
-public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
+public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettings terminalSettings, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
 {
     private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
 
     public async Task<SetupFacts> ReadAsync(CancellationToken cancellationToken)
     {
+        _ = terminalSettings.Location;
         return new SetupFacts(
             new SetupState.At(settingsFile),
             new SetupState.LogFile(diagnosticLogFile, folders.FileExists(diagnosticLogFile)),

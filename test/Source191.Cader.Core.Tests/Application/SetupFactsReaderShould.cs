@@ -22,7 +22,7 @@ public sealed class SetupFactsReaderShould
         InMemoryState state = new();
         DateTimeOffset nine = new(2026, 10, 30, 9, 12, 0, TimeSpan.Zero);
         await state.WriteUpdateCheckAsync(new UpdateCheckRecord.Checked(nine, new NewestRelease.Found(ReleaseVersions.Version("0.18.0"))));
-        SetupFactsReader reader = new(fragment, new FakeClaudeSettings(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell)), state, new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(fragment, new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell)), state, new FakeFolders(), SettingsFile, LogFile, log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -32,7 +32,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task ReadNothingSetUp()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -43,17 +43,50 @@ public sealed class SetupFactsReaderShould
     public async Task ReadWhetherTheDiagnosticLogFileExists()
     {
         FakeFolders written = new FakeFolders().WithFile(LogFile, "a line");
-        SetupFactsReader exists = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), written, SettingsFile, LogFile, log);
-        SetupFactsReader absent = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader exists = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), written, SettingsFile, LogFile, log);
+        SetupFactsReader absent = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         (await exists.ReadAsync(TestContext.Current.CancellationToken)).DiagnosticLogFile.ShouldBe(new SetupState.LogFile(LogFile, Exists: true));
         (await absent.ReadAsync(TestContext.Current.CancellationToken)).DiagnosticLogFile.ShouldBe(new SetupState.LogFile(LogFile, Exists: false));
     }
 
     [Fact]
+    public async Task ReadTheProfilesAsHiddenWhenTerminalHidesOne()
+    {
+        FakeTerminalFragment fragment = new FakeTerminalFragment().Installed();
+        HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
+        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>([TerminalProfiles.Entries[0].Id])));
+        SetupFactsReader reader = new(fragment, terminal, new FakeClaudeSettings(), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).TerminalProfiles.ShouldBe(new SetupState.HiddenByTerminal(fragment.Location));
+    }
+
+    [Theory]
+    [MemberData(nameof(UnhelpfulRecords))]
+    public async Task ReadTheProfilesAsInstalledWhenTerminalsFilesSayNothing(TerminalProfileRecords records)
+    {
+        FakeTerminalFragment fragment = new FakeTerminalFragment().Installed();
+        SetupFactsReader reader = new(fragment, new FakeTerminalSettings(records), new FakeClaudeSettings(), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).TerminalProfiles.ShouldBe(new SetupState.At(fragment.Location));
+    }
+
+    public static TheoryData<TerminalProfileRecords> UnhelpfulRecords => [new TerminalProfileRecords.Missing(), new TerminalProfileRecords.Unreadable("not JSON")];
+
+    [Fact]
+    public async Task ReadTheProfilesAsNotSetUpWithNoFragmentWhateverTerminalSays()
+    {
+        HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
+        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>()));
+        SetupFactsReader reader = new(new FakeTerminalFragment(), terminal, new FakeClaudeSettings(), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).TerminalProfiles.ShouldBe(new SetupState.NotSetUp());
+    }
+
+    [Fact]
     public async Task CallAMissingClaudeSettingsFileNotSetUp()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Missing()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Missing()), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -63,7 +96,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task NameAnotherChannel()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeClaudeSettings(new NotificationChannelState.Configured("iterm2")), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Configured("iterm2")), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         (await reader.ReadAsync(TestContext.Current.CancellationToken)).ClaudeBell.ShouldBe(new SetupState.OtherChannel("iterm2"));
     }
@@ -71,7 +104,7 @@ public sealed class SetupFactsReaderShould
     [Fact]
     public async Task KeepTheOtherFactsWhenClaudesSettingsAreUnreadable()
     {
-        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeClaudeSettings(new NotificationChannelState.Unreadable("not JSON")), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unreadable("not JSON")), new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -83,7 +116,7 @@ public sealed class SetupFactsReaderShould
     public async Task KeepTheOtherFactsWhenAReadThrows()
     {
         FakeClaudeSettings claude = new() { FailTheReadWith = new IOException("locked") };
-        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), claude, new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeTerminalSettings(), claude, new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         SetupFacts facts = await reader.ReadAsync(TestContext.Current.CancellationToken);
 
@@ -95,7 +128,7 @@ public sealed class SetupFactsReaderShould
     public async Task RecordAnUnreadablePiece()
     {
         FakeClaudeSettings claude = new() { FailTheReadWith = new IOException("locked") };
-        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), claude, new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
+        SetupFactsReader reader = new(new FakeTerminalFragment().Installed(), new FakeTerminalSettings(), claude, new InMemoryState(), new FakeFolders(), SettingsFile, LogFile, log);
 
         await reader.ReadAsync(TestContext.Current.CancellationToken);
 
