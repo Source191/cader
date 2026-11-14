@@ -326,6 +326,31 @@ public sealed class TerminalSettingsShould : IDisposable
         ShouldRead(await settings.ReadAsync(TestContext.Current.CancellationToken), generated: [PowerShellId, CaderId, SessionId], listed: [PowerShellId, CaderId, SessionId]);
     }
 
+    [Theory]
+    [InlineData("{ \"theme\": \"dark\" } // no profiles")]
+    [InlineData("{ \"profiles\": [ ")]
+    public async Task RefuseAFileWithNoReadableProfileListAndLeaveItAlone(string original)
+    {
+        Given(settings.Location, original);
+
+        IOException refused = await Should.ThrowAsync<IOException>(() => settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken));
+
+        refused.Message.ShouldContain(settings.Location);
+        ShouldHold(original, at: string.Empty, inserted: string.Empty, withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task RefuseAReadOnlyFileAndLeaveItAlone()
+    {
+        string original = """{ "profiles": [] }""";
+        Given(settings.Location, original);
+        File.SetAttributes(settings.Location, FileAttributes.ReadOnly);
+
+        await Should.ThrowAsync<UnauthorizedAccessException>(() => settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken));
+
+        ShouldHold(original, at: string.Empty, inserted: string.Empty, withByteOrderMark: false);
+    }
+
     private static string CaderEntry => $$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader" }""";
 
     private static string SessionEntry => $$"""{ "guid": "{{SessionId}}", "hidden": false, "name": "Cader session", "source": "Cader" }""";
