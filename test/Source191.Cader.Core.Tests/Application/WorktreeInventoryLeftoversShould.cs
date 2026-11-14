@@ -193,6 +193,15 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     }
 
     [Fact]
+    public async Task ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Billing"));
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, log);
+
+        (await inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task NotListAFolderTwiceWhenTheWorktreeRootIsARoot()
     {
         string sibling = Path.Combine(Root, "Northwind.Orders-republish");

@@ -10,7 +10,8 @@ namespace Source191.Cader.Application;
 /// <summary>
 /// Everything under the repository roots and the worktree root that is, or was, a worktree: git's own listing per repository, plus the
 /// leftovers git has forgotten (orphans under .claude\worktrees, folders under a root or the worktree root whose registration is gone, empty folders
-/// that worktree tools leave behind). Read-only: nothing here prunes, deletes or touches git state.
+/// that worktree tools leave behind, and any empty folder under the worktree root, which git leaves when a program held a worktree's folder as it
+/// was removed). Read-only: nothing here prunes, deletes or touches git state.
 /// </summary>
 public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests, DiagnosticLog log)
 {

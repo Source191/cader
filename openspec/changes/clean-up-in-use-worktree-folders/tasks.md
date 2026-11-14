@@ -29,7 +29,7 @@
 
 - [x] 6.1 Red: `WorktreeInventoryLeftoversShould.ListAnEmptyFolderUnderTheWorktreeRootAsEmpty`: an empty `C:\Users\me\source\worktrees\Northwind.Orders-fix-123` gives one row with health empty, repository `C:\Users\me\source\worktrees`, `OwnerExists` false and no files. Green: the worktree root's children pass splits into `.git`-file candidates and empty folders, the latter made into rows as an empty `.worktrees` folder is. Verify the fact passes.
 - [x] 6.2 Red-green: `WorktreeInventoryLeftoversShould.SkipAFolderUnderTheWorktreeRootThatHoldsFilesButNoGitFile` and `LeaveAnEmptyFolderGitStillRegistersToItsRegisteredRow` (git lists it as prunable: one row, health broken, not a second empty row). Verify both pass.
-- [ ] 6.3 Red-green: `WorktreeInventoryLeftoversShould.ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot` (settings whose worktree root is also a root: an empty child without the `.worktrees` suffix is not listed). Verify the fact passes, then update `WorktreeInventory`'s class summary to name the new leftover.
+- [x] 6.3 Red-green: `WorktreeInventoryLeftoversShould.ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot` (settings whose worktree root is also a root: an empty child without the `.worktrees` suffix is not listed). Verify the fact passes, then update `WorktreeInventory`'s class summary to name the new leftover.
 
 ## 7. Docs and release
 
