@@ -61,6 +61,11 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
     /// </summary>
     public async Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
+        if (IsALink())
+        {
+            throw new SettingsFileIsALinkException(Location);
+        }
+
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         int start = ByteOrderMarkLength(bytes);
         ListPlace place = PlaceOfTheList(bytes, start);
@@ -80,6 +85,13 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         }
     }
 
+    /// <summary>A symbolic link or other reparse point, as a dotfiles set-up makes it: moving a file over it would replace the link.</summary>
+    private bool IsALink()
+    {
+        FileInfo file = new(Location);
+
+        return file.Exists && (file.LinkTarget is not null || file.Attributes.HasFlag(FileAttributes.ReparsePoint));
+    }
     /// <summary>Where the profile list is, once the whole file is known to be JSON with one; refused as an IOException otherwise.</summary>
     private ListPlace PlaceOfTheList(byte[] bytes, int start)
     {

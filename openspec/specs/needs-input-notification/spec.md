@@ -178,7 +178,7 @@ Once the fragment exists, `cader setup-terminal` SHALL report each Cader profile
 - **THEN** nothing is reported as hidden and Windows Terminal's settings file is unchanged
 
 ### Requirement: Setup can show a hidden profile again
-When a Cader profile is hidden, the setup command SHALL show the entries it will add and ask before writing; on yes, or with `--yes`, it SHALL add to the profile list in Terminal's settings file one entry for each hidden profile only, holding that profile's id, `"hidden": false`, its name and the source `Cader`, and SHALL leave every other character of the file as it was. A failed write SHALL be reported with the file's path and exit 1.
+When a Cader profile is hidden, the setup command SHALL show the entries it will add and ask before writing; on yes, or with `--yes`, it SHALL add to the profile list in Terminal's settings file one entry for each hidden profile only, holding that profile's id, `"hidden": false`, its name and the source `Cader`, and SHALL leave every other character of the file as it was. A failed write SHALL be reported with the file's path and exit 1, and a settings file that is a link SHALL NOT be written: the command SHALL give the entries to add by hand and exit 1.
 
 #### Scenario: Show it again
 - **WHEN** Windows Terminal is hiding "Cader session" and the user answers y
@@ -199,3 +199,7 @@ When a Cader profile is hidden, the setup command SHALL show the entries it will
 #### Scenario: The settings file cannot be written
 - **WHEN** Windows Terminal is hiding "Cader", the user answers y and Terminal's settings file is read-only
 - **THEN** the error output names the file and why it could not be written, the fragment is kept, and the command exits 1
+
+#### Scenario: The settings file is a link
+- **WHEN** Windows Terminal is hiding "Cader", the user answers y and Terminal's settings file is a symbolic link to a file elsewhere, as a dotfiles set-up makes it
+- **THEN** nothing is written and the link is still a link, the error output says the file is a link and gives the entry to add by hand to the file it links to, Claude Code's bell is still offered, and the command exits 1
