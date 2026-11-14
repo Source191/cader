@@ -98,6 +98,36 @@ public sealed class RemoveWorktreeHandlerShould
         folders.DirectoryExists(Worktree).ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData(19, false)]
+    [InlineData(20, true)]
+    public async Task WaitAboutFiveSecondsForAHeldFolder(int heldAttempts, bool folderLeft)
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(Worktree).HeldOpenFor(Worktree, heldAttempts);
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false, FolderLeft: folderLeft));
+        folders.DirectoryExists(Worktree).ShouldBe(folderLeft);
+    }
+
+    [Fact]
+    public async Task TouchNothingWhenGitStillListsTheWorktree()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
+        folders.WithFile(Path.Combine(Worktree, "Program.cs"));
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"));
+        folders.FileExists(Path.Combine(Worktree, "Program.cs")).ShouldBeTrue();
+        (await store.ReadCreatedWorktreesAsync()).ShouldNotBeEmpty();
+        GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
+    }
+
     [Fact]
     public async Task AskAboutAHandMadeBranchWhenTheFolderStaysHeld()
     {

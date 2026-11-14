@@ -131,7 +131,7 @@ public sealed class DeleteSessionHandlerShould
     public async Task FinishTheWorktreeAndSayItsFolderWasLeftWhenItStaysHeld()
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
-        processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        GitDropsTheRegistrationWhenItFailsToRemove();
         folders.HeldOpen(Worktree);
 
         DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
@@ -145,12 +145,21 @@ public sealed class DeleteSessionHandlerShould
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("merge-base"), new ProcessResult(1, string.Empty, string.Empty));
-        processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        GitDropsTheRegistrationWhenItFailsToRemove();
         folders.HeldOpen(Worktree);
 
         DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
 
         outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), TabClosed: false, FolderLeft: true));
+    }
+
+    /// <summary>What git does when a program holds the folder: it fails on it, having already dropped the registration, so the listing no longer has the worktree.</summary>
+    private void GitDropsTheRegistrationWhenItFailsToRemove()
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        processes.Answer(
+            request => request.Arguments.Contains("--porcelain") && request.Arguments.Contains("list") && processes.CapturedRequests.Any(earlier => earlier.Arguments.Contains("remove")),
+            new ProcessResult(0, "worktree C:/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n", string.Empty));
     }
 
     /// <summary>Deletes with the clock moving on until the delete finishes, however long it waits for a held folder.</summary>

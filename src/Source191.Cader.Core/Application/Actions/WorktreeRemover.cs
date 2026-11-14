@@ -33,8 +33,13 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, CancellationToken cancellationToken)
     {
-        bool folderLeft = await FolderLeftByGitAsync(row, decision.Forced, cancellationToken);
+        GitRemoval removal = await RemoveWithGitAsync(row, decision.Forced, cancellationToken);
+        if (removal == GitRemoval.StillRegistered)
+        {
+            return new RemoveWorktreeOutcome.InUse(row.FolderName);
+        }
 
+        bool folderLeft = removal == GitRemoval.FolderLeft;
         await createdWorktrees.ForgetCreatedWorktreeAsync(row.Path);
         return (decision.Branch, row.Head) switch
         {
@@ -45,19 +50,55 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         };
     }
 
-    /// <summary>Removes the worktree through git; true when its folder was left behind because something still holds it.</summary>
-    private async Task<bool> FolderLeftByGitAsync(WorktreeRow row, bool forced, CancellationToken cancellationToken)
+    /// <summary>How git's removal ended: the folder went, git removed the worktree but its folder is held, or git still lists the worktree.</summary>
+    private enum GitRemoval
+    {
+        Removed,
+        FolderLeft,
+        StillRegistered,
+    }
+
+    private async Task<GitRemoval> RemoveWithGitAsync(WorktreeRow row, bool forced, CancellationToken cancellationToken)
     {
         try
         {
             await git.RemoveWorktreeAsync(row.Repository.Value, row.Path.Value, forced, cancellationToken);
-            return false;
+            return GitRemoval.Removed;
         }
         catch (GitException exception) when (exception.InUse)
         {
-            // Git has already deleted the contents, the .git file and the registration and failed only on the folder
-            // itself (GitWorktreeRemoveShould), so what is left is a plain folder that no later remove would see.
-            return !InsideTheRoots(row.Path) || !await DeleteWhenLetGoAsync(row.Path, cancellationToken);
+            return await AfterInUseAsync(row, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Git's "in use" words are matched loosely, so before anything is deleted the repository is asked whether it still
+    /// lists the worktree. When it does not, git has already deleted the contents, the .git file and the registration
+    /// and failed only on the folder itself (GitWorktreeRemoveShould), so what is left is a plain folder no later remove
+    /// would see.
+    /// </summary>
+    private async Task<GitRemoval> AfterInUseAsync(WorktreeRow row, CancellationToken cancellationToken)
+    {
+        if (await StillListedAsync(row, cancellationToken))
+        {
+            return GitRemoval.StillRegistered;
+        }
+
+        return !InsideTheRoots(row.Path) || !await DeleteWhenLetGoAsync(row.Path, cancellationToken) ? GitRemoval.FolderLeft : GitRemoval.Removed;
+    }
+
+    /// <summary>True when the repository still lists the worktree's path, or cannot be asked.</summary>
+    private async Task<bool> StillListedAsync(WorktreeRow row, CancellationToken cancellationToken)
+    {
+        try
+        {
+            IReadOnlyList<GitWorktreeEntry> entries = await git.ListWorktreesAsync(row.Repository.Value, cancellationToken);
+
+            return entries.Any(entry => FolderPath.TryParse(entry.Path, out FolderPath? listed) && listed.Equals(row.Path));
+        }
+        catch (GitException)
+        {
+            return true;
         }
     }
 
