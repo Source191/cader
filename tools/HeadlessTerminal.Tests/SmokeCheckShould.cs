@@ -21,7 +21,7 @@ public sealed class SmokeCheckShould : IDisposable
     [Fact]
     public void PretendToBeWindowsTerminalAndAnswerItsQueriesAsExpected()
     {
-        SmokeCheck.Options.ShouldBe(new DriverOptions(PretendWindowsTerminal: true, AnswerQueries: true, XtversionDelayMs: 0));
+        SmokeCheck.Options.ShouldBe(new DriverOptions(PretendWindowsTerminal: true, AnswerQueries: true, XtversionDelayMs: 0, Columns: 120, Rows: 36));
     }
 
     public void Dispose() => Directory.Delete(folder, recursive: true);
