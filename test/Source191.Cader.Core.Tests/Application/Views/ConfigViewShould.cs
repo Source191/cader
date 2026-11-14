@@ -292,8 +292,8 @@ public sealed class ConfigViewShould
     {
         ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts))).State;
 
-        oneRoot.Title.Shown.ShouldBe(13);
-        oneRoot.Title.Total.ShouldBe(13);
+        oneRoot.Title.Shown.ShouldBe(14);
+        oneRoot.Title.Total.ShouldBe(14);
     }
 
     [Fact]
