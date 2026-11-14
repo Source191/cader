@@ -94,11 +94,12 @@ public sealed class JsonFileStoreShould : IDisposable
           },
           "checkForUpdates": true,
           "defaultPlace": "NewWorktree",
-          "diagnosticLog": false
+          "diagnosticLog": false,
+          "beforeBranching": "Fetch"
         }
         """;
 
-    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false, BeforeBranching: BeforeBranching.Fetch);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
