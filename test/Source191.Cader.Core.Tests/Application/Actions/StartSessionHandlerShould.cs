@@ -38,7 +38,7 @@ public sealed class StartSessionHandlerShould
             InMemoryState store = new();
             GitCli git = new(processes, "git");
             FakeTimeProvider clock = new(Fixtures.Noon);
-            LaunchService service = new(new ClaudeCli(processes, Claude), git, store, store, new WorktreeIncludeCopier(git), clock);
+            LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
             OpenTabHandler tabs = new(store, new FakeProcessRegistry(), terminal, clock, new TabScripts(Claude, OwnExecutable));
 
             return new StartSessionHandler(service, tabs, terminal, new TabScripts(Claude, OwnExecutable));

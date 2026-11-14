@@ -529,14 +529,14 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayWhereHereStartedTheSession()
     {
-        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders")), "fix-tests", @"C:\repos\Northwind.Orders")
+        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders"), new BaseUpdate.Current()), "fix-tests", @"C:\repos\Northwind.Orders")
             .ShouldBe(@"Started fix-tests (81cdb0f9) in C:\repos\Northwind.Orders.");
     }
 
     [Fact]
     public void SayWhereHereStartedTheSessionBeforeItIsListed()
     {
-        Wording.Here(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9")), "fix-tests", @"C:\repos\Northwind.Orders")
+        Wording.Here(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()), "fix-tests", @"C:\repos\Northwind.Orders")
             .ShouldBe(@"Started fix-tests (81cdb0f9) in C:\repos\Northwind.Orders.");
     }
 

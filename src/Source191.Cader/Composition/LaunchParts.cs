@@ -17,7 +17,7 @@ internal sealed record LaunchParts(RequiredPrograms.Found Programs, ClaudeCli Cl
             case RequiredPrograms.Found found:
                 ClaudeCli claude = new(parts.Processes, found.Claude);
                 GitCli git = new(parts.Processes, found.Git);
-                LaunchService launchService = new(claude, git, parts.Store, parts.Store, new WorktreeIncludeCopier(git), TimeProvider.System);
+                LaunchService launchService = new(claude, git, new BaseUpdater(git), parts.Store, parts.Store, new WorktreeIncludeCopier(git), TimeProvider.System);
                 return await run(new LaunchParts(found, claude, git, launchService));
             case RequiredPrograms.Missing missing:
                 await error.WriteLineAsync(missing.Sentence);
