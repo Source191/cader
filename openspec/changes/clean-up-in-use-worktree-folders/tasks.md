@@ -18,7 +18,7 @@
 
 ## 4. Delete carries the fact
 
-- [ ] 4.1 Red: `DeleteSessionHandlerShould.FinishTheWorktreeAndSayItsFolderWasLeftWhenItStaysHeld` (replacing `ReportAWorktreeStillInUse`): a merged branch created here gives `RemovedWorktreeAndBranch(Name, fix-123, TabClosed, FolderLeft: true)`; an unmerged one gives `BranchNotMerged(..., FolderLeft: true)` (a `Theory` or two facts). Green: add `bool FolderLeft = false` to those two `DeleteSessionOutcome` cases and copy it across in `DeleteSessionHandler`. Verify the facts pass and `DeleteSessionHandlerShould` stays green.
+- [x] 4.1 Red: `DeleteSessionHandlerShould.FinishTheWorktreeAndSayItsFolderWasLeftWhenItStaysHeld` (replacing `ReportAWorktreeStillInUse`): a merged branch created here gives `RemovedWorktreeAndBranch(Name, fix-123, TabClosed, FolderLeft: true)`; an unmerged one gives `BranchNotMerged(..., FolderLeft: true)` (a `Theory` or two facts). Green: add `bool FolderLeft = false` to those two `DeleteSessionOutcome` cases and copy it across in `DeleteSessionHandler`. Verify the facts pass and `DeleteSessionHandlerShould` stays green.
 
 ## 5. Words and tones
 

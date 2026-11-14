@@ -137,7 +137,20 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
-        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false));
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: true));
+    }
+
+    [Fact]
+    public async Task AskAboutAnUnmergedBranchAndSayTheFolderWasLeftWhenItStaysHeld()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("merge-base"), new ProcessResult(1, string.Empty, string.Empty));
+        processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        folders.HeldOpen(Worktree);
+
+        DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
+
+        outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), TabClosed: false, FolderLeft: true));
     }
 
     /// <summary>Deletes with the clock moving on until the delete finishes, however long it waits for a held folder.</summary>

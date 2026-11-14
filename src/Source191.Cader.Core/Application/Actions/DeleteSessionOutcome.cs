@@ -3,7 +3,10 @@ using Source191.Cader.Domain;
 
 namespace Source191.Cader.Application.Actions;
 
-/// <summary>What deleting a session did, and in one case the unmerged branch the user is asked about. TabClosed when a session tab showing it was closed.</summary>
+/// <summary>
+/// What deleting a session did, and in one case the unmerged branch the user is asked about. TabClosed when a session
+/// tab showing it was closed; FolderLeft when its worktree was removed but a tab or program still holds the folder.
+/// </summary>
 public abstract record DeleteSessionOutcome(bool TabClosed) : Outcome
 {
     public sealed record Deleted(ListedName Name, bool TabClosed) : DeleteSessionOutcome(TabClosed);
@@ -13,9 +16,9 @@ public abstract record DeleteSessionOutcome(bool TabClosed) : Outcome
 
     public sealed record KeptWorktree(ListedName Name, RemovalReason Reason, bool TabClosed) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch, bool TabClosed) : DeleteSessionOutcome(TabClosed);
+    public sealed record RemovedWorktreeAndBranch(ListedName Name, BranchName Branch, bool TabClosed, bool FolderLeft = false) : DeleteSessionOutcome(TabClosed);
 
-    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch, bool TabClosed) : DeleteSessionOutcome(TabClosed);
+    public sealed record BranchNotMerged(ListedName Name, BranchToConfirm Branch, bool TabClosed, bool FolderLeft = false) : DeleteSessionOutcome(TabClosed);
 
     /// <summary>The worktree was a leftover: its folder deleted, and its registration pruned when stale.</summary>
     public sealed record RemovedWorktree(ListedName Name, RemoveWorktreeOutcome Worktree, bool TabClosed) : DeleteSessionOutcome(TabClosed);
