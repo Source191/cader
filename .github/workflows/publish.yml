@@ -44,8 +44,8 @@ jobs:
               throw "'$env:TAG' is not a stable release tag such as v0.21.0; prereleases are never submitted to winget."
           }
 
-      # gh is on the runner. The release's one zip is downloaded; nothing is checked out or built.
-      - name: Download the release's zip
+      # gh is on the runner. The release's two zips, one per architecture, are downloaded; nothing is checked out or built.
+      - name: Download the release's zips
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,13 +53,18 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $version = $env:TAG.Substring(1)
-          gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern "cader_$($version)_win-x64.zip" --dir release
-          if ($LASTEXITCODE -ne 0) {
-              throw "gh release download failed with exit code $LASTEXITCODE: is $env:TAG a published release with its zip?"
+          foreach ($runtime in 'win-x64', 'win-arm64') {
+              gh release download $env:TAG --repo $env:GITHUB_REPOSITORY --pattern "cader_$($version)_$runtime.zip" --dir release
+              if ($LASTEXITCODE -ne 0) {
+                  throw "gh release download failed with exit code $LASTEXITCODE for $runtime: is $env:TAG a published release with its $runtime zip?"
+              }
+              if (-not (Test-Path (Join-Path release "cader_$($version)_$runtime.zip"))) {
+                  throw "$env:TAG has no cader_$($version)_$runtime.zip: the $runtime zip is missing, so nothing is submitted."
+              }
           }
 
-      # Only what pipeline.yml's release job built from main is submitted: the zip must carry the provenance attestation
-      # that job signed for this repository, from main. A zip swapped on the release after it was made, or attested by
+      # Only what pipeline.yml's release job built from main is submitted: each zip must carry the provenance attestation
+      # that job signed for this repository, from main. A zip of either architecture swapped on the release after it was made, or attested by
       # any other workflow or ref, fails here and nothing reaches winget. wingetcreate downloads the same URL again and
       # hashes what it gets. (https://cli.github.com/manual/gh_attestation_verify)
       - name: Verify the zip's provenance
@@ -68,10 +73,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $zip = (Get-ChildItem release -Filter 'cader_*_win-x64.zip').FullName
-          gh attestation verify $zip --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/pipeline.yml" --source-ref refs/heads/main
-          if ($LASTEXITCODE -ne 0) {
-              throw "gh attestation verify failed with exit code $LASTEXITCODE: the zip is not the one pipeline.yml built from main."
+          foreach ($runtime in 'win-x64', 'win-arm64') {
+              $zip = (Get-ChildItem release -Filter "cader_*_$runtime.zip").FullName
+              gh attestation verify $zip --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/pipeline.yml" --source-ref refs/heads/main
+              if ($LASTEXITCODE -ne 0) {
+                  throw "gh attestation verify failed with exit code $LASTEXITCODE: the $runtime zip is not the one pipeline.yml built from main."
+              }
           }
 
       # wingetcreate update changes a manifest that already exists, so until the first one, submitted by hand
@@ -117,8 +124,8 @@ jobs:
           }
 
           $version = $env:TAG.Substring(1)
-          $zip = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/cader_$($version)_win-x64.zip"
-          & $tool update Source191.Cader --version $version --urls "$zip|x64" --submit --token $env:WINGET_PKGS_TOKEN
+          $base = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG"
+          & $tool update Source191.Cader --version $version --urls "$base/cader_$($version)_win-x64.zip|x64" "$base/cader_$($version)_win-arm64.zip|arm64" --submit --token $env:WINGET_PKGS_TOKEN
           if ($LASTEXITCODE -ne 0) {
               throw "wingetcreate update failed with exit code $LASTEXITCODE, so $env:TAG is not on its way to winget. Read its output above, fix the cause and run this again."
           }
