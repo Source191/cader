@@ -27,7 +27,7 @@
 
 ## 3. Process and git adapters
 
-- [ ] 3.1 **Spike (owner, recorded, before any port change):** on a developer machine with git 2.55 and Git Credential Manager, run `git fetch` against an HTTPS remote that has no stored credential, with `GIT_TERMINAL_PROMPT=0` and `GCM_INTERACTIVE=false` set and output captured. Check that it fails within a few seconds, that no window or prompt appears, and that its stderr is readable. Record the fact with its date and versions in `.claude\rules\windows.md`. If it prompts or hangs, revisit design decision 2 before 3.2. **Verify:** the rule line is present.
+- [x] 3.1 **Spike (owner, recorded, before any port change):** on a developer machine with git 2.55 and Git Credential Manager, run `git fetch` against an HTTPS remote that has no stored credential, with `GIT_TERMINAL_PROMPT=0` and `GCM_INTERACTIVE=false` set and output captured. Check that it fails within a few seconds, that no window or prompt appears, and that its stderr is readable. Record the fact with its date and versions in `.claude\rules\windows.md`. If it prompts or hangs, revisit design decision 2 before 3.2. **Verify:** the rule line is present.
 - [ ] 3.2 **Red:** `ProcessRunnerIntegrationShould` facts.
   - A captured child given `Variables` of `GIT_TERMINAL_PROMPT=0` sees that value, even when the test sets `GIT_TERMINAL_PROMPT` in its own environment, so the variable is dropped first and then set.
   - A request without `Variables` passes nothing extra.
