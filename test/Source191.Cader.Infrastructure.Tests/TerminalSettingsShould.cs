@@ -1,4 +1,5 @@
 using Source191.Cader.Adapters.Terminal;
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Text;
 
@@ -140,6 +141,210 @@ public sealed class TerminalSettingsShould : IDisposable
         TerminalProfileRecords records = await settings.ReadAsync(TestContext.Current.CancellationToken);
 
         records.ShouldBeOfType<TerminalProfileRecords.Unreadable>().Reason.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task AddAnEntryAfterTheLastElementIndentedLikeTheFirst()
+    {
+        string original = Lf($$"""
+            {
+                "profiles": {
+                    "list": [
+                        {
+                            "guid": "{{PowerShellId}}",
+                            "name": "Windows PowerShell"
+                        }
+                    ]
+                }
+            }
+
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "            }", inserted: $",\n            {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task AddEachEntryOnALineOfItsOwn()
+    {
+        string original = Lf($$"""
+            {
+                "profiles": {
+                    "list": [
+                        { "guid": "{{PowerShellId}}" }
+                    ]
+                }
+            }
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\" }", inserted: $",\n            {CaderEntry},\n            {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task AddToAnEmptyListAfterItsOpeningBracketTwelveSpacesIn()
+    {
+        string original = Lf("""
+            {
+                "profiles":
+                {
+                    "list": []
+                }
+            }
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\"list\": [", inserted: $"\n            {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task AddToAListOnOneLine()
+    {
+        string original = $$"""{ "profiles": { "list": [ { "guid": "{{PowerShellId}}" } ] } }""";
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\" }", inserted: $",\n{SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task AddToABareProfilesArrayAndNotToAListNestedElsewhere()
+    {
+        string original = Lf($$"""
+            {
+                "schemes": { "list": [] },
+                "profiles": [
+                  { "guid": "{{PowerShellId}}", "list": [] }
+                ]
+            }
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "[] }", inserted: $",\n      {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task KeepCommentsBetweenAndAfterTheElements()
+    {
+        string original = Lf($$"""
+            // My Windows Terminal settings
+            {
+                "profiles": {
+                    "list": [
+                        // first
+                        { "guid": "{{PowerShellId}}" }, // the shell
+                        /* second */ { "guid": "{{CaderId}}" } // the console
+                    ]
+                }
+            }
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: $"{CaderId}\" }}", inserted: $",\n            {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task KeepATrailingComma()
+    {
+        string original = Lf($$"""
+            {
+                "profiles": {
+                    "list": [
+                        { "guid": "{{PowerShellId}}" },
+                    ],
+                },
+            }
+            """);
+        Given(settings.Location, original);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\" }", inserted: $",\n            {SessionEntry}", withByteOrderMark: false);
+    }
+
+    [Fact]
+    public async Task KeepCrlfLineEndingsAndAByteOrderMark()
+    {
+        string original = $$"""
+            {
+                "profiles": {
+                    "list": [
+                        { "guid": "{{PowerShellId}}" }
+                    ]
+                }
+            }
+            """.ReplaceLineEndings("\r\n");
+        Given(settings.Location, original, withByteOrderMark: true);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\" }", inserted: $",\r\n            {SessionEntry}", withByteOrderMark: true);
+    }
+
+    [Fact]
+    public async Task EscapeAQuoteInAName()
+    {
+        string original = Lf("""
+            {
+                "profiles": [
+                    { "name": "mine" }
+                ]
+            }
+            """);
+        Given(settings.Location, original);
+        TerminalProfileEntry quoted = new(TerminalProfileId.ForFragment("Cader", "Say \"hi\""), "Say \"hi\"", "Cader");
+
+        await settings.AddProfileEntriesAsync([quoted], TestContext.Current.CancellationToken);
+
+        ShouldHold(original, at: "\" }", inserted: $",\n        {quoted.Json}", withByteOrderMark: false);
+        quoted.Json.ShouldContain("\"name\": \"Say \\\"hi\\\"\"");
+    }
+
+    [Fact]
+    public async Task ListTheAddedIdsWhenReadAfterwards()
+    {
+        Given(StateFile, State);
+        Given(settings.Location, Lf($$"""
+            {
+                "profiles": { "list": [ { "guid": "{{PowerShellId}}" } ] }
+            }
+            """));
+
+        await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
+
+        ShouldRead(await settings.ReadAsync(TestContext.Current.CancellationToken), generated: [PowerShellId, CaderId, SessionId], listed: [PowerShellId, CaderId, SessionId]);
+    }
+
+    private static string CaderEntry => $$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader" }""";
+
+    private static string SessionEntry => $$"""{ "guid": "{{SessionId}}", "hidden": false, "name": "Cader session", "source": "Cader" }""";
+
+    private static string Lf(string text) => text.ReplaceLineEndings("\n");
+
+    /// <summary>
+    /// The file is the original with exactly <paramref name="inserted"/> after the last place <paramref name="at"/>
+    /// ends, byte for byte, so taking the insertion out gives the original back.
+    /// </summary>
+    private void ShouldHold(string original, string at, string inserted, bool withByteOrderMark)
+    {
+        int position = original.LastIndexOf(at, StringComparison.Ordinal) + at.Length;
+        string expected = original.Insert(position, inserted);
+        byte[] expectedBytes = [.. withByteOrderMark ? Encoding.UTF8.Preamble.ToArray() : [], .. Encoding.UTF8.GetBytes(expected)];
+
+        Encoding.UTF8.GetString(File.ReadAllBytes(settings.Location)).ShouldBe(Encoding.UTF8.GetString(expectedBytes));
+        File.ReadAllBytes(settings.Location).ShouldBe(expectedBytes);
+        Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldNotContain(name => name!.Contains("tmp", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Written without a byte order mark unless asked, as Terminal writes its files.</summary>
