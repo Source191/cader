@@ -27,7 +27,8 @@ internal sealed class WizardControls
     {
         Mode.Value = OptionSelectors.Index(state.Mode);
         BaseRef.Value = OptionSelectors.Index(state.Base);
-        Before.Value = OptionSelectors.Index(state.BeforeBranching);        Hint.Text = Wording.WizardHint(state);
+        Before.Value = OptionSelectors.Index(state.BeforeBranching);
+        Hint.Text = Wording.WizardHint(state);
         Fields = new Dictionary<WizardField, View>
         {
             [WizardField.RepositoryFilter] = Filter,
@@ -35,7 +36,8 @@ internal sealed class WizardControls
             [WizardField.Name] = Name,
             [WizardField.Mode] = Mode,
             [WizardField.Base] = BaseRef,
-            [WizardField.BeforeBranching] = Before,            [WizardField.Prompt] = Prompt,
+            [WizardField.BeforeBranching] = Before,
+            [WizardField.Prompt] = Prompt,
         };
         All = state.ShowsChooser ? OneColumn() : FixedFolder(state);
     }
