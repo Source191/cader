@@ -260,6 +260,32 @@ public sealed class SettingsShould
         Settings.Validate(Typed, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.DiagnosticLog.ShouldBeFalse();
     }
 
+    [Fact]
+    public void FetchBeforeBranchingUnlessToldOtherwise()
+    {
+        Settings.BeforeBranchingWhenUnset.ShouldBe(BeforeBranching.Fetch);
+        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home).BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+        Settings pull = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, beforeBranching: BeforeBranching.Pull);
+
+        pull.BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        pull.ToText().BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        pull.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
+        pull.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, beforeBranching: BeforeBranching.None));
+    }
+
+    [Fact]
+    public void KeepBeforeBranchingThroughAValidatedDialogAndEitherToggle()
+    {
+        Settings.Validate(Typed with { BeforeBranching = BeforeBranching.None }, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.BeforeBranching.ShouldBe(BeforeBranching.None);
+        Settings.Validate(Typed with { Preset = EditorPreset.Custom, Executable = @"C:\Tools\subl.exe", Arguments = "{folder}", BeforeBranching = BeforeBranching.Pull }, Exists(Root), Installed)
+            .ShouldBeOfType<SettingsValidation.Valid>().Settings.BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        Settings.Validate(Typed, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+        Settings pull = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, beforeBranching: BeforeBranching.Pull);
+
+        pull.WithUpdateCheckToggled().BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        pull.WithDiagnosticLogToggled().BeforeBranching.ShouldBe(BeforeBranching.Pull);
+    }
+
     private static SettingsProblem Refusal(SettingsText typed) => Settings.Validate(typed, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Refused>().Problem;
 
     private static Func<string, bool> Exists(params string[] folders) => path => folders.Contains(path, StringComparer.OrdinalIgnoreCase);
