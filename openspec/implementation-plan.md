@@ -44,6 +44,7 @@ Step numbers are the order of merge; pull requests in the same step are independ
 | 11 | Q: close mutation gaps, batch rest of Application | close-mutation-gaps (6) | sonnet | high |
 | 12 | R: close mutation gaps, batches Views to Launch | close-mutation-gaps (7, 8) | sonnet | high |
 | 13 | S: strict release runs | close-mutation-gaps (9, 10, archive) | opus | medium |
+| 14 | T: check mutation before publishing | check-mutation-before-publishing (all) | sonnet | medium |
 
 ## Dependencies and what can run in parallel
 
