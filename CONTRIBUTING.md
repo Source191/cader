@@ -154,6 +154,7 @@ A refactor, tooling or documentation change still gets a proposal and tasks but 
 
 Before asking for review, check that:
 
+- **The description:** it opens with **Why** (the problem today), then **Benefit** (what is better afterwards), then **What changed**, saying for each change how it delivers the benefit; the template in `.github` has the headings.
 - **The issue:** for anything beyond a small fix, the pull request links the issue where the change was agreed.
 - **The change:** its OpenSpec change has every task ticked, manual checks recorded, and is archived in this pull request (`openspec validate` passes).
 - **The loop:** `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` pass, and the hand-off check exits 0 if you touched attach, `cader here` or the pseudo-console.

@@ -31,6 +31,7 @@ Facts that matter only in part of the code are path-scoped rules in `.claude\rul
 - A project's `.csproj` carries no comments: what is worth recording about a project or one of its settings goes in the `README.md` in that project's folder. The two `Directory.Build.props` files (the root one and `src\Directory.Build.props`) are the exception and keep their comments beside their settings.
 - A newly verified fact about Claude Code, Terminal.Gui, Windows Terminal or Windows is recorded with its date and version in its file in `.claude\rules`.
 - Commit only when asked.
+- Every pull request description opens with **Why** (the problem or risk today, in plain terms), then **Benefit** (what is better for users or maintainers afterwards), then **What changed**, where each change says which part of the benefit it delivers; a description that only says what was done, or that something is "stricter" or "cleaner", is not finished. Write it as a normal pull request, not as a record of how it was decided.
 
 ## Code rules
 
