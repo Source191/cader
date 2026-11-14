@@ -1,7 +1,7 @@
 namespace Source191.Cader.Tui;
 
 /// <summary>How a tab is kept fresh: never on a timer, or every interval.</summary>
-internal abstract record TabRefresh
+internal closed record TabRefresh
 {
     private TabRefresh()
     {
