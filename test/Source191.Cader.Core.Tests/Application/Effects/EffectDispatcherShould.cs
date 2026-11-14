@@ -95,7 +95,7 @@ public sealed class EffectDispatcherShould
     {
         public Task<Outcome> HandleAsync(StopSession effect, CancellationToken cancellationToken)
         {
-            throw new GitException(@"fatal: C:\Users\me\source\repos\Northwind.Orders");
+            throw new GitException(@"fatal: C:\Users\me\source\repos\Northwind.Orders", inUse: false);
         }
     }
 }

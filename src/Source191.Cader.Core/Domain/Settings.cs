@@ -59,7 +59,7 @@ public sealed record Settings
     /// Fills in what is missing: no roots means <c>&lt;home&gt;\source\repos</c>; <see cref="WorktreeRootChoice.BesideFirstRoot"/> means <c>worktrees</c>
     /// beside the first root (inside it when it has no parent, such as <c>D:\</c>). A file's missing base, update setting, place, log and before-branching setting are <see cref="BaseWhenUnset"/>, <see cref="ChecksForUpdatesWhenUnset"/>, <see cref="PlaceWhenUnset"/>, <see cref="DiagnosticLogWhenUnset"/> and <see cref="BeforeBranchingWhenUnset"/>.
     /// </summary>
-    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates = ChecksForUpdatesWhenUnset, LaunchMode defaultPlace = PlaceWhenUnset, bool diagnosticLog = DiagnosticLogWhenUnset, BeforeBranching beforeBranching = BeforeBranchingWhenUnset)
+    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching)
     {
         IReadOnlyList<FolderPath> resolvedRoots = roots is { Count: > 0 } ? roots : [home.Combine(Path.Combine("source", "repos"))];
         FolderPath first = resolvedRoots[0];

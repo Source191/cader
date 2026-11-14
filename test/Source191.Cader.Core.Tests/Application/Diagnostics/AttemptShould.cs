@@ -22,7 +22,7 @@ public sealed class AttemptShould
     [Fact]
     public async Task AnswerTheFailureAndRecordItOnce()
     {
-        string result = await Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new GitException(@"C:\Users\me\source\repos"), exception => $"message: {exception.Message}");
+        string result = await Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new GitException(@"C:\Users\me\source\repos", inUse: false), exception => $"message: {exception.Message}");
 
         result.ShouldBe(@"message: C:\Users\me\source\repos");
         Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
@@ -35,7 +35,7 @@ public sealed class AttemptShould
     [Fact]
     public async Task RecordOnlyTheFailuresTheFilterHandles()
     {
-        string handled = await Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new GitException("x"), exception => exception is GitException, _ => "blank");
+        string handled = await Attempt.RunAsync<string>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new GitException("x", inUse: false), exception => exception is GitException, _ => "blank");
 
         handled.ShouldBe("blank");
         log.Snapshot().Single().Event.ShouldBeOfType<Failed>();

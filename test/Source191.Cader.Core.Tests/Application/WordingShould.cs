@@ -341,14 +341,14 @@ public sealed class WordingShould
     [Fact]
     public void SayTheBranchWasKeptAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false)))
+        Wording.Describe(new StatusMessage.BranchKept(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false, FolderLeft: false)))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch kept.");
     }
 
     [Fact]
     public void SayTheBranchWasDeletedAfterTheRemoval()
     {
-        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false), new DeleteBranchOutcome()))
+        Wording.Describe(new StatusMessage.Followed(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Sessions.Repository), BranchName.From("fix-123")), TabClosed: false, FolderLeft: false), new DeleteBranchOutcome()))
             .ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged. Branch deleted.");
     }
 

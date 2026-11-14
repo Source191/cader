@@ -41,7 +41,7 @@ public sealed class DeleteSessionHandlerShould
         processes.CapturedRequests.Single(request => request.Arguments.Contains("remove")).Arguments.ShouldBe(["worktree", "remove", Worktree]);
         processes.CapturedRequests.Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "fix-123"]);
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
-        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false));
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: false));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class DeleteSessionHandlerShould
 
         processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("remove"));
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("branch"));
-        outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), TabClosed: false));
+        outcome.ShouldBe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), TabClosed: false, FolderLeft: false));
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
         order.ShouldBe(["shell 4000 ended after 0 git calls"]);
-        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true));
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true, FolderLeft: false));
     }
 
     [Fact]

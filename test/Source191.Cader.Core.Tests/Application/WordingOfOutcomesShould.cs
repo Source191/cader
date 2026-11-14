@@ -247,7 +247,7 @@ public sealed class WordingOfOutcomesShould
     {
         Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123"), TabClosed: false)).ShouldBe("Deleted fix-123.");
         Wording.Describe(new DeleteSessionOutcome.Deleted(Listed.As("fix-123"), TabClosed: true)).ShouldBe("Deleted fix-123 and closed its tab.");
-        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true)).ShouldBe("Deleted fix-123 and closed its tab, and removed the worktree and branch fix-123.");
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true, FolderLeft: false)).ShouldBe("Deleted fix-123 and closed its tab, and removed the worktree and branch fix-123.");
     }
 
     [Fact]
@@ -288,13 +288,13 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayADeletedSessionsWorktreeAndBranchWentToo()
     {
-        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false)).ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123.");
+        Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: false)).ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123.");
     }
 
     [Fact]
     public void SayADeletedSessionsBranchIsNotMerged()
     {
-        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: false)).ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged.");
+        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: false, FolderLeft: false)).ShouldBe("Deleted fix-123 and removed the worktree; branch fix-123 is not merged.");
     }
 
     [Fact]
@@ -349,27 +349,27 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayAWorktreeWasRemoved()
     {
-        Wording.Describe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123")).ShouldBe("Removed Northwind.Orders-fix-123.");
+        Wording.Describe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: false)).ShouldBe("Removed Northwind.Orders-fix-123.");
     }
 
     [Fact]
     public void SayAWorktreeAndItsMergedBranchWereRemoved()
     {
-        Wording.Describe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123")))
+        Wording.Describe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: false))
             .ShouldBe("Removed Northwind.Orders-fix-123 and deleted its merged branch fix-123.");
     }
 
     [Fact]
     public void SayAHandMadeBranchWasKept()
     {
-        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false))
+        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false, FolderLeft: false))
             .ShouldBe("Removed Northwind.Orders-fix-123; branch fix-123 was not created here, so it is kept.");
     }
 
     [Fact]
     public void SayAnUnmergedBranchCreatedHereWasKept()
     {
-        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: true))
+        Wording.Describe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: true, FolderLeft: false))
             .ShouldBe("Removed Northwind.Orders-fix-123; branch fix-123 is not merged.");
     }
 

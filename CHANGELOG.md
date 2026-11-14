@@ -20,6 +20,10 @@ What changes in each release of Cader, written for the people who use it. The fo
 - Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
 - Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds for it, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes (#261)
 
+### Internal
+
+- No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
+
 ## 0.21.1 - 2026-11-13
 
 ### Internal
