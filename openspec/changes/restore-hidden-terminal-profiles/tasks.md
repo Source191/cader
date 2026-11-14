@@ -7,7 +7,7 @@
 
 ## 2. The hiding rule
 
-- [ ] 2.1 Red: `HiddenTerminalProfilesShould` asserts the entries `HiddenTerminalProfiles.Of` answers: Cader session generated and not listed gives its entry alone; both generated and not listed give both, Cader first; a generated id that is listed (its entry `"hidden": true` or not) gives none; nothing generated gives none; `Missing` and `Unreadable` give none. Green: `Ports\TerminalProfileRecords` (`Missing`, `Unreadable(Reason)`, `Read(Generated, Listed)`, nested in its base) and `Application\TerminalSetup\HiddenTerminalProfiles`. Verify the facts, `ClosedHierarchiesShould` and `NullFreeModelsShould`.
+- [x] 2.1 Red: `HiddenTerminalProfilesShould` asserts the entries `HiddenTerminalProfiles.Of` answers: Cader session generated and not listed gives its entry alone; both generated and not listed give both, Cader first; a generated id that is listed (its entry `"hidden": true` or not) gives none; nothing generated gives none; `Missing` and `Unreadable` give none. Green: `Ports\TerminalProfileRecords` (`Missing`, `Unreadable(Reason)`, `Read(Generated, Listed)`, nested in its base) and `Application\TerminalSetup\HiddenTerminalProfiles`. Verify the facts, `ClosedHierarchiesShould` and `NullFreeModelsShould`.
 
 ## 3. Terminal's settings and state files
 
