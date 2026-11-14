@@ -1,5 +1,6 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.TerminalSetup;
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
@@ -16,6 +17,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     private readonly FakeFolders folders = new FakeFolders().WithFile(NotifyMessaging).WithFile(ProximityNotification).WithFile(Chimes).WithFile(@"C:\Windows\Media\notes.txt");
     private readonly FakeTerminalFragment fragment = new();
     private readonly FakeClaudeSettings settings = new();
+    private FakeTerminalSettings terminal = new();
     private readonly StringWriter output = new();
     private readonly StringWriter error = new();
 
@@ -89,7 +91,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task NameTheValueItReplacesWhenClaudeUsesAnotherChannel()
     {
         FakeClaudeSettings other = new(new NotificationChannelState.Configured("iterm2"));
-        TerminalSetupRunner runner = new(folders, fragment, other, OwnExecutable, Media, new StringReader("n\nn\n"), output, error);
+        TerminalSetupRunner runner = new(folders, fragment, terminal, other, OwnExecutable, Media, new StringReader("n\nn\n"), output, error);
 
         await runner.RunAsync(Defaults, CancellationToken.None);
 
@@ -112,7 +114,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task LeaveOutAMissingDefaultAndSaySo()
     {
         FakeFolders withoutDefault = new FakeFolders().WithFile(ProximityNotification);
-        TerminalSetupRunner runner = new(withoutDefault, fragment, settings, OwnExecutable, Media, new StringReader("y\nn\n"), output, error);
+        TerminalSetupRunner runner = new(withoutDefault, fragment, terminal, settings, OwnExecutable, Media, new StringReader("y\nn\n"), output, error);
 
         await runner.RunAsync(Defaults, CancellationToken.None);
 
@@ -193,7 +195,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task OfferTheTerminalBellWhenItIsNotAlreadySet(string? current)
     {
         FakeClaudeSettings other = new(current is null ? new NotificationChannelState.Unset() : new NotificationChannelState.Configured(current));
-        TerminalSetupRunner runner = new(folders, fragment, other, OwnExecutable, Media, new StringReader("n\nn\n"), output, error);
+        TerminalSetupRunner runner = new(folders, fragment, terminal, other, OwnExecutable, Media, new StringReader("n\nn\n"), output, error);
 
         await runner.RunAsync(Defaults, CancellationToken.None);
 
@@ -213,7 +215,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task NotOfferTheTerminalBellWhenItIsAlreadyOn()
     {
         FakeClaudeSettings alreadyOn = new(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
-        TerminalSetupRunner runner = new(folders, fragment, alreadyOn, OwnExecutable, Media, new StringReader("y\n"), output, error);
+        TerminalSetupRunner runner = new(folders, fragment, terminal, alreadyOn, OwnExecutable, Media, new StringReader("y\n"), output, error);
 
         await runner.RunAsync(Defaults, CancellationToken.None);
 
@@ -238,7 +240,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task SkipAnUnreadableSettingsFileButStillWriteProfiles()
     {
         FakeClaudeSettings unreadable = new(new NotificationChannelState.Unreadable("bad json"));
-        TerminalSetupRunner runner = new(folders, fragment, unreadable, OwnExecutable, Media, new StringReader("y\n"), output, error);
+        TerminalSetupRunner runner = new(folders, fragment, terminal, unreadable, OwnExecutable, Media, new StringReader("y\n"), output, error);
 
         int exitCode = await runner.RunAsync(Defaults, CancellationToken.None);
 
@@ -316,9 +318,36 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         settings.State.ShouldBe(new NotificationChannelState.Configured(NotificationChannelState.TerminalBell));
     }
 
+    [Fact]
+    public async Task ShowAgainAProfileWindowsTerminalHidesWhenAccepted()
+    {
+        fragment.Installed();
+        terminal = Hiding(SessionEntry);
+
+        int exitCode = await RunAsync("y\ny\ny\n");
+
+        exitCode.ShouldBe(0);
+        terminal.Added.ShouldBe([[SessionEntry]]);
+        output.ToString().ShouldContain(Wording.HiddenProfilesPlan(terminal.Location, [SessionEntry]));
+        output.ToString().ShouldContain(Wording.ShowHiddenProfilesQuestion);
+        output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location));
+        settings.Enabled.ShouldBe(1);
+    }
+
+    private static TerminalProfileEntry SessionEntry => TerminalProfiles.Entries[1];
+
+    /// <summary>Terminal has generated both profiles and lists only those not given here, so it hides these.</summary>
+    private static FakeTerminalSettings Hiding(params TerminalProfileEntry[] hidden)
+    {
+        HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
+        HashSet<TerminalProfileId> listed = [.. generated.Except(hidden.Select(entry => entry.Id))];
+
+        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, listed));
+    }
+
     private Task<int> RunAsync(string answers, TerminalSetupRequest? request = null)
     {
-        TerminalSetupRunner runner = new(folders, fragment, settings, OwnExecutable, Media, new StringReader(answers), output, error);
+        TerminalSetupRunner runner = new(folders, fragment, terminal, settings, OwnExecutable, Media, new StringReader(answers), output, error);
 
         return runner.RunAsync(request ?? Defaults, CancellationToken.None);
     }

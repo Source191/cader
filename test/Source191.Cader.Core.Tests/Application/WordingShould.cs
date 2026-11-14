@@ -940,6 +940,36 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void ShowTheEntryForAProfileWindowsTerminalHidesBeforeAskingToAddIt()
+    {
+        Wording.HiddenProfilesPlan(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Windows Terminal is hiding the Cader session profile: it keeps a profile deleted from its settings hidden, however often the fragment is written.
+            This adds an entry to the profile list in C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json and keeps everything else in the file as it is:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+        Wording.ShowHiddenProfilesQuestion.ShouldBe("Show the hidden profiles again? [y/N] ");
+    }
+
+    [Fact]
+    public void NameEachHiddenProfileAndShowEachEntry()
+    {
+        Wording.HiddenProfilesPlan(TerminalSettingsFile, TerminalProfiles.Entries).ShouldBe("""
+            Windows Terminal is hiding the Cader and Cader session profiles: it keeps a profile deleted from its settings hidden, however often the fragment is written.
+            This adds an entry for each to the profile list in C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json and keeps everything else in the file as it is:
+              { "guid": "{3d7a06d2-710f-51d9-90c9-dacae2c3ab46}", "hidden": false, "name": "Cader", "source": "Cader" }
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void SayTheHiddenProfilesShowOnceTerminalReadsTheFile()
+    {
+        Wording.HiddenProfilesShown(TerminalSettingsFile).ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart.");
+    }
+
+    private const string TerminalSettingsFile = @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";
+
+    [Fact]
     public void SayNothingWasWritten()
     {
         Wording.NothingWritten.ShouldBe("Nothing was written.");
