@@ -192,6 +192,7 @@ public sealed class SourceConventionsShould
 
     private static bool IsThrowingDiscard(SwitchExpressionArmSyntax arm) => arm is { Pattern: DiscardPatternSyntax, WhenClause: null, Expression: ThrowExpressionSyntax };
 
+    // shortcut: a case named bare (a switch inside its own closed type) is not seen; none exists, so read the governing type with a semantic model once one does.
     private static bool NamesACaseOf(PatternSyntax pattern, HashSet<string> closed) => pattern.DescendantNodesAndSelf().Select(Qualifier).Any(name => name is not null && closed.Contains(name));
 
     /// <summary>The type a case is reached through: <c>Shape</c> in <c>Shape.Circle</c>, whether it is read as a type or a constant.</summary>
