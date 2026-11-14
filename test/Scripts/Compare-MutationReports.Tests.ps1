@@ -23,4 +23,20 @@ Describe 'Compare-MutationReports' {
         $result.Comparison.Statuses.Timeout | Should -Be 1
         $result.Comparison.Statuses.NoCoverage | Should -Be 1
     }
+
+    It 'groups the mutants whose status differs by status change, then file, then mutator, largest first' {
+        $result = Invoke-Compare
+
+        $result.Changes.Change | Should -Be @('Survived -> Killed', 'Killed -> Timeout', 'Survived -> NoCoverage')
+        $result.Changes.Count | Should -Be @(4, 1, 1)
+        $result.Changes[0].Groups | ForEach-Object { "$($_.File) $($_.Mutator) $($_.Count)" } | Should -Be @(
+            'Domain\Alpha.cs Equality mutation 2', 'Application\Beta.cs String mutation 1', 'Domain\Alpha.cs Boolean mutation 1')
+    }
+
+    It 'shows only the Top largest groups of a change' {
+        $result = Invoke-Compare -More @{ Top = 2 }
+
+        $result.Changes[0].Groups.Count | Should -Be 2
+        $result.Changes[0].Count | Should -Be 4
+    }
 }
