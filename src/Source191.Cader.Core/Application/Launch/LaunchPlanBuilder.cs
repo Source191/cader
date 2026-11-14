@@ -29,7 +29,7 @@ public static class LaunchPlanBuilder
 
         if (request.Mode == LaunchMode.CurrentBranch)
         {
-            return new LaunchPlanResult.Planned(new LaunchPlan(request.Repository.Path, name, new LaunchPlace.CurrentBranch(), request.Base, prompt, request.Repository));
+            return new LaunchPlanResult.Planned(new LaunchPlan(request.Repository.Path, name, new LaunchPlace.CurrentBranch(), request.Base, prompt, request.Repository, request.BeforeBranching));
         }
 
         if (!request.Repository.IsRepository)
@@ -45,7 +45,7 @@ public static class LaunchPlanBuilder
         PlannedWorktree worktree = PlannedWorktree.For(worktreeRoot, request.Repository.Path, slug);
         LaunchPlace place = folderExists(worktree.Path.Value) ? new LaunchPlace.ExistingWorktree(worktree) : new LaunchPlace.NewWorktree(worktree);
 
-        return new LaunchPlanResult.Planned(new LaunchPlan(worktree.Path, name, place, request.Base, prompt, request.Repository));
+        return new LaunchPlanResult.Planned(new LaunchPlan(worktree.Path, name, place, request.Base, prompt, request.Repository, request.BeforeBranching));
     }
 
     private static bool Blank(string text) => string.IsNullOrWhiteSpace(text);

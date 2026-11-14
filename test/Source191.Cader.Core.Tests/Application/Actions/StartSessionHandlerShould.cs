@@ -29,7 +29,7 @@ public sealed class StartSessionHandlerShould
 
     private static LaunchPlan Plan => new(
         FolderPath.From(Repository), SessionName.From("Fix flaky tests"), new LaunchPlace.CurrentBranch(),
-        WorktreeBase.RemoteDefault, new OpeningPrompt.None(), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true));
+        WorktreeBase.RemoteDefault, new OpeningPrompt.None(), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true), BeforeBranching.Fetch);
 
     private StartSessionHandler Handler
     {

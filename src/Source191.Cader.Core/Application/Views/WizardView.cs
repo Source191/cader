@@ -86,7 +86,7 @@ public static class WizardView
             return Changed(state with { Problem = new WizardProblem.NoRepository(), Focus = WizardField.RepositoryFilter });
         }
 
-        LaunchRequest request = new(picked.Choice, state.Name, state.Mode, state.Base, state.Prompt);
+        LaunchRequest request = new(picked.Choice, state.Name, state.Mode, state.Base, state.Prompt, state.BeforeBranching);
 
         return LaunchPlanBuilder.Build(request, state.WorktreeRoot, state.Folders.DirectoryExists) switch
         {

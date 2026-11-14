@@ -14,7 +14,8 @@ public static class HereCommand
     {
         FolderPath path = FolderPath.From(directory);
         RepositoryChoice repository = new(path.Name, path, isRepository(directory));
-        LaunchRequest request = new(repository, NameText(name, path), LaunchMode.CurrentBranch, WorktreeBase.RemoteDefault, prompt);
+        // On the current branch nothing is fetched or pulled, so the plan says None whatever the settings say.
+        LaunchRequest request = new(repository, NameText(name, path), LaunchMode.CurrentBranch, WorktreeBase.RemoteDefault, prompt, BeforeBranching.None);
 
         // On the current branch no worktree is placed, so the folder itself stands in for the worktree root.
         return LaunchPlanBuilder.Build(request, worktreeRoot: path, _ => false);

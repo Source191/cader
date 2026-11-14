@@ -180,7 +180,7 @@ public sealed class DiagnosticsPrivacyShould
     {
         EffectDispatcher dispatcher = Dispatcher(claude, git);
         PlannedWorktree worktree = PlannedWorktree.For(FolderPath.From(WorktreeRoot), FolderPath.From(Repository), WorktreeSlug.From(Branch));
-        LaunchPlan plan = new(FolderPath.From(Repository), SessionName.From(Name), new LaunchPlace.NewWorktree(worktree), WorktreeBase.RemoteDefault, new OpeningPrompt.Text(Prompt), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true));
+        LaunchPlan plan = new(FolderPath.From(Repository), SessionName.From(Name), new LaunchPlace.NewWorktree(worktree), WorktreeBase.RemoteDefault, new OpeningPrompt.Text(Prompt), new RepositoryChoice("Northwind.Orders", FolderPath.From(Repository), IsRepository: true), BeforeBranching.Fetch);
 
         Outcome outcome = await dispatcher.DispatchAsync(new StartSession(plan), CancellationToken.None);
 

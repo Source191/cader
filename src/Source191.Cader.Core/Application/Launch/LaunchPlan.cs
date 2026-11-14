@@ -2,11 +2,15 @@ using Source191.Cader.Domain;
 
 namespace Source191.Cader.Application.Launch;
 
-/// <summary>What the launch service will do: where the session starts, under what name, and whether a worktree is made first (<see cref="LaunchPlace"/>).</summary>
+/// <summary>
+/// What the launch service will do: where the session starts, under what name, and whether a worktree is made first
+/// (<see cref="LaunchPlace"/>), and what is done before a new worktree branches from origin's default branch.
+/// </summary>
 public sealed record LaunchPlan(
     FolderPath Directory,
     SessionName Name,
     LaunchPlace Place,
     WorktreeBase Base,
     OpeningPrompt OpeningPrompt,
-    RepositoryChoice Repository);
+    RepositoryChoice Repository,
+    BeforeBranching BeforeBranching);
