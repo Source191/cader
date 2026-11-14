@@ -1,8 +1,8 @@
-using System.Diagnostics;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Adapters.Processes;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.Diagnostics;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
