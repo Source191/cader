@@ -99,6 +99,19 @@ public sealed class RemoveWorktreeHandlerShould
     }
 
     [Fact]
+    public async Task LeaveAHeldFolderOutsideTheRootsUntouchedAndStillFinish()
+    {
+        const string archive = @"D:\Northwind.Archive";
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(archive);
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok, archive));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Archive", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false, FolderLeft: true));
+        folders.DirectoryExists(archive).ShouldBeTrue("a folder outside the roots is never deleted");
+    }
+
+    [Fact]
     public async Task DeleteTheBranchWhenCreatedHereAndMerged()
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));

@@ -53,7 +53,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         }
         catch (GitException exception) when (exception.InUse)
         {
-            return !await DeleteWhenLetGoAsync(row.Path, cancellationToken);
+            return !InsideTheRoots(row.Path) || !await DeleteWhenLetGoAsync(row.Path, cancellationToken);
         }
     }
 
