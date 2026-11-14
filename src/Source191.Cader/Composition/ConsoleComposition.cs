@@ -24,11 +24,12 @@ internal static class ConsoleComposition
 {
     public static async Task<int> RunAsync(SharedParts parts, LaunchParts launch, CancellationToken cancellationToken)
     {
-        // With CADER_LOG set, the counts are also written every 10 minutes; disposed as this returns, before the crash
+        // The counts go to the log every 10 minutes, and reach the log file while that setting is on; disposed as this returns, before the crash
         // recorder's exit write.
-        using PeriodicCounts periodicCounts = new(TimeProvider.System, parts.Log, parts.Counts, parts.LogSetting);
+        using PeriodicCounts periodicCounts = new(TimeProvider.System, parts.Log, parts.Counts);
         FolderPath home = FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
         CurrentSettings settings = await CurrentSettings.LoadAsync(parts.Store, home);
+        parts.LogSwitch.PointAt(() => settings.Value.DiagnosticLog);
         ClaudeTranscripts transcripts = ClaudeTranscripts.ForCurrentUser();
         Folders folders = new();
 
@@ -84,7 +85,7 @@ internal static class ConsoleComposition
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, own, parts.Log);
+        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, own, parts.Log, parts.LogFile);
     }
 
     private static DialogEffects Dialogs(
@@ -123,12 +124,12 @@ internal static class ConsoleComposition
     {
         SessionRowEnricher enricher = new(launch.Git, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
-        SetupFactsReader setup = new(parts.TerminalFragment, ClaudeSettings.ForCurrentUser(), parts.Store, parts.Store.ConfigFile, parts.LogSetting, parts.Log);
+        SetupFactsReader setup = new(parts.TerminalFragment, ClaudeSettings.ForCurrentUser(), parts.Store, parts.Store.ConfigFile, parts.Log);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
 
-        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, parts.Counts.Refreshes);
+        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, parts.Counts.Refreshes, parts.LogFile);
     }
 
     private static ConsoleScreen Screen(

@@ -67,7 +67,7 @@ dotnet format --verify-no-changes
 - **The smoke check:** `dotnet run -- smoke <exe> <worktree-folder>` from the same folder opens and cancels every dialog and view of an installed tool, then quits; exit 0 passes. The worktree must be an idle linked worktree under a repository root holding two solutions. The tool's [README](tools/HeadlessTerminal/README.md) also covers `drive`, `grid` and `count`, for scripted keystrokes and reading a capture as a screen.
 - **Claude Code contract tests:** they start real sessions, so an ordinary `dotnet test` skips them. Run them from a trusted repository with `$env:CADER_CLAUDE_CONTRACT = 1; dotnet test --project test\Source191.Cader.Infrastructure.Tests -c Debug -- --filter-trait "Category=ClaudeContract"`.
 - **Mutation testing:** from `test\Source191.Cader.Core.Tests`, run `dotnet stryker --test-runner mtp --project Source191.Cader.Core.csproj --mutate "**/Domain/*.cs"`. Use `--test-runner mtp` (xunit.v3 scores 0 % under the VSTest bridge) and globs like that one, never solution-relative paths.
-- **Performance:** [docs/performance-monitoring.md](docs/performance-monitoring.md) explains how to watch the console over a working day with `CADER_LOG`, `dotnet-counters`, `dotnet-trace` and the Windows Performance Recorder, and how to read the results before changing anything for speed.
+- **Performance:** [docs/performance-monitoring.md](docs/performance-monitoring.md) explains how to watch the console over a working day with the Diagnostic log setting, `dotnet-counters`, `dotnet-trace` and the Windows Performance Recorder, and how to read the results before changing anything for speed.
 
 ## Trying your build
 

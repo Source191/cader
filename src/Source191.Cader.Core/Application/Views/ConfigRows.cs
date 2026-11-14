@@ -5,9 +5,9 @@ namespace Source191.Cader.Application.Views;
 /// <summary>The Config tab's rows: the settings in the order the tab lists them, then the Setup heading and the setup, read or still being read.</summary>
 public static class ConfigRows
 {
-    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts) => [.. SettingRows(settings), new ConfigRow.Heading(), .. SetupRows(settings, facts)];
+    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts, string diagnosticLogFile) => [.. SettingRows(settings, diagnosticLogFile), new ConfigRow.Heading(), .. SetupRows(settings, facts)];
 
-    private static IEnumerable<ConfigRow> SettingRows(Settings settings)
+    private static IEnumerable<ConfigRow> SettingRows(Settings settings, string diagnosticLogFile)
     {
         return
         [
@@ -17,6 +17,7 @@ public static class ConfigRows
             new ConfigRow.DefaultBase(settings.DefaultBase),
             new ConfigRow.DefaultPlace(settings.DefaultPlace),
             new ConfigRow.CheckForUpdates(settings.CheckForUpdates),
+            new ConfigRow.DiagnosticLog(settings.DiagnosticLog, diagnosticLogFile),
         ];
     }
 
@@ -28,7 +29,6 @@ public static class ConfigRows
             new ConfigRow.Setup(SetupItem.SettingsFile, facts.SettingsFile),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, facts.TerminalProfiles),
             new ConfigRow.Setup(SetupItem.ClaudeBell, facts.ClaudeBell),
-            new ConfigRow.Setup(SetupItem.DiagnosticLog, facts.DiagnosticLog),
             new ConfigRow.Setup(SetupItem.LastUpdateCheck, settings.CheckForUpdates ? facts.LastUpdateCheck : new SetupState.Disabled()),
         ];
     }

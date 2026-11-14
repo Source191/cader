@@ -21,6 +21,9 @@ public abstract record ConfigRow(string Key)
 
     public sealed record CheckForUpdates(bool On) : ConfigRow("check-for-updates");
 
+    /// <summary>The diagnostic log setting, with the file it is written to while on, which only its tooltip names.</summary>
+    public sealed record DiagnosticLog(bool On, string File) : ConfigRow("diagnostic-log");
+
     /// <summary>The heading over the setup rows: a row the selection steps over and any filter hides.</summary>
     public sealed record Heading() : ConfigRow("heading:setup");
 

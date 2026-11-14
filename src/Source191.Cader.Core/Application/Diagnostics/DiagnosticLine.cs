@@ -4,7 +4,7 @@ using System.Globalization;
 namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
-/// The one text form of a diagnostic record, shared by the in-memory log, the <c>CADER_LOG</c> file and the crash
+/// The one text form of a diagnostic record, shared by the in-memory log, the log file and the crash
 /// file. These lines are a maintainer's format rather than interface text, so they live here and not in Wording.
 /// </summary>
 public static class DiagnosticLine

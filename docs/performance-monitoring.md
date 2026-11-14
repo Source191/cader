@@ -27,12 +27,15 @@ So the first question is usually which child program, how often and how long, an
 
 ## All day: the log and the counters
 
-Start it from a plain Windows Terminal tab with the log on. Never start it from inside a Claude Code session: the tabs it opens would inherit Claude Code's environment and run monochrome.
+Start it from a plain Windows Terminal tab. Never start it from inside a Claude Code session: the tabs it opens would inherit Claude Code's environment and run monochrome.
 
 ```powershell
-$env:CADER_LOG = "$env:TEMP\cader-$(Get-Date -Format yyyy-MM-dd).log"
 cader
 ```
+
+Then turn the log on: on the Config tab select Diagnostic log and press Enter (the row reads `on`, and its tooltip names the file). It takes effect from the next event, with no restart, and Enter turns it off again. The setting is kept in `config.json`, so it stays on until you turn it off; `cader here` reads it as it starts.
+
+The file is `%LOCALAPPDATA%\Cader\cader.log`. When a line would take it past 10 MB it is renamed `cader.log.1`, replacing any older one, and a new `cader.log` starts, so at most about 20 MB is ever kept; copy a day's file elsewhere before it rolls if you want it whole. Counts and events are only written while the setting is on, so turn it on before the day you want to watch.
 
 The file gets every line of the diagnostic log as it happens: the start (versions and terminal size), each view and dialog, each key's effect with its duration, failures, Terminal.Gui's warnings, any child program slower than 5 seconds, any part of a refresh slower than 3 seconds and any time the screen's thread ran more than half a second late. Every 10 minutes, and again when you quit with `q`, it also gets the counts: the child programs, the refresh parts and the screen thread's stalls, each with the number of runs, the median, the 95th percentile and the longest. Closing the tab without `q` loses at most the last 10 minutes of counts.
 

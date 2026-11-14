@@ -75,7 +75,7 @@ The detail pane gives the health's reason in full, the branch and whether it is 
 
 ### The Config tab
 
-The settings (see [Configuration](#configuration)), then a Setup heading with what the console reads but does not change: the settings file, the Windows Terminal profiles, Claude Code's terminal bell, the diagnostic log and the last update check. Enter on a setup row says how to change it.
+The settings (see [Configuration](#configuration)), then a Setup heading with what the console reads but does not change: the settings file, the Windows Terminal profiles, Claude Code's terminal bell and the last update check. Enter on a setup row says how to change it.
 
 ## Sessions
 
@@ -110,6 +110,7 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
 - **Default base:** new worktrees branch from origin's default branch as of your last `git fetch` (Cader never fetches), or from HEAD.
 - **Default place:** where the wizard starts a session: a new worktree, or the repository's current branch.
 - **Check for updates:** whether to ask the winget community repository once a day for a newer release.
+- **Diagnostic log:** whether Cader also writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log`; Enter turns it on or off at once. It is off until you turn it on.
 
 Every row also answers `c` (copy the path) and `f` (open its folder).
 
@@ -159,7 +160,7 @@ It sends nothing but a daily, anonymous check of the winget community repository
 
 - **Report a problem:** `!` previews the diagnostics it would send, then opens a GitHub issue with them filled in; nothing is sent until you submit it.
 - **After a crash:** `%LOCALAPPDATA%\Cader\last-crash.log` is written; the next problem report includes it.
-- **A diagnostic log:** set `CADER_LOG` to a file path before you start it to keep one.
+- **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`.
 - **Monochrome tabs:** Cader was started inside a Claude Code session; start it from an ordinary tab.
 - **"Workspace not trusted":** Claude Code asks for trust once per repository; Cader opens a tab in that folder so you can accept it, then start the session again.
 - **Security:** to report a vulnerability, see [SECURITY.md](../SECURITY.md).

@@ -90,6 +90,7 @@ public sealed class StatusTonesShould
         [typeof(StartSessionOutcome.Failed)] = StatusTone.Failure,
         [typeof(SaveSettingsOutcome)] = StatusTone.Success,
         [typeof(ToggleUpdateCheckOutcome)] = StatusTone.Success,
+        [typeof(ToggleDiagnosticLogOutcome)] = StatusTone.Success,
         [typeof(ProblemReportOutcome.Opened)] = StatusTone.Success,
         [typeof(ProblemReportOutcome.NotOpened)] = StatusTone.Failure,
         [typeof(ProblemReportOutcome.Copied)] = StatusTone.Success,

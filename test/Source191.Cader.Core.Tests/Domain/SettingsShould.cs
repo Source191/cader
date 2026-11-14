@@ -230,6 +230,36 @@ public sealed class SettingsShould
         off.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
     }
 
+    [Fact]
+    public void LeaveTheDiagnosticLogOffUnlessTurnedOn()
+    {
+        Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home).DiagnosticLog.ShouldBeFalse();
+        Settings on = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, diagnosticLog: true);
+
+        on.DiagnosticLog.ShouldBeTrue();
+        on.ToText().DiagnosticLog.ShouldBeTrue();
+        on.ShouldNotBe(Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home));
+    }
+
+    [Fact]
+    public void TurnTheDiagnosticLogOnAndOff()
+    {
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: false, defaultPlace: LaunchMode.CurrentBranch);
+
+        settings.WithDiagnosticLogToggled().DiagnosticLog.ShouldBeTrue();
+        settings.WithDiagnosticLogToggled().WithDiagnosticLogToggled().ShouldBe(settings);
+        settings.WithDiagnosticLogToggled().CheckForUpdates.ShouldBeFalse();
+        settings.WithDiagnosticLogToggled().DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
+        settings.WithUpdateCheckToggled().WithDiagnosticLogToggled().WithUpdateCheckToggled().DiagnosticLog.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void KeepTheDiagnosticLogThroughAValidatedDialog()
+    {
+        Settings.Validate(Typed with { DiagnosticLog = true }, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.DiagnosticLog.ShouldBeTrue();
+        Settings.Validate(Typed, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Valid>().Settings.DiagnosticLog.ShouldBeFalse();
+    }
+
     private static SettingsProblem Refusal(SettingsText typed) => Settings.Validate(typed, Exists(Root), Installed).ShouldBeOfType<SettingsValidation.Refused>().Problem;
 
     private static Func<string, bool> Exists(params string[] folders) => path => folders.Contains(path, StringComparer.OrdinalIgnoreCase);

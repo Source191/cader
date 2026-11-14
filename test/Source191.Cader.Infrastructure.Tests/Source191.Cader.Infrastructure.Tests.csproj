@@ -10,6 +10,7 @@
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Source191.Cader.Infrastructure\Source191.Cader.Infrastructure.csproj" />
+    <ProjectReference Include="..\Source191.Cader.NoisyEditor\Source191.Cader.NoisyEditor.csproj" />
     <ProjectReference Include="..\Source191.Cader.TestDoubles\Source191.Cader.TestDoubles.csproj" />
   </ItemGroup>
 

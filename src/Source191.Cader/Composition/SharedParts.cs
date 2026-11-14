@@ -19,7 +19,8 @@ internal sealed record SharedParts(
     string OwnFolder,
     TerminalFragment TerminalFragment,
     ProgramLocator Programs,
-    DiagnosticLogSetting LogSetting,
+    DiagnosticLogSwitch LogSwitch,
+    string LogFile,
     DiagnosticLog Log,
     PerformanceCounts Counts,
     RecordedProcessRunner Processes,
@@ -42,9 +43,11 @@ internal sealed record SharedParts(
         // (https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw).
         ProgramLocator programs = ProgramLocator.ForCurrentUser();
 
-        // The diagnostic log is always kept in memory; CADER_LOG=<file> also writes it to that file.
-        DiagnosticLogSetting logSetting = DiagnosticLogSetting.Read(Environment.GetEnvironmentVariable("CADER_LOG"));
-        DiagnosticLog log = new(TimeProvider.System, logSetting is DiagnosticLogSetting.File logFile ? [new DiagnosticFile(logFile.Path)] : []);
+        // The diagnostic log is always kept in memory. Its file sink is always present and written only while the Diagnostic log setting is on; the switch
+        // starts off, so nothing is written until a command has read config.json and pointed it at the setting.
+        string logFile = Path.Combine(stateFolder, "cader.log");
+        DiagnosticLogSwitch logSwitch = new();
+        DiagnosticLog log = new(TimeProvider.System, [new DiagnosticFile(logFile, logSwitch.IsOn)]);
         ProcessCounts processCounts = new();
         PerformanceCounts counts = new(processCounts, new RefreshCounts(TimeProvider.System, log), new StallCounts());
         // How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.
@@ -53,7 +56,7 @@ internal sealed record SharedParts(
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
-        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSetting, log, counts, processes, crashFile, crashes);
+        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSwitch, logFile, log, counts, processes, crashFile, crashes);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.

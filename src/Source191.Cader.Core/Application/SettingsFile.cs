@@ -21,7 +21,8 @@ public static class SettingsFile
             DefinedOr(config.DefaultBase, Settings.BaseWhenUnset),
             home,
             config.CheckForUpdates ?? Settings.ChecksForUpdatesWhenUnset,
-            DefinedOr(config.DefaultPlace, Settings.PlaceWhenUnset));
+            DefinedOr(config.DefaultPlace, Settings.PlaceWhenUnset),
+            config.DiagnosticLog ?? Settings.DiagnosticLogWhenUnset);
     }
 
     public static UserConfig ToConfig(Settings settings)
@@ -31,7 +32,7 @@ public static class SettingsFile
             ? new EditorSetting(editor.Preset.ToString(), editor.Executable, editor.Arguments)
             : new EditorSetting(editor.Preset.ToString(), Executable: null, Arguments: null);
 
-        return new UserConfig([.. settings.RepositoryRoots.Select(root => root.Value)], settings.DefaultBase, settings.WorktreeRoot.Value, setting, settings.CheckForUpdates, settings.DefaultPlace);
+        return new UserConfig([.. settings.RepositoryRoots.Select(root => root.Value)], settings.DefaultBase, settings.WorktreeRoot.Value, setting, settings.CheckForUpdates, settings.DefaultPlace, settings.DiagnosticLog);
     }
 
     private static TEnum DefinedOr<TEnum>(TEnum? value, TEnum fallback)
