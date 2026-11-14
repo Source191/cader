@@ -17,12 +17,12 @@ The run counts reconcile (2,629 detected of 2,882 scored on the runner, 2,501 of
 - **An investigation of the biggest groups**, with a cheap discriminating experiment per candidate cause (time zone, environment variables inherited from a Claude Code session, tools on `PATH`, paths and drives, test ordering and parallelism, coverage analysis).
 - **The finding recorded** in `.claude\rules\checks.md` with the date and Stryker version.
 - **The cause fixed if it is in the tests**, as a normal test change. If it is the machine, not the tests, the break score is documented as runner-only (the weekly run's), and a local score is stated to be lower for a known reason.
-- **A decision for the owner:** whether to repeat the runner sample a few times to measure its own variance (design.md, Open Questions).
+- **Two runner samples:** the runner is sampled twice, to measure its own variance (design.md, Samples and the break score).
 
 ## Out of scope
 
 - **Closing the survivors:** that is `close-mutation-gaps`, which follows this change.
-- **Changing the workflow or the break score:** this change only records what the break score may be compared with; setting it is `close-mutation-gaps` and the owner.
+- **Changing the workflow or the break score:** this change only records what the break score may be compared with; setting it is `close-mutation-gaps`.
 - **Other projects than Core.**
 - **Multiple Claude accounts:** a later change.
 

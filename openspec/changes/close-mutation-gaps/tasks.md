@@ -4,8 +4,8 @@ Start only once `mutation-testing-in-ci` (PR #255), `explain-mutation-score-gap`
 
 **The file cycle** (each batch task says "File cycle" for one file; it is one red-green-refactor cycle and one commit, with the facts named first):
 
-- **Red:** from `test\Source191.Cader.Core.Tests`, `dotnet stryker --mutate "**/<Folder>/<File>.cs"` lists the file's mutants `Survived` or `NoCoverage` (a scoped run costs about 2.5 minutes fixed plus the file's mutants). Sort each into a real gap, Equivalent or Accepted (design.md). For a real gap, write the sociable fact (xunit.v3, Shouldly, real collaborators, a hand-written fake only at a boundary), run it and see it pass against the real code.
-- **Green:** the repeated scoped run shows the gap's mutants `Killed`. For an Equivalent or Accepted mutant, add `// Stryker disable once <Mutator> : Equivalent: <reason>` (or `Accepted:`) above its line, and see the scoped run show it `Ignored` with the reason.
+- **Red:** from `test\Source191.Cader.Core.Tests`, `dotnet stryker --mutate "**/<Folder>/<File>.cs"` lists the file's mutants `Survived` or `NoCoverage` (a scoped run costs about 2.5 minutes fixed plus the file's mutants). Sort each into a real gap, Equivalent or Accepted (design.md). Accepted is kept to a minimum: a mutant in test support code or in logging or diagnostic code is closed with a test, never Accepted by default, and every Accepted mark carries a one-line reason a reviewer can challenge. For a real gap, write the sociable fact (xunit.v3, Shouldly, real collaborators, a hand-written fake only at a boundary), run it and see it pass against the real code.
+- **Green:** the repeated scoped run shows the gap's mutants `Killed`. For an Equivalent or Accepted mutant, add `// Stryker disable once <Mutator> : Equivalent: <reason>` (or `Accepted:` with its one-line reason) above its line, and see the scoped run show it `Ignored` with the reason.
 - **Refactor and verify:** the fact reads well and stays free of machine paths, real repositories and people (`Northwind.*`, `C:\Users\me`); `dotnet test test\Source191.Cader.Core.Tests -c Debug --no-build` passes.
 
 The tail of a batch (a few mutants per file in many files) is one checklist task, with a file cycle and a commit for each file in it: its length is known only from the reference run.
@@ -13,8 +13,7 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 ## 1. Baseline and conventions
 
 - [ ] 1.1 Take the reference run: a full run in the environment `explain-mutation-score-gap` names as the break score's owner (a `workflow_dispatch` of `mutation.yml` if the machine matters), download its `stryker-output` and list every `Survived` and `NoCoverage` mutant by file, line and mutator. Add the first ledger line to `.claude\rules\checks.md`'s Mutation testing (date, Stryker version, score, survivors, no-coverage). **Verify:** the counts match the run's `run.json` and summary.
-- [ ] 1.2 **Red:** read `.github\workflows\mutation.yml` as merged: if the Mutate step does not pass `--break-at 0` when `SINCE` is set, a `--since` run applies the config's `break` (86). **Green:** add `--break-at 0` to `$arguments` inside the existing `if ($env:SINCE)`. **Verify:** `actionlint` if installed, and by reading; the owner's next release run shows it in the log. Skip when the merged file already does it.
-- [ ] 1.3 **Red:** the first mark in Core, on one agreed Equivalent mutant (for example a discard arm that throws `UnreachableException`), written as `// Stryker disable once <Mutator> : Equivalent: <reason>`. **Green:** the scoped run shows `Ignored` with the reason, and `dotnet build -c Debug` (warnings are errors), `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` still pass, so `SourceConventionsShould`, `SentenceLiteralsShould` and the analysers have nothing against a comment. **Verify:** if one objects, record the fix in design.md before going on.
+- [ ] 1.2 **Red:** the first mark in Core, on one agreed Equivalent mutant (for example a discard arm that throws `UnreachableException`), written as `// Stryker disable once <Mutator> : Equivalent: <reason>`. **Green:** the scoped run shows `Ignored` with the reason, and `dotnet build -c Debug` (warnings are errors), `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` still pass, so `SourceConventionsShould`, `SentenceLiteralsShould` and the analysers have nothing against a comment. **Verify:** if one objects, record the fix in design.md before going on.
 
 ## 2. Batch 1: Domain (46)
 
@@ -29,13 +28,13 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 ## 3. Batch 2: Ports (18)
 
 - [ ] 3.1 File cycle, `UserConfig` (8), facts in `UserConfigShould` or the existing state-file facts, through `InMemoryState`, never the real `config.json`.
-- [ ] 3.2 File cycle, `ProcessTimedOutException` (6), facts in `ProcessTimedOutExceptionShould`; an exception message shown to nobody is judged Accepted, not tested.
+- [ ] 3.2 File cycle, `ProcessTimedOutException` (6), facts in `ProcessTimedOutExceptionShould`; an exception message that reports a failure is diagnostic text, so it is tested, not Accepted.
 - [ ] 3.3 File cycle, `EditorSetting` (3), facts in `EditorSettingShould`; then the one other `Ports` mutant.
 - [ ] 3.4 Record and ratchet, as 2.7.
 
 ## 4. Batch 3: Application\Diagnostics (34)
 
-- [ ] 4.1 File cycle, `ChildCommandWords` (24), facts in `ChildCommandWordsShould` (a table of words: each word either pinned by a fact with a made-up command, or Accepted with the reason). `DiagnosticsPrivacyShould` and `DiagnosticEventsShould` still pass.
+- [ ] 4.1 File cycle, `ChildCommandWords` (24), facts in `ChildCommandWordsShould` (a table of words: each word pinned by a fact with a made-up command; diagnostic code is not Accepted by default). `DiagnosticsPrivacyShould` and `DiagnosticEventsShould` still pass.
 - [ ] 4.2 File cycle, `ChildCommand` (4), facts in `ChildCommandShould`.
 - [ ] 4.3 File cycle, `ExceptionSummary` (3), facts in `ExceptionSummaryShould`; then the tail (3 mutants in 3 files), a file cycle each.
 - [ ] 4.4 Record and ratchet, as 2.7.
@@ -69,9 +68,9 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 
 ## 9. Strict release runs
 
-- [ ] 9.1 Check the switch-on condition: a full run on a runner (`workflow_dispatch`) after section 8 shows no `Survived` or `NoCoverage` mutant that is not `Ignored`. **Verify:** the run's `run.json` and `mutation-report.json` list none; the count of Accepted marks is in `checks.md`. If any is left, the owner decides to fix, mark or postpone this section.
-- [ ] 9.2 **Red:** `Write-MutationRun.Tests.ps1` (new, run as `pwsh -NoProfile -File` as `Compress-WingetBuild.Tests.ps1` does, on reports the test writes with a few mutants each), first facts that pin today's behaviour: "a release run with a survivor is a finding", "a clean release run is not", "a full run more than 0.5 points below the previous is a finding". **Green:** they pass against the script unchanged. **Verify:** `Invoke-Pester test\Scripts\Write-MutationRun.Tests.ps1` passes.
-- [ ] 9.3 **Red:** "fails a release run that counted 20 mutants and left one surviving" (`Failing` true, `Counted` 20). **Green:** `-MinimumCounted` (default 20), `Counted` (Killed, Timeout, Survived and NoCoverage) and `Failing` in the answer and in `run.json`. **Verify:** the fact passes.
+- [ ] 9.1 Check the switch-on condition: a full run on a runner (`workflow_dispatch`) after section 8 shows no `Survived` or `NoCoverage` mutant that is not `Ignored`. **Verify:** the run's `run.json` and `mutation-report.json` list none; the count of Accepted marks is in `checks.md`. Anything left is fixed or marked first, and this section does not start until none is.
+- [ ] 9.2 Run `Invoke-Pester test\Scripts\Mutation.Tests.ps1`. **Verify:** the existing `Write-MutationRun` facts pass before any change (they pin today's behaviour: a release with survivors is a finding, a clean one is not, a full run compares scores) and the `--break-at 0` fact passes, so the strictness change has a safety net.
+- [ ] 9.3 **Red:** a fact in `Mutation.Tests.ps1`, "fails a release run that counted 20 mutants and left one surviving" (`Failing` true, `Counted` 20). **Green:** `-MinimumCounted` (default 20), `Counted` (Killed, Timeout, Survived and NoCoverage) and `Failing` in the answer and in `run.json`. **Verify:** the fact passes.
 - [ ] 9.4 **Red:** "does not fail a release run that counted 19", "does not fail one that counted 20 with no survivor" and "counts an Ignored mutant for nothing". **Green:** the rule holds (the first two should pass already). **Verify:** all pass.
 - [ ] 9.5 **Red:** a fact that `Format-MutationComment.ps1` says the run failed and names the count when `run.json` says `failing`. **Green:** the added line. **Verify:** the fact passes and the rest of the comment is unchanged.
 - [ ] 9.6 `mutation.yml`: the "Record the run" step writes `fail=true` or `false` from the answer, and a last step after both artefact uploads runs `exit 1` with the count when it is true. **Verify:** `actionlint` if installed, and by reading, with 9.3's fact covering the rule itself; a `workflow_dispatch` run is a full run and never fails this way, so the workflow step is proved by the owner's check after merge (Workflow follow-up).
@@ -98,4 +97,4 @@ See `openspec\implementation-plan.md` for the whole sequence.
 - **Model:** sonnet for O, P, Q and R; opus for S
 - **Effort:** high for O, P, Q and R; medium for S
 - **Why:** the batches follow one established loop (scoped run, fact, rerun) where care about equivalent mutants matters more than design; S changes a script and a workflow step that decide whether a release run fails, with exact thresholds and a workflow that must keep its minimal rights.
-- **Owner gates:** blocking before O, the reference run's environment (from N's finding) and whether `Accepted:` marks are allowed (design.md, Open Questions); blocking before S, 9.1 (zero unmarked survivors, or the owner's decision on the remainder). After merge, the first strict release run and the deliberate-failure check.
+- **Owner gates:** blocking before O, the reference run's environment (from N's finding); blocking before S, 9.1 (no unmarked survivor left). After merge, the first strict release run and the deliberate-failure check.

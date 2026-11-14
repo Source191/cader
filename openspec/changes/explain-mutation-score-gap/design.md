@@ -84,10 +84,10 @@ If none moves the score, the runner sample is the odd one: see the open question
 
 - **The runner's `stryker-output` artefact expires** (about 13 December 2026): → a fresh full run is made on a runner after `mutation-testing-in-ci` merges, from `workflow_dispatch`, and its head commit is the one the local run uses, so the pair is the same code.
 - **A linked git worktree breaks Stryker's paths** (checks.md): → the owner's local run is made in an ordinary clone.
-- **Two samples are not a distribution:** one runner run and two local runs cannot say how much a single run varies. → See Open Questions.
+- **Two samples are not a distribution:** one runner run and two local runs cannot say how much a single run varies. → Two runner samples are taken (Samples and the break score).
 - **The script is built before it is known to explain anything:** → it is small, and it is the only way to look at 128 mutants; if the cause is found by reading the groups it still stays as the check for later.
 
-## Open Questions
+## Samples and the break score
 
-- **Repeat the runner sample?** The local score differed by 0.17 points between two runs; the runner has one sample. Decision for the owner after task 3.1 shows the size of the gap on a matched pair: if the gap is still about 4 points, the cause is systematic and one more runner run is enough to confirm it; if it has shrunk or vanished, the original sample was an outlier and three to five more runner runs (about 16 minutes each, free on a public repository) would show the variance before any break score is set. The default is two runner runs, and the owner changes it by editing task 3.1.
-- **Which environment owns the break score?** If the gap is the machine, the break score belongs to the runner's weekly full run, and a local run is measured against its own recorded baseline instead. Settled by the finding, recorded in `checks.md`.
+- **Two runner samples:** the local score differed by 0.17 points between two runs, and the runner has one sample, so two fresh runner full runs are taken at the same commit (about 16 minutes each, free on a public repository), each paired with the local run. Two matched pairs show whether the gap is systematic (about 4 points on both) or the original sample was an outlier; a third run is added only if the two runner runs differ from each other by more than the local runs did.
+- **Which environment owns the break score:** if the gap is the machine, the break score belongs to the runners weekly full run, and a local run is measured against its own recorded baseline instead. Settled by the finding, recorded in `checks.md`.

@@ -11,11 +11,10 @@ A full Stryker run of `Source191.Cader.Core` leaves about 229 surviving mutants 
 - **Sort the survivors** of a reference full run into three kinds:
   - **Real test gap:** a test could and should tell the mutant from the original.
   - **Equivalent:** no test can tell them apart (an arm that throws `UnreachableException`, for example). Marked in place with Stryker's comment and a reason beginning `Equivalent:`.
-  - **Accepted:** a test could, but would be brittle or pointless (a diagnostic's wording, a pure speed-up). Marked the same way with a reason beginning `Accepted:`.
+  - **Accepted:** a test could, but would be brittle or pointless (a pure speed-up, say). Marked the same way with a one-line reason beginning `Accepted:` that a reviewer can challenge. It is kept to a minimum, and a survivor in test support code or in logging or diagnostic code is never Accepted by default: testing and logging matter, and the diagnostic events are tested, so those are closed with tests.
 - **Close the real gaps in batches by area** (Domain and Ports, Diagnostics and `WorktreeInventory`, the rest of Application and `Wording`, then the views, detail, reporting, actions and launch), with new sociable tests in the house style (xunit.v3, Shouldly, hand-written fakes at the boundaries only). Each batch records its score before and after in `.claude\rules\checks.md`.
-- **Ratchet the break score** after each batch to about four points under the new score (never lower than before), so a slip back is caught by the weekly run.
-- **Confirm the release runs use `--break-at 0`** (a decided point of PR #255), and make it so if the workflow as merged still applies the config's break score to them.
-- **Then make release runs stricter:** once the reference full run has no unmarked survivor, a release (`--since`) run fails when any mutant survived or had no covering test and was not marked equivalent or accepted, but only when at least 20 mutants were counted (small samples score in big jumps). The change is in `Write-MutationRun.ps1` and the `mutation.yml` step that reads it, with the script's first Pester tests. The failure never blocks a merge or a release (it runs after them) and still comments on the `mutation` issue.
+- **Ratchet the break score** after each batch to four points under the recorded score (never lower than before), so a slip back is caught by the weekly run.
+- **Then make release runs stricter:** once the reference full run has no unmarked survivor, a release (`--since`) run fails when any mutant survived or had no covering test and was not marked equivalent or accepted, but only when at least 20 mutants were counted (small samples score in big jumps). The change is in `Write-MutationRun.ps1` and the `mutation.yml` step that reads it, with new Pester facts in `test\Scripts\Mutation.Tests.ps1`. The failure never blocks a merge or a release (it runs after them) and still comments on the `mutation` issue.
 - **Docs:** `checks.md` (the ledger of batches and scores, the marking convention and the strict rule) and `CONTRIBUTING.md`'s mutation paragraph.
 - **Version and changelog:** a pull request that adds a `Stryker disable` comment under `src\` changes the packaged tool's sources, so it raises `Version` (patch) and adds a `### Internal` line to `CHANGELOG.md`, and its merge is a release. A pull request of new tests only changes neither.
 
@@ -44,7 +43,7 @@ None: tests, comments, a workflow step, a script and documentation. Nothing user
 
 ## Impact
 
-- **Tests:** new facts in `test\Source191.Cader.Core.Tests`, and `test\Scripts\Write-MutationRun.Tests.ps1` with fixtures beside the existing ones in `.github\scripts\fixtures\mutation`.
+- **Tests:** new facts in `test\Source191.Cader.Core.Tests`, and new facts in `test\Scripts\Mutation.Tests.ps1` (from `mutation-testing-in-ci`) over reports the tests build.
 - **Core sources:** only `// Stryker disable once <Mutator> : <reason>` comments, no behaviour change.
 - **Scripts and workflow:** `.github\scripts\Write-MutationRun.ps1` (and its comment text in `Format-MutationComment.ps1`), `.github\workflows\mutation.yml`, `test\Source191.Cader.Core.Tests\stryker-config.json` (the `break` value).
 - **Docs:** `.claude\rules\checks.md`, `CONTRIBUTING.md`.

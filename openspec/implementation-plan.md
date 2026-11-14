@@ -66,8 +66,8 @@ Blocking (the pull request cannot start or finish without them):
 - **G:** 1.1 and 1.2 (signing service, identity, cost and account, the Entra federated credential, the `signing` environment limited to `main`).
 - **H:** 3.1 (the `git fetch` credential spike on a developer machine), before any port change.
 - **D:** 2.2 (the owner agrees the timings and break score from the measured baseline).
-- **N:** 2.1 and 2.2 (the owner dispatches the runner full run, or gives its id, and makes a full run in an ordinary clone, not a linked worktree, at the same commit, then puts its `mutation-report.json` in `$env:TEMP\mutation-gap\local`; never committed, because it holds absolute paths and the user name; only the made-up fixtures are kept). The owner also decides how many runner samples (default two). The existing runner run's `stryker-output` expires about 13 December 2026.
-- **O:** the reference run's environment (from N's finding) and whether `Accepted:` marks are allowed. **S:** 9.1 (no unmarked survivor left, or the owner's decision on the rest).
+- **N:** 2.1 and 2.2 (the owner dispatches the runner full run, or gives its id, and makes a full run in an ordinary clone, not a linked worktree, at the same commit, then puts its `mutation-report.json` in `$env:TEMP\mutation-gap\local`; never committed, because it holds absolute paths and the user name; only the made-up fixtures are kept). Two runner samples are taken. The existing runner run's `stryker-output` expires about 13 December 2026.
+- **O:** the reference run's environment (from N's finding). **S:** 9.1 (no unmarked survivor left).
 
 After merge (the change is archived without them, but they are not forgotten):
 
