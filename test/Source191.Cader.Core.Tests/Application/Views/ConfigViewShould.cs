@@ -125,6 +125,13 @@ public sealed class ConfigViewShould
     }
 
     [Fact]
+    public void CopyAndOpenTheClaudeFolderItself()
+    {
+        ConfigView.Reduce(At("setup:ClaudeFolder"), new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(@"C:\Users\me\.claude"))]);
+        ConfigView.Reduce(At("setup:ClaudeFolder"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\.claude"))]);
+    }
+
+    [Fact]
     public void OpenTheSettingsFileAndTheDiagnosticLogFileThemselves()
     {
         ConfigView.Reduce(At("setup:SettingsFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(SettingsFile))]);
