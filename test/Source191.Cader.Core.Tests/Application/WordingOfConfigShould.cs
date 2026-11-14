@@ -35,6 +35,7 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(LogFile, Exists: true)), "Diagnostic log file", $"on, {LogFile}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)), "Windows Terminal profiles", $"installed, {Fragment}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.NotSetUp()), "Windows Terminal profiles", "not set up, run cader setup-terminal" },
+        { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.HiddenByTerminal(Fragment)), "Windows Terminal profiles", "hidden by Windows Terminal, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled()), "Claude bell", "on" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.NotSetUp()), "Claude bell", "not set, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.OtherChannel("iterm2")), "Claude bell", "iterm2, not the terminal bell" },

@@ -9,7 +9,7 @@ namespace Source191.Cader.Adapters.Terminal;
 /// <summary>
 /// The console's <see href="https://learn.microsoft.com/windows/terminal/json-fragment-extensions">Windows Terminal JSON
 /// fragment</see> at <c>&lt;Fragments root&gt;\Cader\cader.json</c>. Windows Terminal reads every fragment at
-/// start-up and adds the profiles in it; the user's own settings file is never opened. Written as
+/// start-up and adds the profiles in it; this class never opens the user's own settings file. Written as
 /// UTF-8 without a byte order mark, as fragments must be.
 /// The icon source is the tool's own icon, which a build without one simply lacks.
 /// </summary>
@@ -23,7 +23,7 @@ public sealed class TerminalFragment(string fragmentsRoot, string iconSource) : 
 
     public static TerminalFragment ForCurrentUser(string iconSource) => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows Terminal", "Fragments"), iconSource);
 
-    private string FragmentFolder => Path.Combine(fragmentsRoot, "Cader");
+    private string FragmentFolder => Path.Combine(fragmentsRoot, TerminalProfiles.Source);
 
     public string Location => Path.Combine(FragmentFolder, "cader.json");
 

@@ -889,10 +889,23 @@ public sealed class WordingShould
     {
         TerminalProfiles profiles = new(@"C:\Users\me\.dotnet\tools\cader.exe", new BellSound.File(@"C:\Windows\Media\Windows Notify Messaging.wav"), new BellSound.TerminalDefault());
 
-        Wording.TerminalSetupPlan(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json", profiles).ShouldBe("""
+        Wording.TerminalSetupPlan(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json", profiles, terminalHidesAProfile: false).ShouldBe("""
             Two Windows Terminal profiles will be written to C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json
             Your Windows Terminal settings file is not changed.
               Cader          runs C:\Users\me\.dotnet\tools\cader.exe; bell sound C:\Windows\Media\Windows Notify Messaging.wav
+              Cader session  runs PowerShell; bell sound is Windows Terminal's own
+            Both ring the bell and flash the window and the taskbar.
+            """);
+    }
+
+    [Fact]
+    public void LeaveOutThatTerminalsSettingsAreNotChangedWhenItHidesAProfile()
+    {
+        TerminalProfiles profiles = new(@"C:\Users\me\.dotnet\tools\cader.exe", new BellSound.TerminalDefault(), new BellSound.TerminalDefault());
+
+        Wording.TerminalSetupPlan(@"C:\f\cader.json", profiles, terminalHidesAProfile: true).ShouldBe("""
+            Two Windows Terminal profiles will be written to C:\f\cader.json
+              Cader          runs C:\Users\me\.dotnet\tools\cader.exe; bell sound is Windows Terminal's own
               Cader session  runs PowerShell; bell sound is Windows Terminal's own
             Both ring the bell and flash the window and the taskbar.
             """);
@@ -938,6 +951,52 @@ public sealed class WordingShould
         Wording.ClaudeBellEnabled(@"C:\Users\me\.claude\settings.json").ShouldBe(@"Set preferredNotifChannel to terminal_bell in C:\Users\me\.claude\settings.json. It applies to sessions started from now on.");
         Wording.ClaudeSettingsUnreadable(@"C:\Users\me\.claude\settings.json", "bad json").ShouldBe(@"Could not read C:\Users\me\.claude\settings.json (bad json), so it was left alone.");
     }
+
+    [Fact]
+    public void ShowTheEntryForAProfileWindowsTerminalHidesBeforeAskingToAddIt()
+    {
+        Wording.HiddenProfilesPlan(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Windows Terminal is hiding the Cader session profile: it keeps a profile deleted from its settings hidden, however often the fragment is written.
+            This adds an entry to the profile list in C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json and keeps everything else in the file as it is:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+        Wording.ShowHiddenProfilesQuestion.ShouldBe("Show the hidden profiles again? [y/N] ");
+    }
+
+    [Fact]
+    public void NameEachHiddenProfileAndShowEachEntry()
+    {
+        Wording.HiddenProfilesPlan(TerminalSettingsFile, TerminalProfiles.Entries).ShouldBe("""
+            Windows Terminal is hiding the Cader and Cader session profiles: it keeps a profile deleted from its settings hidden, however often the fragment is written.
+            This adds an entry for each to the profile list in C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json and keeps everything else in the file as it is:
+              { "guid": "{3d7a06d2-710f-51d9-90c9-dacae2c3ab46}", "hidden": false, "name": "Cader", "source": "Cader" }
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void SayTheHiddenProfilesShowOnceTerminalReadsTheFile()
+    {
+        Wording.HiddenProfilesShown(TerminalSettingsFile).ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart.");
+    }
+
+    [Fact]
+    public void GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
+    {
+        Wording.TerminalSettingsLinked(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not add the entries: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is a link, and writing it would replace the link with a file, so nothing was written.
+            Add each of these to the profile list in the file it links to:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void SayTerminalsUnreadableSettingsWereLeftAlone()
+    {
+        Wording.TerminalSettingsUnreadable(TerminalSettingsFile, "bad json").ShouldBe(@"Could not read Windows Terminal's settings or state (bad json), so C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json was left alone.");
+    }
+
+    private const string TerminalSettingsFile = @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";
 
     [Fact]
     public void SayNothingWasWritten()

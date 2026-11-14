@@ -5,12 +5,13 @@ namespace Source191.Cader.Application.TerminalSetup;
 
 /// <summary>
 /// <c>cader setup-terminal</c> from start to finish, once the command line is parsed: check the request and the sounds, show what will be written, ask, write
-/// the Windows Terminal fragment, then offer Claude Code's terminal bell. Exit 0 when done, declined or nothing to
-/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment and one Claude setting, nothing else.
+/// the Windows Terminal fragment, offer to show again a Cader profile Windows Terminal hides as deleted, then offer Claude Code's terminal bell. Exit 0 when done, declined or nothing to
+/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment, one Claude setting and, only to add a hidden profile's entry, Windows Terminal's settings file; nothing else.
 /// </summary>
 public sealed class TerminalSetupRunner(
     IFolders folders,
     ITerminalFragment fragment,
+    ITerminalSettings terminalSettings,
     IClaudeSettings claudeSettings,
     string consoleExecutable,
     string windowsMediaFolder,
@@ -68,16 +69,19 @@ public sealed class TerminalSetupRunner(
             return 2;
         }
 
+        TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
         TerminalProfiles profiles = await ChooseProfilesAsync(request);
-        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles));
+        await output.WriteLineAsync(Wording.TerminalSetupPlan(fragment.Location, profiles, terminalHidesAProfile: HiddenTerminalProfiles.Of(records).Count > 0));
         Step profileStep = await WriteProfilesAsync(request, profiles, cancellationToken);
+        Step hiddenStep = profileStep == Step.Failed || !fragment.Exists ? Step.Skipped : await ShowHiddenProfilesAsync(request, records, cancellationToken);
         Step bellStep = profileStep == Step.Failed ? Step.Skipped : await OfferBellAsync(request, cancellationToken);
-        if (profileStep == Step.Failed || bellStep == Step.Failed)
+        Step[] steps = [profileStep, hiddenStep, bellStep];
+        if (steps.Contains(Step.Failed))
         {
             return 1;
         }
 
-        if (profileStep == Step.Skipped && bellStep == Step.Skipped)
+        if (steps.All(step => step == Step.Skipped))
         {
             await output.WriteLineAsync(Wording.NothingWritten);
         }
@@ -143,6 +147,50 @@ public sealed class TerminalSetupRunner(
         return step;
     }
 
+    /// <summary>Once the fragment exists: adds the entry of each Cader profile Windows Terminal hides, after showing it and asking.</summary>
+    private async Task<Step> ShowHiddenProfilesAsync(TerminalSetupRequest request, TerminalProfileRecords records, CancellationToken cancellationToken)
+    {
+        if (records is TerminalProfileRecords.Unreadable unreadable)
+        {
+            await output.WriteLineAsync(Wording.TerminalSettingsUnreadable(terminalSettings.Location, unreadable.Reason));
+            return Step.Skipped;
+        }
+
+        IReadOnlyList<TerminalProfileEntry> hidden = HiddenTerminalProfiles.Of(records);
+        if (hidden.Count == 0)
+        {
+            return Step.Skipped;
+        }
+
+        await output.WriteLineAsync(Wording.HiddenProfilesPlan(terminalSettings.Location, hidden));
+        if (!await ConfirmedAsync(request, Wording.ShowHiddenProfilesQuestion))
+        {
+            return Step.Skipped;
+        }
+
+        Step step = await AddEntriesAsync(hidden, cancellationToken);
+        if (step == Step.Written)
+        {
+            await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location));
+        }
+
+        return step;
+    }
+
+    /// <summary>A linked settings file is refused by the adapter; the user is given the entries to add by hand.</summary>
+    private async Task<Step> AddEntriesAsync(IReadOnlyList<TerminalProfileEntry> hidden, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await TryWriteAsync(terminalSettings.Location, () => terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken));
+        }
+        catch (SettingsFileIsALinkException)
+        {
+            await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, hidden));
+
+            return Step.Failed;
+        }
+    }
     private async Task<Step> OfferBellAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
         NotificationChannelState state = await claudeSettings.ReadNotificationChannelAsync(cancellationToken);

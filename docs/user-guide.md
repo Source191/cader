@@ -131,6 +131,8 @@ Under the Setup heading the grey rows are read, not edited. **Settings file** an
 
 Restart Windows Terminal afterwards. It shows what it will write and asks first; `--sound` and `--session-sound` choose your own `.wav` files, `--yes` writes without asking and `--remove` removes the profiles. There are no toasts and no Claude Code hooks.
 
+It leaves Windows Terminal's own settings file alone, with one exception: if you deleted a Cader profile in Windows Terminal's settings, Terminal keeps it hidden however often the profiles are written, so `setup-terminal` shows the one-line entry that brings it back and, if you agree, adds it to Terminal's profile list, leaving everything else in the file, comments included, as it was. Terminal shows the profile again as soon as it reads the file, with no restart.
+
 ## Every key
 
 The key bar shows the keys for the selected row. Left and Right switch tabs on every tab, `<` and `>` scroll a table too wide for the terminal, and `U` (update) and `!` (report a problem) work everywhere.
@@ -167,6 +169,7 @@ It sends nothing but a daily, anonymous check of the winget community repository
 - **Report a problem:** `!` previews the diagnostics it would send, then opens a GitHub issue with them filled in; nothing is sent until you submit it. A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on), the last crash and the child program counts. Cader never attaches cader.log to a report. cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log file row (Config tab), then give it to Claude or attach it to the issue by hand.
 - **After a crash:** `%LOCALAPPDATA%\Cader\last-crash.log` is written; the next problem report includes it.
 - **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`; the Diagnostic log file row shows its path and `f` opens it.
+- **The Cader profiles do not appear after `cader setup-terminal`:** they were deleted in Windows Terminal's settings, and Terminal keeps a deleted profile hidden. The Config tab's Windows Terminal profiles row says so; run `cader setup-terminal` again and it offers to show them.
 - **Monochrome tabs:** Cader was started inside a Claude Code session; start it from an ordinary tab.
 - **"Workspace not trusted":** Claude Code asks for trust once per repository; Cader opens a tab in that folder so you can accept it, then start the session again.
 - **Security:** to report a vulnerability, see [SECURITY.md](../SECURITY.md).
