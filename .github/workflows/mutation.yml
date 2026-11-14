@@ -1,0 +1,197 @@
+name: mutation
+
+# Mutation testing of Source191.Cader.Core (.claude\rules\checks.md, "Mutation testing"), never on the path of a pull
+# request, a merge or a release. After a release (pipeline finishing on main with a v* tag on the commit) it mutates
+# only the code changed since the last mutation run that finished; every Sunday, and by hand, it mutates all of Core.
+# A release made with the workflow's token starts no release event, so workflow_run on pipeline is the trigger.
+# Findings go to one rolling issue labelled mutation, written by the report job alone; the mutation job reads the
+# repository and nothing more, and no secret reaches either.
+on:
+  workflow_run:
+    workflows: [pipeline]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A burst of merges runs one job and queues one: GitHub drops an older queued run for a newer one. The weekly run
+# shares the group, so it never runs beside a per-release run.
+concurrency:
+  group: mutation
+  cancel-in-progress: false
+
+jobs:
+  mutation:
+    name: mutation
+    # Only a successful push to main: without the event check, a pull request from a fork branch named main would match.
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    runs-on: windows-latest
+    # A per-release run is given an hour, a full run five (a hosted job's limit is six).
+    timeout-minutes: ${{ github.event_name == 'workflow_run' && 60 || 300 }}
+    permissions:
+      contents: read
+      actions: read
+    # The report job reads these to decide whether there is anything to say.
+    outputs:
+      finding: ${{ steps.run.outputs.finding }}
+      kind: ${{ steps.range.outputs.kind }}
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE: 1
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # Full history and tags, for --since and for the v* tag on the commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Decide what to mutate
+        id: range
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $range = .github\scripts\Resolve-MutationRange.ps1 -EventName $env:EVENT_NAME -HeadSha $env:HEAD_SHA
+          Write-Host "$($range.Kind): $($range.Reason)"
+          "kind=$($range.Kind)" >> $env:GITHUB_OUTPUT
+          "tag=$($range.Tag)" >> $env:GITHUB_OUTPUT
+          "since=$($range.Since)" >> $env:GITHUB_OUTPUT
+
+      # The same NuGet cache as pipeline, read-only: only pipeline writes it. Stryker itself comes from the tool manifest.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: steps.range.outputs.kind != 'skip'
+        with:
+          path: ~\.nuget\packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props', 'nuget.config', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore Stryker
+        if: steps.range.outputs.kind != 'skip'
+        shell: pwsh
+        run: |
+          dotnet --version
+          dotnet tool restore
+
+      # The settings are in stryker-config.json, so a local run is the same run. Its break score (86, decided by the
+      # owner on 14 November 2026 from the runner baseline of 91.22 %) fails only a full run. A release run's score
+      # covers just the mutants tested, so one survivor in a small release could fail it; it reports its survivors on
+      # the mutation issue and never fails on score, so it overrides the break score with 0.
+      - name: Mutate
+        id: stryker
+        if: steps.range.outputs.kind != 'skip'
+        shell: pwsh
+        working-directory: test\Source191.Cader.Core.Tests
+        env:
+          KIND: ${{ steps.range.outputs.kind }}
+          SINCE: ${{ steps.range.outputs.since }}
+        run: |
+          $arguments = @('--skip-version-check')
+          if ($env:KIND -eq 'release') { $arguments += @('--break-at', '0') }
+          if ($env:SINCE) { $arguments += "--since:$env:SINCE" }
+          dotnet stryker @arguments
+
+      - name: Put the report in the summary
+        if: always() && steps.range.outputs.kind != 'skip'
+        shell: pwsh
+        working-directory: test\Source191.Cader.Core.Tests
+        run: |
+          $latest = Get-ChildItem StrykerOutput -Directory -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -Last 1
+          if (-not $latest) { Write-Host '::warning::Stryker wrote no report.'; exit 0 }
+          Get-Content (Join-Path $latest.FullName 'reports\mutation-report.md') -Raw >> $env:GITHUB_STEP_SUMMARY
+
+      # A full run's previous score is read from the last finished full run's results; an expired or missing artefact
+      # only skips the comparison.
+      - name: Fetch the previous full run
+        if: always() && steps.range.outputs.kind == 'full'
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $runs = gh run list --workflow mutation.yml --branch main --status completed --limit 20 --json databaseId,conclusion,event | ConvertFrom-Json
+          $previous = $runs | Where-Object { $_.event -in 'schedule', 'workflow_dispatch' -and $_.conclusion -in 'success', 'failure' } | Select-Object -First 1
+          if (-not $previous) { exit 0 }
+          gh run download $previous.databaseId --name mutation-results --dir previous
+          $global:LASTEXITCODE = 0
+
+      - name: Record the run
+        id: run
+        if: always() && steps.range.outputs.kind != 'skip'
+        shell: pwsh
+        env:
+          KIND: ${{ steps.range.outputs.kind }}
+          TAG: ${{ steps.range.outputs.tag }}
+          SINCE: ${{ steps.range.outputs.since }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $latest = Get-ChildItem test\Source191.Cader.Core.Tests\StrykerOutput -Directory -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -Last 1
+          if (-not $latest) { "finding=false" >> $env:GITHUB_OUTPUT; exit 0 }
+          $kind = if ($env:KIND -eq 'release') { 'release' } else { 'full' }
+          $previous = if (Test-Path previous) { 'previous' } else { '' }
+          $result = .github\scripts\Write-MutationRun.ps1 -ReportPath (Join-Path $latest.FullName 'reports\mutation-report.json') `
+              -Kind $kind -ReleaseTag $env:TAG -Since $env:SINCE -HeadSha $env:HEAD_SHA -OutputDirectory results -PreviousDirectory $previous
+          Write-Host "Score $($result.Score) %. $($result.Reason)"
+          "finding=$($result.Finding.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          if ($result.Finding) {
+              $runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+              .github\scripts\Format-MutationComment.ps1 -ResultsDirectory results -RunUrl $runUrl -OutputPath results\comment.md
+          }
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always() && steps.range.outputs.kind != 'skip'
+        with:
+          name: mutation-results
+          path: results
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always() && steps.range.outputs.kind != 'skip'
+        with:
+          name: stryker-output
+          path: test\Source191.Cader.Core.Tests\StrykerOutput
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # One rolling issue: a comment on the open mutation issue, or a new one when none is open. Its assignee is subscribed
+  # to it, so GitHub notifies them of every comment. A job of its own, so only it holds issues: write, and it runs
+  # nothing from the repository: it posts the comment the mutation job wrote into its results artefact.
+  report:
+    name: report
+    needs: mutation
+    if: always() && needs.mutation.outputs.finding == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mutation-results
+
+      - name: Raise the mutation issue
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WATCHER: ${{ vars.MUTATION_WATCHER }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          gh label create mutation --color D93F0B --description 'Mutation testing found untested code' --force
+          $open = gh issue list --label mutation --state open --json number | ConvertFrom-Json | Select-Object -First 1
+          if ($open) {
+              gh issue comment $open.number --body-file comment.md
+              exit $LASTEXITCODE
+          }
+          $assignee = if ($env:WATCHER) { @('--assignee', $env:WATCHER) } else { @() }
+          gh issue create --title 'Mutation testing found untested code' --label mutation --body-file comment.md @assignee

@@ -5,6 +5,7 @@
     <File Path=".github/actions/build-test-pack/action.yml" />
   </Folder>
   <Folder Name="/pipelines/workflows/">
+    <File Path=".github/workflows/mutation.yml" />
     <File Path=".github/workflows/pipeline.yml" />
   </Folder>
   <Folder Name="/Solution Items/">
