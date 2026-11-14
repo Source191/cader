@@ -68,7 +68,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         }
 
         rows.AddRange(candidates.Where(candidate => !registered.Contains(candidate)).Select(BrokenWorktree));
-        rows.AddRange(underWorktreeRoot.Where(child => folders.IsEmpty(child.Value)).Select(child => EmptyLeftover(snapshot.WorktreeRoot, child)));
+        rows.AddRange(underWorktreeRoot.Where(child => !registered.Contains(child) && folders.IsEmpty(child.Value)).Select(child => EmptyLeftover(snapshot.WorktreeRoot, child)));
 
         // Never awaited: the rows show what the catalogue already holds, and the next rescan picks up what lands.
         _ = pullRequests.RefreshStaleAsync(BranchesOf(rows));

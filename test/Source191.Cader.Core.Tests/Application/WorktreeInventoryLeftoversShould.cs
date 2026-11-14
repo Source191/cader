@@ -171,6 +171,28 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     }
 
     [Fact]
+    public async Task SkipAFolderUnderTheWorktreeRootThatHoldsFilesButNoGitFile()
+    {
+        folders.WithFile(Path.Combine(WorktreeRoot, "Northwind.Notes", "notes.txt"));
+
+        (await Inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LeaveAnEmptyFolderGitStillRegistersToItsRegisteredRow()
+    {
+        string folder = Path.Combine(WorktreeRoot, "Northwind.Orders-fix-123");
+        folders.WithDirectory(folder);
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/worktrees/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n", string.Empty));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Broken);
+        row.Health.Reason.ShouldBe(new HealthReason.GitFileGone());
+        row.Repository.Value.ShouldBe(Repository);
+    }
+
+    [Fact]
     public async Task NotListAFolderTwiceWhenTheWorktreeRootIsARoot()
     {
         string sibling = Path.Combine(Root, "Northwind.Orders-republish");
