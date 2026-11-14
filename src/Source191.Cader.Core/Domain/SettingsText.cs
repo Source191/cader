@@ -1,4 +1,4 @@
 namespace Source191.Cader.Domain;
 
 /// <summary>The settings dialog's fields as typed, before any rule is applied.</summary>
-public sealed record SettingsText(string Roots, string WorktreeRoot, EditorPreset Preset, string Executable, string Arguments, WorktreeBase Base, bool CheckForUpdates = Settings.ChecksForUpdatesWhenUnset, LaunchMode Place = Settings.PlaceWhenUnset, bool DiagnosticLog = Settings.DiagnosticLogWhenUnset);
+public sealed record SettingsText(string Roots, string WorktreeRoot, EditorPreset Preset, string Executable, string Arguments, WorktreeBase Base, bool CheckForUpdates = Settings.ChecksForUpdatesWhenUnset, LaunchMode Place = Settings.PlaceWhenUnset, bool DiagnosticLog = Settings.DiagnosticLogWhenUnset, BeforeBranching BeforeBranching = Settings.BeforeBranchingWhenUnset);
