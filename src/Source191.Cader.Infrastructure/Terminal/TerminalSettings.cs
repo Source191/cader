@@ -45,6 +45,8 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         }
     }
 
+    public Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => Task.CompletedTask;
+
     /// <summary>A byte order mark, which the parser does not skip, is left out.</summary>
     private static JsonDocument Parse(byte[] bytes) => JsonDocument.Parse(bytes.AsMemory(ByteOrderMarkLength(bytes)), DocumentOptions);
 
