@@ -22,8 +22,8 @@ public sealed class StartSessionHandler(LaunchService service, OpenTabHandler ta
 
         return outcome switch
         {
-            LaunchOutcome.Listed listed => new StartSessionOutcome.StartedAndOpened(name, listed.JobId, await tabs.OpenAsync(listed.Session, cancellationToken)),
-            LaunchOutcome.NotListedYet notListed => new StartSessionOutcome.NotListedYet(name, notListed.JobId),
+            LaunchOutcome.Listed listed => new StartSessionOutcome.StartedAndOpened(name, listed.JobId, await tabs.OpenAsync(listed.Session, cancellationToken), listed.Update),
+            LaunchOutcome.NotListedYet notListed => new StartSessionOutcome.NotListedYet(name, notListed.JobId, notListed.Update),
             LaunchOutcome.WorkspaceNotTrusted => await OpenTrustTabAsync(effect.Plan.Directory, cancellationToken),
             LaunchOutcome.Failed failed => new StartSessionOutcome.Failed(failed.Message),
             _ => throw new UnreachableException(),

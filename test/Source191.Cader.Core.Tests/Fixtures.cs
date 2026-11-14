@@ -38,6 +38,7 @@ internal static class Fixtures
             _ when type == typeof(ReleaseVersion) => ReleaseVersions.Version("0.21.0"),
             _ when type == typeof(BranchName) => BranchName.From("fix-123"),
             _ when type == typeof(OpenTabOutcome) => new OpenTabOutcome.SwitchedTo(Listed.As("fix-123")),
+            _ when type == typeof(BaseUpdate) => new BaseUpdate.Current(),
             _ when type == typeof(RemoveWorktreeOutcome) => new RemoveWorktreeOutcome.DeletedFolder("Northwind.Orders-fix-123"),
             _ when type == typeof(IReadOnlyList<ListedName>) => new List<ListedName> { Listed.As("fix-123") },
             _ when type == typeof(IReadOnlyList<SkippedSession>) => new List<SkippedSession>(),

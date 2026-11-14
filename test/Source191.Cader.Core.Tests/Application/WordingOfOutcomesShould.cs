@@ -500,14 +500,14 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayASessionStartedAndWhereItsTabOpened()
     {
-        Wording.Describe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false)))
+        Wording.Describe(new StartSessionOutcome.StartedAndOpened("Fix flaky tests", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("Fix flaky tests"), "Red", ColourReused: false), new BaseUpdate.Current()))
             .ShouldBe("Started Fix flaky tests (81cdb0f9). Opened Fix flaky tests in a red tab.");
     }
 
     [Fact]
     public void SayHowToOpenATabForASessionNotListedYet()
     {
-        Wording.Describe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9")))
+        Wording.Describe(new StartSessionOutcome.NotListedYet("Fix flaky tests", JobId.From("81cdb0f9"), new BaseUpdate.Current()))
             .ShouldBe("Started Fix flaky tests (81cdb0f9). It is not listed yet: press Enter on it to open its tab.");
     }
 

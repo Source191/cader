@@ -1,6 +1,7 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Effects;
+using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.TestDoubles;
@@ -131,9 +132,9 @@ public sealed class StatusTonesShould
     [Fact]
     public void MarkAStartByWhatHappenedToItsTab()
     {
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false))).ShouldBe(StatusTone.Success);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true))).ShouldBe(StatusTone.Notice);
-        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound(Listed.As("fix-123")))).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: false), new BaseUpdate.Current())).ShouldBe(StatusTone.Success);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.Opened(Listed.As("fix-123"), "Purple", ColourReused: true), new BaseUpdate.Current())).ShouldBe(StatusTone.Notice);
+        Wording.ToneOf(new StartSessionOutcome.StartedAndOpened("fix-123", JobId.From("81cdb0f9"), new OpenTabOutcome.NotFound(Listed.As("fix-123")), new BaseUpdate.Current())).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
