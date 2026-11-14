@@ -64,6 +64,11 @@ $comparison = Get-KeyedMutants (Read-MutationReport $ComparisonPath)
 $paired = @($baseline.Keys | Where-Object { $comparison.Contains($_) } |
     ForEach-Object { [pscustomobject]@{ Baseline = $baseline[$_]; Comparison = $comparison[$_] } })
 
+$oneSided = @(
+    $baseline.Keys | Where-Object { -not $comparison.Contains($_) } | ForEach-Object { $baseline[$_] | Select-Object @{ n = 'Side'; e = { $BaselineName } }, File, Line, Mutator, Replacement, Status }
+    $comparison.Keys | Where-Object { -not $baseline.Contains($_) } | ForEach-Object { $comparison[$_] | Select-Object @{ n = 'Side'; e = { $ComparisonName } }, File, Line, Mutator, Replacement, Status }
+)
+
 $changes = @($paired | Where-Object { $_.Baseline.Status -ne $_.Comparison.Status } |
     Group-Object { "$($_.Baseline.Status) -> $($_.Comparison.Status)" } | Sort-Object @{ e = 'Count'; Descending = $true }, Name |
     ForEach-Object {
@@ -79,5 +84,5 @@ $changes = @($paired | Where-Object { $_.Baseline.Status -ne $_.Comparison.Statu
     Paired      = $paired.Count
     IdsAgreeing = @($paired | Where-Object { $_.Baseline.Id -eq $_.Comparison.Id }).Count
     Changes     = $changes
-    OneSided    = @()
+    OneSided    = $oneSided
 }
