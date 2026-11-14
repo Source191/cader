@@ -6,7 +6,7 @@
 
 ## 2. The workflow
 
-- [ ] 2.1 `pipeline.yml`: the bump step passes `-Preview`, puts `[dependabot skip]` in the commit message, and fails with `::error::` naming `DEPENDABOT_BUMP_TOKEN` when the secret is empty; a new step after it removes `dependabot-branch` (`always()`, the Dependabot condition); the comments say why. Verify the workflow parses: this pull request's own `check` runs, and for a human actor both Dependabot steps and the removal step are skipped.
+- [x] 2.1 `pipeline.yml`: the bump step passes `-Preview`, puts `[dependabot skip]` in the commit message, and fails with `::error::` naming `DEPENDABOT_BUMP_TOKEN` when the secret is empty; a new step after it removes `dependabot-branch` (`always()`, the Dependabot condition); the comments say why. Verify the workflow parses: this pull request's own `check` runs, and for a human actor both Dependabot steps and the removal step are skipped.
 - [ ] 2.2 `dependabot.yml`: a `nuget` group (`applies-to: version-updates`, `patterns: ["*"]`) and a comment saying why. Verify after merging (task 4.2) that a week's updates arrive as one pull request.
 
 ## 3. The docs
