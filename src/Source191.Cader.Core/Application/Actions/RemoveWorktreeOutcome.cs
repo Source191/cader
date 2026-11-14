@@ -11,12 +11,12 @@ public abstract record RemoveWorktreeOutcome : Outcome
 {
     public sealed record Refused(RemovalReason Reason) : RemoveWorktreeOutcome;
 
-    public sealed record Removed(string FolderName, bool FolderLeft = false) : RemoveWorktreeOutcome;
+    public sealed record Removed(string FolderName, bool FolderLeft) : RemoveWorktreeOutcome;
 
-    public sealed record RemovedAndDeletedBranch(string FolderName, BranchName Branch, bool FolderLeft = false) : RemoveWorktreeOutcome;
+    public sealed record RemovedAndDeletedBranch(string FolderName, BranchName Branch, bool FolderLeft) : RemoveWorktreeOutcome;
 
     /// <summary>The branch was kept: it was not created here, or was created here and it is not merged. The user is asked.</summary>
-    public sealed record BranchKept(string FolderName, BranchToConfirm Branch, bool CreatedHere, bool FolderLeft = false) : RemoveWorktreeOutcome;
+    public sealed record BranchKept(string FolderName, BranchToConfirm Branch, bool CreatedHere, bool FolderLeft) : RemoveWorktreeOutcome;
 
     public sealed record DeletedFolder(string FolderName) : RemoveWorktreeOutcome;
 

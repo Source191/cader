@@ -8,7 +8,7 @@ namespace Source191.Cader.Core.Tests.Application;
 public sealed class CurrentSettingsShould
 {
     private static readonly FolderPath Home = FolderPath.From(@"C:\Users\me");
-    private static readonly Settings Saved = Settings.Resolve([FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"D:\worktrees")), EditorChoice.Of(EditorPreset.VisualStudio), WorktreeBase.Head, Home);
+    private static readonly Settings Saved = Settings.Resolve([FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"D:\worktrees")), EditorChoice.Of(EditorPreset.VisualStudio), WorktreeBase.Head, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset);
 
     [Fact]
     public async Task AnswerTheSettingsItWasBuiltWith()

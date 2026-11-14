@@ -67,7 +67,7 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void RenderAFailureWithWhatFailed()
     {
-        Failed failed = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x")));
+        Failed failed = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x", inUse: false)));
 
         Body(failed).ShouldBe("failed Load SessionsViewState: GitException");
     }
@@ -75,7 +75,7 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void RenderAFailureWithoutWhatFailed()
     {
-        Failed failed = new(FailureSite.Crash, null, ExceptionSummary.From(new GitException("x")));
+        Failed failed = new(FailureSite.Crash, null, ExceptionSummary.From(new GitException("x", inUse: false)));
 
         Body(failed).ShouldBe("failed Crash: GitException");
     }
@@ -90,7 +90,7 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void NotTakeOtherLinesForACrashLine()
     {
-        Failed load = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x")));
+        Failed load = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x", inUse: false)));
 
         DiagnosticLine.IsCrashLine(DiagnosticLine.Render(new TimedEvent(At, load))).ShouldBeFalse();
         DiagnosticLine.IsCrashLine(DiagnosticLine.Render(new TimedEvent(At, new ViewShown(ViewKind.Sessions)))).ShouldBeFalse();
@@ -105,7 +105,7 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void RenderATerminalGuiReportWithItsException()
     {
-        TerminalGuiReported reported = new(DiagnosticLevel.Error, ExceptionSummary.From(new GitException("x")));
+        TerminalGuiReported reported = new(DiagnosticLevel.Error, ExceptionSummary.From(new GitException("x", inUse: false)));
 
         Body(reported).ShouldBe("terminal.gui Error: GitException");
     }
@@ -202,7 +202,7 @@ public sealed class DiagnosticLineShould
             _ when underlying == typeof(Version) => new Version(2, 1, 310),
             _ when underlying == typeof(ToolVersion) => new ToolVersion("0.20.0"),
             _ when underlying == typeof(CodeName) => CodeName.For(typeof(StopSession)),
-            _ when underlying == typeof(ExceptionSummary) => ExceptionSummary.From(new GitException("x")),
+            _ when underlying == typeof(ExceptionSummary) => ExceptionSummary.From(new GitException("x", inUse: false)),
             _ when underlying == typeof(ChildCommand) => ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)),
             _ => throw new NotSupportedException($"{type.Name} needs a placeholder."),
         };

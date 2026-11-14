@@ -20,6 +20,8 @@ public sealed class SourceConventionsShould
         @"src\Source191.Cader.Infrastructure\Processes\ProcessRegistry.cs",
     ];
 
+    private static readonly string[] StateFileRecords = ["UserConfig", "EditorSetting", "TabFile", "UpdateCheckFile", "LastRunFile"];
+
     private static readonly string[] AmericanWords =
     [
         "color", "colors", "colored", "behavior", "center", "centered", "canceled", "favorite", "gray", "initialize",
@@ -53,6 +55,28 @@ public sealed class SourceConventionsShould
             .Order(StringComparer.Ordinal)];
 
         files.ShouldBe([.. ArgumentExceptionFiles.Order(StringComparer.Ordinal)]);
+    }
+
+    [Fact]
+    public void GiveNoParameterADefaultValue()
+    {
+        List<string> offenders = [.. Find(["src"], IsParameterWithDefaultValue).Select(Describe)];
+
+        offenders.ShouldBeEmpty($"{offenders.Count} parameters with a default value:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private static bool IsParameterWithDefaultValue(SyntaxNodeOrToken item)
+    {
+        bool hasDefault = item.AsNode() is ParameterSyntax { Default: not null };
+
+        return hasDefault && !IsStateFileRecordParameter(item.AsNode());
+    }
+
+    private static bool IsStateFileRecordParameter(SyntaxNode? parameter)
+    {
+        RecordDeclarationSyntax? record = parameter?.Parent?.Parent as RecordDeclarationSyntax;
+
+        return record is not null && StateFileRecords.Contains(record.Identifier.Text);
     }
 
     [Fact]

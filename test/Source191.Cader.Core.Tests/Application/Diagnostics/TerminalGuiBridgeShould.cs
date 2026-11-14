@@ -24,7 +24,7 @@ public sealed class TerminalGuiBridgeShould
     public void RecordAnErrorWithItsExceptionSummary()
     {
         TerminalGuiBridge bridge = new(log);
-        GitException failure = new(@"C:\Users\me");
+        GitException failure = new(@"C:\Users\me", inUse: false);
 
         bridge.Log(LogLevel.Error, new EventId(4), "Input loop crashed", failure, (state, _) => state);
 

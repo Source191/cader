@@ -81,7 +81,7 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         // An unreadable count is a failed command too, so the scan's catch for GitException covers it.
         return int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count)
             ? count
-            : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number");
+            : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
     }
 
     public async Task<IReadOnlyList<UnpushedCommit>> UnpushedCommitsAsync(string worktree, int limit, CancellationToken cancellationToken)
@@ -173,7 +173,7 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         ProcessResult result = await RunAsync(directory, arguments, cancellationToken);
         if (result.ExitCode != 0)
         {
-            throw new GitException($"git {string.Join(' ', arguments)} failed: {result.StandardError.Trim()}");
+            throw new GitException($"git {string.Join(' ', arguments)} failed: {result.StandardError.Trim()}", inUse: false);
         }
 
         return result;

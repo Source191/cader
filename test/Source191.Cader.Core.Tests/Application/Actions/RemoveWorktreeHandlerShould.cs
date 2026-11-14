@@ -26,7 +26,7 @@ public sealed class RemoveWorktreeHandlerShould
 
         RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
 
-        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false, FolderLeft: false));
         folders.DirectoryExists(Worktree).ShouldBeFalse();
         GitCalls(processes).Count(request => request.Arguments.Contains("remove")).ShouldBe(1);
     }
@@ -39,7 +39,7 @@ public sealed class RemoveWorktreeHandlerShould
         GitCalls(processes).Single(request => request.Arguments.Contains("remove")).ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
             request => request.Arguments.ShouldBe(["worktree", "remove", Worktree]));
-        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false, FolderLeft: false));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class RemoveWorktreeHandlerShould
     {
         RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok, head: new Head.Detached()), forced: false, CancellationToken.None);
 
-        outcome.ShouldBe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123"));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: false));
         GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
     }
 
@@ -56,7 +56,7 @@ public sealed class RemoveWorktreeHandlerShould
     {
         RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok, head: new Head.Unknown()), forced: false, CancellationToken.None);
 
-        outcome.ShouldBe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123"));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.Removed("Northwind.Orders-fix-123", FolderLeft: false));
         GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
     }
 
@@ -161,7 +161,7 @@ public sealed class RemoveWorktreeHandlerShould
         RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
 
         GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "fix-123"]);
-        outcome.ShouldBe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123")));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: false));
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
     }
 
@@ -174,7 +174,7 @@ public sealed class RemoveWorktreeHandlerShould
         RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
 
         GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
-        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: true));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: true, FolderLeft: false));
     }
 
     [Fact]
