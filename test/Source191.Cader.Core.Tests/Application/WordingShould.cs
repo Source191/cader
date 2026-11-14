@@ -980,6 +980,12 @@ public sealed class WordingShould
         Wording.HiddenProfilesShown(TerminalSettingsFile).ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart.");
     }
 
+    [Fact]
+    public void SayTerminalsUnreadableSettingsWereLeftAlone()
+    {
+        Wording.TerminalSettingsUnreadable(TerminalSettingsFile, "bad json").ShouldBe(@"Could not read Windows Terminal's settings or state (bad json), so C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json was left alone.");
+    }
+
     private const string TerminalSettingsFile = @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";
 
     [Fact]
