@@ -80,4 +80,30 @@ Describe 'Compare-MutationReports' {
         $fewer.Paired | Should -Be 1
         $fewer.OneSided.Count | Should -Be 1
     }
+
+    It 'names the killing tests of a group on the side that killed it' {
+        $result = Invoke-Compare
+
+        $equality = $result.Changes[0].Groups[0]
+        $equality.KillingTests | ForEach-Object { "$($_.Name) $($_.Count)" } | Should -Be @('AlphaShould.Decide 1', 'AlphaShould.Reject 1')
+        $timeout = $result.Changes | Where-Object Change -eq 'Killed -> Timeout'
+        $timeout.Groups[0].KillingTests.Name | Should -Be 'GammaShould.Block'
+    }
+
+    It 'prints no absolute path and writes the same as Markdown to OutputPath' {
+        $output = Join-Path $TestDrive 'comparison.md'
+
+        $result = Invoke-Compare -More @{ OutputPath = $output }
+
+        $markdown = Get-Content $output -Raw
+        $markdown.TrimEnd() | Should -Be $result.Markdown.TrimEnd()
+        $markdown | Should -Match 'Source191\.Cader\.Core\\Domain\\Alpha\.cs'
+        $markdown | Should -Match 'Survived -> Killed: 4'
+        $markdown | Should -Match 'AlphaShould\.Decide'
+        $everything = $markdown + ($result | ConvertTo-Json -Depth 8)
+        $everything | Should -Not -Match ([regex]::Escape('D:\a'))
+        $everything | Should -Not -Match ([regex]::Escape('C:\Users\me'))
+        $everything | Should -Not -Match 'D:\\\\a'
+        $everything | Should -Not -Match 'C:\\\\Users\\\\me'
+    }
 }
