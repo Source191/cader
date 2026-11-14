@@ -156,6 +156,14 @@ public sealed class ProcessRegistryIntegrationShould
         child.ExitCode.ShouldBe(0);
     }
 
+    /// <summary>Every door to a confirmed process needs a start time read here, so an id the lookup that ends processes throws for never reaches it.</summary>
+    [Fact]
+    public void ReadNoStartTimeForAnIdOfZeroOrLess()
+    {
+        registry.StartTimeOf(0).ShouldBeNull();
+        registry.StartTimeOf(-1).ShouldBeNull();
+    }
+
     [Fact]
     public void LeaveAProcessThatHasGoneAlone()
     {

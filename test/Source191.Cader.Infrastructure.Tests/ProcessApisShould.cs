@@ -13,17 +13,17 @@ namespace Source191.Cader.Infrastructure.Tests;
 /// Facts about process APIs .NET 11 added, kept from the upgrade-to-net11 spikes: they show what the platform does, not
 /// Cader, and the change's design records which were adopted and why the rest were declined. A run-and-capture start is
 /// given exactly what <see cref="ProcessRunner"/> gives its captured children. A descendant a fact leaves running on
-/// purpose is a sleeper found by the id its starter writes, never by name, held by a handle so its id cannot be reused,
-/// and ended when the fact finishes.
+/// purpose is a <c>waitfor</c> sleeper, started by the parent stand-in, found by the id the stand-in writes (never by
+/// name), held by a handle so its id cannot be reused, and ended when the fact finishes.
 /// </summary>
 [Trait("Category", "Integration")]
 [SupportedOSPlatform("windows")]
 public sealed class ProcessApisShould : IDisposable
 {
-    private const string Pwsh = "pwsh.exe";
     private const int GoneId = int.MaxValue - 7;
     private const int SystemProcessId = 4;
     private static readonly string[] AliasNames = ["pwsh.exe", "winget.exe"];
+    private static readonly string StandIn = Path.Combine(AppContext.BaseDirectory, "Source191.Cader.ParentStandIn.exe");
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-process-apis-" + Guid.NewGuid().ToString("N"));
     private readonly List<Process> sleepers = [];
@@ -39,7 +39,7 @@ public sealed class ProcessApisShould : IDisposable
     {
         string idFile = Path.Combine(folder, "sleeper.txt");
         using CancellationTokenSource cancel = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        Task<ProcessTextOutput> run = Process.RunAndCaptureTextAsync(Captured(SleeperScript(idFile)), cancel.Token);
+        Task<ProcessTextOutput> run = Process.RunAndCaptureTextAsync(ProcessRunner.StartInfo(SleeperStarter(idFile), capture: true), cancel.Token);
         Process sleeper = await SleeperAsync(idFile);
 
         await cancel.CancelAsync();
@@ -54,7 +54,7 @@ public sealed class ProcessApisShould : IDisposable
     {
         string idFile = Path.Combine(folder, "sleeper.txt");
 
-        Should.Throw<TimeoutException>(() => Process.RunAndCaptureText(Captured(SleeperScript(idFile)), TimeSpan.FromSeconds(5)));
+        Should.Throw<TimeoutException>(() => Process.RunAndCaptureText(ProcessRunner.StartInfo(SleeperStarter(idFile), capture: true), TimeSpan.FromSeconds(3)));
 
         Process sleeper = await SleeperAsync(idFile);
         sleeper.WaitForExit(TimeSpan.FromSeconds(2)).ShouldBeFalse("only the child was ended, so its own child kept running");
@@ -66,7 +66,7 @@ public sealed class ProcessApisShould : IDisposable
     {
         string idFile = Path.Combine(folder, "sleeper.txt");
         using CancellationTokenSource cancel = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        Task<ProcessResult> run = new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(Request(SleeperScript(idFile)), cancel.Token);
+        Task<ProcessResult> run = new ProcessRunner(TimeSpan.FromMinutes(1)).RunAsync(SleeperStarter(idFile), cancel.Token);
         Process sleeper = await SleeperAsync(idFile);
 
         await cancel.CancelAsync();
@@ -78,7 +78,8 @@ public sealed class ProcessApisShould : IDisposable
     [Fact]
     public async Task DecodeAndHandOverTheEnvironmentAsTheStartInfoSays()
     {
-        ProcessStartInfo start = Captured("[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::Out.Write(\"$env:CADER_SPIKE|$env:COMPUTERNAME|\" + [char]0x00B7 + [char]0x00E9)");
+        string script = "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::Out.Write(\"$env:CADER_SPIKE|$env:COMPUTERNAME|\" + [char]0x00B7 + [char]0x00E9)";
+        ProcessStartInfo start = ProcessRunner.StartInfo(new ProcessRequest("pwsh.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(script)], WorkingFolder.Inherit), capture: true);
         start.Environment.Remove("COMPUTERNAME");
         start.Environment["CADER_SPIKE"] = "Northwind";
 
@@ -99,11 +100,9 @@ public sealed class ProcessApisShould : IDisposable
     [InlineData("plain", "plain", false)]
     public async Task EndEveryDescendantWithTheParentOnlyUnderKillOnParentExit(string parentStart, string childStart, bool ended)
     {
-        string standIn = Path.Combine(AppContext.BaseDirectory, "Source191.Cader.ParentStandIn.exe");
         string idFile = Path.Combine(folder, "sleeper.txt");
-        string sleeper = Path.Combine(Environment.SystemDirectory, "waitfor.exe");
-        string[] arguments = [parentStart, "wait", Path.Combine(folder, "child.txt"), standIn, childStart, "exit", idFile, sleeper, "/t", "60", "CaderSpike" + Guid.NewGuid().ToString("N")];
-        using Process parent = Process.Start(new ProcessStartInfo(standIn, arguments) { UseShellExecute = false, CreateNoWindow = true }) ?? throw new InvalidOperationException("The stand-in did not start.");
+        string[] arguments = [parentStart, "wait", Path.Combine(folder, "child.txt"), StandIn, childStart, "exit", idFile, .. Sleeper()];
+        using Process parent = Process.Start(new ProcessStartInfo(StandIn, arguments) { UseShellExecute = false, CreateNoWindow = true }) ?? throw new InvalidOperationException("The stand-in did not start.");
         try
         {
             Process descendant = await SleeperAsync(idFile);
@@ -168,25 +167,17 @@ public sealed class ProcessApisShould : IDisposable
         Directory.Delete(folder, recursive: true);
     }
 
-    private static ProcessRequest Request(string script) => new(Pwsh, PowerShellArguments(script), WorkingFolder.Inherit);
+    /// <summary>A sleeper that ends on its own after a minute; the name it waits for is never signalled.</summary>
+    private static string[] Sleeper()
+    {
+        return [Path.Combine(Environment.SystemDirectory, "waitfor.exe"), "/t", "60", "CaderSpike" + Guid.NewGuid().ToString("N")];
+    }
 
-    private static ProcessStartInfo Captured(string script) => ProcessRunner.StartInfo(Request(script), capture: true);
-
-    private static string[] PowerShellArguments(string script) => ["-NoProfile", "-NonInteractive", "-EncodedCommand", EncodedCommand.Encode(script)];
-
-    /// <summary>
-    /// Starts a PowerShell that sleeps for a minute, which shares the child's console and its redirected standard handles,
-    /// writes its id to the file, then sleeps as long itself.
-    /// </summary>
-    private static string SleeperScript(string idFile) => $$"""
-        $info = [System.Diagnostics.ProcessStartInfo]::new('{{Pwsh}}')
-        foreach ($argument in '-NoProfile', '-NonInteractive', '-Command', 'Start-Sleep -Seconds 60') { $info.ArgumentList.Add($argument) }
-        $info.UseShellExecute = $false
-        $sleeper = [System.Diagnostics.Process]::Start($info)
-        Set-Content -LiteralPath '{{idFile}}.tmp' -Value $sleeper.Id
-        Move-Item -LiteralPath '{{idFile}}.tmp' -Destination '{{idFile}}'
-        Start-Sleep -Seconds 60
-        """;
+    /// <summary>The stand-in as a captured child: it starts a sleeper, which gets its redirected standard handles, writes the sleeper's id and waits.</summary>
+    private static ProcessRequest SleeperStarter(string idFile)
+    {
+        return new ProcessRequest(StandIn, ["plain", "wait", idFile, .. Sleeper()], WorkingFolder.Inherit);
+    }
 
     /// <summary>Waits up to 30 seconds for the sleeper's id, then holds a handle to it so its id cannot be reused.</summary>
     private async Task<Process> SleeperAsync(string idFile)
