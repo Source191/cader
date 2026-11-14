@@ -23,7 +23,7 @@ public sealed class TerminalFragment(string fragmentsRoot, string iconSource) : 
 
     public static TerminalFragment ForCurrentUser(string iconSource) => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows Terminal", "Fragments"), iconSource);
 
-    private string FragmentFolder => Path.Combine(fragmentsRoot, "Cader");
+    private string FragmentFolder => Path.Combine(fragmentsRoot, TerminalProfiles.Source);
 
     public string Location => Path.Combine(FragmentFolder, "cader.json");
 

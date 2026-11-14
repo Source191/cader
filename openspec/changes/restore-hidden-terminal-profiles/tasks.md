@@ -2,8 +2,8 @@
 
 ## 1. Terminal's profile ids
 
-- [ ] 1.1 Red: `TerminalProfileIdShould` asserts that `ForFragment("Vantage", "Vantage")` and `ForFragment("Vantage", "Vantage session")` give the issue's observed `{58541d95-3e2c-5677-9092-a958bd152f67}` and `{786e9622-4c30-5cd8-aa6f-cdf433f291f6}`, and that `Text` is lower case in braces. Green: `Domain\TerminalProfileId` with the two-step version 5 derivation (design, "The id is derived in Domain"). Verify the facts pass, and suppress CA5350 or S4790 in place with the RFC 9562 reason only if the build raises one.
-- [ ] 1.2 Red: `TerminalProfilesShould` asserts `TerminalProfiles.Source` is `Cader`, that `TerminalProfiles.Entries` lists Cader then Cader session with the ids `{3d7a06d2-710f-51d9-90c9-dacae2c3ab46}` and `{cdf8708d-a821-5c97-95d0-fea560807dea}` and the source `Cader`. Green: `Source`, `Entries` and `Ports\TerminalProfileEntry`; `TerminalFragment`'s folder uses `TerminalProfiles.Source` instead of its literal. Verify the facts, `TerminalFragmentShould` unchanged and green, and `NullFreeModelsShould`.
+- [x] 1.1 Red: `TerminalProfileIdShould` asserts that `ForFragment("Vantage", "Vantage")` and `ForFragment("Vantage", "Vantage session")` give the issue's observed `{58541d95-3e2c-5677-9092-a958bd152f67}` and `{786e9622-4c30-5cd8-aa6f-cdf433f291f6}`, and that `Text` is lower case in braces. Green: `Domain\TerminalProfileId` with the two-step version 5 derivation (design, "The id is derived in Domain"). Verify the facts pass, and suppress CA5350 or S4790 in place with the RFC 9562 reason only if the build raises one.
+- [x] 1.2 Red: `TerminalProfilesShould` asserts `TerminalProfiles.Source` is `Cader`, that `TerminalProfiles.Entries` lists Cader then Cader session with the ids `{3d7a06d2-710f-51d9-90c9-dacae2c3ab46}` and `{cdf8708d-a821-5c97-95d0-fea560807dea}` and the source `Cader`. Green: `Source`, `Entries` and `Ports\TerminalProfileEntry`; `TerminalFragment`'s folder uses `TerminalProfiles.Source` instead of its literal. Verify the facts, `TerminalFragmentShould` unchanged and green, and `NullFreeModelsShould`.
 
 ## 2. The hiding rule
 
