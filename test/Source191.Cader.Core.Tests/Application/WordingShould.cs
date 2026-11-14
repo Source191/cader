@@ -981,6 +981,16 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
+    {
+        Wording.TerminalSettingsLinked(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not add the entries: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is a link, and writing it would replace the link with a file, so nothing was written.
+            Add each of these to the profile list in the file it links to:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
     public void SayTerminalsUnreadableSettingsWereLeftAlone()
     {
         Wording.TerminalSettingsUnreadable(TerminalSettingsFile, "bad json").ShouldBe(@"Could not read Windows Terminal's settings or state (bad json), so C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json was left alone.");
