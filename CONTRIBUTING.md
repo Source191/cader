@@ -198,9 +198,10 @@ Every pull request that changes the packaged tool (anything under `src\`, or `Di
 ```powershell
 .github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD   # the check, locally
 .github\scripts\Step-Version.ps1                                 # raise Version one step; -WhatIf only prints it
+.github\scripts\Step-Version.ps1 -Preview                        # a stable Version starts a preview of the next patch
 ```
 
-`Step-Version.ps1` raises the prerelease number when there is one, otherwise the patch. The check compares semantic versions, so 0.10.0 is above 0.9.0. Because branches must be up to date before merging, two pull requests that bump to the same version cannot both merge: the second fails until it bumps again.
+`Step-Version.ps1` raises the prerelease number when there is one, otherwise the patch; with `-Preview` a stable version instead starts a preview of the next patch (0.21.1 becomes 0.21.2-preview.1), which is what the Dependabot step passes. The check compares semantic versions, so 0.10.0 is above 0.9.0. Because branches must be up to date before merging, two pull requests that bump to the same version cannot both merge: the second fails until it bumps again.
 
 Releasing and publishing are the owner's; see [MAINTAINING.md](MAINTAINING.md).
 
@@ -210,7 +211,7 @@ Releasing and publishing are the owner's; see [MAINTAINING.md](MAINTAINING.md).
 
 - **Where:** every pull request that changes the packaged tool adds one line under `## Unreleased`, below one of the headings `### Added`, `### Changed`, `### Fixed`, `### Removed`, `### Security` or `### Internal`, in that order. `Assert-ChangelogUpdated.ps1` fails the pull request otherwise; a change outside the tool needs no line.
 - **How:** one line starting `- `, saying what a user will notice in words they would use, ending with the pull request's number, `(#171)`. Nothing else on the line is read as Markdown, so no links, bold or tables; control characters are dropped.
-- **Internal:** a refactor, a test, tooling or anything else nobody using it can see goes under Internal, which the What's new dialog never shows. Dependabot's pull requests get theirs from `pipeline.yml`, which raises `Version` and runs `Add-InternalChangelogEntry.ps1` with the pull request's title.
+- **Internal:** a refactor, a test, tooling or anything else nobody using it can see goes under Internal, which the What's new dialog never shows. Dependabot's pull requests get theirs from `pipeline.yml`, which raises `Version` (a preview of the next patch on a stable one, so the merge is a prerelease and the owner chooses when a stable release collects the lines) and runs `Add-InternalChangelogEntry.ps1` with the pull request's title; NuGet version updates arrive as one grouped pull request a week, so that is one line.
 
 ```powershell
 .github\scripts\Assert-ChangelogUpdated.ps1 -Base main -Head HEAD   # the check, locally
