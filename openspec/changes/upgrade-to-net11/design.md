@@ -43,6 +43,25 @@ For each, the apply phase records the version chosen and how .NET 11 support was
 - Stryker.NET: confirm `--test-runner mtp` works on `net11.0` (workflow from `mutation-testing-in-ci`); keep the before and after scores.
 - The `nuget-package-updates` skill may do the sweep. A held or replaced package is explained here.
 
+Recorded in PR J (14 November 2026). "lib" is the target folders in the package as restored; `dotnet list package --outdated` on that day named only xunit.v3 4.0.3 and Microsoft.CodeAnalysis.CSharp 5.12.0 as newer.
+
+| Package | Version | Decision and evidence |
+| --- | --- | --- |
+| Microsoft.Extensions.Logging.Abstractions | 11.0.0, then removed | Already 11.0.0 (Dependabot, `78c06fd1`). .NET 11 puts it in the shared framework and a `PackageReference` to it raises NU1510 ([Learn](https://learn.microsoft.com/dotnet/core/compatibility/extensions/11/extensions-in-shared-framework)), so the references in Core and Infrastructure go in the retarget commit; the assembly then comes with the runtime. |
+| Microsoft.Extensions.FileSystemGlobbing | 11.0.0 | Already moved; ships a `net11.0` lib; not one of the nine shared-framework libraries, so kept. |
+| Microsoft.Extensions.TimeProvider.Testing | 11.0.0 | Already moved; ships a `net11.0` lib. |
+| System.Drawing.Common (ReadmeScene) | 11.0.0 | Already moved; ships a `net11.0` lib. |
+| System.CommandLine | 3.0.0 | Newest; lib `net10.0` and `netstandard2.0`, which `net11.0` consumes; held on a clean build and full run. |
+| Terminal.Gui | 2.5.0 | Newest; lib `net10.0` only. Held on a clean build and full run on `net11.0`, with CI's smoke check on both architectures as the evidence the screen still runs (the hand-off and terminal facts are task 1.7). |
+| Interop.UIAutomationClient | 10.19041.0 | Newest; lib `netcoreapp3.0` and `netstandard2.0`; a COM interop assembly with no runtime dependency; held on a clean build and the `TerminalTab` tests. |
+| Microsoft.CodeAnalysis.CSharp (test) | 5.9.0 to 5.12.0 | 5.12.0 is the compiler SDK 11.0.100 ships (`Roslyn\bincore`, 5.12.0-1.26529.118), so the source facts parse code as the build compiles it. Task 1.2 had no red: 5.9.0 under `LanguageVersion.Preview` already parsed `closed`, `union`, `with(...)` and a labelled `break` without an error and read the union and closed record as type declarations. The probe (`SourceFilesShould`) sits in Infrastructure.Tests, beside the Roslyn reference, not in Core. |
+| Microsoft.CodeAnalysis.BannedApiAnalyzers | 5.6.0 | Newest; analyser only (no lib); held on a clean `net11.0` build with RS0030 still failing a banned call. |
+| SonarAnalyzer.CSharp | 10.36.0.15337 | Newest; analyser only; held on a clean `net11.0` build. |
+| xunit.v3 | 4.0.2 | Held: lib `net472` and `net8.0`, which `net11.0` consumes under Microsoft.Testing.Platform; 4.0.3 is a patch Dependabot's weekly `nuget` group brings, and nothing in .NET 11 needs it. |
+| Shouldly | 4.3.0 | Newest; lib `net8.0`, `net9.0`, `netstandard2.0`; held on the full run. |
+| NetArchTest.Rules | 1.3.2 | Newest; lib `netstandard2.0`; held on the full run (`LayeringShould`). |
+| Stryker.NET (`dotnet-stryker`) | 5.0.0 | Held; checked by the `net11.0` mutation run in figure 7. |
+
 ### 4. Process APIs: coverage
 
 **Verified** to exist in .NET 11 (Learn, what's new in libraries): `Process.Run`/`RunAsync`, `RunAndCaptureText`/`RunAndCaptureTextAsync`, `ReadAllLines`/`ReadAllLinesAsync` with `ProcessOutputLine`, `Process.StartAndForget`, `ProcessStartInfo.StartDetached`, `ProcessStartInfo.KillOnParentExit` (Windows only), `Process.TryGetProcessById`, `SafeProcessHandle.Open`/`TryOpen`. **Unverified:** signatures, how timeouts and cancellation behave, whether `KillOnParentExit` reaches grandchildren, whether the standard-handle properties and `File.OpenNullHandle` ship as the issue says, and the overlapped-I/O change. The first task of each adoption reads the API reference and writes a spike test against the real behaviour before any production change.
@@ -78,6 +97,22 @@ Constraints every adoption carries (otherwise declined): `ProgramLocator` full p
 - winget build: re-measure the self-contained single-file size, zipped size and start-up time against the 1 November 2026 figures (about 40 MB, 34 MB zipped on 10.0.403) in `install-with-winget`, and run the smoke check on the zip's `cader.exe`. Record before and after in `src\Source191.Cader\README.md`.
 - Version: minor bump of `Version` in `src\Source191.Cader\Source191.Cader.csproj` (0.21.0-preview.1 today, so the next minor) and a `CHANGELOG.md` line; `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` must pass.
 - Support date: .NET 11 is a Standard Term Support release; its end-of-support date is **unverified** here and is recorded from the .NET support policy page in task 6.3 before the change is archived, with a note for planning the move to .NET 12.
+
+### 7. Before and after figures
+
+Measured on the owner's Windows 11 developer machine (x64) unless a runner is named. Before: `net10.0` on SDK 10.0.404 at `76df5d69` (PR #276), 14 November 2026. Start-up is the median of 15 runs of the published `cader.exe --version` after one warm-up run (it reaches only the command line, so it reads no state). Size is the published single-file `cader.exe` and the zip `Compress-WingetBuild.ps1` writes.
+
+| Figure | Before (`net10.0`) | After (`net11.0`) |
+| --- | --- | --- |
+| Full test run | 3,182 tests (PR #276 plus the two C# 15 parser facts of task 1.2): 3,173 passed, 9 skipped (the 7 Claude contract facts and the 2 help-snapshot cases, gated on `CADER_CLAUDE_CONTRACT`), 0 failed | |
+| `dotnet format whitespace --folder --verify-no-changes --exclude openspec` | exit 0 | |
+| Hand-off check | passed on the runner (`handoff`, run 43634112566) | |
+| Smoke check | passed on both runners (`check` and `check (win-arm64)`, run 43634112566) | |
+| Mutation run (Stryker 5.0.0, full, local, fresh clone) | 87.81 %: 2,690 killed, 3 timed out, 347 survived, 27 no coverage (3,067 tested; 464 compile errors, 543 ignored); 7 min 16 s | |
+| Refresh timings (`docs\performance-monitoring.md`) | not measured: they need a live console over the owner's own state, so the owner records them | |
+| Self-contained `cader.exe` (win-x64) | 38.5 MiB | |
+| Zip (win-x64) | 33.6 MiB | |
+| Start-up (`cader --version`, median) | 557 ms | |
 
 ## Risks / Trade-offs
 
