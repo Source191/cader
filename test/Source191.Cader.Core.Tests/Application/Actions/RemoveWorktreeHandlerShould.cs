@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Views;
@@ -13,8 +14,22 @@ public sealed class RemoveWorktreeHandlerShould
     private readonly FakeProcessRunner processes = Processes();
     private readonly FakeFolders folders = new();
     private readonly InMemoryState store = new();
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
-    private RemoveWorktreeHandler Handler => new(new GitCli(processes, "git"), store, folders, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root)));
+    private RemoveWorktreeHandler Handler => new(new GitCli(processes, "git"), store, folders, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
+
+    [Fact]
+    public async Task WaitForAFolderThatIsLetGoAndRemoveTheWorktreeAsUsual()
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(Worktree).HeldOpenFor(Worktree, attempts: 2);
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: false));
+        folders.DirectoryExists(Worktree).ShouldBeFalse();
+        GitCalls(processes).Count(request => request.Arguments.Contains("remove")).ShouldBe(1);
+    }
 
     [Fact]
     public async Task RemoveACleanWorktreeAndOfferToDeleteAHandMadeBranch()
@@ -71,9 +86,10 @@ public sealed class RemoveWorktreeHandlerShould
     [Fact]
     public async Task ReportAWorktreeStillInUse()
     {
-        processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(Worktree).HeldOpen(Worktree);
 
-        RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
 
         outcome.ShouldBe(new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"));
     }
@@ -216,5 +232,21 @@ public sealed class RemoveWorktreeHandlerShould
 
         outcome.ShouldBe(new RemoveWorktreeOutcome.Refused(new RemovalReason.OutsideTheRoots(FolderPath.From(Root))));
         folders.DirectoryExists(Root).ShouldBeTrue();
+    }
+
+    /// <summary>What git says when a program holds the worktree's folder, after deleting everything else.</summary>
+    private static ProcessResult FolderInUse => new(255, string.Empty, "error: failed to delete 'C:/Users/me/source/repos/Northwind.Orders-fix-123': Permission denied\n");
+
+    /// <summary>Removes with the clock moving on until the removal finishes, however long it waits for a held folder.</summary>
+    private async Task<RemoveWorktreeOutcome> RemoveWhileTheClockRuns(WorktreeRow row)
+    {
+        Task<RemoveWorktreeOutcome> removal = Handler.RemoveAsync(row, forced: false, CancellationToken.None);
+        for (int tick = 0; tick < 1000 && !removal.IsCompleted; tick++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(1));
+            await Task.Delay(1, TestContext.Current.CancellationToken);
+        }
+
+        return await removal;
     }
 }

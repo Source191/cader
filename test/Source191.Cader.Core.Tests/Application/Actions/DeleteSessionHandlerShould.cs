@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Claude;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application.Actions;
@@ -14,10 +15,11 @@ public sealed class DeleteSessionHandlerShould
     private readonly InMemoryState store = new();
     private readonly FakeProcessRegistry registry = new();
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Repository).WithDirectory(Worktree);
+    private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
     private DeleteSessionHandler Handler => new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry), folders, Remover(folders));
 
-    private WorktreeRemover Remover(FakeFolders disc) => new(new GitCli(processes, "git"), store, disc, TestSettings.Current(@"C:\repos"));
+    private WorktreeRemover Remover(FakeFolders disc) => new(new GitCli(processes, "git"), store, disc, TestSettings.Current(@"C:\repos"), clock);
 
     [Fact]
     public async Task DeleteASessionOutsideAWorktreeCreatedHereWithoutTouchingGit()
@@ -130,11 +132,25 @@ public sealed class DeleteSessionHandlerShould
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
         processes.Answer(request => request.Arguments.Contains("remove"), new ProcessResult(255, string.Empty, "error: failed to delete 'C:/repos/Northwind.Orders-fix-123': Permission denied\n"));
+        folders.HeldOpen(Worktree);
 
-        DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+        DeleteSessionOutcome outcome = await DeleteWhileTheClockRuns(Job(Worktree));
 
         processes.CapturedRequests.Single(request => request.FileName == Claude).Arguments.ShouldBe(["rm", "81cdb0f9"]);
         outcome.ShouldBe(new DeleteSessionOutcome.WorktreeInUse(Listed.As("fix-123"), "Northwind.Orders-fix-123", TabClosed: false));
+    }
+
+    /// <summary>Deletes with the clock moving on until the delete finishes, however long it waits for a held folder.</summary>
+    private async Task<DeleteSessionOutcome> DeleteWhileTheClockRuns(Session.Background session)
+    {
+        Task<DeleteSessionOutcome> deletion = Handler.DeleteAsync(session, forced: false, CancellationToken.None);
+        for (int tick = 0; tick < 1000 && !deletion.IsCompleted; tick++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(1));
+            await Task.Delay(1, TestContext.Current.CancellationToken);
+        }
+
+        return await deletion;
     }
 
     private const string FixListedPrunable = "worktree C:/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n";

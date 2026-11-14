@@ -11,8 +11,13 @@ namespace Source191.Cader.Application.Actions;
 /// last guard before a folder is deleted from disc is that it lies inside a repository root or the worktree root, read
 /// from the settings as they are now, whoever asked and whatever the decision said.
 /// </summary>
-public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees, IFolderDeleter deleter, CurrentSettings settings)
+public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees, IFolderDeleter deleter, CurrentSettings settings, TimeProvider clock)
 {
+    /// <summary>About five seconds in all: long enough for a shell or session that is ending to let go of its folder.</summary>
+    private const int FolderAttempts = 20;
+
+    private static readonly TimeSpan BetweenAttempts = TimeSpan.FromMilliseconds(250);
+
     public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, CancellationToken cancellationToken)
     {
         return decision switch
@@ -32,8 +37,10 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
         }
         catch (GitException exception) when (exception.InUse)
         {
-            // Git deleted what it could; the registration stays, so a later remove sees a leftover and finishes.
-            return new RemoveWorktreeOutcome.InUse(row.FolderName);
+            if (!await DeleteWhenLetGoAsync(row.Path, cancellationToken))
+            {
+                return new RemoveWorktreeOutcome.InUse(row.FolderName);
+            }
         }
 
         await createdWorktrees.ForgetCreatedWorktreeAsync(row.Path);
@@ -44,6 +51,38 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
             (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName),
             _ => throw new UnreachableException(),
         };
+    }
+
+    /// <summary>
+    /// Tries to delete the folder git emptied but could not delete, while whatever holds it (usually a tab's shell or a
+    /// session's process that is just ending) lets go; false when it is still held after the last try.
+    /// </summary>
+    private async Task<bool> DeleteWhenLetGoAsync(FolderPath folder, CancellationToken cancellationToken)
+    {
+        for (int attempt = 1; attempt < FolderAttempts; attempt++)
+        {
+            if (TryDelete(folder))
+            {
+                return true;
+            }
+
+            await Task.Delay(BetweenAttempts, clock, cancellationToken);
+        }
+
+        return TryDelete(folder);
+    }
+
+    private bool TryDelete(FolderPath folder)
+    {
+        try
+        {
+            deleter.DeleteTree(folder.Value);
+            return true;
+        }
+        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private async Task<RemoveWorktreeOutcome> DeleteBranchAsync(WorktreeRow row, BranchName branch, CancellationToken cancellationToken)
