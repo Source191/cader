@@ -31,6 +31,7 @@ public static class ConfigView
             ConfigRow.RepositoryRoot root => root.Path.Value,
             ConfigRow.WorktreeRoot worktreeRoot => worktreeRoot.Path.Value,
             ConfigRow.Setup { State: SetupState.At at } => at.Path,
+            ConfigRow.Setup { State: SetupState.HiddenByTerminal hidden } => hidden.Path,
             ConfigRow.Setup { State: SetupState.LogFile file } => file.Path,
             ConfigRow.Setup { State: SetupState.LogOff off } => off.Path,
             _ => null,

@@ -27,7 +27,7 @@
 ## 5. The Config tab
 
 - [x] 5.1 Red: `SetupFactsReaderShould` asserts the Windows Terminal profiles state is `SetupState.HiddenByTerminal` with the fragment's path when the fragment is installed and a Cader profile is hidden, `At` with the fragment's path when Terminal's records are `Missing` or `Unreadable`, and `NotSetUp` when there is no fragment, whatever Terminal's records say. Green: the new `SetupState` case and `SetupFactsReader` taking `ITerminalSettings`; update the constructions in `ConsoleLoadsShould`, `ConsoleComposition`, and `tools\ReadmeScene\SceneHost` (a `TerminalSettings` over a folder inside the scene's own temporary folders). Verify the facts and that `tools\ReadmeScene` builds.
-- [ ] 5.2 Red: `WordingOfConfigShould` asserts the row reads "hidden by Windows Terminal, run cader setup-terminal"; `WordingOfScreensShould` asserts `Wording.ConfigCounts` counts a hidden profile, with everything else in place, as 1 to set up in amber; `ConfigViewShould` asserts c copies and f opens the fragment's folder on the row in that state. Green: `WordingOfConfig.SetupValue`, the count in `WordingOfConsole`, and the path in `ConfigView`. Verify the facts and every `Wording*Should` reflection fact.
+- [x] 5.2 Red: `WordingOfConfigShould` asserts the row reads "hidden by Windows Terminal, run cader setup-terminal"; `WordingOfScreensShould` asserts `Wording.ConfigCounts` counts a hidden profile, with everything else in place, as 1 to set up in amber; `ConfigViewShould` asserts c copies and f opens the fragment's folder on the row in that state. Green: `WordingOfConfig.SetupValue`, the count in `WordingOfConsole`, and the path in `ConfigView`. Verify the facts and every `Wording*Should` reflection fact.
 
 ## 6. Documentation and release
 
