@@ -16,6 +16,9 @@
 - [x] 3.4 Red-green: `RemoveWorktreeHandlerShould.AskAboutAHandMadeBranchWhenTheFolderStaysHeld`: expect `BranchKept(..., CreatedHere: false, FolderLeft: true)`, so the screen still asks about the branch. Verify the fact passes.
 - [x] 3.5 Refactor: correct the comment at the in-use catch in `WorktreeRemover` (git has already dropped the registration and the contents) and the class and `RemoveWorktreeOutcome.InUse` summaries (now only a leftover's folder that could not be deleted). Verify `dotnet build -c Debug` and the `RemoveWorktreeHandlerShould` class pass.
 
+- [ ] 3.6 Red: `RemoveWorktreeHandlerShould.TouchNothingWhenGitStillListsTheWorktree`: git answers "Permission denied" to the remove but `worktree list --porcelain` still lists the worktree, whose folder holds a file and whose record was created here. Expect `InUse("Northwind.Orders-fix-123")`, the folder and its file intact, the record kept and no `branch` call. Green: after `GitException.InUse`, `WorktreeRemover` asks `ListWorktreesAsync` and returns `InUse` untouched while the path is still listed or the listing fails; the delete-session facts that expect `FolderLeft` answer the listing in turn (listed, then gone). Verify the fact and both handler classes pass. Added during implementation, after review (design: "Check git really dropped the registration").
+- [ ] 3.7 Red-green: `RemoveWorktreeHandlerShould.WaitAboutFiveSecondsForAHeldFolder` (a theory): `HeldOpenFor(Worktree, 19)` leaves the folder gone and `FolderLeft` false, and `HeldOpenFor(Worktree, 20)` gives `FolderLeft` true, so the number of tries is pinned. Verify it passes.
+
 ## 4. Delete carries the fact
 
 - [x] 4.1 Red: `DeleteSessionHandlerShould.FinishTheWorktreeAndSayItsFolderWasLeftWhenItStaysHeld` (replacing `ReportAWorktreeStillInUse`): a merged branch created here gives `RemovedWorktreeAndBranch(Name, fix-123, TabClosed, FolderLeft: true)`; an unmerged one gives `BranchNotMerged(..., FolderLeft: true)` (a `Theory` or two facts). Green: add `bool FolderLeft = false` to those two `DeleteSessionOutcome` cases and copy it across in `DeleteSessionHandler`. Verify the facts pass and `DeleteSessionHandlerShould` stays green.
@@ -30,6 +33,8 @@
 - [x] 6.1 Red: `WorktreeInventoryLeftoversShould.ListAnEmptyFolderUnderTheWorktreeRootAsEmpty`: an empty `C:\Users\me\source\worktrees\Northwind.Orders-fix-123` gives one row with health empty, repository `C:\Users\me\source\worktrees`, `OwnerExists` false and no files. Green: the worktree root's children pass splits into `.git`-file candidates and empty folders, the latter made into rows as an empty `.worktrees` folder is. Verify the fact passes.
 - [x] 6.2 Red-green: `WorktreeInventoryLeftoversShould.SkipAFolderUnderTheWorktreeRootThatHoldsFilesButNoGitFile` and `LeaveAnEmptyFolderGitStillRegistersToItsRegisteredRow` (git lists it as prunable: one row, health broken, not a second empty row). Verify both pass.
 - [x] 6.3 Red-green: `WorktreeInventoryLeftoversShould.ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot` (settings whose worktree root is also a root: an empty child without the `.worktrees` suffix is not listed). Verify the fact passes, then update `WorktreeInventory`'s class summary to name the new leftover.
+
+- [ ] 6.4 Red-green: `FoldersShould.AnswerNotEmptyForAFolderThatHasGone` (Infrastructure, real disc): `Folders.IsEmpty` answers false for a missing folder instead of throwing, and false for one it cannot read; and `WorktreeInventoryShould.ListAnEmptyFolderUnderTheWorktreeRootAsEmpty` (real git and disc) shows the new row end to end. Verify both pass. Added during implementation, after review.
 
 ## 7. Docs and release
 
