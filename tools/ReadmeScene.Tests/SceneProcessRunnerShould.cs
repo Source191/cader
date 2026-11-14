@@ -133,6 +133,20 @@ public sealed class SceneProcessRunnerShould
         others.CapturedRequests.ShouldHaveSingleItem().Arguments.ShouldBe(["-w", Executables.WindowName, "new-tab", "--title", "stock-alerts"]);
     }
 
+    /// <summary>The scene's remotes are made up, so a fetch from one is answered as done and never reaches the network; a fetch from the repository itself (Pull's fast-forward) is real.</summary>
+    [Fact]
+    public async Task AnswerAFetchFromARemoteWithoutTheNetwork()
+    {
+        ProcessRequest fetch = new(@"C:\Program Files\Git\cmd\git.exe", ["fetch", "origin", "+refs/heads/main:refs/remotes/origin/main"], new WorkingFolder.At(@"C:\ReadmeDemo\me\source\repos\Northwind.Inventory"));
+        ProcessRequest local = new(@"C:\Program Files\Git\cmd\git.exe", ["fetch", ".", "refs/remotes/origin/main:refs/heads/main"], new WorkingFolder.At(@"C:\ReadmeDemo\me\source\repos\Northwind.Inventory"));
+
+        ProcessResult fetched = await runner.RunAsync(fetch, TestContext.Current.CancellationToken);
+        await runner.RunAsync(local, TestContext.Current.CancellationToken);
+
+        fetched.ExitCode.ShouldBe(0);
+        others.CapturedRequests.ShouldHaveSingleItem().ShouldBe(local);
+    }
+
     [Fact]
     public async Task HandEveryOtherProgramToTheRealRunner()
     {
