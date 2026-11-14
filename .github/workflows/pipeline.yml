@@ -75,8 +75,11 @@ jobs:
       # and pushes the commit with DEPENDABOT_BUMP_TOKEN, a fine-grained personal access token
       # (Contents read and write on this repository) held as a Dependabot secret: the only secrets a Dependabot run can
       # read, and a push made with GITHUB_TOKEN would start no new run. That push starts the run branch protection
-      # reads; this one skips its own version check and carries on. With the secret empty (a person pushed to the
-      # branch, so the run has repository secrets instead) it only says to raise Version by hand.
+      # reads; this one skips its own version check and carries on. With the secret missing the step fails naming it,
+      # because a person's push has that person as the actor and never reaches this step. On a stable Version the bump
+      # starts a preview of the next patch (-Preview), so a Dependabot merge is a prerelease and the owner decides when
+      # a stable release collects its lines. The commit's message carries [dependabot skip], so Dependabot keeps
+      # rebasing the pull request (dropping the commit) when main moves, and this step raises Version again.
       - name: Check out the Dependabot branch
         if: matrix.runtime == 'win-x64' && github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -107,13 +110,13 @@ jobs:
           }
 
           if ([string]::IsNullOrEmpty($env:BUMP_TOKEN)) {
-              Write-Host '::notice::DEPENDABOT_BUMP_TOKEN is not available to this run, so Version was not raised: run .github/scripts/Step-Version.ps1 and .github/scripts/Add-InternalChangelogEntry.ps1, and push.'
-              exit 0
+              Write-Host '::error::DEPENDABOT_BUMP_TOKEN is not available to this run, so Version cannot be raised. Create it as a Dependabot secret (MAINTAINING.md, Dependabot and the version bump token), then comment @dependabot recreate on this pull request.'
+              exit 1
           }
 
-          $version = .github/scripts/Step-Version.ps1
+          $version = .github/scripts/Step-Version.ps1 -Preview
           .github/scripts/Add-InternalChangelogEntry.ps1 -Text "$env:PR_TITLE (#$env:PR_NUMBER)"
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit --quiet --all --message "Raise Version to $version and add the changelog line for the dependency update"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit --quiet --all --message "Raise Version to $version and add the changelog line for the dependency update [dependabot skip]"
           if ($LASTEXITCODE -ne 0) {
               throw "git commit failed with exit code $LASTEXITCODE."
           }
@@ -126,6 +129,13 @@ jobs:
 
           Write-Host "::notice::Raised Version to $version and pushed it; the run for that commit is the one that counts."
           'pushed=true' >> $env:GITHUB_OUTPUT
+
+      # The second checkout was only for the bump step. Removed here, it is not read by the later steps: the whitespace
+      # check would format the openspec samples in it, and the NuGet cache key's hashFiles would count its projects.
+      - name: Remove the Dependabot branch checkout
+        if: always() && matrix.runtime == 'win-x64' && github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
+        shell: pwsh
+        run: Remove-Item -Recurse -Force dependabot-branch
 
       # A pull request that changes the packaged tool must raise Version. The checkout is GitHub's
       # merge ref: HEAD^1 is the tip of the base branch (main, or the parent of a stacked pull request)
