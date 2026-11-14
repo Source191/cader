@@ -13,6 +13,7 @@ public sealed class ConfigRowsShould
 
     private static readonly SetupFacts AllSetUp = new(
         new SetupState.At(SettingsFile),
+        new SetupState.Folder(TestSettings.DefaultClaudeFolder),
         new SetupState.LogFile(LogFile, Exists: true),
         new SetupState.At(Fragment),
         new SetupState.Enabled(),

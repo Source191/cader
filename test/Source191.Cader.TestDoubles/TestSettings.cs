@@ -10,6 +10,7 @@ public static class TestSettings
 
     /// <summary>Where the diagnostic log is written in the tests' made-up state folder.</summary>
     public static string DiagnosticLogFile { get; } = Home.Combine(Path.Combine("AppData", "Local", "Cader", "cader.log")).Value;
+    public static ClaudeFolder DefaultClaudeFolder { get; } = new ClaudeFolder.Unset(Home.Combine(".claude"));
 
     public static Settings For(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
 
