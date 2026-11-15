@@ -58,7 +58,7 @@ public sealed class WizardViewShould
 
     [Theory]
     [InlineData(" ")]
-    [InlineData("​")]
+    [InlineData("\u200B")]
     public void ExplainAFilterOfInvisibleCharacters(string invisible)
     {
         WizardState filtered = Reduce(Opened, new WizardInput.FilterChanged(invisible));

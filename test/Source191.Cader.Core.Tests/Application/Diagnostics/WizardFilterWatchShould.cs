@@ -70,7 +70,7 @@ public sealed class WizardFilterWatchShould
         watch.FilterChanged(string.Empty);
         Recorded.ShouldBe([new WizardOpened(3)], "an empty filter has no first character to record");
 
-        watch.FilterChanged("​");
+        watch.FilterChanged("\u200B");
         Recorded.Last().ShouldBeOfType<WizardFilterStarted>().FirstCharacter.ShouldBe(CharacterKind.Format);
     }
 

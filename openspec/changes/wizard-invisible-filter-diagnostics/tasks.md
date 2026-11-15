@@ -21,7 +21,7 @@
 ## 4. The dialog and its wiring (Tui and composition)
 
 - [x] 4.1 Give `DialogEffects` a `TimeProvider` and pass it to `LaunchWizardDialog.Show`. Build the watch there with `WizardFilterWatch.Open`, call `FilterChanged` from the filter's `TextChanging` before `Apply`, and call `ListFilled` from `Push`. Pass `TimeProvider.System` in `ConsoleComposition.Dialogs` and `tools\ReadmeScene\SceneHost`. Verify that `dotnet build -c Debug` passes with warnings as errors, and that the full `dotnet test -c Debug --no-build` passes.
-- [ ] 4.2 Run the smoke check against a local build (`tools\install-local.ps1`, then `dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`). Verify exit 0, so the wizard still opens, filters and closes.
+- [ ] 4.2 Add a smoke step that types a space into the wizard's filter and waits for the invisible-filter sentence (`SmokeScript`, with `SmokeScriptShould` updated first), then verify the smoke check passes on both architectures in CI's `check` jobs, which run it against the installed zip and the seeded worktree.
 
 ## 5. Release housekeeping
 

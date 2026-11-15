@@ -84,24 +84,24 @@ public sealed class SmokeScriptShould
     [Fact]
     public void SendEnterAndDForceRemoveWithoutAMarkerOfTheirOwn()
     {
-        Steps[30].Marker.ShouldBe(CaptureMarker.Nothing);
         Steps[31].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[32].Marker.ShouldBe(CaptureMarker.Nothing);
     }
 
     [Fact]
     public void EndTheConfigFilterAndEditTheRowWithoutAMarkerOfTheirOwn()
     {
-        Steps[14].Marker.ShouldBe(CaptureMarker.Nothing);
         Steps[15].Marker.ShouldBe(CaptureMarker.Nothing);
-        Steps[20].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[16].Marker.ShouldBe(CaptureMarker.Nothing);
         Steps[21].Marker.ShouldBe(CaptureMarker.Nothing);
+        Steps[22].Marker.ShouldBe(CaptureMarker.Nothing);
     }
 
     [Fact]
     public void ChooseCustomTheLastEditorBeforeBrowsingForAFile()
     {
         Enum.GetValues<Source191.Cader.Domain.EditorPreset>()[^1].ShouldBe(Source191.Cader.Domain.EditorPreset.Custom, "the smoke reaches Custom by Down presses from the first choice");
-        Steps[16].Keys.ShouldEndWith(" " + F3);
+        Steps[17].Keys.ShouldEndWith(" " + F3);
     }
 
     [Fact]
@@ -110,8 +110,8 @@ public sealed class SmokeScriptShould
         TimeSpan[] timeouts = [.. Steps.Select(step => step.Timeout)];
 
         timeouts[0].ShouldBe(TimeSpan.FromSeconds(60));
-        timeouts[27].ShouldBe(TimeSpan.FromSeconds(60));
-        timeouts.Where((_, index) => index is not 0 and not 27).ShouldAllBe(timeout => timeout == TimeSpan.FromSeconds(20));
+        timeouts[28].ShouldBe(TimeSpan.FromSeconds(60));
+        timeouts.Where((_, index) => index is not 0 and not 28).ShouldAllBe(timeout => timeout == TimeSpan.FromSeconds(20));
     }
 
     [Fact]
