@@ -14,8 +14,8 @@
 ## 3. The diagnostic events (Application)
 
 - [x] 3.1 Red `DiagnosticLineShould.RenderTheWizardOpening` and `RenderTheWizardsFirstFilterChange` (the two lines in the design), then green `WizardOpened` and `WizardFilterStarted` and their arms in `DiagnosticLine.Body`; verify with the Core suite, including `DiagnosticEventsShould`.
-- [ ] 3.2 Red `WizardFilterWatchShould.RecordTheRepositoriesOfferedOnOpening` and `RecordNothingForAFixedFolder`, then green `Application\Diagnostics\WizardFilterWatch.Open` over a `DiagnosticLog` and the tests' fake clock; verify with the Core suite.
-- [ ] 3.3 Red `WizardFilterWatchShould.RecordTheFirstFilterChangeOnce` (the time since opening, the kind, the count, filled or not; a second change and an empty text record nothing), then green `FilterChanged` and `ListFilled`; verify with the Core suite.
+- [x] 3.2 Red `WizardFilterWatchShould.RecordTheRepositoriesOfferedOnOpening` and `RecordNothingForAFixedFolder`, then green `Application\Diagnostics\WizardFilterWatch.Open` over a `DiagnosticLog` and the tests' fake clock; verify with the Core suite.
+- [x] 3.3 Red `WizardFilterWatchShould.RecordTheFirstFilterChangeOnce` (the time since opening, the kind, the count, filled or not; a second change and an empty text record nothing), then green `FilterChanged` and `ListFilled`; verify with the Core suite.
 - [ ] 3.4 Red `DiagnosticsPrivacyShould.KeepTheWizardFilterOutOfTheLog` (the filter receives "orders", and neither "o" nor "orders" is in any rendered line), then green if the watch needs a change; verify with the Core suite.
 
 ## 4. The dialog and its wiring (Tui and composition)
