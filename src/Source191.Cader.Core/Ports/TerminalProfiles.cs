@@ -22,13 +22,13 @@ public sealed record TerminalProfiles(string ConsoleExecutable, BellSound Consol
     public const string Source = "Cader";
 
     /// <summary>Each profile's entry in Windows Terminal's settings file, in the order the fragment lists the profiles.</summary>
-    public static IReadOnlyList<TerminalProfileEntry> Entries { get; } = [Entry(ConsoleProfileName), Entry(SessionProfileName)];
+    public static IReadOnlyList<TerminalProfileEntry> Entries => [Entry(ConsoleProfileName), Entry(SessionProfileName)];
 
     /// <summary>
     /// <see href="https://learn.microsoft.com/windows/terminal/customize-settings/profile-advanced">Sound, flash the window,
     /// flash the taskbar</see>.
     /// </summary>
-    public static IReadOnlyList<string> BellStyle { get; } = ["audible", "window", "taskbar"];
+    public static IReadOnlyList<string> BellStyle => ["audible", "window", "taskbar"];
 
     private static TerminalProfileEntry Entry(string name) => new(TerminalProfileId.ForFragment(Source, name), name, Source);
 }

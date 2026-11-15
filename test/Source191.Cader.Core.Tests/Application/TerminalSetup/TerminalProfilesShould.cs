@@ -19,4 +19,10 @@ public sealed class TerminalProfilesShould
             new TerminalProfileEntry(new TerminalProfileId(Guid.Parse("cdf8708d-a821-5c97-95d0-fea560807dea")), "Cader session", "Cader"),
         ]);
     }
+
+    [Fact]
+    public void RingWithASoundAndFlashTheWindowAndTheTaskbar()
+    {
+        TerminalProfiles.BellStyle.ShouldBe(["audible", "window", "taskbar"]);
+    }
 }

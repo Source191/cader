@@ -9,7 +9,7 @@ namespace Source191.Cader.Ports;
 public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, WorktreeBase? DefaultBase = null, string? WorktreeRoot = null, EditorSetting? Editor = null, bool? CheckForUpdates = null, LaunchMode? DefaultPlace = null, bool? DiagnosticLog = null, BeforeBranching? BeforeBranching = null)
 {
     /// <summary>No config.json, or one that cannot be read: every member missing, so every setting reads as its default.</summary>
-    public static readonly UserConfig Missing = new();
+    public static UserConfig Missing => new();
 
     public bool Equals(UserConfig? other)
     {
