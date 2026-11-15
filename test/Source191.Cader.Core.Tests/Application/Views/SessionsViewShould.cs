@@ -116,6 +116,17 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void FilterASessionWhoseFolderHasGoneByItsFolderName()
+    {
+        SessionRow gone = Row("broken-build", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([gone, Working]));
+
+        SessionsViewState filtered = Press(loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'), Key.Of('-'), Key.Of('1'), Key.Of('2'), Key.Of('3'), Key.Enter);
+
+        filtered.VisibleRows.ShouldBe([gone]);
+    }
+
+    [Fact]
     public void CommitTheFilterWithEnterAndClearItWithEscape()
     {
         SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
