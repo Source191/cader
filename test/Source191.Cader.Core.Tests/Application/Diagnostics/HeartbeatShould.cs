@@ -74,6 +74,17 @@ public sealed class HeartbeatShould
         stalls.Figures().Longest.ShouldBe(TimeSpan.FromMilliseconds(180), "the beat after waking is the new baseline");
     }
 
+    [Fact]
+    public void CountAGapOfExactlyThirtySecondsAsAStallNotAsSleep()
+    {
+        heartbeat.Beat();
+        BeatAfter(30000);
+
+        TimeSpan stall = TimeSpan.FromMilliseconds(29750);
+        stalls.Figures().ShouldBe(new DurationFigures(1, stall, stall, stall));
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalled(stall)]);
+    }
+
     private void BeatAfter(int milliseconds)
     {
         clock.Advance(TimeSpan.FromMilliseconds(milliseconds));
