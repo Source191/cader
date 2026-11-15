@@ -89,11 +89,21 @@ public sealed class WordingOfScreensShould
     [InlineData(0, "0 MB")]
     [InlineData(29, "29 MB")]
     [InlineData(903, "903 MB")]
+    [InlineData(999, "999 MB")]
+    [InlineData(1000, "1.0 GB")]
     [InlineData(1234, "1.2 GB")]
     [InlineData(12595, "12.3 GB")]
     public void WriteMemoryInWholeMegabytesThenGigabytesToOneDecimal(long megabytes, string expected)
     {
         Wording.Memory(MemorySize.FromMegabytes(megabytes)).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void KeepEveryKeyNameWithinTheKeyColumnsMinimumWidth()
+    {
+        IEnumerable<KeyHelp> every = Wording.SessionsKeys.Concat(Wording.WorktreesKeys).Concat(Wording.ConfigKeys);
+
+        every.ShouldAllBe(help => help.HelpKey.Length <= 6, "the help's key column is seven cells wide at least, so a longer key name is what first widens it");
     }
 
     [Fact]
