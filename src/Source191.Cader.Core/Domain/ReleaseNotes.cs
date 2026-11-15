@@ -84,18 +84,12 @@ public sealed record ReleaseNotes
             if (line.StartsWith(SectionMark, StringComparison.Ordinal))
             {
                 StartSection(line[SectionMark.Length..]);
-                // Stryker disable once Statement : Equivalent: neither the heading mark nor the entry mark starts a line that starts with the section mark, so falling through changes nothing
-                return;
             }
-
-            if (line.StartsWith(HeadingMark, StringComparison.Ordinal))
+            else if (line.StartsWith(HeadingMark, StringComparison.Ordinal))
             {
                 kind = KindOf(line[HeadingMark.Length..].Trim());
-                // Stryker disable once Statement : Equivalent: the entry mark never starts a line that starts with the heading mark, so falling through changes nothing
-                return;
             }
-
-            if (line.StartsWith(EntryMark, StringComparison.Ordinal) && version is not null && kind is ChangeKind current)
+            else if (line.StartsWith(EntryMark, StringComparison.Ordinal) && version is not null && kind is ChangeKind current)
             {
                 entries.Add(new ReleaseEntry(current, line[EntryMark.Length..].Trim()));
             }
