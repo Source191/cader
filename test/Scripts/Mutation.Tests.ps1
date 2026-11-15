@@ -19,6 +19,24 @@ BeforeAll {
         $report = [ordered]@{ projectRoot = 'C:\r\src\Core'; files = @{ 'C:\r\src\Core\Domain\Big.cs' = @{ mutants = @($mutants) } } }
         $report | ConvertTo-Json -Depth 8 | Set-Content $Path
     }
+
+    # A report of made-up mutants in one file, so many of each status.
+    function New-CountedReport([string] $Path, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
+        $statuses = @(@('Killed') * $Killed) + @(@('Survived') * $Survived) + @(@('Ignored') * $Ignored)
+        $line = 0
+        $mutants = foreach ($status in $statuses) {
+            $line++
+            [ordered]@{ mutatorName = 'Boolean mutation'; replacement = 'false'; location = @{ start = @{ line = $line } }; status = $status }
+        }
+        $report = [ordered]@{ projectRoot = 'C:\r\src\Core'; files = @{ 'C:\r\src\Core\Domain\Small.cs' = @{ mutants = @($mutants) } } }
+        $report | ConvertTo-Json -Depth 8 | Set-Content $Path
+    }
+
+    function Write-CountedRelease([string] $Name, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
+        $report = Join-Path $TestDrive "$Name.json"
+        New-CountedReport $report $Killed $Survived $Ignored
+        & (Join-Path $script:Scripts 'Write-MutationRun.ps1') -ReportPath $report -Kind release -ReleaseTag v1 -Since v0 -HeadSha abc -OutputDirectory (Join-Path $TestDrive $Name)
+    }
 }
 
 Describe 'Resolve-MutationRange' {
@@ -140,6 +158,16 @@ Describe 'Write-MutationRun' {
         $result = & $script:Write -ReportPath (Join-Path $script:Fixtures 'mutation-report.json') -Kind full -HeadSha abc -OutputDirectory (Join-Path $TestDrive 'baseline')
 
         $result.Finding | Should -BeFalse
+    }
+
+    It 'fails a release run that counted 20 mutants and left one surviving' {
+        $result = Write-CountedRelease 'twenty-one-left' -Killed 19 -Survived 1
+
+        $result.Failing | Should -BeTrue
+        $result.Counted | Should -Be 20
+        $run = Get-Content (Join-Path $TestDrive 'twenty-one-left\run.json') -Raw | ConvertFrom-Json
+        $run.failing | Should -BeTrue
+        $run.counted | Should -Be 20
     }
 }
 
