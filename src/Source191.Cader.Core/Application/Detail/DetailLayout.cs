@@ -75,6 +75,7 @@ public static class DetailLayout
             widths[column] = Math.Max(widths[column], labels[column] + line.Text.Length);
         }
 
+        // Stryker disable once Equality : Equivalent: a one-column fact already fits the width the loop above gave its column, so the width added for it is zero (the mutant that never widens a span is killed by WidenTheFirstColumnOfASpanOnlyByTheColumnsItSpans)
         foreach ((DetailLine line, int column) in Placed(facts).Where(placed => placed.Line.Span > 1))
         {
             int last = Math.Min(column + line.Span, Columns) - 1;
