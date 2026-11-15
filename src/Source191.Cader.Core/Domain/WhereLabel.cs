@@ -28,6 +28,7 @@ public abstract record WhereLabel
     {
         public override string Fit(int width)
         {
+            // Stryker disable once Statement : Equivalent: a negative width still throws ArgumentOutOfRangeException from the slice in CutEnd
             ArgumentOutOfRangeException.ThrowIfNegative(width);
 
             return CutEnd(Place, width);
@@ -40,6 +41,7 @@ public abstract record WhereLabel
         /// <summary>Whole when it fits, else the repository elided in its middle, else the place cut at its end.</summary>
         public override string Fit(int width)
         {
+            // Stryker disable once Statement : Equivalent: a negative width still throws ArgumentOutOfRangeException from TextFit.ElideMiddle
             ArgumentOutOfRangeException.ThrowIfNegative(width);
             string tail = Place.Length == 0 ? string.Empty : Separator + Place;
             if (Repository.Length + tail.Length <= width)
@@ -72,6 +74,7 @@ public abstract record WhereLabel
 
         string[] prefixes = [repository + "-", repository + "\\"];
 
+        // Stryker disable once Linq : Equivalent: DefaultIfEmpty guarantees an element, so First and FirstOrDefault agree
         return prefixes
             .Where(prefix => label.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Select(prefix => label[prefix.Length..])

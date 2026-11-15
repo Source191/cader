@@ -134,4 +134,10 @@ public sealed class ReleaseVersionShould
         ReleaseVersion.From("0.19.0-preview.6").Prerelease.ShouldBe("preview.6");
         Should.Throw<ArgumentException>(() => ReleaseVersion.From("unknown"));
     }
+
+    [Fact]
+    public void SayWhatIsNotAVersionWhenAskedToTrustIt()
+    {
+        Should.Throw<ArgumentException>(() => ReleaseVersion.From("nightly")).Message.ShouldContain("Not a version.");
+    }
 }

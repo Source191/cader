@@ -52,4 +52,35 @@ public sealed class ProgramLabelShould
     {
         ProgramLabel.From(name, commandLine).ShouldBe(expected);
     }
+
+    [Fact]
+    public void RefuseABlankName()
+    {
+        Should.Throw<ArgumentException>(() => ProgramLabel.From(" ", "node server.js"));
+    }
+
+    [Fact]
+    public void IgnoreRepeatedSpacesInTheCommandLine()
+    {
+        ProgramLabel.From("uvx", "uvx  mcp-grafana@latest").ShouldBe("mcp-grafana");
+    }
+
+    [Fact]
+    public void NameAProgramThatIsNotACommandShellByItsOwnNameWhateverItsCommandLineHolds()
+    {
+        ProgramLabel.From("python", @"C:\Tools\runner.exe --serve").ShouldBe("python");
+    }
+
+    [Theory]
+    [InlineData("--from")]
+    [InlineData("--with")]
+    [InlineData("--registry")]
+    [InlineData("--package")]
+    [InlineData("-p")]
+    [InlineData("--python")]
+    [InlineData("--index-url")]
+    public void SkipTheValueOfAnOptionThatTakesOne(string option)
+    {
+        ProgramLabel.From("uvx", $"uvx {option} https://user:example-secret@packages.northwind.example/simple mcp-grafana@latest").ShouldBe("mcp-grafana");
+    }
 }

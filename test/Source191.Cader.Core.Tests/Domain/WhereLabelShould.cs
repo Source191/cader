@@ -95,4 +95,25 @@ public sealed class WhereLabelShould
 
         new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(5).ShouldBe("… › …");
     }
+
+    [Fact]
+    public void RefuseANegativeWidthWhateverTheLabel()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Outside("notes").Fit(-1));
+        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(-1));
+    }
+
+    [Fact]
+    public void ShowTheWholeLabelWhenItFitsToTheLastCharacter()
+    {
+        new WhereLabel.Outside("notes").Fit(5).ShouldBe("notes");
+        new WhereLabel.Inside("a", "b").Fit(5).ShouldBe("a › b");
+        new WhereLabel.Inside(string.Empty, "x").Fit(4).ShouldBe(" › x");
+    }
+
+    [Fact]
+    public void ElideTheRepositoryWhenItHasExactlyThreeCharactersOfRoom()
+    {
+        new WhereLabel.Inside("Northwind", "x").Fit(7).ShouldBe("N…d › x");
+    }
 }

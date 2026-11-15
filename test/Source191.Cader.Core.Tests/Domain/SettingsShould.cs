@@ -295,4 +295,44 @@ public sealed class SettingsShould
     private static Func<string, bool> Exists(params string[] folders) => path => folders.Contains(path, StringComparer.OrdinalIgnoreCase);
 
     private static bool Installed(string file) => file == @"C:\Tools\subl.exe";
+
+    public static TheoryData<Settings> SettingsThatDifferFromTheBase =>
+    [
+        Variant(roots: [FolderPath.From(@"D:\work")]),
+        Variant(worktreeRoot: new WorktreeRootChoice.At(FolderPath.From(@"D:\trees"))),
+        Variant(editor: EditorChoice.Of(EditorPreset.Rider)),
+        Variant(defaultBase: WorktreeBase.Head),
+        Variant(checkForUpdates: !Settings.ChecksForUpdatesWhenUnset),
+        Variant(defaultPlace: LaunchMode.CurrentBranch),
+        Variant(diagnosticLog: !Settings.DiagnosticLogWhenUnset),
+        Variant(beforeBranching: BeforeBranching.Pull),
+    ];
+
+    [Theory]
+    [MemberData(nameof(SettingsThatDifferFromTheBase))]
+    public void BeUnequalWhenAnySettingDiffers(Settings different)
+    {
+        Variant().Equals(different).ShouldBeFalse();
+        different.Equals(Variant()).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void BeEqualWhenEverySettingMatches()
+    {
+        Variant().Equals(Variant()).ShouldBeTrue();
+        Variant().Equals(null).ShouldBeFalse();
+    }
+
+    private static Settings Variant(
+        IReadOnlyList<FolderPath>? roots = null,
+        WorktreeRootChoice? worktreeRoot = null,
+        EditorChoice? editor = null,
+        WorktreeBase defaultBase = WorktreeBase.RemoteDefault,
+        bool checkForUpdates = Settings.ChecksForUpdatesWhenUnset,
+        LaunchMode defaultPlace = Settings.PlaceWhenUnset,
+        bool diagnosticLog = Settings.DiagnosticLogWhenUnset,
+        BeforeBranching beforeBranching = Settings.BeforeBranchingWhenUnset)
+    {
+        return Settings.Resolve(roots ?? [FolderPath.From(Root)], worktreeRoot ?? new WorktreeRootChoice.BesideFirstRoot(), editor ?? EditorChoice.VsCode, defaultBase, Home, checkForUpdates, defaultPlace, diagnosticLog, beforeBranching);
+    }
 }

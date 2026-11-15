@@ -44,4 +44,16 @@ public sealed class MemorySizeShould
         (MemorySize.Zero <= MemorySize.FromMegabytes(0)).ShouldBeTrue();
         (MemorySize.FromMegabytes(30) >= MemorySize.FromMegabytes(30)).ShouldBeTrue();
     }
+
+    [Fact]
+    public void TreatEqualSizesAsNeitherSmallerNorLarger()
+    {
+        MemorySize size = MemorySize.FromMegabytes(29);
+        MemorySize same = MemorySize.FromMegabytes(29);
+
+        (size < same).ShouldBeFalse();
+        (size > same).ShouldBeFalse();
+        (size <= same).ShouldBeTrue();
+        (size >= same).ShouldBeTrue();
+    }
 }

@@ -34,6 +34,7 @@ public sealed record ReleaseVersion : IComparable<ReleaseVersion>
 
     public static bool TryParse(string? text, [MaybeNullWhen(false)] out ReleaseVersion version)
     {
+        // Stryker disable once String : Equivalent: any other text is no version either, so a null text fails to parse the same way
         string withoutMetadata = (text ?? string.Empty).Split('+')[0].Trim();
         int dash = withoutMetadata.IndexOf('-', StringComparison.Ordinal);
         string core = dash < 0 ? withoutMetadata : withoutMetadata[..dash];

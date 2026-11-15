@@ -18,6 +18,7 @@ public sealed record FolderPath : ITextValue<FolderPath>
         }
 
         string full = IOPath.GetFullPath(text.Replace(IOPath.AltDirectorySeparatorChar, IOPath.DirectorySeparatorChar));
+        // Stryker disable once String : Equivalent: GetPathRoot of a fully qualified path is never null, so the fallback is never read
         string root = IOPath.GetPathRoot(full) ?? string.Empty;
         Value = full.Length > root.Length ? full.TrimEnd(IOPath.DirectorySeparatorChar) : full;
     }

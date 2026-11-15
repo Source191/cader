@@ -37,12 +37,14 @@ public sealed record ReleaseNotes
     {
         List<ReleaseSection> sections = [];
         SectionReader reader = new(sections);
+        // Stryker disable once String : Equivalent: any other text has no section either, so a null text fails to parse the same way
         foreach (string line in (text ?? string.Empty).Split('\n'))
         {
             reader.Read(Visible(line).Trim());
         }
 
         reader.Close();
+        // Stryker disable once String : Equivalent: sections exist only when the text is not null, so the fallback is never read
         notes = sections.Count > 0 ? new ReleaseNotes(text ?? string.Empty, sections) : null;
 
         return notes is not null;
@@ -78,12 +80,14 @@ public sealed record ReleaseNotes
             if (line.StartsWith(SectionMark, StringComparison.Ordinal))
             {
                 StartSection(line[SectionMark.Length..]);
+                // Stryker disable once Statement : Equivalent: neither the heading mark nor the entry mark starts a line that starts with the section mark, so falling through changes nothing
                 return;
             }
 
             if (line.StartsWith(HeadingMark, StringComparison.Ordinal))
             {
                 kind = KindOf(line[HeadingMark.Length..].Trim());
+                // Stryker disable once Statement : Equivalent: the entry mark never starts a line that starts with the heading mark, so falling through changes nothing
                 return;
             }
 

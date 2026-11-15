@@ -7,7 +7,7 @@ public sealed class TextValueContractShould
 {
     public static TheoryData<ContractCase> Cases => new(
         ContractCase.For<FolderPath>(@"repos\Northwind.Orders", @"C:\Users\me\repos\Northwind.Orders"),
-        ContractCase.For<SessionId>(" ", "0f3a9c1e-1111-2222-3333-444455556666"),
+        ContractCase.For<SessionId>("not a session id", "0f3a9c1e-1111-2222-3333-444455556666"),
         ContractCase.For<JobId>("0f3a9c1e-1111", "0f3a9c1e"),
         ContractCase.For<BranchName>("not a branch", "feature/northwind-orders"),
         ContractCase.For<SessionName>("   ", "northwind orders"),
@@ -25,7 +25,11 @@ public sealed class TextValueContractShould
     [MemberData(nameof(Cases))]
     public void KeepTheTextGiven(ContractCase contract) => Should.NotThrow(contract.ValueIsTheTextGiven);
 
-    public sealed record ContractCase(string Name, Action RefusedTextThrows, Action AcceptedTextEqualsParsed, Action ValueIsTheTextGiven)
+    [Theory]
+    [MemberData(nameof(Cases))]
+    public void NameTheRefusedTextInItsMessage(ContractCase contract) => Should.NotThrow(contract.RefusalNamesTheText);
+
+    public sealed record ContractCase(string Name, Action RefusedTextThrows, Action AcceptedTextEqualsParsed, Action ValueIsTheTextGiven, Action RefusalNamesTheText)
     {
         public static ContractCase For<T>(string refused, string accepted)
             where T : class, ITextValue<T>
@@ -42,7 +46,8 @@ public sealed class TextValueContractShould
                     T.TryParse(accepted, out T? parsed).ShouldBeTrue();
                     T.From(accepted).ShouldBe(parsed);
                 },
-                () => T.From(accepted).Value.ShouldBe(accepted));
+                () => T.From(accepted).Value.ShouldBe(accepted),
+                () => Should.Throw<ArgumentException>(() => T.From(refused)).Message.ShouldContain(refused));
         }
 
         public override string ToString() => Name;

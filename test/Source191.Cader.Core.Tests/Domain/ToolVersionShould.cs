@@ -30,4 +30,10 @@ public sealed class ToolVersionShould
     {
         ToolVersion.FromInformational(informational).Text.ShouldBe("unknown");
     }
+
+    [Fact]
+    public void ShortenALocalPrereleaseThatStartsTheText()
+    {
+        ToolVersion.FromInformational("-local.20261025T101500").Text.ShouldBe("-local");
+    }
 }

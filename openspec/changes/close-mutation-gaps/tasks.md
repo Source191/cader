@@ -12,25 +12,25 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 
 ## 1. Baseline and conventions
 
-- [ ] 1.1 Take the reference run: a full run in the environment `explain-mutation-score-gap` names as the break score's owner (a `workflow_dispatch` of `mutation.yml` if the machine matters), download its `stryker-output` and list every `Survived` and `NoCoverage` mutant by file, line and mutator. Add the first ledger line to `.claude\rules\checks.md`'s Mutation testing (date, Stryker version, score, survivors, no-coverage). **Verify:** the counts match the run's `run.json` and summary.
-- [ ] 1.2 **Red:** the first mark in Core, on one agreed Equivalent mutant (for example a discard arm that throws `UnreachableException`), written as `// Stryker disable once <Mutator> : Equivalent: <reason>`. **Green:** the scoped run shows `Ignored` with the reason, and `dotnet build -c Debug` (warnings are errors), `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` still pass, so `SourceConventionsShould`, `SentenceLiteralsShould` and the analysers have nothing against a comment. **Verify:** if one objects, record the fix in design.md before going on.
+- [x] 1.1 Take the reference run: a full run in the environment `explain-mutation-score-gap` names as the break score's owner (a `workflow_dispatch` of `mutation.yml` if the machine matters), download its `stryker-output` and list every `Survived` and `NoCoverage` mutant by file, line and mutator. Add the first ledger line to `.claude\rules\checks.md`'s Mutation testing (date, Stryker version, score, survivors, no-coverage). **Verify:** the counts match the run's `run.json` and summary.
+- [x] 1.2 **Red:** the first mark in Core, on one agreed Equivalent mutant (for example a discard arm that throws `UnreachableException`), written as `// Stryker disable once <Mutator> : Equivalent: <reason>`. **Green:** the scoped run shows `Ignored` with the reason, and `dotnet build -c Debug` (warnings are errors), `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` still pass, so `SourceConventionsShould`, `SentenceLiteralsShould` and the analysers have nothing against a comment. **Verify:** if one objects, record the fix in design.md before going on.
 
 ## 2. Batch 1: Domain (46)
 
-- [ ] 2.1 File cycle, `WhereLabel` (7), facts in `WhereLabelShould`.
-- [ ] 2.2 File cycle, `EditorChoice` (4), facts in `EditorChoiceShould`.
-- [ ] 2.3 File cycle, `ReleaseNotes` (4), facts in `ReleaseNotesShould`.
-- [ ] 2.4 File cycle, `NumberAwareOrder` (4), facts in `NumberAwareOrderShould`.
-- [ ] 2.5 File cycle, `Settings` (4), facts in `SettingsShould`.
-- [ ] 2.6 The tail of `Domain` (23 mutants in 16 files, among them `ProgramLabel`, `FolderPath`, `MemorySize`, `ReleaseVersion`, `JobId` and `RemoteRepository`), a file cycle per file. **Verify:** each file's scoped run is clean of unmarked survivors.
-- [ ] 2.7 Record and ratchet: a full run, the batch's ledger line in `checks.md` (killed, Equivalent, Accepted, left), and `break` in `stryker-config.json` set to the whole score less four points, rounded down and never lower than before. If the batch added a mark under `src\`, raise `Version` by a patch with `.github\scripts\Step-Version.ps1` and add a `### Internal` line to `CHANGELOG.md`. **Verify:** `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` pass against `main` (not needed for a tests-only batch), and `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` pass.
+- [x] 2.1 File cycle, `WhereLabel` (7), facts in `WhereLabelShould`.
+- [x] 2.2 File cycle, `EditorChoice` (4), facts in `EditorChoiceShould`.
+- [x] 2.3 File cycle, `ReleaseNotes` (4), facts in `ReleaseNotesShould`.
+- [x] 2.4 File cycle, `NumberAwareOrder` (4), facts in `NumberAwareOrderShould`.
+- [x] 2.5 File cycle, `Settings` (4), facts in `SettingsShould`.
+- [x] 2.6 The tail of `Domain` (23 mutants in 16 files, among them `ProgramLabel`, `FolderPath`, `MemorySize`, `ReleaseVersion`, `JobId` and `RemoteRepository`), a file cycle per file. **Verify:** each file's scoped run is clean of unmarked survivors.
+- [x] 2.7 Record and ratchet: a full run, the batch's ledger line in `checks.md` (killed, Equivalent, Accepted, left), and `break` in `stryker-config.json` set to the whole score less four points, rounded down and never lower than before. If the batch added a mark under `src\`, raise `Version` by a patch with `.github\scripts\Step-Version.ps1` and add a `### Internal` line to `CHANGELOG.md`. **Verify:** `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` pass against `main` (not needed for a tests-only batch), and `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes` pass.
 
 ## 3. Batch 2: Ports (18)
 
-- [ ] 3.1 File cycle, `UserConfig` (8), facts in `UserConfigShould` or the existing state-file facts, through `InMemoryState`, never the real `config.json`.
-- [ ] 3.2 File cycle, `ProcessTimedOutException` (6), facts in `ProcessTimedOutExceptionShould`; an exception message that reports a failure is diagnostic text, so it is tested, not Accepted.
-- [ ] 3.3 File cycle, `EditorSetting` (3), facts in `EditorSettingShould`; then the one other `Ports` mutant.
-- [ ] 3.4 Record and ratchet, as 2.7.
+- [x] 3.1 File cycle, `UserConfig` (8), facts in `UserConfigShould` or the existing state-file facts, through `InMemoryState`, never the real `config.json`.
+- [x] 3.2 File cycle, `ProcessTimedOutException` (6), facts in `ProcessTimedOutExceptionShould`; an exception message that reports a failure is diagnostic text, so it is tested, not Accepted.
+- [x] 3.3 File cycle, `EditorSetting` (3), facts in `EditorSettingShould`; then the one other `Ports` mutant.
+- [x] 3.4 Record and ratchet, as 2.7.
 
 ## 4. Batch 3: Application\Diagnostics (34)
 

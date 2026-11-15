@@ -101,4 +101,10 @@ public sealed class FolderPathShould
     {
         $"{FolderPath.From(Repository)}".ShouldBe(Repository);
     }
+
+    [Fact]
+    public void KnowWhenItIsUnderADriveRoot()
+    {
+        FolderPath.From(Repository).IsUnder(FolderPath.From(@"C:\")).ShouldBeTrue();
+    }
 }

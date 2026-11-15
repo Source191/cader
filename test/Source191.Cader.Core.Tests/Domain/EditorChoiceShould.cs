@@ -108,4 +108,35 @@ public sealed class EditorChoiceShould
         editor.Executable.ShouldBeEmpty();
         editor.Arguments.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void ReportTheCommandAndWhyACustomEditorIsRefused()
+    {
+        ArgumentException refused = Should.Throw<ArgumentException>(() => EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n"]));
+
+        refused.Message.ShouldContain(@"'C:\Tools\subl.exe' is not a usable custom editor");
+        refused.Message.ShouldContain(nameof(SettingsProblem.NoFolderPlaceholder));
+    }
+
+    public static TheoryData<EditorChoice, EditorChoice> DifferentChoices => new()
+    {
+        { EditorChoice.Of(EditorPreset.VsCode), EditorChoice.Of(EditorPreset.Rider) },
+        { EditorChoice.Custom(@"C:\Tools\subl.exe", ["{folder}"]), EditorChoice.Custom(@"C:\Tools\edit.exe", ["{folder}"]) },
+        { EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-w", "{folder}"]) },
+    };
+
+    [Theory]
+    [MemberData(nameof(DifferentChoices))]
+    public void BeUnequalWhenAnyPartDiffers(EditorChoice first, EditorChoice second)
+    {
+        first.Equals(second).ShouldBeFalse();
+        second.Equals(first).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void BeEqualWhenEveryPartMatches()
+    {
+        EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]).Equals(EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"])).ShouldBeTrue();
+        EditorChoice.Of(EditorPreset.Rider).Equals(null).ShouldBeFalse();
+    }
 }
