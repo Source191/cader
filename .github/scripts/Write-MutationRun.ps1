@@ -19,7 +19,12 @@
     (the artefact expired, or this is the first full run) the comparison is skipped with a notice and this run
     becomes the baseline.
 
-    Answers an object with Score, Finding and Reason.
+    A release run is failing when it counted at least MinimumCounted mutants (Killed, Timeout, Survived and
+    NoCoverage, what the score is over; an Ignored mutant, marked in the source, counts for nothing) and any of them
+    survived or had no covering test: below that a score is 0 or 100 on one change, so a small run only reports.
+    A full run is never failing this way; it is judged by its score.
+
+    Answers an object with Score, Finding, Reason, Counted and Failing; run.json records counted and failing too.
 
 .EXAMPLE
     .github\scripts\Write-MutationRun.ps1 -ReportPath mutation-report.json -Kind full -HeadSha abc -OutputDirectory out
@@ -54,7 +59,8 @@ $run = [ordered]@{
     score    = $score
 }
 
-$counted = @($allMutants | Where-Object { $_.status -in 'Killed', 'Timeout', 'Survived', 'NoCoverage' }).Count
+$countedStatuses = 'Killed', 'Timeout', 'Survived', 'NoCoverage'
+$counted = @($allMutants | Where-Object { $_.status -in $countedStatuses }).Count
 $run['counted'] = $counted
 
 $finding = $false
@@ -93,7 +99,6 @@ else {
 
 # Only what the score and the comment read, and only the mutants that count: a full report is many megabytes
 # of coverage ids, and an artefact of those would outlive its use.
-$countedStatuses = 'Killed', 'Timeout', 'Survived', 'NoCoverage'
 $trimmed = [ordered]@{ projectRoot = $report.projectRoot; files = [ordered]@{} }
 foreach ($file in $report.files.GetEnumerator()) {
     $trimmed.files[$file.Key] = [ordered]@{
