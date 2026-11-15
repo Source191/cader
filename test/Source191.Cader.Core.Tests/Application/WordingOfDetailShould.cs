@@ -153,6 +153,18 @@ public sealed class WordingOfDetailShould
     }
 
     [Fact]
+    public void SayFolderGoneForASessionWhoseFolderHasGone()
+    {
+        SessionRow row = Row(DisplayState.Stopped, process: new JobProcess.None()) with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123"), Head = new Head.Unknown() };
+
+        string[] lines = Text(Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc));
+
+        lines.ShouldContain("Worktree folder gone");
+        lines.ShouldContain("Changes folder gone");
+        lines.ShouldNotContain(line => line.Contains("not in a repository"));
+    }
+
+    [Fact]
     public void DescribeAWorktreeWithUnpushedCommits()
     {
         UnpushedCommit[] commits = [.. Enumerable.Range(1, 5).Select(day => new UnpushedCommit($"a1b2c3{day}", Now.AddDays(-day), $"Invoice change {day}"))];
