@@ -22,7 +22,7 @@
 - [x] 5.1 Red: `WorktreeInventoryLeftoversShould.StartAtMostEightGitReadsAtOnce`: ten repositories, every `worktree list` held; exactly eight listings have started when `ScanAsync` returns its task, and all ten rows' repositories are listed once the hold opens. Verify it fails with ten started.
 - [x] 5.2 Green: `ScanAsync` creates `using SemaphoreSlim slots = new(ScanSlots)` (`private const int ScanSlots = 8`, with its one-line reason) and takes a slot only around `git.ListWorktreesAsync` and `inspector.CountAsync`, never across a repository's inspections (design decisions 1 and 2). Call `slots.WaitAsync()` with no token yet. Verify 5.1, 4.1 and 3.1 pass.
 - [x] 5.3 Red: `WorktreeInventoryLeftoversShould.StartNoGitReadOnceTheScanIsCancelled`: ten repositories, the eight started listings held, the token cancelled, then the hold opened; the scan throws `OperationCanceledException` and no request names the ninth or tenth repository. Verify it fails because they are asked.
-- [ ] 5.4 Green: pass the scan's token to `slots.WaitAsync`. Verify 5.3 and the Core suite pass.
+- [x] 5.4 Green: pass the scan's token to `slots.WaitAsync`. Verify 5.3 and the Core suite pass.
 
 ## 6. The whole solution and the documentation
 

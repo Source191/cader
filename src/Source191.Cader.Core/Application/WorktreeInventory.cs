@@ -142,7 +142,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private async Task<Registrations> RegisteredRowsAsync(FolderPath repository, SemaphoreSlim slots, CancellationToken cancellationToken)
     {
         // One unusable folder must not blank the whole view.
-        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => InSlotAsync(slots, () => git.ListWorktreesAsync(repository.Value, cancellationToken)), IsGitFailure, _ => []);
+        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => InSlotAsync(slots, () => git.ListWorktreesAsync(repository.Value, cancellationToken), cancellationToken), IsGitFailure, _ => []);
 
         List<FolderPath> paths = [];
         List<Task<WorktreeRow>> rows = [];
@@ -178,7 +178,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             path,
             async () =>
             {
-                WorktreeCounts counts = await InSlotAsync(slots, () => inspector.CountAsync(path, cancellationToken));
+                WorktreeCounts counts = await InSlotAsync(slots, () => inspector.CountAsync(path, cancellationToken), cancellationToken);
 
                 return new WorktreeRow(
                     repository,
@@ -199,10 +199,10 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     private static bool IsGitFailure(Exception exception) => exception is GitException;
 
-    /// <summary>One git read once a slot is free, the slot held only while it runs, so no read waits on another for a slot.</summary>
-    private static async Task<T> InSlotAsync<T>(SemaphoreSlim slots, Func<Task<T>> read)
+    /// <summary>One git read once a slot is free, the slot held only while it runs, so no read waits on another for a slot; a read still waiting when the scan is cancelled never starts.</summary>
+    private static async Task<T> InSlotAsync<T>(SemaphoreSlim slots, Func<Task<T>> read, CancellationToken cancellationToken)
     {
-        await slots.WaitAsync();
+        await slots.WaitAsync(cancellationToken);
         try
         {
             return await read();
