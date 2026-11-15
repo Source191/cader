@@ -109,6 +109,16 @@ public sealed class WordingOfKeyBarShould
     }
 
     [Fact]
+    public void GiveEveryItemOnEveryBarAWord()
+    {
+        SessionRow[] everyKind = [Running, Stopped, EmptyTerminal, BusyTerminal];
+        List<KeyBar> bars = [Wording.WorktreesBar(updateKnown: true), Wording.ConfigBar(updateKnown: true)];
+        bars.AddRange(everyKind.Select(selected => Wording.SessionsBar(Selecting(everyKind, selected), updateKnown: true)));
+
+        bars.SelectMany(bar => bar.First.Concat(bar.Second)).ShouldAllBe(item => item.Word.Length > 0, "a key without a hint would be placed by its help line instead");
+    }
+
+    [Fact]
     public void FitTheKeyBarAt120ForEveryRowKind()
     {
         SessionRow[] everyKind = [Running, Stopped, EmptyTerminal, BusyTerminal];
