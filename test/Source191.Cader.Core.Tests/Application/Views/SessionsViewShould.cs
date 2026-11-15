@@ -269,6 +269,24 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void RefuseToRenameASessionWhoseFolderHasGone()
+    {
+        Session.Background stopped = Job("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", "dddd4444");
+        Session.Background running = stopped with { State = DisplayState.Idle, Process = new JobProcess.Running(4242) };
+        SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");
+
+        foreach (Session.Background session in new[] { stopped, running })
+        {
+            SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([Row(session) with { Location = gone }]));
+
+            ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Of('r')));
+
+            update.Effects.ShouldBeEmpty();
+            update.State.Message.ShouldBe(new StatusMessage.FolderGone(Listed.As("fix-123")));
+        }
+    }
+
+    [Fact]
     public void OfferToCloseATerminalSessionThatHasNoMessagesAndCloseItOnX()
     {
         Session.Interactive untouchedTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
