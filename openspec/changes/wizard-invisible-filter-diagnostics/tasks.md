@@ -25,8 +25,8 @@
 
 ## 5. Release housekeeping
 
-- [ ] 5.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1`, and add a `## Unreleased` line to `CHANGELOG.md` saying the wizard now explains a filter holding only blank or invisible characters. Verify that `Assert-VersionBumped.ps1` and the changelog check pass, and that `dotnet format --verify-no-changes` is clean.
-- [ ] 5.2 Run `openspec validate wizard-invisible-filter-diagnostics --strict` and verify it passes.
+- [x] 5.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1`, and add a `## Unreleased` line to `CHANGELOG.md` saying the wizard now explains a filter holding only blank or invisible characters. Verify that `Assert-VersionBumped.ps1` and the changelog check pass, and that `dotnet format --verify-no-changes` is clean.
+- [x] 5.2 Run `openspec validate wizard-invisible-filter-diagnostics --strict` and verify it passes.
 
 ## Workflow follow-up
 
