@@ -6,6 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Added
 
+- The Worktrees tab now lists each local branch checked out nowhere as a ⑂ branch row, and a branch of yours only on origin as a ○ origin row once its pull request shows it left behind or closed; on a branch row d asks before deleting the local branch and refuses when it holds commits on no remote branch and outside its merged pull request, D deletes it after you type its name, and an origin row is never deleted; n, o, f, s and Enter say the branch has no worktree, while p, c and P work as on any row
 - The new-session wizard now says when its repository filter holds only blank or invisible characters, which match no repository, and that Backspace clears them; the diagnostic log records how many repositories the wizard offered and when its filter first changed and with what kind of character, never the character itself, so a problem report can show why the list was empty (#298)
 - A Before branching setting on the Config tab, and a Before branching choice in the new-session wizard: Fetch origin, Pull default branch or Nothing, for what happens before a new worktree branches from origin's default branch (#273)
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
