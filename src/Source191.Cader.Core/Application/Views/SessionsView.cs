@@ -151,12 +151,17 @@ public static class SessionsView
             : Effect(state with { Message = StatusMessage.None }, new CloseEmptyTerminals(empty));
     }
 
-    /// <summary>Renaming restarts the session under the new name, so it waits until nothing is in flight.</summary>
+    /// <summary>Renaming restarts the session under the new name in its folder, so it waits until nothing is in flight and needs the folder.</summary>
     private static RowDecision Rename(SessionRow row)
     {
         if (row.Session is not Session.Background session)
         {
             return new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript));
+        }
+
+        if (row.Location is SessionLocation.FolderGone)
+        {
+            return new RowDecision.Explain(new StatusMessage.FolderGone(session.Name));
         }
 
         return (row.HasTranscript, session) switch
