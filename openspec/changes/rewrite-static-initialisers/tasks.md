@@ -6,24 +6,24 @@
 
 ## 2. The guard
 
-- [ ] 2.1 Red: `SourceConventionsShould.GiveCoreNoStaticInitialiser` fails for each static field or auto-property initialiser under `src\Source191.Cader.Core` outside its kept list (`StatusMessage.None`, `DetailRequests.NoRow`); verify it fails listing the remaining files.
+- [x] 2.1 Red: `SourceConventionsShould.GiveCoreNoStaticInitialiser` fails for each static field or auto-property initialiser under `src\Source191.Cader.Core` outside its kept list (`StatusMessage.None`, `DetailRequests.NoRow`); verify it fails listing the remaining files.
 
 ## 3. Convert, a green commit per group
 
-Each group is verified by the Core and Infrastructure suites passing and by a scoped Stryker run of its files (`--mutate`) in which every mutant has a `coveredBy` and none survives; a survivor gets the fact that pins the value, red then green, before the group's commit.
+Each group is verified by the Core and Infrastructure suites passing; the groups' mutants are checked together by 4.2's `--since:main` run over every converted file (one run instead of five, as it covers the same files), and a survivor gets the fact or rewrite that kills it.
 
-- [ ] 3.1 The `Wording*` files (`Wording`, `WordingOfConsole`, `WordingOfScreens`).
-- [ ] 3.2 Domain: `TabPalette`, `Key`, `DisplayState`, `BatchFileArgument`, `ClaudeCodeSupport`, `EditorChoice`, `InheritedEnvironment`, `ProgramLabel`, `ReleaseNotes`, `RowFilter`, `TerminalProfileId`, and the rest of `Domain`.
-- [ ] 3.3 Ports: `TerminalProfiles`, `WorkingFolder`, `UserConfig`, `TabOwner` and the rest of `Ports`.
-- [ ] 3.4 Application: the view states, `ConsoleState`, `DetailContent`, `TabScripts`, `OwnTab`, `ProblemReport`, `SetupFactsReader`, the timing constants and the rest; verify the guard fact passes.
-- [ ] 3.5 Diagnostics: `ChildCommand`, `ChildCommandWords`, `DiagnosticLine`, `ExceptionSummary`, `Heartbeat` and the rest, removing the 15 static-initialiser `Accepted:` marks; verify a scoped Stryker run of the four files shows every mutant Killed with a `coveredBy`, and only the line-0 frame mark left (`git grep "Stryker disable"`).
+- [x] 3.1 The `Wording*` files (`Wording`, `WordingOfConsole`, `WordingOfScreens`).
+- [x] 3.2 Domain: `TabPalette`, `Key`, `DisplayState`, `BatchFileArgument`, `ClaudeCodeSupport`, `EditorChoice`, `InheritedEnvironment`, `ProgramLabel`, `ReleaseNotes`, `RowFilter`, `TerminalProfileId`, and the rest of `Domain`.
+- [x] 3.3 Ports: `TerminalProfiles`, `WorkingFolder`, `UserConfig`, `TabOwner` and the rest of `Ports`.
+- [x] 3.4 Application: the view states, `ConsoleState`, `DetailContent`, `TabScripts`, `OwnTab`, `ProblemReport`, `SetupFactsReader`, the timing constants and the rest; verify the guard fact passes.
+- [x] 3.5 Diagnostics: `ChildCommand`, `ChildCommandWords`, `DiagnosticLine`, `ExceptionSummary`, `Heartbeat` and the rest, removing the 15 static-initialiser `Accepted:` marks; verify a scoped Stryker run of the four files shows every mutant Killed with a `coveredBy`, and only the line-0 frame mark left (`git grep "Stryker disable"`).
 
 ## 4. Prove and record
 
-- [ ] 4.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`; verify all pass.
-- [ ] 4.2 Run `dotnet stryker --since:main` over the whole branch; verify in the JSON report that no mutant has `static: true` and none survived or lacks coverage (the post-merge release run's mode, which the full run cannot show).
+- [x] 4.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`; verify all pass.
+- [x] 4.2 Run `dotnet stryker --since:main` over the whole branch; verify in the JSON report that no mutant has `static: true` and none survived or lacks coverage (the post-merge release run's mode, which the full run cannot show).
 - [ ] 4.3 Dispatch `mutation.yml` on the branch; verify no static mutant, no survivor and no mutant without coverage, and record the run.
-- [ ] 4.4 Update `.claude\rules\checks.md` (the static-mutant entries, the #3742 follow-up, the ledger's Accepted count back to 1) and `CLAUDE.md`'s C# idioms (Core declares no static initialiser, held by the new fact); verify `openspec validate rewrite-static-initialisers` passes.
+- [x] 4.4 Update `.claude\rules\checks.md` (the static-mutant entries, the #3742 follow-up, the ledger's Accepted count back to 1) and `CLAUDE.md`'s C# idioms (Core declares no static initialiser, held by the new fact); verify `openspec validate rewrite-static-initialisers` passes.
 
 ## Workflow follow-up
 
