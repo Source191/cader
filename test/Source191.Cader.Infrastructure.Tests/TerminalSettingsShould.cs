@@ -124,6 +124,53 @@ public sealed class TerminalSettingsShould : IDisposable
         ShouldRead(records, generated: [PowerShellId, CaderId, SessionId], listed: [CaderId]);
     }
 
+    [Theory]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader" }""")]
+    [InlineData("""{ "guid": "{3D7A06D2-710F-51D9-90C9-DACAE2C3AB46}", "hidden": false, "name": "Cader", "source": "Cader" }""")]
+    [InlineData($$"""{ "source": "Cader", "name": "Cader", "hidden": false, "guid": "{{CaderId}}" }""")]
+    public async Task ListAnEntryExactlyAsSetupAddsItAsAdded(string entry)
+    {
+        Given(StateFile, State);
+        Given(settings.Location, $$"""{ "profiles": [ { "guid": "{{PowerShellId}}" }, {{entry}} ] }""");
+
+        TerminalProfileRecords records = await settings.ReadAsync(TestContext.Current.CancellationToken);
+
+        records.ShouldBeOfType<TerminalProfileRecords.Read>().Added.Select(id => id.Text).ShouldBe([CaderId]);
+    }
+
+    /// <summary>Terminal adds properties to an entry when someone customises the profile, and that entry is theirs.</summary>
+    [Theory]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader", "icon": "mine.ico" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": true, "name": "Cader", "source": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": "false", "name": "Cader", "source": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Mine", "source": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader session", "source": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Other" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "name": "Cader", "source": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "name": "Cader" }""")]
+    [InlineData($$"""{ "guid": "{{PowerShellId}}", "hidden": false, "name": "Cader", "source": "Cader" }""")]
+    public async Task LeaveOutOfAddedAnEntryNotExactlyAsSetupAddsIt(string entry)
+    {
+        Given(StateFile, State);
+        Given(settings.Location, $$"""{ "profiles": [ {{entry}} ] }""");
+
+        TerminalProfileRecords records = await settings.ReadAsync(TestContext.Current.CancellationToken);
+
+        records.ShouldBeOfType<TerminalProfileRecords.Read>().Added.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ListBothAddedEntriesOnceAdded()
+    {
+        Given(StateFile, State);
+        Given(settings.Location, """{ "profiles": { "list": [] } }""");
+
+        await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
+
+        TerminalProfileRecords.Read read = (await settings.ReadAsync(TestContext.Current.CancellationToken)).ShouldBeOfType<TerminalProfileRecords.Read>();
+        read.Added.Select(id => id.Text).ShouldBe([CaderId, SessionId], ignoreOrder: true);
+    }
+
     [Fact]
     public async Task ReadAStateFileWithNoGeneratedProfilesAsNoneGenerated()
     {

@@ -45,7 +45,7 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
             using JsonDocument state = Parse(await File.ReadAllBytesAsync(StateFile, cancellationToken));
             using JsonDocument settings = Parse(await File.ReadAllBytesAsync(Location, cancellationToken));
 
-            return new TerminalProfileRecords.Read(Generated(state.RootElement), Listed(ProfileList(settings.RootElement)));
+            return new TerminalProfileRecords.Read(Generated(state.RootElement), Listed(ProfileList(settings.RootElement)), new HashSet<TerminalProfileId>());
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {

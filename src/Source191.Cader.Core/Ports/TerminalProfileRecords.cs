@@ -13,7 +13,7 @@ public abstract record TerminalProfileRecords
 
     /// <summary>
     /// The ids in the state file's <c>generatedProfiles</c>, and the id of every entry in the settings file's profile
-    /// list, hidden or not.
+    /// list, hidden or not; and the ids of the entries that are exactly the entry setup adds, which <c>--remove</c> may take out.
     /// </summary>
-    public sealed record Read(IReadOnlySet<TerminalProfileId> Generated, IReadOnlySet<TerminalProfileId> Listed) : TerminalProfileRecords;
+    public sealed record Read(IReadOnlySet<TerminalProfileId> Generated, IReadOnlySet<TerminalProfileId> Listed, IReadOnlySet<TerminalProfileId> Added) : TerminalProfileRecords;
 }

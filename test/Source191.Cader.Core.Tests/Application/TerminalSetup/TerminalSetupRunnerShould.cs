@@ -375,7 +375,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task SayTerminalsSettingsAreNotChangedAndAskNothingOfThemWhenNothingIsHidden()
     {
         fragment.Installed();
-        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Read(new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>([CaderEntry.Id])));
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Read(new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>()));
 
         await RunAsync("y\ny\n");
 
@@ -555,7 +555,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
         HashSet<TerminalProfileId> listed = [.. generated.Except(hidden.Select(entry => entry.Id))];
 
-        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, listed));
+        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, listed, new HashSet<TerminalProfileId>()));
     }
 
     private Task<int> RunAsync(string answers, TerminalSetupRequest? request = null)
