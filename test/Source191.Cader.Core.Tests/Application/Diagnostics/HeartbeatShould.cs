@@ -121,6 +121,21 @@ public sealed class HeartbeatShould
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalled(TimeSpan.FromMilliseconds(600))]);
     }
 
+    [Fact]
+    public void NameTheOuterMarkOfNestedWork()
+    {
+        heartbeat.Beat();
+        heartbeat.Mark(Key, () =>
+        {
+            clock.Advance(TimeSpan.FromMilliseconds(100));
+            heartbeat.Mark(Rows, () => clock.Advance(TimeSpan.FromMilliseconds(500)));
+            clock.Advance(TimeSpan.FromMilliseconds(50));
+        });
+        BeatAfter(200);
+
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalledRunning(TimeSpan.FromMilliseconds(600), Key, TimeSpan.FromMilliseconds(650))]);
+    }
+
     private void BeatAfter(int milliseconds)
     {
         clock.Advance(TimeSpan.FromMilliseconds(milliseconds));
