@@ -87,4 +87,17 @@ public sealed class TerminalTabShould
 
         return shell.ShouldBeOfType<TabShell.Above>().Shell.Id;
     }
+
+    [Fact]
+    public void GiveUpWhenWindowsTerminalIsMoreThanEightStepsAway()
+    {
+        FakeProcessRegistry processes = new FakeProcessRegistry().InTree(1, "WindowsTerminal", 0, Fixtures.Noon).InTree(4000, "pwsh", 1, Fixtures.Noon.AddMinutes(1));
+        for (int process = 4001; process <= 4008; process++)
+        {
+            processes.InTree(process, "node", process - 1, Fixtures.Noon.AddMinutes(process - 3999));
+        }
+
+        TerminalTab.ShellAbove(TestProcesses.Confirmed(processes, 4008), processes).ShouldBe(new TabShell.None());
+        TerminalTab.TerminalOf(TestProcesses.Confirmed(processes, 4008), processes).ShouldBeNull();
+    }
 }
