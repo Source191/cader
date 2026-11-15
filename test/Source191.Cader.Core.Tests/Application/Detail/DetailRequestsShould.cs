@@ -71,4 +71,14 @@ public sealed class DetailRequestsShould
     }
 
     private static DetailContent Content(string title) => new(title, [], []);
+
+    [Fact]
+    public void DropAnAnswerThatArrivesTwice()
+    {
+        DetailRequests requests = new();
+        DetailRequest asked = requests.Ask("fix-123");
+        requests.Accept(asked, Content("fix-123")).ShouldBeOfType<DetailAnswer.Show>();
+
+        requests.Accept(asked, Content("fix-123")).ShouldBeOfType<DetailAnswer.Dropped>();
+    }
 }
