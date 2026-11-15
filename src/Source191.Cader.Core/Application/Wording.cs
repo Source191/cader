@@ -444,6 +444,8 @@ public static partial class Wording
         ]);
     }
 
+    public static string TerminalSettingsReadOnly(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+
     public static string TerminalSettingsChanged(string settingsPath) => $"{settingsPath} changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.";
 
     public static string TerminalSettingsNotVerified(string settingsPath) => $"{settingsPath} would not have held exactly the profile list it should once changed, so nothing was written. A file that names \"profiles\" twice does this, as Windows Terminal reads the last one.";

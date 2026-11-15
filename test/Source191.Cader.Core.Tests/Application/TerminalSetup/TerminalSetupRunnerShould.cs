@@ -473,12 +473,12 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task ReportAFailedEntryWriteAndStillOfferTheBell()
     {
         terminal = Hiding(SessionEntry);
-        terminal.FailTheWriteWith = new IOException("read-only");
+        terminal.FailTheWriteWith = new IOException("in use");
 
         int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
 
         exitCode.ShouldBe(1);
-        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "read-only"));
+        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "in use"));
         fragment.Written.Count.ShouldBe(1);
         settings.Enabled.ShouldBe(1);
     }
@@ -508,6 +508,21 @@ public sealed class TerminalSetupRunnerShould : IDisposable
 
         exitCode.ShouldBe(1);
         error.ToString().ShouldContain(Wording.TerminalSettingsChanged(terminal.Location));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.IsReadOnly();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsReadOnly(terminal.Location, [SessionEntry]));
         terminal.Added.ShouldBeEmpty();
         fragment.Written.Count.ShouldBe(1);
         settings.Enabled.ShouldBe(1);

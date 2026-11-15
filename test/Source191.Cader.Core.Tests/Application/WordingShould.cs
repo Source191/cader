@@ -999,6 +999,16 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        Wording.TerminalSettingsReadOnly(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not add the entries: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is read-only, so nothing was written.
+            Add each of these to its profile list by hand, or clear its read-only attribute and run the command again:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
     public void SayTerminalsNewSettingsDidNotCheckOut()
     {
         Wording.TerminalSettingsNotVerified(TerminalSettingsFile).ShouldBe(@"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json would not have held exactly the profile list it should once changed, so nothing was written. A file that names ""profiles"" twice does this, as Windows Terminal reads the last one.");

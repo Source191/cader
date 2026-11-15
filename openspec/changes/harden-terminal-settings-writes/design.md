@@ -8,13 +8,13 @@
 
 ### 1. The write answers a result, not an exception
 
-Both writes answer a `Ports\TerminalSettingsEdit`: `Written(Backup)`, `Unchanged` (removal found nothing to take out), `IsALink`, `ReadOnly`, `ChangedMeanwhile` and `NotVerified`. Each refusal writes nothing. `SettingsFileIsALinkException` becomes the `IsALink` case. `IOException` and `UnauthorizedAccessException` stay for real input and output failures (a file in use, a denied ACL, a file with no readable profile list), which the runner reports as before. The runner has one switch over the result; the words are `Wording`'s.
+Both writes answer a `Ports\TerminalSettingsEdit`: `Written(Backup)`, `Unchanged` (removal found nothing to take out), `IsALink`, `IsReadOnly`, `ChangedMeanwhile` and `NotVerified`. Each refusal writes nothing. `SettingsFileIsALinkException` becomes the `IsALink` case. `IOException` and `UnauthorizedAccessException` stay for real input and output failures (a file in use, a denied ACL, a file with no readable profile list), which the runner reports as before. The runner has one switch over the result; the words are `Wording`'s.
 
 ### 2. One guarded write, shared by add and remove
 
 `TerminalSettings` keeps one private path for both changes:
 
-1. Refuse a link or other reparse point (`IsALink`), then a file with the read-only attribute (`ReadOnly`), before reading anything.
+1. Refuse a link or other reparse point (`IsALink`), then a file with the read-only attribute (`IsReadOnly`), before reading anything.
 2. Read the bytes.
 3. Build the new bytes (insertion or removal, decision 4); a removal that finds nothing answers `Unchanged`.
 4. Verify (decision 3); a failure answers `NotVerified`.

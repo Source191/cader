@@ -20,7 +20,7 @@ Every fact runs over a temporary folder or the fakes, never Windows Terminal's r
 
 ## 5. Read-only file (gap 4)
 
-- [ ] 5.1 **Red:** `TerminalSettingsShould.RefuseAReadOnlyFileAndLeaveItAlone` answers `ReadOnly` (it threw before); runner and `Wording` facts give the entries to add by hand. **Green:** check the attribute before reading. **Verify:** the facts pass.
+- [ ] 5.1 **Red:** `TerminalSettingsShould.RefuseAReadOnlyFileAndLeaveItAlone` answers `IsReadOnly` (it threw before); runner and `Wording` facts give the entries to add by hand. **Green:** check the attribute before reading. **Verify:** the facts pass.
 
 ## 6. `--remove` takes out what setup added (gap 5)
 

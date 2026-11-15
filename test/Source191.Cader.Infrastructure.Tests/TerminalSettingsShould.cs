@@ -444,9 +444,11 @@ public sealed class TerminalSettingsShould : IDisposable
         Given(settings.Location, original);
         File.SetAttributes(settings.Location, FileAttributes.ReadOnly);
 
-        await Should.ThrowAsync<UnauthorizedAccessException>(() => settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken));
+        (await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken)).ShouldBe(new TerminalSettingsEdit.IsReadOnly());
 
         ShouldHold(original, at: string.Empty, inserted: string.Empty, withByteOrderMark: false);
+        File.GetAttributes(settings.Location).HasFlag(FileAttributes.ReadOnly).ShouldBeTrue();
+        Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
     }
 
     private static string CaderEntry => $$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader" }""";

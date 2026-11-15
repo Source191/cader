@@ -9,6 +9,9 @@ public abstract record TerminalSettingsEdit
     /// <summary>A symbolic link or other reparse point, as a dotfiles set-up makes it: replacing the file would replace the link.</summary>
     public sealed record IsALink : TerminalSettingsEdit;
 
+    /// <summary>The file has the read-only attribute, which someone set to keep it as it is.</summary>
+    public sealed record IsReadOnly : TerminalSettingsEdit;
+
     /// <summary>The file changed after it was read, most likely saved by Windows Terminal, so the change would have lost that save.</summary>
     public sealed record ChangedMeanwhile : TerminalSettingsEdit;
 
