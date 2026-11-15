@@ -1,5 +1,6 @@
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application.Views;
@@ -158,6 +159,16 @@ public sealed class ConfigViewShould
 
         update.Effects.ShouldBe([new ClearDiagnosticLog(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read())]);
         update.State.Message.ShouldBe(StatusMessage.None);
+    }
+
+    [Fact]
+    public void AskToClearALogThatIsOn()
+    {
+        LogFiles files = new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read();
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(files) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work).WithDiagnosticLogToggled(), facts))).State;
+
+        ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new ClearDiagnosticLog(files)]);
     }
 
     [Fact]
