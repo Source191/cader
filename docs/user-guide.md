@@ -77,7 +77,7 @@ Every git worktree under your repository roots, with or without a session, then 
 
 Gone and origin rows are as of your last `git fetch --prune`: Cader never fetches, so a branch deleted on GitHub since then is not yet gone. A branch is left behind only when its shown pull request has merged and the branch has commits that the pull request's head commit does not contain, so a squash merge is judged correctly. Nothing reads · no PR or ✗ closed while the pull request cannot be looked up (no origin, the CLI missing or signed out).
 
-The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch, then the BRANCH flag's reason (such as `1 commit after #298 merged`), the pull request, the folder and when Cader created it. For a branch or origin row it gives the repository instead of the folder, and the branch's unpushed commits.
+The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch (or, when BRANCH flags it, the flag's reason, such as `1 commit after #298 merged`), the pull request, the folder and when Cader created it. For a branch or origin row it gives the repository instead of the folder, and the branch's unpushed commits.
 
 ### The Config tab
 

@@ -215,8 +215,8 @@ public sealed class WordingOfKeysAndColumnsShould
                         broken (registration or owner gone); empty (a leftover folder);
                         elsewhere (a worktree of a repository outside the roots);
                         branch (checked out in no worktree); origin (only on origin); then the reason in full
-            Branch      the branch, whether a worktree's is merged into origin's default branch,
-                        then the BRANCH flag's reason in full
+            Branch      the branch and whether a worktree's is merged into origin's default branch,
+                        or, when BRANCH flags it, the flag's reason in full
             PR          its pull request, as the sessions table shows it, or none; p opens it
             Folder      the worktree's folder
             Created     when Cader created it, or not by Cader

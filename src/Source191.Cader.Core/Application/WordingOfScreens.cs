@@ -301,7 +301,7 @@ public static partial class Wording
     public static IReadOnlyList<ColumnHelp> WorktreesPane { get; } =
     [
         new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots);\nbranch (checked out in no worktree); origin (only on origin); then the reason in full"),
-        new("Branch", "the branch, whether a worktree's is merged into origin's default branch,\nthen the BRANCH flag's reason in full"),
+        new("Branch", "the branch and whether a worktree's is merged into origin's default branch,\nor, when BRANCH flags it, the flag's reason in full"),
         new("PR", "its pull request, as the sessions table shows it, or none; p opens it"),
         new("Folder", "the worktree's folder"),
         new("Created", "when Cader created it, or not by Cader"),

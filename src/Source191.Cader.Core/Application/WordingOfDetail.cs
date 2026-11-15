@@ -47,7 +47,7 @@ public static partial class Wording
     {
         WorktreeRow row = detail.Row;
         IReadOnlyList<DetailLine> health = [new("Health", HealthLine(row.Health), ToneOf(row.Health.Kind), Span: 3)];
-        IReadOnlyList<DetailLine> branch = [new("Branch", WithReason(BranchLine(row.Head, detail.Merge), row), TextTone.Plain, Span: 2), new("PR", PullRequestLine(row.PullRequest), TextTone.Plain, Span: 1)];
+        IReadOnlyList<DetailLine> branch = [new("Branch", FlaggedBranchLine(row, detail.Merge), TextTone.Plain, Span: 2), new("PR", PullRequestLine(row.PullRequest), TextTone.Plain, Span: 1)];
         IReadOnlyList<IReadOnlyList<DetailLine>> facts = row.Placement switch
         {
             Placement.Folder =>
@@ -74,12 +74,15 @@ public static partial class Wording
         _ => new("Changes", Count(row.UnpushedCommits, "unpushed commit"), TextTone.Plain, Span: 3),
     };
 
-    /// <summary>The branch, then its flag's reason when it is flagged: "c-new-bug · 1 commit after #298 merged".</summary>
-    private static string WithReason(string branch, WorktreeRow row)
+    /// <summary>
+    /// A flagged branch, then its flag's reason in the merge words' place ("c-new-bug · 1 commit after #298 merged"), so
+    /// the reason fits in full beside the pull request; an unflagged branch with its merge state.
+    /// </summary>
+    private static string FlaggedBranchLine(WorktreeRow row, DetailFact<MergeState> merge)
     {
         string reason = BranchReason(row);
 
-        return reason.Length == 0 ? branch : $"{branch} · {reason}";
+        return reason.Length == 0 ? BranchLine(row.Head, merge) : $"{HeadLine(row.Head)} · {reason}";
     }
 
     /// <summary>The listing's reason, a first prompt for a session that needs input and has never had one, or nothing.</summary>
