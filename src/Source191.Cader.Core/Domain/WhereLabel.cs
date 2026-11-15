@@ -72,12 +72,10 @@ public abstract record WhereLabel
 
         string[] prefixes = [repository + "-", repository + "\\"];
 
-        // Stryker disable once Linq : Equivalent: DefaultIfEmpty guarantees an element, so First and FirstOrDefault agree
         return prefixes
             .Where(prefix => label.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Select(prefix => label[prefix.Length..])
-            .DefaultIfEmpty(label)
-            .First();
+            .FirstOrDefault(label);
     }
 
     private static string CutEnd(string text, int width) => (text.Length <= width, width) switch

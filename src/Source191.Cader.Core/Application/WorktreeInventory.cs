@@ -279,12 +279,10 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     /// <summary>The first session with a process working in the worktree or a folder inside it.</summary>
     private static WorktreeSession LiveSessionIn(FolderPath worktree, IReadOnlyList<Session> sessions)
     {
-        // Stryker disable once Linq : Equivalent: DefaultIfEmpty guarantees an element, so First and FirstOrDefault agree
         return sessions
             .Where(session => session is Session.Interactive or Session.Background { Process: JobProcess.Running })
             .Where(session => session.WorkingDirectory.IsUnder(worktree))
             .Select(WorktreeSession (session) => new WorktreeSession.Running(session.SessionId, session.Name))
-            .DefaultIfEmpty(new WorktreeSession.None())
-            .First();
+            .FirstOrDefault(new WorktreeSession.None());
     }
 }
