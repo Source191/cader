@@ -56,6 +56,17 @@ public static partial class Wording
         return whole < 1000 ? $"{whole} MB" : $"{(megabytes / 1024).ToString("F1", CultureInfo.InvariantCulture)} GB";
     }
 
+    /// <summary>A file's size as the Config tab's log rows write it: whole kilobytes rounded up below a megabyte, as Explorer shows them, then megabytes to one decimal.</summary>
+    public static string FileSize(long bytes)
+    {
+        const long kilobyte = 1024;
+        const long megabyte = kilobyte * kilobyte;
+
+        return bytes < megabyte
+            ? $"{((bytes + kilobyte - 1) / kilobyte).ToString(CultureInfo.InvariantCulture)} KB"
+            : $"{((double)bytes / megabyte).ToString("F1", CultureInfo.InvariantCulture)} MB";
+    }
+
     /// <summary>The settings row's Claude Code value: the version as the CLI printed it, and the minimum with a prompt to update when it is older.</summary>
     private static string ClaudeVersion(ClaudeCodeVersion claude) => claude switch
     {
