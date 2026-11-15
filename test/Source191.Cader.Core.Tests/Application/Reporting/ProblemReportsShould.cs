@@ -59,4 +59,61 @@ public sealed class ProblemReportsShould
         report.Text.ShouldNotContain("Last crash");
         report.Text.ShouldContain("Settings: editor VsCode, update checks on, 1 repository root");
     }
+
+    [Fact]
+    public async Task SayWhenUpdateChecksAreOffAndASingleRootIsOne()
+    {
+        Settings off = Settings.Resolve([FolderPath.From(@"C:\Users\me\source\repos")], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: false, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+
+        ProblemReport report = await new ProblemReports(log, counts, crashFile, Start, TestSettings.Current(off), clock).BuildAsync();
+
+        report.Text.Split('\n')[2].ShouldBe("Settings: editor VsCode, update checks off, 1 repository root");
+    }
+
+    [Fact]
+    public async Task SayManyRootsInThePlural()
+    {
+        ProblemReport report = await new ProblemReports(log, counts, crashFile, Start, TestSettings.Current(@"C:\Users\me\source\repos", @"D:\work", @"E:\more"), clock).BuildAsync();
+
+        report.Text.Split('\n')[2].ShouldBe("Settings: editor VsCode, update checks on, 3 repository roots");
+    }
+
+    [Fact]
+    public async Task LeaveLinesOutInTheOrderOfTheirBands()
+    {
+        string crashLine = CrashLine.At(new DateTimeOffset(2026, 10, 28, 9, 0, 1, TimeSpan.Zero));
+        crashFile.Write(string.Join('\n', [.. Enumerable.Range(0, 3).Select(index => $"earlier crash line {index} {new string('c', 100)}"), crashLine]) + "\n");
+        log.Record(new ViewShown(ViewKind.Sessions));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        log.Record(new Failed(FailureSite.Load, null, ExceptionSummary.From(new GitException("x", inUse: false))));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        log.Record(new ViewShown(ViewKind.Worktrees));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        log.Record(new Failed(FailureSite.Effect, null, ExceptionSummary.From(new GitException("y", inUse: false))));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        log.Record(new ViewShown(ViewKind.Config));
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(5));
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 128, TimeSpan.FromMilliseconds(5));
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["log"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(5));
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["log"], WorkingFolder.Inherit)), 128, TimeSpan.FromMilliseconds(5));
+        ReportTitle title = ReportTitle.From("Attach froze");
+        ProblemReport report = await new ProblemReports(log, counts, crashFile, Start, TestSettings.Current(@"C:\Users\me\source\repos"), clock).BuildAsync();
+        string[] all = report.Text.Split('\n');
+        string[] inOrder =
+        [
+            .. all.Where(line => line.StartsWith("earlier crash line", StringComparison.Ordinal)),
+            .. all.Where(line => line.Contains(" view ", StringComparison.Ordinal)),
+            .. all.Where(line => line.Contains(" counts ", StringComparison.Ordinal) && line.Contains("exit 0", StringComparison.Ordinal)),
+            .. all.Where(line => line.Contains(" failed ", StringComparison.Ordinal) && line != crashLine),
+            .. all.Where(line => line.Contains(" counts ", StringComparison.Ordinal) && line.Contains("exit 128", StringComparison.Ordinal)),
+        ];
+
+        inOrder.Length.ShouldBe(12);
+        foreach (int dropped in Enumerable.Range(1, inOrder.Length))
+        {
+            string expected = string.Join('\n', all.Where(line => !inOrder.Take(dropped).Contains(line))) + (dropped == 1 ? "\n(1 line left out to fit the page address)" : $"\n({dropped} lines left out to fit the page address)");
+
+            report.FitWithin(title, ProblemReportAddress.Length(title, expected)).ShouldBe(expected, $"after {dropped} lines are left out");
+        }
+    }
 }
