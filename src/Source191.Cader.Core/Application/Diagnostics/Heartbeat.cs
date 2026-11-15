@@ -10,15 +10,15 @@ namespace Source191.Cader.Application.Diagnostics;
 /// </summary>
 public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, DiagnosticLog log)
 {
-    public static readonly TimeSpan Interval = TimeSpan.FromMilliseconds(250);
+    public static TimeSpan Interval => TimeSpan.FromMilliseconds(250);
 
     /// <summary>About where a key press starts to feel sluggish.</summary>
-    public static readonly TimeSpan Stall = TimeSpan.FromMilliseconds(100);
+    public static TimeSpan Stall => TimeSpan.FromMilliseconds(100);
 
     /// <summary>A freeze anyone notices.</summary>
-    public static readonly TimeSpan Freeze = TimeSpan.FromMilliseconds(500);
+    public static TimeSpan Freeze => TimeSpan.FromMilliseconds(500);
 
-    public static readonly TimeSpan Sleep = TimeSpan.FromSeconds(30);
+    public static TimeSpan Sleep => TimeSpan.FromSeconds(30);
 
     private long previous;
     private bool beaten;

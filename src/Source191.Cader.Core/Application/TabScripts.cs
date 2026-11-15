@@ -9,13 +9,13 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class TabScripts(string claudeExecutable, string consoleExecutable)
 {
-    private static readonly TabColour TrustColour = TabPalette.Green;
+    private static TabColour TrustColour => TabPalette.Green;
 
     /// <summary>The last palette colour, so a plain shell never looks like a session.</summary>
-    private static readonly TabColour ShellColour = TabPalette.Last;
+    private static TabColour ShellColour => TabPalette.Last;
 
     /// <summary>The winget package, exactly, from the winget source alone: the package the check followed.</summary>
-    private static readonly string[] WingetPackage = ["--id", UpdateCheck.PackageId, "--exact", "--source", UpdateCheck.Source];
+    private static IReadOnlyList<string> WingetPackage => ["--id", UpdateCheck.PackageId, "--exact", "--source", UpdateCheck.Source];
 
     /// <summary>
     /// A session's tab: the shell claims the registration with its own $PID (so it outlives the short-lived claim-tab

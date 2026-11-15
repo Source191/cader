@@ -9,7 +9,7 @@ namespace Source191.Cader.Application.Views;
 /// </summary>
 public static class ConsoleView
 {
-    private static readonly HashSet<Type> Handled = [typeof(SelectTab), typeof(NextTab), typeof(PreviousTab)];
+    private static HashSet<Type> Handled => [typeof(SelectTab), typeof(NextTab), typeof(PreviousTab)];
 
     public static ConsoleState Apply(ConsoleState state, ISwitchesTab effect)
     {

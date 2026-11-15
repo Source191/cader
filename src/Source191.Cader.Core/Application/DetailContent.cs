@@ -4,5 +4,5 @@ namespace Source191.Cader.Application;
 public sealed record DetailContent(string Title, IReadOnlyList<IReadOnlyList<DetailLine>> Facts, IReadOnlyList<DetailLine> Below)
 {
     /// <summary>An empty pane: no title and no lines, shown before a row is selected and when the selection clears.</summary>
-    public static readonly DetailContent Empty = new(string.Empty, [], []);
+    public static DetailContent Empty => new(string.Empty, [], []);
 }

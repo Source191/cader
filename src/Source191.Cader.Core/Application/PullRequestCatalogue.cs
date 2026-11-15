@@ -17,8 +17,8 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProvider clock, RefreshCounts refreshes) : IDisposable
 {
-    private static readonly TimeSpan Window = TimeSpan.FromSeconds(60);
-    private static readonly TimeSpan UnavailableWindow = TimeSpan.FromMinutes(3);
+    private static TimeSpan Window => TimeSpan.FromSeconds(60);
+    private static TimeSpan UnavailableWindow => TimeSpan.FromMinutes(3);
 
     private readonly ConcurrentDictionary<string, Answer> answers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Lazy<Task>> running = new(StringComparer.Ordinal);

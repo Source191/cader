@@ -9,7 +9,7 @@ namespace Source191.Cader.Application.Diagnostics;
 public sealed class RecordedProcessRunner(IProcessRunner inner, DiagnosticLog log, ProcessCounts counts, TimeProvider clock) : IProcessRunner
 {
     // Above the sessions refresh interval: claude agents can take two seconds on every refresh, which is not news.
-    private static readonly TimeSpan Slow = TimeSpan.FromSeconds(5);
+    private static TimeSpan Slow => TimeSpan.FromSeconds(5);
 
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {

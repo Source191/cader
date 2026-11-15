@@ -13,7 +13,7 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettings terminalSettings, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, ClaudeFolder claudeFolder, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
 {
-    private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
+    private static CodeName This => CodeName.For(typeof(SetupFactsReader));
 
     public async Task<SetupFacts> ReadAsync(CancellationToken cancellationToken)
     {

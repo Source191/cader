@@ -5,7 +5,7 @@ namespace Source191.Cader.Application;
 /// <summary>What the first start of a version shows before the console: the changes since the version that last ran, or nothing.</summary>
 public abstract record WhatsNewAtStart
 {
-    public static readonly WhatsNewAtStart Nothing = new Silent();
+    public static WhatsNewAtStart Nothing => new Silent();
 
     /// <summary>Show what changed, newest release first, up to the running version.</summary>
     public sealed record Show(ReleaseVersion Running, IReadOnlyList<ReleaseSection> Sections) : WhatsNewAtStart;

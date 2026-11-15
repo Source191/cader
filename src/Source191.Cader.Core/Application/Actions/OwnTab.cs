@@ -9,7 +9,7 @@ namespace Source191.Cader.Application.Actions;
 /// </summary>
 public sealed class OwnTab(ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock)
 {
-    private static readonly TabColour Preferred = TabPalette.Green;
+    private static TabColour Preferred => TabPalette.Green;
 
     private readonly TabColourSelection colours = new(TabPalette.Default);
 

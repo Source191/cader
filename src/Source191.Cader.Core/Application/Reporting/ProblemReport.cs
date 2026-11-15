@@ -14,7 +14,7 @@ public sealed class ProblemReport
     public const int AddressLimit = 7500;
 
     /// <summary>A title as long as one can be, of the ASCII character that escapes longest.</summary>
-    private static readonly ReportTitle LongestTitle = ReportTitle.From(new string('%', ReportTitle.MostCharacters));
+    private static ReportTitle LongestTitle => ReportTitle.From(new string('%', ReportTitle.MostCharacters));
 
     private readonly IReadOnlyList<ReportLine> lines;
 

@@ -8,7 +8,7 @@ public sealed record SessionsViewState(
     StatusMessage Message)
     : IListViewState<SessionRow>
 {
-    private static readonly ListPolicy<SessionRow> Policy = new(
+    private static ListPolicy<SessionRow> Policy => new(
         KeyOf: row => row.Session.SessionId.Value,
         FilterFields: row => [row.Repository, .. FilterText.Of(row.Session.Name), .. FilterText.Of(row.Head)],
         Order: ByAttention,
@@ -16,7 +16,7 @@ public sealed record SessionsViewState(
         Selectable: _ => true);
 
     /// <summary>Nothing listed yet: the first listing has not arrived, so the screen shows that it is waiting rather than an empty table.</summary>
-    public static readonly SessionsViewState Empty = new(Policy.EmptyList(), new LoadBanner.None(), StatusMessage.None);
+    public static SessionsViewState Empty => new(Policy.EmptyList(), new LoadBanner.None(), StatusMessage.None);
 
     /// <summary>The automated runs the last listing held, for the counts; kept when a listing fails, as the rows are.</summary>
     public AutomatedRuns AutomatedRuns { get; init; } = AutomatedRuns.None;

@@ -8,7 +8,7 @@ namespace Source191.Cader.Application.Diagnostics;
 public sealed class RefreshCounts(TimeProvider clock, DiagnosticLog log)
 {
     /// <summary>Clearly worse than the listing's usual 1.6 to 2 seconds, and still under the 5-second Sessions cadence.</summary>
-    public static readonly TimeSpan Slow = TimeSpan.FromSeconds(3);
+    public static TimeSpan Slow => TimeSpan.FromSeconds(3);
 
     private readonly DurationSample[] samples = [.. Enum.GetValues<RefreshPart>().Select(_ => new DurationSample())];
 

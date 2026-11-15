@@ -12,7 +12,7 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock, ITranscripts transcripts, PullRequestCatalogue pullRequests)
 {
-    private static readonly TimeSpan CacheWindow = TimeSpan.FromSeconds(30);
+    private static TimeSpan CacheWindow => TimeSpan.FromSeconds(30);
 
     // Refreshes can overlap (the timer and the refresh after an action), so the cache must take concurrent writes.
     private readonly ConcurrentDictionary<FolderPath, (DateTimeOffset CachedAt, Located Located)> locations = new();

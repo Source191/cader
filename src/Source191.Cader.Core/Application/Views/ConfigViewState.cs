@@ -6,14 +6,14 @@ public sealed record ConfigViewState(
     StatusMessage Message)
     : IListViewState<ConfigRow>
 {
-    private static readonly ListPolicy<ConfigRow> Policy = new(
+    private static ListPolicy<ConfigRow> Policy => new(
         KeyOf: row => row.Key,
         FilterFields: FilterFieldsOf,
         Order: rows => rows,
         KeyComparison: StringComparison.Ordinal,
         Selectable: row => row is not ConfigRow.Heading);
 
-    public static readonly ConfigViewState Empty = new(Policy.EmptyList(), new LoadBanner.None(), StatusMessage.None);
+    public static ConfigViewState Empty => new(Policy.EmptyList(), new LoadBanner.None(), StatusMessage.None);
 
     public ConfigRow? Selected => List.Selected;
 

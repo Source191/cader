@@ -11,7 +11,7 @@ public static class StatusLayout
     private const string Ellipsis = "…";
 
     /// <summary>How long a success stays before it clears by itself.</summary>
-    public static readonly TimeSpan SuccessShownFor = TimeSpan.FromSeconds(10);
+    public static TimeSpan SuccessShownFor => TimeSpan.FromSeconds(10);
 
     /// <summary>Whether a message of this tone clears by itself, after <see cref="SuccessShownFor"/>: a success does, everything else stays until it is cleared.</summary>
     public static bool ClearsBySelf(StatusTone tone) => tone switch

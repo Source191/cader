@@ -12,8 +12,7 @@ public sealed record ExceptionSummary
 {
     private const int MostFrames = 20;
     private const int DeepestInner = 3;
-    // Stryker disable once String : Accepted: a static initialiser runs once per test process and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so the mutant cannot be attributed; ExceptionSummaryShould.LeaveOutTheFramesOfAwaitMachinery pins both namespaces
-    private static readonly string[] AwaitMachinery = ["System.Runtime.CompilerServices", "System.Runtime.ExceptionServices"];
+    private static IReadOnlyList<string> AwaitMachinery => ["System.Runtime.CompilerServices", "System.Runtime.ExceptionServices"];
 
     private readonly string text;
 

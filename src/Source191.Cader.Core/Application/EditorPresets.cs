@@ -10,7 +10,7 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class EditorPresets(IEditorLocator locator)
 {
-    private static readonly EditorPreset[] LookedFor = [EditorPreset.VsCode, EditorPreset.VisualStudio, EditorPreset.Rider];
+    private static IReadOnlyList<EditorPreset> LookedFor => [EditorPreset.VsCode, EditorPreset.VisualStudio, EditorPreset.Rider];
 
     public async Task<IReadOnlySet<EditorPreset>> MissingAsync(CancellationToken cancellationToken)
     {

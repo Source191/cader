@@ -18,7 +18,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
     /// <summary>About five seconds in all: long enough for a shell or session that is ending to let go of its folder.</summary>
     private const int FolderAttempts = 20;
 
-    private static readonly TimeSpan BetweenAttempts = TimeSpan.FromMilliseconds(250);
+    private static TimeSpan BetweenAttempts => TimeSpan.FromMilliseconds(250);
 
     public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, bool merged, CancellationToken cancellationToken)
     {

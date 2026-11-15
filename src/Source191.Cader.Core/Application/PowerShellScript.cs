@@ -14,7 +14,7 @@ public static class PowerShellScript
     /// tokenizer reads as a single quote</see>: the ASCII apostrophe and U+2018 to U+201B.
     /// Any of them would end the literal, so each is doubled with itself and the text comes back unchanged.
     /// </summary>
-    private static readonly char[] SingleQuotes = ['\'', '‘', '’', '‚', '‛'];
+    private const string SingleQuotes = "'‘’‚‛";
 
     /// <summary>The only way a value enters a tab's script: a single-quoted literal PowerShell reads back unchanged.</summary>
     public static string Quote(string text)
@@ -24,7 +24,7 @@ public static class PowerShellScript
         foreach (char character in text)
         {
             quoted.Append(character);
-            if (Array.IndexOf(SingleQuotes, character) >= 0)
+            if (SingleQuotes.Contains(character, StringComparison.Ordinal))
             {
                 quoted.Append(character);
             }

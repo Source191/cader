@@ -9,7 +9,7 @@ namespace Source191.Cader.Application.Diagnostics;
 /// </summary>
 public sealed class PeriodicCounts(TimeProvider clock, DiagnosticLog log, PerformanceCounts counts) : IDisposable
 {
-    public static readonly TimeSpan Every = TimeSpan.FromMinutes(10);
+    public static TimeSpan Every => TimeSpan.FromMinutes(10);
 
     private readonly ITimer timer = clock.CreateTimer(_ => log.WriteCounts(counts), null, Every, Every);
 

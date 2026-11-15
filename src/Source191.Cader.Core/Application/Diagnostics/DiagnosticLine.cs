@@ -11,8 +11,7 @@ public static class DiagnosticLine
 {
     private const string FailedWord = "failed";
 
-    // Stryker disable once String : Accepted: a static initialiser runs once per test process and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so the mutant cannot be attributed; DiagnosticLineShould.RecogniseACrashLineWhoseTextStartsAtTheCrashMarkerAndOneThatEndsAtIt pins the marker
-    private static readonly string CrashMarker = $" {FailedWord} {FailureSite.Crash}";
+    private static string CrashMarker => $" {FailedWord} {FailureSite.Crash}";
 
     public static string Render(TimedEvent timed) => $"{Stamp(timed.At)} {Body(timed.Event)}";
 
