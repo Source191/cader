@@ -25,6 +25,10 @@
 - **WHEN** Terminal's settings file holds an entry setup added and the user answers n
 - **THEN** Terminal's settings file is unchanged and the command exits 0
 
+#### Scenario: Taking out of a read-only settings file
+- **WHEN** setup added the "Cader session" entry, Terminal's settings file is now read-only, and the user runs `cader setup-terminal --remove --yes`
+- **THEN** the fragment folder is gone, nothing is written to Terminal's settings file, the error output says it is read-only and gives the entry to take out by hand, and the command exits 1
+
 #### Scenario: The first, a middle, the last or the only element
 - **WHEN** the entry setup added is the first, a middle, the last or the only element of the profile list
 - **THEN** after it is taken out the file is still read as JSON and its profile list holds every other element, in order

@@ -129,9 +129,17 @@ Under the Setup heading the grey rows are read, not edited. **Claude folder** na
 - **Claude Code's terminal bell:** it sets `preferredNotifChannel` to `terminal_bell` in `~\.claude\settings.json`, so a session's tab rings when it finishes or pauses for permission while you are away.
 - **Cader's own bell:** the console's tab rings when a background session starts waiting for you, and its row turns amber.
 
-Restart Windows Terminal afterwards. It shows what it will write and asks first; `--sound` and `--session-sound` choose your own `.wav` files, `--yes` writes without asking and `--remove` removes the profiles. There are no toasts and no Claude Code hooks.
+Restart Windows Terminal afterwards. It shows what it will write and asks first; `--sound` and `--session-sound` choose your own `.wav` files, `--yes` writes without asking and `--remove` removes the profiles and the entries setup added to Terminal's settings file. There are no toasts and no Claude Code hooks.
 
 It leaves Windows Terminal's own settings file alone, with one exception: if you deleted a Cader profile in Windows Terminal's settings, Terminal keeps it hidden however often the profiles are written, so `setup-terminal` shows the one-line entry that brings it back and, if you agree, adds it to Terminal's profile list, leaving everything else in the file, comments included, as it was. Terminal shows the profile again as soon as it reads the file, with no restart.
+
+Before it changes Terminal's settings file, setup keeps a copy of it as it was beside it, named `settings.json.<date>T<time>.cader.backup` with the UTC time, and names the copy; copy it back over `settings.json` to undo the change. It writes nothing, and says why, when:
+
+- **The file is a link or read-only:** as a dotfiles set-up or a locked-down machine makes it; setup gives the entries to add or take out by hand.
+- **Terminal changed the file meanwhile:** most likely you saved Terminal's settings while setup was writing; run the command again.
+- **The new file does not check out:** setup reads the new file back first, and its profile list was not exactly the old one with the entries added or taken out, as happens when the file names `profiles` twice.
+
+`--remove` also takes out of Terminal's settings file each entry setup added, after showing them and asking (`--yes` answers for you), and only an entry that still has exactly the four properties setup wrote: if you customised the profile in Terminal, its entry has more and is left alone.
 
 ## Every key
 

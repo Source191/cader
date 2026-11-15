@@ -32,7 +32,7 @@ Both writes answer a `Ports\TerminalSettingsEdit`: `Written(Backup)`, `Unchanged
 
 ### 3. Verify the new bytes before writing them
 
-The new bytes are parsed with the same comment-tolerant `JsonDocument` options and the profile list found as `ReadAsync` finds it. The list must hold exactly the expected elements, compared with `JsonElement.DeepEquals`: every original element in order, then the added entries (add), or every original element but the removed ones (remove). A file that names `profiles` twice is the real case today: the text insertion goes into the first list, the parser reads the last (`TryGetProperty` answers the last duplicate, checked 15 November 2026), so the check fails and nothing is written.
+The new bytes are parsed with the same comment-tolerant `JsonDocument` options and the profile list found as `ReadAsync` finds it. The original bytes are checked the same way first: the list the parser reads must be exactly the elements the text walker found, each parsed on its own, so the walker never edits a list the parser does not use. The list must hold exactly the expected elements, compared with `JsonElement.DeepEquals`: every original element in order, then the added entries (add), or every original element but the removed ones (remove). A file that names `profiles` twice is the real case today: the text insertion goes into the first list, the parser reads the last (`TryGetProperty` answers the last duplicate, checked 15 November 2026), so the check fails and nothing is written.
 
 ### 4. What `--remove` takes out, and how
 
@@ -40,7 +40,7 @@ An element is taken out only when it is exactly the entry setup adds: an object 
 
 Each element is removed by text, one at a time, the file read again after each:
 
-- The element itself goes, with the spaces and tabs before it and, when it starts its line, the line break before that.
+- An element alone on its line (nothing but spaces, tabs and its own comma around it) goes with the whole line, its line break included; one that starts its line but has something after it goes with the line break before it; any other goes with the spaces and tabs before it. Taking the whole line keeps a `//` comment on the line before from swallowing what follows; a cut that still leaves the file unreadable fails the check and writes nothing.
 - One comma goes with it: the one before it when it is not the first element, otherwise the one after it, if any (a trailing comma after an only element included). The comma is found by stepping over white space and comments, so a comma inside a comment is never taken.
 
 Every other byte stays, comments, other commas and the byte order mark included. Removing what setup added gives back the original bytes for each shape setup adds to (after the last element, an empty list, a one-line list, a trailing comma, CRLF with a byte order mark); a fact holds that.
