@@ -134,6 +134,9 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
         return Task.CompletedTask;
     }
 
+    /// <summary>How many times the running version was recorded.</summary>
+    public int LastRunWrites { get; private set; }
+
     public Task<LastRun> ReadLastRunAsync()
     {
         return Task.FromResult(lastRun);
@@ -142,6 +145,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     public Task WriteLastRunAsync(ReleaseVersion version)
     {
         lastRun = new LastRun.Ran(version);
+        LastRunWrites++;
         return Task.CompletedTask;
     }
 }

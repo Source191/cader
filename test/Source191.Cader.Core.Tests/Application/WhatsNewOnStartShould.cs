@@ -38,6 +38,17 @@ public sealed class WhatsNewOnStartShould
     }
 
     [Fact]
+    public async Task WriteNothingWhenTheSameVersionRanLast()
+    {
+        await state.WriteLastRunAsync(ReleaseVersions.Version("0.21.0"));
+        int written = state.LastRunWrites;
+
+        await OnStart("0.21.0", new FakePackagedReleaseNotes(Changelog)).DecideAsync();
+
+        state.LastRunWrites.ShouldBe(written);
+    }
+
+    [Fact]
     public async Task ShowNothingOnAFirstEverStartAndRecordTheVersion()
     {
         FakePackagedReleaseNotes packaged = new(Changelog);
