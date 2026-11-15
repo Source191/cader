@@ -45,4 +45,12 @@ public sealed class ReportTitleShould
         ReportTitle.TryParse(text, out ReportTitle? title).ShouldBe(parses);
         (title is not null).ShouldBe(parses);
     }
+
+    [Fact]
+    public void NameWhyATitleIsRefusedWhenAskedToTrustIt()
+    {
+        ArgumentException refused = Should.Throw<ArgumentException>(() => ReportTitle.From(new string('a', 201)));
+
+        refused.Message.ShouldContain($"Not a report title: {ReportTitleProblem.TooLong}");
+    }
 }
