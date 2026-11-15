@@ -33,6 +33,12 @@ public interface IGit
     /// </summary>
     Task FastForwardBranchAsync(FolderPath repository, BranchName branch, RemoteBranch target, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Every local branch with its upstream, and every branch origin has with no local branch of its name, as git last
+    /// recorded them: no fetch. Throws <see cref="GitException"/> when git fails.
+    /// </summary>
+    Task<IReadOnlyList<GitBranch>> ListBranchesAsync(FolderPath repository, CancellationToken cancellationToken);
+
     /// <summary>Throws <see cref="GitException"/> when git fails.</summary>
     Task<IReadOnlyList<GitWorktreeEntry>> ListWorktreesAsync(string repository, CancellationToken cancellationToken);
 

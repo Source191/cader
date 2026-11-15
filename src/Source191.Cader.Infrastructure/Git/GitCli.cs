@@ -48,6 +48,15 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     public Task FastForwardBranchAsync(FolderPath repository, BranchName branch, RemoteBranch target, CancellationToken cancellationToken) =>
         RunOrThrowAsync(repository.Value, ["fetch", ".", $"{TrackingRef(target)}:refs/heads/{branch.Value}"], cancellationToken);
 
+    /// <summary>The user's email is read and compared here, so it never leaves the adapter; git with none set answers no branch as yours.</summary>
+    public async Task<IReadOnlyList<GitBranch>> ListBranchesAsync(FolderPath repository, CancellationToken cancellationToken)
+    {
+        ProcessResult listing = await RunOrThrowAsync(repository.Value, ["for-each-ref", GitBranchListing.Format, "refs/heads", "refs/remotes/origin"], cancellationToken);
+        ProcessResult email = await RunAsync(repository.Value, ["config", "--get", "user.email"], cancellationToken);
+
+        return GitBranchListing.Parse(listing.StandardOutput, email.ExitCode == 0 ? email.StandardOutput.Trim() : string.Empty);
+    }
+
     public async Task<IReadOnlyList<GitWorktreeEntry>> ListWorktreesAsync(string repository, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(repository, ["worktree", "list", "--porcelain"], cancellationToken);
