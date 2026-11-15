@@ -5,7 +5,7 @@ Each constructor change lands with every call site it breaks (`src`, `test` and 
 ## 1. Pure rules: sizes and the clear's event
 
 - [x] 1.1 **Red:** `WordingOfConfigShould` facts for `Wording.FileSize`: 0 bytes reads 0 KB, 300 bytes 1 KB, 512,000 bytes 500 KB, 1,048,575 bytes 1024 KB, 1,048,576 bytes 1.0 MB, 2,516,582 bytes 2.4 MB, 10,485,700 bytes 10.0 MB. **Green:** `Wording.FileSize` (invariant culture). **Refactor:** keep it beside `Wording.Memory`. **Verify:** the facts pass.
-- [ ] 1.2 **Red:** `DiagnosticLineShould` fact that `DiagnosticLogCleared(2, 13002282, 0)` reads `diagnostic log cleared: 2 files, 13002282 bytes, 0 kept`. **Green:** the `Application\Diagnostics\DiagnosticLogCleared` event and its `DiagnosticLine` arm. **Verify:** the fact, `DiagnosticEventsShould` and `SealedTypesShould` pass.
+- [x] 1.2 **Red:** `DiagnosticLineShould` fact that `DiagnosticLogCleared(2, 13002282, 0)` reads `diagnostic log cleared: 2 files, 13002282 bytes, 0 kept`. **Green:** the `Application\Diagnostics\DiagnosticLogCleared` event and its `DiagnosticLine` arm. **Verify:** the fact, `DiagnosticEventsShould` and `SealedTypesShould` pass.
 
 ## 2. The port and its adapter
 
