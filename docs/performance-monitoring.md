@@ -39,7 +39,7 @@ The file is `%LOCALAPPDATA%\Cader\cader.log`. When a line would take it past 10 
 
 The file gets every line of the diagnostic log as it happens: the start (versions and terminal size), each view and dialog, each key's effect with its duration, failures, Terminal.Gui's warnings, any child program slower than 5 seconds, any part of a refresh slower than 3 seconds and any time the screen's thread ran more than half a second late. Every 10 minutes, and again when you quit with `q`, it also gets the counts: the child programs, the refresh parts and the screen thread's stalls, each with the number of runs, the median, the 95th percentile and the longest. Closing the tab without `q` loses at most the last 10 minutes of counts.
 
-In a second tab, record the .NET runtime counters to a CSV file every 10 seconds. `dnx` runs the tool without installing it (.NET 10 SDK); `dotnet tool install --global dotnet-counters` installs it if you prefer. `dnx` keeps a few options for itself, such as `--help` and `--version`, so ask an installed tool for those.
+In a second tab, record the .NET runtime counters to a CSV file every 10 seconds. `dnx` runs the tool without installing it (.NET 10 SDK or later); `dotnet tool install --global dotnet-counters` installs it if you prefer. `dnx` keeps a few options for itself, such as `--help` and `--version`, so ask an installed tool for those.
 
 ```powershell
 $cader = Get-Process -Name cader | Sort-Object -Property StartTime | Select-Object -First 1
