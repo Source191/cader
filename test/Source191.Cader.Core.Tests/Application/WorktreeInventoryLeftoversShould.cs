@@ -14,6 +14,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 {
     private const string Root = @"C:\Users\me\source\repos";
     private const string Repository = @"C:\Users\me\source\repos\Northwind.Orders";
+    private const string Billing = @"C:\Users\me\source\repos\Northwind.Billing";
     private const string WorktreeRoot = @"C:\Users\me\source\worktrees";
 
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git", "objects"));
@@ -398,6 +399,43 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 
         row.Health.Kind.ShouldBe(WorktreeHealthKind.Elsewhere);
         row.Repository.Value.ShouldBe(@"C:\other\Northwind.Ledger");
+    }
+
+    [Fact]
+    public async Task StillListTheOtherRepositoryWhenOneIsUnreadable()
+    {
+        string worktree = Path.Combine(Root, "Northwind.Billing-fix-123");
+        folders.WithDirectory(Path.Combine(Billing, ".git", "objects")).WithDirectory(worktree);
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+        processes.Answer(request => IsListingOf(request, Billing), new ProcessResult(0, Listing(Billing, worktree), string.Empty));
+        AnswerCounts(dirty: " M Program.cs\n", unpushed: "3\n");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Path.Value.ShouldBe(worktree);
+        row.Repository.Value.ShouldBe(Billing);
+        row.DirtyFiles.ShouldBe(1);
+        row.UnpushedCommits.ShouldBe(3);
+        log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+    }
+
+    private static bool IsListingOf(ProcessRequest request, string repository)
+    {
+        return request.Arguments[0] == "worktree" && request.WorkingDirectory == new WorkingFolder.At(repository);
+    }
+
+    /// <summary>Git's porcelain listing of a repository and its linked worktrees, each on its own branch.</summary>
+    private static string Listing(string repository, params string[] worktrees)
+    {
+        IEnumerable<string> linked = worktrees.Select(worktree => $"worktree {worktree.Replace('\\', '/')}\nHEAD b\nbranch refs/heads/{Path.GetFileName(worktree)}\n");
+
+        return string.Join("\n", [$"worktree {repository.Replace('\\', '/')}\nHEAD a\nbranch refs/heads/main\n", .. linked]);
+    }
+
+    private void AnswerCounts(string dirty, string unpushed)
+    {
+        processes.Answer(request => request.Arguments[0] == "status", new ProcessResult(0, dirty, string.Empty));
+        processes.Answer(request => request.Arguments[0] == "rev-list", new ProcessResult(0, unpushed, string.Empty));
     }
 
     private void AnswerListingWithOneWorktree()

@@ -4,7 +4,7 @@
 
 ## 2. Pin today's rows before anything moves
 
-- [ ] 2.1 Add `WorktreeInventoryLeftoversShould.StillListTheOtherRepositoryWhenOneIsUnreadable` (Northwind.Orders unreadable with a `GitException`, Northwind.Billing with one live worktree): the Billing rows are all there with their counts and one `Failed` event is logged. It passes on the serial scan; commit it as the pin for the failure handling.
+- [x] 2.1 Add `WorktreeInventoryLeftoversShould.StillListTheOtherRepositoryWhenOneIsUnreadable` (Northwind.Orders unreadable with a `GitException`, Northwind.Billing with one live worktree): the Billing rows are all there with their counts and one `Failed` event is logged. It passes on the serial scan; commit it as the pin for the failure handling.
 
 ## 3. Repositories are listed together, in today's order
 
