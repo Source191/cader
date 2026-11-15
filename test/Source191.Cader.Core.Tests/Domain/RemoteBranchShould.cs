@@ -47,4 +47,12 @@ public sealed class RemoteBranchShould
     {
         Should.Throw<ArgumentException>(() => RemoteBranch.From(text));
     }
+
+    [Fact]
+    public void NameTheTextItRefusesAndWhy()
+    {
+        ArgumentException refused = Should.Throw<ArgumentException>(() => RemoteBranch.From("origin"));
+
+        refused.Message.ShouldContain("'origin' is not a remote branch");
+    }
 }
