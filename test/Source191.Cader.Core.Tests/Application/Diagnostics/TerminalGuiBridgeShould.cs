@@ -63,6 +63,7 @@ public sealed class TerminalGuiBridgeShould
         line.ShouldBe($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] terminal.gui Error from TerminalGuiBridgeShould.FailWith: {ExceptionSummary.From(failure)}");
         line.ShouldNotContain("Northwind");
     }
+
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
@@ -103,6 +104,7 @@ public sealed class TerminalGuiBridgeShould
     {
         InputLoopCrashed(logger, failure);
     }
+
     private static CodeName Named(string method)
     {
         return CodeName.For(typeof(TerminalGuiBridgeShould).GetMethod(method)!);
