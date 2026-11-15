@@ -29,6 +29,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
+- Core declares no static initialiser: its tables, sentinels and constants are computed properties, so mutation testing tests each one through the tests that read it, a release run and a full run agree, and the marks that accepted the diagnostic tables' mutants are gone
 - The mutation testing marks that called a mutant equivalent are mostly gone: the code they pointed at is simpler or a test now tells the mutant apart, and only true equivalents keep a mark (#296)
 - Cader is built for .NET 11 and its SDK 11.0.100: every project targets net11.0, the CI jobs install that SDK, and the packages and breaking changes are checked, with the Microsoft.Extensions assemblies .NET 11 now carries left out of the build (#277)
 - .NET 11's process APIs are checked against how Cader starts, captures and ends programs: ending a session's or tab's process now looks it up with .NET 11's TryGetProcessById, and the rest are declined, with facts that show why, so nothing a user can see changes (#278)

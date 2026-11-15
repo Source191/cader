@@ -30,7 +30,7 @@ public static partial class Wording
     /// <summary>Where to support the console, printed under its description in <c>cader --help</c>.</summary>
     public static string SupportLine => $"Buy me a sliver of a Claude Max plan: {SupportPage}";
 
-    private static readonly Uri SupportPage = new("https://buymeacoffee.com/simonvane");
+    private static Uri SupportPage => new("https://buymeacoffee.com/simonvane");
 
     private const string SetupTerminalSyntax = "cader setup-terminal [--sound <wav>] [--session-sound <wav>] [--yes] [--remove]";
 
@@ -79,19 +79,19 @@ public static partial class Wording
     public static string DeleteBranchTitle => "Delete branch";
 
     /// <summary>The delete-branch question's buttons, confirm first; the dialog marks each one's hotkey.</summary>
-    public static IReadOnlyList<string> DeleteBranchButtons { get; } = ["Delete branch", "Keep"];
+    public static IReadOnlyList<string> DeleteBranchButtons => ["Delete branch", "Keep"];
 
     public static string RenameTitle => "Rename session";
 
     public static string CloseEmptyTitle => "Close empty terminal sessions";
 
-    public static IReadOnlyList<string> CloseEmptyButtons { get; } = ["Close", "Keep"];
+    public static IReadOnlyList<string> CloseEmptyButtons => ["Close", "Keep"];
 
     public static string ForceRemoveTitle => "Force remove";
 
     public static string DeleteSessionTitle => "Delete session";
 
-    public static IReadOnlyList<string> DeleteButtons { get; } = ["Delete", "Cancel"];
+    public static IReadOnlyList<string> DeleteButtons => ["Delete", "Cancel"];
 
     /// <summary>A dialog's Cancel button with its hotkey marked; Esc is not named because the dialog has no key bar.</summary>
     public static string CancelButton => "_Cancel";
@@ -104,7 +104,7 @@ public static partial class Wording
 
     public static string SaveButton => "_Save (F5)";
 
-    public static IReadOnlyList<string> ProblemReportButtons { get; } = ["Open in browser", "Copy text", "Cancel"];
+    public static IReadOnlyList<string> ProblemReportButtons => ["Open in browser", "Copy text", "Cancel"];
 
     /// <summary>The title of a report whose title box was left blank.</summary>
     public static string DefaultReportTitle(ToolVersion version) => $"Problem report from Cader {version.Text}";
