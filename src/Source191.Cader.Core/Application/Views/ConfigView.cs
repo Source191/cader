@@ -33,8 +33,8 @@ public static class ConfigView
             ConfigRow.Setup { State: SetupState.At at } => at.Path,
             ConfigRow.Setup { State: SetupState.Folder folder } => folder.Claude.Folder.Value,
             ConfigRow.Setup { State: SetupState.HiddenByTerminal hidden } => hidden.Path,
-            ConfigRow.Setup { State: SetupState.LogFile file } => file.Path,
-            ConfigRow.Setup { State: SetupState.LogOff off } => off.Path,
+            ConfigRow.Setup { State: SetupState.LogFile file } => file.Files.Current.Path,
+            ConfigRow.Setup { State: SetupState.LogOff off } => off.Files.Current.Path,
             _ => null,
         };
 

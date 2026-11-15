@@ -1,6 +1,7 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application;
 
@@ -33,9 +34,9 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(new ClaudeFolder.Unset(FolderPath.From(@"C:\Users\me\.claude")))), "Claude folder", @"C:\Users\me\.claude" },
         { new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(new ClaudeFolder.FromVariable(FolderPath.From(@"C:\Users\me\.claude-personal")))), "Claude folder", @"C:\Users\me\.claude-personal, from CLAUDE_CONFIG_DIR" },
         { new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(new ClaudeFolder.NotUsable(FolderPath.From(@"C:\Users\me\.claude"), "claude-personal"))), "Claude folder", @"C:\Users\me\.claude, CLAUDE_CONFIG_DIR was not a full path and was not used" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(LogFile)), "Diagnostic log file", $"off, {LogFile}" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(LogFile, Exists: false)), "Diagnostic log file", $"on, not written yet, {LogFile}" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(LogFile, Exists: true)), "Diagnostic log file", $"on, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(new FakeDiagnosticLogFiles().Read())), "Diagnostic log file", $"off, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(new FakeDiagnosticLogFiles().Read())), "Diagnostic log file", $"on, not written yet, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read())), "Diagnostic log file", $"on, {LogFile}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)), "Windows Terminal profiles", $"installed, {Fragment}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.NotSetUp()), "Windows Terminal profiles", "not set up, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.HiddenByTerminal(Fragment)), "Windows Terminal profiles", "hidden by Windows Terminal, run cader setup-terminal" },

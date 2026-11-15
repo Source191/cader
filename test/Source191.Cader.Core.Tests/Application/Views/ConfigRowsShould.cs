@@ -8,13 +8,12 @@ public sealed class ConfigRowsShould
 {
     private const string Repos = @"C:\Users\me\source\repos";
     private const string SettingsFile = @"C:\Users\me\AppData\Local\Cader\config.json";
-    private const string LogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
     private const string Fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
 
     private static readonly SetupFacts AllSetUp = new(
         new SetupState.At(SettingsFile),
         new SetupState.Folder(TestSettings.DefaultClaudeFolder),
-        new SetupState.LogFile(LogFile, Exists: true),
+        new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()),
         new SetupState.At(Fragment),
         new SetupState.Enabled(),
         new SetupState.Checked(new DateTimeOffset(2026, 10, 30, 9, 12, 0, TimeSpan.Zero), new NewestRelease.Found(ReleaseVersions.Version("0.18.0"))));
@@ -54,17 +53,17 @@ public sealed class ConfigRowsShould
     [Fact]
     public void ShowTheLogFileAsOffWithItsPathWhileTheSettingIsOff()
     {
-        ConfigRows.For(TestSettings.For(Repos), AllSetUp).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogOff(LogFile));
+        ConfigRows.For(TestSettings.For(Repos), AllSetUp).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogOff(new FakeDiagnosticLogFiles().WithCurrent(300).Read()));
     }
 
     [Fact]
     public void ShowTheLogFileWhetherItIsWrittenWhileTheSettingIsOn()
     {
         Settings on = TestSettings.For(Repos).WithDiagnosticLogToggled();
-        SetupFacts notWritten = AllSetUp with { DiagnosticLogFile = new SetupState.LogFile(LogFile, Exists: false) };
+        SetupFacts notWritten = AllSetUp with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()) };
 
-        ConfigRows.For(on, AllSetUp).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(LogFile, Exists: true));
-        ConfigRows.For(on, notWritten).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(LogFile, Exists: false));
+        ConfigRows.For(on, AllSetUp).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()));
+        ConfigRows.For(on, notWritten).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()));
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public sealed class ConfigRowsShould
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)),
             new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(TestSettings.DefaultClaudeFolder)),
-            new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(LogFile)),
+            new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(new FakeDiagnosticLogFiles().WithCurrent(300).Read())),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)),
             new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled()),
             new ConfigRow.Setup(SetupItem.LastUpdateCheck, AllSetUp.LastUpdateCheck),

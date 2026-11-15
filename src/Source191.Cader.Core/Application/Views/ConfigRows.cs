@@ -37,5 +37,5 @@ public static class ConfigRows
     }
 
     /// <summary>Whether the log is on comes from the settings, so the row is right the moment a save toggles it.</summary>
-    private static SetupState LogFileAs(Settings settings, SetupState read) => read is SetupState.LogFile file && !settings.DiagnosticLog ? new SetupState.LogOff(file.Path) : read;
+    private static SetupState LogFileAs(Settings settings, SetupState read) => read is SetupState.LogFile file && !settings.DiagnosticLog ? new SetupState.LogOff(file.Files) : read;
 }

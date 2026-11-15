@@ -14,7 +14,7 @@ public sealed class ConfigViewShould
     private static readonly SetupFacts Facts = new(
         new SetupState.At(SettingsFile),
         new SetupState.Folder(TestSettings.DefaultClaudeFolder),
-        new SetupState.LogFile(LogFile, Exists: true),
+        new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),
         new SetupState.Never());
@@ -146,7 +146,7 @@ public sealed class ConfigViewShould
     public void CopyTheDiagnosticLogFilesPathWhateverTheSettingAndTheFile(bool settingOn, bool fileExists)
     {
         Settings settings = settingOn ? TestSettings.For(Repos, Work).WithDiagnosticLogToggled() : TestSettings.For(Repos, Work);
-        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(LogFile, fileExists) };
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(fileExists ? new FakeDiagnosticLogFiles().WithCurrent(300).Read() : new FakeDiagnosticLogFiles().Read()) };
         ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(settings, facts))).State;
 
         ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile))]);

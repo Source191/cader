@@ -1,5 +1,6 @@
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using System.Globalization;
 
 namespace Source191.Cader.Application;
@@ -180,9 +181,9 @@ public static partial class Wording
             (SetupItem.TerminalProfiles, SetupState.NotSetUp) => $"not set up, {SetupTerminal}",
             (SetupItem.TerminalProfiles, SetupState.HiddenByTerminal) => $"hidden by Windows Terminal, {SetupTerminal}",
             (_, SetupState.NotSetUp) => $"not set, {SetupTerminal}",
-            (_, SetupState.LogOff off) => $"off, {off.Path}",
-            (_, SetupState.LogFile { Exists: true } file) => $"on, {file.Path}",
-            (_, SetupState.LogFile file) => $"on, not written yet, {file.Path}",
+            (_, SetupState.LogOff off) => $"off, {off.Files.Current.Path}",
+            (_, SetupState.LogFile { Files.Current: LogFileOnDisc.Written } file) => $"on, {file.Files.Current.Path}",
+            (_, SetupState.LogFile file) => $"on, not written yet, {file.Files.Current.Path}",
             (_, SetupState.At at) => at.Path,
             (_, SetupState.Folder { Claude: ClaudeFolder.FromVariable from }) => $"{from.Folder}, from CLAUDE_CONFIG_DIR",
             (_, SetupState.Folder { Claude: ClaudeFolder.NotUsable refused }) => $"{refused.Folder}, CLAUDE_CONFIG_DIR was not a full path and was not used",

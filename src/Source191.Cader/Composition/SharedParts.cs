@@ -22,6 +22,7 @@ internal sealed record SharedParts(
     ProgramLocator Programs,
     DiagnosticLogSwitch LogSwitch,
     string LogFile,
+    DiagnosticLogFiles LogFiles,
     DiagnosticLog Log,
     PerformanceCounts Counts,
     RecordedProcessRunner Processes,
@@ -51,6 +52,7 @@ internal sealed record SharedParts(
         string logFile = Path.Combine(stateFolder, "cader.log");
         DiagnosticLogSwitch logSwitch = new();
         DiagnosticLog log = new(TimeProvider.System, [new DiagnosticFile(logFile, logSwitch.IsOn)]);
+        DiagnosticLogFiles logFiles = new(logFile);
         ProcessCounts processCounts = new();
         PerformanceCounts counts = new(processCounts, new RefreshCounts(TimeProvider.System, log), new StallCounts());
         // How long a captured run may take: a claude agents listing takes about two seconds, the slowest gh or az call a few.
@@ -62,7 +64,7 @@ internal sealed record SharedParts(
         // Read once, as Claude Code does, so every command and the sessions it starts agree on the account's folder.
         ClaudeFolder claudeFolder = ClaudeFolder.From(Environment.GetEnvironmentVariable("CLAUDE_CONFIG_DIR"), FolderPath.From(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
 
-        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, terminalSettings, programs, logSwitch, logFile, log, counts, processes, crashFile, crashes, claudeFolder);
+        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, terminalSettings, programs, logSwitch, logFile, logFiles, log, counts, processes, crashFile, crashes, claudeFolder);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.
