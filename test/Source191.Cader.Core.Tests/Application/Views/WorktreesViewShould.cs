@@ -76,6 +76,34 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void CountWorktreesAndBranchesApartAndNameASelectedBranchRowByItsBranch()
+    {
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Clean, Dirty, BranchRow("spike-refunds"), BranchRow("old-idea"), OriginRow("c-new-bug")]));
+
+        Wording.Describe(loaded.Title).ShouldBe("2 worktrees, 3 branches, selected: Northwind.Orders-fix-1");
+        Wording.Describe(Press(loaded, Key.Down, Key.Down, Key.Down, Key.Down).Title).ShouldBe("2 worktrees, 3 branches, selected: spike-refunds");
+    }
+
+    [Fact]
+    public void LeaveOutACountOfNone()
+    {
+        WorktreesViewState branches = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([BranchRow("spike-refunds"), BranchRow("old-idea")]));
+
+        Wording.Describe(branches.Title).ShouldBe("2 branches, selected: old-idea");
+        Wording.Describe(Loaded.Title).ShouldBe("7 worktrees, selected: Northwind.Orders.worktrees");
+        Wording.Describe(WorktreesViewState.Empty.Title).ShouldBe("0 worktrees");
+    }
+
+    [Fact]
+    public void CountWorktreesAndBranchesApartUnderAFilter()
+    {
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Clean, Dirty, BranchRow("spike-refunds"), BranchRow("old-idea"), OriginRow("c-new-bug")]));
+
+        WorktreesViewState filtered = Press(loaded, Key.Slash, Key.Of('s'), Key.Of('p'), Key.Of('i'), Key.Of('k'), Key.Enter);
+
+        Wording.Describe(filtered.Title).ShouldBe("1 of 2 worktrees, 3 branches match \"spik\", selected: spike-refunds");
+    }
+    [Fact]
     public void KeepTheSelectionOnOneOfTwoBranchRowsOfARepositoryAcrossAReload()
     {
         WorktreeRow spike = BranchRow("spike-refunds");
