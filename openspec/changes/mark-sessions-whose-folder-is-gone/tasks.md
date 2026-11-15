@@ -23,7 +23,7 @@ No new effect or handler: every refusal answers from the reducer.
 - [x] 3.2 Red `SessionsViewShould.RefuseToOpenAStoppedSessionWhoseFolderHasGone` (Enter on a stopped background row with a transcript and `FolderGone` raises no effect and shows `StatusMessage.FolderGone`) and `OpenARunningSessionWhoseFolderReadsAsGone` (a running one still raises `OpenTabForSession`), then green the first arm of `SessionsView.Opening`; verify, including `ConsoleViewShould`, whose worktree Enter uses the same decision.
 - [x] 3.3 Red `SessionsViewShould.RefuseToRenameASessionWhoseFolderHasGone` (stopped and running alike: no `AskForNewName`, `StatusMessage.FolderGone`), then green the first rule of `SessionsView.Rename`; verify.
 - [x] 3.4 Red `SessionsViewShould.LeaveSessionsWhoseFolderHasGoneOutOfResumeAll` (two stopped rows, one `FolderGone`: `ResumeSessions` carries only the other; only a gone row shown: `NothingToResume`), then green the filter in `ResumeAll`; verify.
-- [ ] 3.5 Red `WordingOfKeyBarShould.OfferOnlyDeleteForAStoppedSessionWhoseFolderHasGone` (no Enter or r for the row; a running gone row keeps its keys), then green the arm in `Wording.SessionsBar`; verify, including `KeyHelpParityShould`.
+- [x] 3.5 Red `WordingOfKeyBarShould.OfferOnlyDeleteForAStoppedSessionWhoseFolderHasGone` (no Enter or r for the row; a running gone row keeps its keys), then green the arm in `Wording.SessionsBar`; verify, including `KeyHelpParityShould`.
 
 ## 4. The Sessions tab (Tui)
 
