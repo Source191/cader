@@ -25,6 +25,7 @@ public sealed class SettingsViewShould
         { new SettingsScope.Editor(), SettingsField.Editor },
         { new SettingsScope.Base(), SettingsField.Base },
         { new SettingsScope.Place(), SettingsField.Place },
+        { new SettingsScope.BeforeBranching(), SettingsField.BeforeBranching },
     };
 
     [Theory]
@@ -116,6 +117,34 @@ public sealed class SettingsViewShould
     }
 
     [Fact]
+    public void OpenTheBeforeBranchingDialogOnTheSavedValue()
+    {
+        Settings pulling = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: BeforeBranching.Pull);
+
+        SettingsState.Open(pulling, new SettingsScope.BeforeBranching(), Exists, Installed).Text.BeforeBranching.ShouldBe(BeforeBranching.Pull);
+        Opened(new SettingsScope.BeforeBranching()).Text.BeforeBranching.ShouldBe(BeforeBranching.Fetch);
+    }
+
+    [Theory]
+    [InlineData(BeforeBranching.Pull)]
+    [InlineData(BeforeBranching.None)]
+    public void SaveTheBeforeBranchingChoice(BeforeBranching choice)
+    {
+        SettingsState state = Reduce(Opened(new SettingsScope.BeforeBranching()), new SettingsInput.BeforeBranchingChanged(choice));
+
+        state.Text.BeforeBranching.ShouldBe(choice);
+        SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings.BeforeBranching.ShouldBe(choice);
+    }
+
+    [Fact]
+    public void LeaveTheSettingsUnchangedWhenTheBeforeBranchingDialogIsCancelled()
+    {
+        SettingsState changed = Reduce(Opened(new SettingsScope.BeforeBranching()), new SettingsInput.BeforeBranchingChanged(BeforeBranching.None));
+
+        SettingsView.Reduce(changed, new SettingsInput.Cancel()).Effect.ShouldBe(new SettingsEffect.Close());
+    }
+
+    [Fact]
     public void AddEachFolderChosenAsALineAfterTheRootsInTheOrderChosen()
     {
         SettingsState state = Reduce(Opened(new SettingsScope.Roots()), new SettingsInput.FoldersChosen([Work, @"E:\personal"]));
@@ -192,6 +221,7 @@ public sealed class SettingsViewShould
         Opened(new SettingsScope.Editor()).Browses.ShouldBe(SettingsBrowse.No);
         Opened(new SettingsScope.Base()).Browses.ShouldBe(SettingsBrowse.No);
         Opened(new SettingsScope.Place()).Browses.ShouldBe(SettingsBrowse.No);
+        Opened(new SettingsScope.BeforeBranching()).Browses.ShouldBe(SettingsBrowse.No);
     }
 
     [Fact]
@@ -304,6 +334,7 @@ public sealed class SettingsViewShould
         SettingsScope.For(rows.OfType<ConfigRow.OpenFolderWith>().Single()).ShouldBe(new SettingsScope.Editor());
         SettingsScope.For(rows.OfType<ConfigRow.DefaultBase>().Single()).ShouldBe(new SettingsScope.Base());
         SettingsScope.For(rows.OfType<ConfigRow.DefaultPlace>().Single()).ShouldBe(new SettingsScope.Place());
+        SettingsScope.For(rows.OfType<ConfigRow.BeforeBranching>().Single()).ShouldBe(new SettingsScope.BeforeBranching());
     }
 
     private static SettingsState Reduce(SettingsState state, SettingsInput input)

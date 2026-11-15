@@ -29,6 +29,8 @@ public abstract record SettingsInput
 
     public sealed record PlaceChanged(LaunchMode Place) : SettingsInput;
 
+    public sealed record BeforeBranchingChanged(BeforeBranching Choice) : SettingsInput;
+
     /// <summary>A field took focus, by Tab, a click or the dialog itself.</summary>
     public sealed record FieldFocused(SettingsField Field) : SettingsInput;
 

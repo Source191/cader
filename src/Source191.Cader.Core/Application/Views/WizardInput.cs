@@ -20,6 +20,8 @@ public abstract record WizardInput
 
     public sealed record BaseChanged(WorktreeBase Base) : WizardInput;
 
+    public sealed record BeforeBranchingChanged(BeforeBranching Choice) : WizardInput;
+
     public sealed record PromptChanged(string Text) : WizardInput;
 
     /// <summary>A field took focus, by Tab, a click or the dialog itself.</summary>

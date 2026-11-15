@@ -27,6 +27,7 @@ internal sealed class SettingsControls
         Arguments.Text = text.Arguments;
         BaseRef.Value = OptionSelectors.Index(text.Base);
         Place.Value = OptionSelectors.Index(text.Place);
+        Before.Value = OptionSelectors.Index(text.BeforeBranching);
         Custom = [Caption(RightColumn, 1, "Executable (full path, not a .cmd or .bat)"), Executable, Caption(RightColumn, 4, $"Arguments ({EditorChoice.FolderPlaceholder} is the folder)"), Arguments];
         (IReadOnlyDictionary<SettingsField, View> Fields, View[] All, int Height) layout = state.Scope switch
         {
@@ -50,6 +51,10 @@ internal sealed class SettingsControls
                 new Dictionary<SettingsField, View> { [SettingsField.Place] = Place },
                 [Caption(LeftColumn, 0, Wording.PlaceCaption), Place, Placed(Problem, 4)],
                 10),
+            SettingsScope.BeforeBranching => (
+                new Dictionary<SettingsField, View> { [SettingsField.BeforeBranching] = Before },
+                [Caption(LeftColumn, 0, Wording.BeforeBranchingCaption), Before, Placed(Problem, 5)],
+                11),
             _ => throw new UnreachableException($"{state.Scope.GetType().Name} has no controls."),
         };
         (Fields, All, Height) = layout;
@@ -71,6 +76,8 @@ internal sealed class SettingsControls
     public OptionSelector BaseRef { get; } = OptionSelectors.For<WorktreeBase>(LeftColumn, 1, Wording.Describe);
 
     public OptionSelector Place { get; } = OptionSelectors.For<LaunchMode>(LeftColumn, 1, Wording.Describe);
+
+    public OptionSelector Before { get; } = OptionSelectors.For<BeforeBranching>(LeftColumn, 1, Wording.Describe);
 
     public Label Problem { get; } = Text(LeftColumn, Palette.Red, Dim.Fill(1));
 
