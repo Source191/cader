@@ -118,6 +118,21 @@ public sealed class DiagnosticLogFilesShould : IDisposable
         File.ReadAllText(Path.Combine(folder, "last-crash.log")).ShouldBe("a crash");
     }
 
+    [Fact]
+    public void LetTheLogStartANewFileHoldingOnlyItsNextLine()
+    {
+        DiagnosticFile sink = new(path, () => true);
+        sink.Write("2026-11-15T09:00:00.000Z [4242] view Sessions");
+        FileOfBytes(OlderPath, 512_000);
+        DiagnosticLogFiles files = new(path);
+
+        files.Clear();
+        sink.Write("2026-11-15T09:00:01.000Z [4242] view Config");
+
+        File.ReadAllLines(path).ShouldBe(["2026-11-15T09:00:01.000Z [4242] view Config"]);
+        File.Exists(OlderPath).ShouldBeFalse();
+    }
+
     private string OlderPath => path + ".1";
 
     private static void FileOfBytes(string file, long length)
