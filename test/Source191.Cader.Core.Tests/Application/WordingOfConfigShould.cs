@@ -36,7 +36,9 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(new ClaudeFolder.NotUsable(FolderPath.From(@"C:\Users\me\.claude"), "claude-personal"))), "Claude folder", @"C:\Users\me\.claude, CLAUDE_CONFIG_DIR was not a full path and was not used" },
         { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(new FakeDiagnosticLogFiles().Read())), "Diagnostic log file", $"off, {LogFile}" },
         { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(new FakeDiagnosticLogFiles().Read())), "Diagnostic log file", $"on, not written yet, {LogFile}" },
-        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read())), "Diagnostic log file", $"on, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read())), "Diagnostic log file", $"on, 2.4 MB, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(new FakeDiagnosticLogFiles().WithCurrent(512_000).Read())), "Diagnostic log file", $"off, 500 KB, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.OlderDiagnosticLogFile, new SetupState.OlderLog(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read())), "Diagnostic log file (older)", $"10.0 MB, {LogFile}.1" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)), "Windows Terminal profiles", $"installed, {Fragment}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.NotSetUp()), "Windows Terminal profiles", "not set up, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.HiddenByTerminal(Fragment)), "Windows Terminal profiles", "hidden by Windows Terminal, run cader setup-terminal" },
@@ -86,7 +88,8 @@ public sealed class WordingOfConfigShould
     [Fact]
     public void SayWhatTheLogFileRowOffersInItsTooltip()
     {
-        Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.Reading())).ShouldBe("Where the diagnostic log is written; it rolls at 10 MiB. f opens it in your editor, c copies its path.");
+        Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.Reading())).ShouldBe("Where the diagnostic log is written, rolling over at 10 MB; f opens it, c copies its path, d clears the log.");
+        Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.OlderDiagnosticLogFile, new SetupState.Reading())).ShouldBe("The older log, kept when cader.log reached 10 MB; f opens it, c copies its path, d clears the log.");
     }
 
     [Fact]
@@ -169,7 +172,8 @@ public sealed class WordingOfConfigShould
     [Theory]
     [InlineData(SetupItem.SettingsFile, "This tab writes the settings file: edit a setting above to change it.")]
     [InlineData(SetupItem.ClaudeFolder, "Cader follows CLAUDE_CONFIG_DIR as Claude Code does: start Cader with it set to read another account.")]
-    [InlineData(SetupItem.DiagnosticLogFile, "Turn the log on or off with Diagnostic log above; f opens this file and c copies its path.")]
+    [InlineData(SetupItem.DiagnosticLogFile, "Turn the log on or off with Diagnostic log above; f opens this file, c copies its path and d clears the log.")]
+    [InlineData(SetupItem.OlderDiagnosticLogFile, "cader.log becomes this file at 10 MB and a new one starts; f opens it, c copies its path and d clears the log.")]
     [InlineData(SetupItem.TerminalProfiles, "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.")]
     [InlineData(SetupItem.ClaudeBell, "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.")]
     [InlineData(SetupItem.LastUpdateCheck, "The winget community repository is asked at most once a day; turn the check on or off with Check for updates.")]
