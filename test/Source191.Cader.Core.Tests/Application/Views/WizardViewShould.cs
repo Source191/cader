@@ -56,6 +56,18 @@ public sealed class WizardViewShould
             empty => empty.Chosen.ShouldBeOfType<RepositoryPick.None>());
     }
 
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("​")]
+    public void ExplainAFilterOfInvisibleCharacters(string invisible)
+    {
+        WizardState filtered = Reduce(Opened, new WizardInput.FilterChanged(invisible));
+
+        filtered.Problem.ShouldBe(new WizardProblem.InvisibleFilter());
+        filtered.Filter.ShouldBe(invisible, "the filter is kept as received, so the evidence stays");
+        filtered.Choices.ShouldBeEmpty();
+    }
+
     [Fact]
     public void MoveAndPageTheListWithinBounds()
     {
