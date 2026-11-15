@@ -34,7 +34,6 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     {
         Settings snapshot = settings.Value;
         List<WorktreeRow> rows = [];
-        HashSet<FolderPath> registered = [];
         List<FolderPath> repositories = [];
         List<FolderPath> candidates = [];
 
@@ -62,7 +61,9 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
         candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
+        // Read together, merged in name order: a repository's orphans are judged against its own registrations and those before it, as a serial scan judged them.
         Registrations[] found = await Task.WhenAll(repositories.Select(repository => RegisteredRowsAsync(repository, cancellationToken)));
+        HashSet<FolderPath> registered = [];
         foreach ((FolderPath repository, Registrations registrations) in repositories.Zip(found))
         {
             registered.UnionWith(registrations.Folders);
