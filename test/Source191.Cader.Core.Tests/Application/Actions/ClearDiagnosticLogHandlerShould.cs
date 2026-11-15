@@ -3,6 +3,7 @@ using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.Effects;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application.Actions;
@@ -25,8 +26,8 @@ public sealed class ClearDiagnosticLogHandlerShould
         Outcome outcome = await Clear(files);
 
         outcome.ShouldBe(new ClearDiagnosticLogOutcome.Cleared(Files: 2, Bytes: 13_002_282));
-        files.Read().Current.ShouldBeOfType<Source191.Cader.Ports.LogFileOnDisc.Absent>();
-        files.Read().Older.ShouldBeOfType<Source191.Cader.Ports.LogFileOnDisc.Absent>();
+        files.Read().Current.ShouldBeOfType<LogFileOnDisc.Absent>();
+        files.Read().Older.ShouldBeOfType<LogFileOnDisc.Absent>();
         LastEvent().ShouldBe(new DiagnosticLogCleared(FilesRemoved: 2, BytesRemoved: 13_002_282, FilesKept: 0));
     }
 
