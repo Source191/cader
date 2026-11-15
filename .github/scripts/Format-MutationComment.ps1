@@ -36,7 +36,9 @@ function ConvertTo-Cell([string] $text) {
 }
 
 function Format-ReleaseBody($run, $report) {
-    $mutants = @(Get-UndetectedMutants $report | Sort-Object File, Line)
+    $everyMutant = @(Get-UndetectedMutants $report)
+    $mutants = @($everyMutant | Where-Object { -not $_.Static } | Sort-Object File, Line)
+    $setAside = $everyMutant.Count - $mutants.Count
     $range = if ($run.since) { "$($run.since)..$($run.head)" } else { "all of Core up to $($run.head)" }
     $lines = [Collections.Generic.List[string]]::new()
     $lines.Add("Release $($run.release), range $range, run $RunUrl.")
@@ -55,6 +57,10 @@ function Format-ReleaseBody($run, $report) {
     if ($mutants.Count -gt $MaxMutants) {
         $lines.Add('')
         $lines.Add("and $($mutants.Count - $MaxMutants) more in the report.")
+    }
+    if ($setAside -gt 0) {
+        $lines.Add('')
+        $lines.Add("$setAside static mutants (run in a static initialiser) were left to the weekly full run, which judges them reliably; .claude\rules\checks.md says why.")
     }
     $lines -join "`n"
 }

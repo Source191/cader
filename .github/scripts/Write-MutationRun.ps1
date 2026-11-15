@@ -112,6 +112,7 @@ foreach ($file in $report.files.GetEnumerator()) {
                 replacement = $_.replacement
                 location    = [ordered]@{ start = [ordered]@{ line = $_.location.start.line } }
                 status      = $_.status
+                static      = $_.static -eq $true
             }
         })
     }
