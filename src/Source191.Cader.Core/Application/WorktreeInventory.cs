@@ -18,6 +18,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private readonly WorktreeInspector inspector = new(git);
     private readonly OncePerFolder unreadableRepositories = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
     private readonly OncePerFolder unreadableWorktrees = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
+    private readonly OncePerFolder unreadableBranches = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
 
     private const string GitDirPrefix = "gitdir:";
 
@@ -64,8 +65,11 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
         foreach (FolderPath repository in repositories)
         {
-            rows.AddRange(await RegisteredRowsAsync(repository, registered, cancellationToken));
+            // One unusable folder must not blank the whole view.
+            IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
+            rows.AddRange(await RegisteredRowsAsync(repository, entries, registered, cancellationToken));
             rows.AddRange(OrphanRows(repository, registered));
+            rows.AddRange(await BranchRowsAsync(repository, entries, cancellationToken));
         }
 
         rows.AddRange(candidates.Where(candidate => !registered.Contains(candidate)).Select(BrokenWorktree));
@@ -74,7 +78,8 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         // Never awaited: the rows show what the catalogue already holds, and the next rescan picks up what lands.
         _ = pullRequests.RefreshStaleAsync(BranchesOf(rows));
 
-        return [.. rows.Select(row => WithPullRequest(row with { Session = LiveSessionIn(row.Path, sessions) }))];
+        // A branch row's path is its repository, so a session in the main checkout is not the branch's.
+        return [.. rows.Select(row => WithPullRequest(row.Placement is Placement.NoFolder ? row : row with { Session = LiveSessionIn(row.Path, sessions) }))];
     }
 
     private FolderKind Classify(FolderPath child)
@@ -132,11 +137,43 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private WorktreeRow EmptyLeftover(FolderPath root, FolderPath folder) =>
         Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnregisteredFolder.EmptyLeftover), ownerExists: false);
 
-    private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, HashSet<FolderPath> registered, CancellationToken cancellationToken)
+    /// <summary>
+    /// A row for each local branch checked out nowhere, from one branch listing, leaving out the one that tracks origin's
+    /// default branch; origin's default is asked for only when there is such a branch. An empty worktree listing is one git
+    /// could not give (a real one always has the main checkout), so nothing says which branches are free, and none is listed.
+    /// </summary>
+    private async Task<IReadOnlyList<WorktreeRow>> BranchRowsAsync(FolderPath repository, IReadOnlyList<GitWorktreeEntry> entries, CancellationToken cancellationToken)
     {
-        // One unusable folder must not blank the whole view.
-        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
+        if (entries.Count == 0)
+        {
+            return [];
+        }
 
+        HashSet<BranchName> checkedOut = [.. entries.Select(entry => entry.Head).OfType<Head.OnBranch>().Select(on => on.Branch)];
+
+        return await unreadableBranches.RunAsync<IReadOnlyList<WorktreeRow>>(
+            repository,
+            async () =>
+            {
+                IReadOnlyList<GitBranch.Local> free = [.. (await git.ListBranchesAsync(repository, cancellationToken)).OfType<GitBranch.Local>().Where(branch => !checkedOut.Contains(branch.Name))];
+                if (free.Count == 0)
+                {
+                    return [];
+                }
+
+                RemoteBranch? originDefault = RemoteBranch.TryParse(await git.DefaultRemoteBranchAsync(repository.Value, cancellationToken), out RemoteBranch? parsed) ? parsed : null;
+
+                return [.. free.Where(branch => !(branch.Upstream is Upstream.Tracking tracking && tracking.Branch == originDefault)).Select(branch => BranchRow(repository, branch))];
+            },
+            IsGitFailure,
+            _ => []);
+    }
+
+    private static WorktreeRow BranchRow(FolderPath repository, GitBranch.Local branch) =>
+        new(repository, repository, new Head.OnBranch(branch.Name), WorktreeHealth.CheckedOutNowhere, 0, 0, new LastCommit.Made(branch.TipAt), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
+
+    private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, IReadOnlyList<GitWorktreeEntry> entries, HashSet<FolderPath> registered, CancellationToken cancellationToken)
+    {
         List<WorktreeRow> rows = [];
         foreach (GitWorktreeEntry entry in entries.Where(entry => !entry.IsMain))
         {
