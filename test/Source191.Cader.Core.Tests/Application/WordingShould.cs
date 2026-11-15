@@ -993,6 +993,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void SayTerminalsSettingsChangedWhileTheyWereWritten()
+    {
+        Wording.TerminalSettingsChanged(TerminalSettingsFile).ShouldBe(@"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.");
+    }
+
+    [Fact]
     public void GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
     {
         Wording.TerminalSettingsLinked(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""

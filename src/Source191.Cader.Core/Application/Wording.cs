@@ -444,6 +444,8 @@ public static partial class Wording
         ]);
     }
 
+    public static string TerminalSettingsChanged(string settingsPath) => string.Empty;
+
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";

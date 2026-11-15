@@ -371,6 +371,20 @@ public sealed class TerminalSettingsShould : IDisposable
             .ShouldContain(rule => rule.IdentityReference == guests.IdentityReference && rule.AccessControlType == AccessControlType.Allow && rule.FileSystemRights.HasFlag(FileSystemRights.Read));
     }
 
+    [Fact]
+    public async Task WriteNothingWhenTheFileChangesWhileItIsWritten()
+    {
+        Given(settings.Location, """{ "profiles": [] }""");
+        string saved = """{ "profiles": [], "theme": "light" }""";
+        TerminalSettings racing = new(root, new SavingClock(settings.Location, saved));
+
+        TerminalSettingsEdit edit = await racing.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
+
+        edit.ShouldBe(new TerminalSettingsEdit.ChangedMeanwhile());
+        (await File.ReadAllTextAsync(settings.Location, TestContext.Current.CancellationToken)).ShouldBe(saved);
+        Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
+    }
+
     [Theory]
     [InlineData("{ \"theme\": \"dark\" } // no profiles")]
     [InlineData("{ \"profiles\": [ ")]
@@ -453,6 +467,20 @@ public sealed class TerminalSettingsShould : IDisposable
         TerminalProfileRecords.Read read = records.ShouldBeOfType<TerminalProfileRecords.Read>();
         read.Generated.Select(id => id.Text).ShouldBe(generated, ignoreOrder: true);
         read.Listed.Select(id => id.Text).ShouldBe(listed, ignoreOrder: true);
+    }
+
+    /// <summary>
+    /// Stands in for Windows Terminal saving its settings while Cader writes them: the write reads the clock after it has
+    /// read the file and before it replaces it, and this clock saves the file when read.
+    /// </summary>
+    private sealed class SavingClock(string file, string saved) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            File.WriteAllText(file, saved);
+
+            return Now;
+        }
     }
 
     public void Dispose()

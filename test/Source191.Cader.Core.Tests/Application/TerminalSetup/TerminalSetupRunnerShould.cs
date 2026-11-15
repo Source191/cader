@@ -498,6 +498,21 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         settings.Enabled.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task ReportThatTerminalsSettingsChangedMeanwhileAndStillOfferTheBell()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.ChangedMeanwhile();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsChanged(terminal.Location));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
     private static TerminalProfiles DefaultProfiles => new(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification));
 
     private static TerminalProfileEntry CaderEntry => TerminalProfiles.Entries[0];
