@@ -2,6 +2,7 @@ using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Claude;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application;
+using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
@@ -140,12 +141,32 @@ public sealed class ConsoleLoadsShould : IDisposable
         refreshes.Snapshot().ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task ReadTheLogRowsAgainAfterAClear()
+    {
+        FakeDiagnosticLogFiles files = new FakeDiagnosticLogFiles().WithCurrent(2_516_582).WithOlder(10_485_700);
+        ConsoleLoads loads = Loads(files);
+
+        IReadOnlyList<ConfigRow> before = (await loads.ReadConfigAsync(TestContext.Current.CancellationToken)).ShouldBeOfType<ConfigRowsLoaded>().Rows;
+        await new ClearDiagnosticLogHandler(files, log).HandleAsync(new ClearDiagnosticLog(files.Read()), TestContext.Current.CancellationToken);
+        IReadOnlyList<ConfigRow> after = (await loads.ReadConfigAsync(TestContext.Current.CancellationToken)).ShouldBeOfType<ConfigRowsLoaded>().Rows;
+
+        before.OfType<ConfigRow.Setup>().ShouldContain(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+        after.OfType<ConfigRow.Setup>().ShouldNotContain(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+        after.OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogOff(new FakeDiagnosticLogFiles().Read()));
+    }
+
     private ConsoleLoads Loads()
+    {
+        return Loads(new FakeDiagnosticLogFiles());
+    }
+
+    private ConsoleLoads Loads(FakeDiagnosticLogFiles logFiles)
     {
         GitCli git = new(gitRuns, "git");
         SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue);
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
-        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, new FakeDiagnosticLogFiles(), TestSettings.DefaultClaudeFolder, SettingsFile, log);
+        SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
         return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, refreshes);
     }
