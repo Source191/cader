@@ -80,6 +80,16 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
+    public void MarkTheRepositoryCellOfASessionWhoseFolderHasGone()
+    {
+        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Stopped, new JobProcess.None()), new LiveTab.None()) with { Location = new SessionLocation.FolderGone("Northwind.Billing-invoice-pdf") };
+        TableColumn<SessionRow> repository = definition.Columns.Single(column => column.Help == Wording.RepositoryColumn);
+
+        repository.Cell(row, Fixtures.Noon, int.MaxValue).ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Billing-invoice-pdf");
+        repository.Cell(row, Fixtures.Noon, 20).ShouldBe(@"folder gone: ~\sour…");
+    }
+
+    [Fact]
     public void ShowAPlainClaudeWithItsHollowBlock()
     {
         SessionRow row = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Fixtures.Noon, DisplayState.Working, ProcessId: 4242), new LiveTab.None());
