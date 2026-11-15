@@ -2,6 +2,7 @@ using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.Views;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 
@@ -37,6 +38,14 @@ public sealed class CodeNameShould
         MethodBase method = typeof(CodeNameShould).GetMethod(nameof(NameAMethodWithItsType))!;
 
         CodeName.For(method).ToString().ShouldBe("CodeNameShould.NameAMethodWithItsType");
+    }
+
+    [Fact]
+    public void NameAMethodThatHasNoTypeByItsOwnName()
+    {
+        DynamicMethod compiled = new("Compiled", typeof(void), Type.EmptyTypes);
+
+        CodeName.For(compiled).ToString().ShouldBe("Compiled");
     }
 
     [Fact]
