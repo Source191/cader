@@ -127,7 +127,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void ExplainEveryLineOfEachPane()
     {
         Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory"]);
-        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Changes", "Unpushed"]);
+        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Repository", "Changes", "Unpushed"]);
         Wording.SessionsPane.Concat(Wording.WorktreesPane).ShouldAllBe(line => line.Meaning.Length > 0);
     }
 
@@ -211,15 +211,18 @@ public sealed class WordingOfKeysAndColumnsShould
             SESSION      the session running in it, if any
 
             Pane
-            Health    ok; locked (by another tool); orphan (a folder git has forgotten);
-                      broken (registration or owner gone); empty (a leftover folder);
-                      elsewhere (a worktree of a repository outside the roots); then the reason in full
-            Branch    the branch checked out there, and whether it is merged into origin's default branch
-            PR        its pull request, as the sessions table shows it, or none; p opens it
-            Folder    the worktree's folder
-            Created   when Cader created it, or not by Cader
-            Changes   changed or untracked files, and commits on its branch that no remote has
-            Unpushed  the newest five unpushed commits, or the changed files when none, and how many more
+            Health      ok; locked (by another tool); orphan (a folder git has forgotten);
+                        broken (registration or owner gone); empty (a leftover folder);
+                        elsewhere (a worktree of a repository outside the roots);
+                        branch (checked out in no worktree); origin (only on origin); then the reason in full
+            Branch      the branch, whether a worktree's is merged into origin's default branch,
+                        then the BRANCH flag's reason in full
+            PR          its pull request, as the sessions table shows it, or none; p opens it
+            Folder      the worktree's folder
+            Created     when Cader created it, or not by Cader
+            Repository  a branch or origin row's repository, in place of Folder and Created
+            Changes     changed or untracked files, and commits on its branch that no remote has
+            Unpushed    the newest five unpushed commits, or the changed files when none, and how many more
 
             Report a problem (!)
             A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),
