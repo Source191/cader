@@ -66,6 +66,16 @@ public sealed class WorktreeInspectorShould
     }
 
     [Fact]
+    public async Task ReportAnExistingFolderGitDoesNotListAsNotRegistered()
+    {
+        processes.Answer(request => request.Arguments.Contains("list"), new ProcessResult(0, MainOnly, string.Empty));
+
+        WorktreeHealth health = await Inspector.HealthAsync(Repository, Worktree, folderExists: true, CancellationToken.None);
+
+        health.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Orphan, new HealthReason.NotRegistered()));
+    }
+
+    [Fact]
     public async Task ReportTheGitFileGoneForAListedPrunableWorktreeWhoseFolderExists()
     {
         processes.Answer(request => request.Arguments.Contains("list"), new ProcessResult(0, WithFix + "prunable gitdir file points to non-existent location\n", string.Empty));
