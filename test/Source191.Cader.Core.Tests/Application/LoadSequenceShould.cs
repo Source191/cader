@@ -35,4 +35,14 @@ public sealed class LoadSequenceShould
 
         sequence.Accept(third).ShouldBeTrue();
     }
+
+    [Fact]
+    public void DropALoadThatWasAlreadyApplied()
+    {
+        LoadSequence sequence = new();
+        int ticket = sequence.Begin();
+
+        sequence.Accept(ticket).ShouldBeTrue();
+        sequence.Accept(ticket).ShouldBeFalse();
+    }
 }
