@@ -385,7 +385,7 @@ public sealed class TerminalSettingsShould : IDisposable
         Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
     }
 
-    /// <summary>The text goes into the first "profiles", but a parser, Terminal's included, reads the last one.</summary>
+    /// <summary>The text goes into the first "profiles", but System.Text.Json reads the last one.</summary>
     [Fact]
     public async Task WriteNothingWhenTheNewFileWouldNotHoldTheListExpected()
     {
