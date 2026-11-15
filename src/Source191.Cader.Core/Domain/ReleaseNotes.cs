@@ -35,17 +35,21 @@ public sealed record ReleaseNotes
     /// <summary>Reads changelog text; false when it holds no version section, as the link-only notes of earlier packages do.</summary>
     public static bool TryParse(string? text, [MaybeNullWhen(false)] out ReleaseNotes notes)
     {
+        if (text is null)
+        {
+            notes = null;
+            return false;
+        }
+
         List<ReleaseSection> sections = [];
         SectionReader reader = new(sections);
-        // Stryker disable once String : Equivalent: any other text has no section either, so a null text fails to parse the same way
-        foreach (string line in (text ?? string.Empty).Split('\n'))
+        foreach (string line in text.Split('\n'))
         {
             reader.Read(Visible(line).Trim());
         }
 
         reader.Close();
-        // Stryker disable once String : Equivalent: sections exist only when the text is not null, so the fallback is never read
-        notes = sections.Count > 0 ? new ReleaseNotes(text ?? string.Empty, sections) : null;
+        notes = sections.Count > 0 ? new ReleaseNotes(text, sections) : null;
 
         return notes is not null;
     }
