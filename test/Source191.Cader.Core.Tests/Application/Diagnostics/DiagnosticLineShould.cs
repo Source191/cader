@@ -153,15 +153,22 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void RenderATerminalGuiReport()
     {
-        Body(new TerminalGuiReported(DiagnosticLevel.Warning, null)).ShouldBe("terminal.gui Warning");
+        Body(new TerminalGuiReported(DiagnosticLevel.Warning, CodeName.For(typeof(ScreenLoop)), null)).ShouldBe("terminal.gui Warning from ScreenLoop");
     }
 
     [Fact]
     public void RenderATerminalGuiReportWithItsException()
     {
-        TerminalGuiReported reported = new(DiagnosticLevel.Error, ExceptionSummary.From(new GitException("x", inUse: false)));
+        TerminalGuiReported reported = new(DiagnosticLevel.Error, CodeName.For(typeof(ScreenLoop)), ExceptionSummary.From(new GitException("x", inUse: false)));
 
-        Body(reported).ShouldBe("terminal.gui Error: GitException");
+        Body(reported).ShouldBe("terminal.gui Error from ScreenLoop: GitException");
+    }
+
+    [Fact]
+    public void RenderATerminalGuiReportWhoseRaiserIsUnknown()
+    {
+        Body(new TerminalGuiReported(DiagnosticLevel.Warning, null, null)).ShouldBe("terminal.gui Warning");
+        Body(new TerminalGuiReported(DiagnosticLevel.Error, null, ExceptionSummary.From(new GitException("x", inUse: false)))).ShouldBe("terminal.gui Error: GitException");
     }
 
     [Theory]

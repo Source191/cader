@@ -62,7 +62,7 @@ public static class DiagnosticLine
         ProcessTimedOut timedOut => $"timed out {timedOut.Command} after {Milliseconds(timedOut.Limit)}",
         ProcessFailedToStart failed => $"not started {failed.Command}: {failed.Failure}",
         Failed failed => failed.What is null ? $"{FailedWord} {failed.Site}: {failed.Failure}" : $"{FailedWord} {failed.Site} {failed.What}: {failed.Failure}",
-        TerminalGuiReported reported => reported.Failure is null ? $"terminal.gui {reported.Level}" : $"terminal.gui {reported.Level}: {reported.Failure}",
+        TerminalGuiReported reported => $"terminal.gui {reported.Level}{(reported.Raiser is null ? string.Empty : $" from {reported.Raiser}")}{(reported.Failure is null ? string.Empty : $": {reported.Failure}")}",
         _ => throw new UnreachableException(),
     };
 
