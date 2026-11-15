@@ -50,6 +50,7 @@ public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, Diagnostic
             Judge(clock.GetElapsedTime(previous, now));
         }
 
+        longest = null;
         previous = now;
         beaten = true;
     }
