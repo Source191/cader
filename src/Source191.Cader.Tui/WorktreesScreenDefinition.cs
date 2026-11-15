@@ -23,12 +23,18 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public IReadOnlyList<TableColumn<WorktreeRow>> Columns { get; } =
     [
-        // The branch and changes are the pane's, so the WORKTREE cell names the repository and the folder's slug only.
-        TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true).Fit(width), new ColumnFit.Elastic()),
+        // The branch and changes are the pane's, so the WORKTREE cell names the repository and the folder's slug only; a row with no folder names its branch in the slug's place.
+        TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereOf(folders, row).Fit(width), new ColumnFit.Elastic()),
         TableColumn<WorktreeRow>.Plain(Wording.HealthColumn, (row, _, _) => Wording.HealthCell(row.Health.Kind), new ColumnFit.Natural()),
         TableColumn<WorktreeRow>.Plain(Wording.LastCommitColumn, (row, now, _) => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-", new ColumnFit.RightAligned()),
         TableColumn<WorktreeRow>.Plain(Wording.SessionColumn, (row, _, _) => row.Session is WorktreeSession.Running running ? Wording.Name(running.Name) : string.Empty, new ColumnFit.Natural()),
     ];
+    private static WhereLabel WhereOf(FolderLabels folders, WorktreeRow row) => (row.Placement, row.Head) switch
+    {
+        (Placement.NoFolder, Head.OnBranch on) => new WhereLabel.Inside(row.RepositoryName, on.Branch.Value),
+        _ => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true),
+    };
+
     public Color RowColour(WorktreeRow row)
     {
         return row.Health.Kind switch
