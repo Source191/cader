@@ -327,6 +327,22 @@ public sealed class GitCliIntegrationShould : IDisposable
     }
 
     [Fact]
+    public async Task ReadAnUpstreamThatIsALocalBranchAsNoneEvenOnceItIsDeleted()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("branch", "-q", "feature/x", "main");
+        await RunGitAsync("branch", "-q", "local-up", "main");
+        await RunGitAsync("branch", "-q", "--set-upstream-to=feature/x", "local-up");
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken)).OfType<GitBranch.Local>().Single(branch => branch.Name == BranchName.From("local-up")).Upstream.ShouldBe(new Upstream.None());
+
+        await RunGitAsync("branch", "-q", "-D", "feature/x");
+
+        (await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken)).OfType<GitBranch.Local>().Single(branch => branch.Name == BranchName.From("local-up")).Upstream.ShouldBe(new Upstream.None());
+    }
+
+    [Fact]
     public async Task CountTheCommitsABranchHasAfterAPullRequestsHead()
     {
         await CloneABareOriginAsync();
