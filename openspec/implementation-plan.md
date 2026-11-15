@@ -56,6 +56,7 @@ After merge (the change is archived without them, but they are not forgotten):
 - **check-mutation-before-publishing:** the warning appears on the next publish run while a `mutation` issue is open.
 - **fix-dependabot-workflow:** 2.2 and 4.2, the next weekly Dependabot pull request going green with no hand edits, and the token's expiry in MAINTAINING.md.
 - **fetch-before-branching:** 9.2. **open-the-diagnostic-log:** 4.4's by-eye part. **restore-hidden-terminal-profiles:** 7.1 and 7.2. **honour-claude-config-folder:** 6.2.
+- **announce-winget-approval:** 2.1, remove the README's winget notice once microsoft/winget-pkgs#479528 merges.
 - **close-mutation-gaps:** the first strict release run, and the deliberate-failure check.
 - **upgrade-to-net11:** 1.1 and 2.6 (refresh timings over the owner's own state) and 1.7 (re-observing the Terminal.Gui and UI Automation facts).- **fetch-before-branching:** 8.2, remaking the README GIF with `tools\New-ReadmeScreenshot.ps1` (it needs the desktop and ffmpeg).
 
