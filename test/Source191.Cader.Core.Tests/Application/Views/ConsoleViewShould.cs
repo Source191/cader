@@ -1,6 +1,7 @@
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.TestDoubles;
+using System.Diagnostics;
 
 namespace Source191.Cader.Core.Tests.Application.Views;
 
@@ -151,5 +152,15 @@ public sealed class ConsoleViewShould
         Session.Background session = new(SessionId.From(sessionId), JobId.From(sessionId == "sess-1" ? "81cdb0f9" : "92ddc1a0"), Listed.As(name), FolderPath.From(@"C:\Users\me\source\repos\Northwind.Orders"), Fixtures.Noon, DisplayState.Idle, new JobProcess.None());
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", session.WorkingDirectory), new Head.OnBranch(BranchName.From("main")), new LiveTab.None(), HasTranscript: true);
+    }
+
+    private sealed record Unhandled : ISwitchesTab;
+
+    [Fact]
+    public void NameAnEffectItHasNoCaseFor()
+    {
+        UnreachableException failure = Should.Throw<UnreachableException>(() => ConsoleView.Apply(Loaded, new Unhandled()));
+
+        failure.Message.ShouldStartWith("Unhandled switches tab");
     }
 }
