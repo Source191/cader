@@ -54,6 +54,8 @@ public sealed class WordingOfScreensShould
     [InlineData(WorktreeHealthKind.Broken, "✗")]
     [InlineData(WorktreeHealthKind.Empty, "□")]
     [InlineData(WorktreeHealthKind.Elsewhere, "↗")]
+    [InlineData(WorktreeHealthKind.Branch, "⑂")]
+    [InlineData(WorktreeHealthKind.Origin, "○")]
     public void GiveEveryHealthItsOwnGlyph(WorktreeHealthKind kind, string glyph)
     {
         Wording.HealthGlyph(kind).ShouldBe(glyph);
@@ -66,6 +68,8 @@ public sealed class WordingOfScreensShould
     [InlineData(WorktreeHealthKind.Broken, "✗ broken")]
     [InlineData(WorktreeHealthKind.Empty, "□ empty")]
     [InlineData(WorktreeHealthKind.Elsewhere, "↗ elsewhere")]
+    [InlineData(WorktreeHealthKind.Branch, "⑂ branch")]
+    [InlineData(WorktreeHealthKind.Origin, "○ origin")]
     public void WriteTheHealthCellAsGlyphAndWord(WorktreeHealthKind kind, string cell)
     {
         Wording.HealthCell(kind).ShouldBe(cell);

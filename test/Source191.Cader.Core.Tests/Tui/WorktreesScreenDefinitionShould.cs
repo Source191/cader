@@ -71,6 +71,8 @@ public sealed class WorktreesScreenDefinitionShould
     [InlineData(WorktreeHealthKind.Orphan)]
     [InlineData(WorktreeHealthKind.Broken)]
     [InlineData(WorktreeHealthKind.Elsewhere)]
+    [InlineData(WorktreeHealthKind.Branch)]
+    [InlineData(WorktreeHealthKind.Origin)]
     public void ColourARowByItsHealth(WorktreeHealthKind kind)
     {
         WorktreeRow row = Row(new LastCommit.Unknown()) with { Health = new WorktreeHealth(kind, new HealthReason.None()) };
@@ -83,6 +85,8 @@ public sealed class WorktreesScreenDefinitionShould
             WorktreeHealthKind.Orphan => Palette.Red,
             WorktreeHealthKind.Broken => Palette.Red,
             WorktreeHealthKind.Elsewhere => Palette.Amber,
+            WorktreeHealthKind.Branch => Palette.Grey,
+            WorktreeHealthKind.Origin => Palette.Amber,
         });
     }
 

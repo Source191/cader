@@ -647,6 +647,18 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void SayABranchIsCheckedOutInNoWorktree()
+    {
+        Wording.Describe(new HealthReason.CheckedOutNowhere()).ShouldBe("checked out in no worktree");
+    }
+
+    [Fact]
+    public void SayABranchIsOnlyOnOriginAsOfTheLastFetch()
+    {
+        Wording.Describe(new HealthReason.OnlyOnOrigin()).ShouldBe("only on origin, as of the last fetch");
+    }
+
+    [Fact]
     public void NameTheRepositoryOfAWorktreeThatIsElsewhere()
     {
         Wording.Describe(new HealthReason.RepositoryOutsideRoots(FolderPath.From(@"D:\other\Northwind.Ledger"))).ShouldBe(@"its repository D:\other\Northwind.Ledger is not under the roots");
