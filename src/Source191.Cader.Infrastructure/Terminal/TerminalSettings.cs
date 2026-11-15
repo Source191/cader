@@ -1,5 +1,6 @@
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -10,7 +11,7 @@ namespace Source191.Cader.Adapters.Terminal;
 /// Terminal's own. Read allowing comments and trailing commas, as a file the user has annotated may hold them. The
 /// profile list is <c>profiles.list</c>, or <c>profiles</c> itself when it is a bare array.
 /// </summary>
-public sealed class TerminalSettings(string localStateFolder) : ITerminalSettings
+public sealed class TerminalSettings(string localStateFolder, TimeProvider time) : ITerminalSettings
 {
     private static readonly JsonDocumentOptions DocumentOptions = new()
     {
@@ -26,7 +27,7 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
 
     private const string NoProfileList = "the settings file has no profile list";
 
-    public static TerminalSettings ForCurrentUser() => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState"));
+    public static TerminalSettings ForCurrentUser(TimeProvider time) => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState"), time);
 
     public string Location => Path.Combine(localStateFolder, "settings.json");
 
@@ -73,6 +74,7 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
         byte[] written = [.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)];
 
+        string backup = Location + time.GetUtcNow().ToString(".yyyy-MM-ddTHH-mm-ss'.cader.backup'", CultureInfo.InvariantCulture);
         string temporary = Location + ".cader-tmp";
         try
         {
@@ -84,7 +86,7 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
             File.Delete(temporary);
         }
 
-        return new TerminalSettingsEdit.Written();
+        return new TerminalSettingsEdit.Written(backup);
     }
 
     /// <summary>A symbolic link or other reparse point, as a dotfiles set-up makes it: moving a file over it would replace the link.</summary>

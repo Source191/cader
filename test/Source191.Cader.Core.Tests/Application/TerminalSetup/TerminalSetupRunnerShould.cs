@@ -342,7 +342,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         terminal.Added.ShouldBe([[SessionEntry]]);
         output.ToString().ShouldContain(Wording.HiddenProfilesPlan(terminal.Location, [SessionEntry]));
         output.ToString().ShouldContain(Wording.ShowHiddenProfilesQuestion);
-        output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
         settings.Enabled.ShouldBe(1);
     }
 
@@ -356,7 +356,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
 
         exitCode.ShouldBe(0);
         terminal.Added.ShouldBeEmpty();
-        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
     }
 
     [Fact]
@@ -493,7 +493,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
 
         exitCode.ShouldBe(1);
         error.ToString().ShouldContain(Wording.TerminalSettingsLinked(terminal.Location, [SessionEntry]));
-        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
         fragment.Written.Count.ShouldBe(1);
         settings.Enabled.ShouldBe(1);
     }

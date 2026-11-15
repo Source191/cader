@@ -177,8 +177,8 @@ public sealed class TerminalSetupRunner(
     {
         switch (edit)
         {
-            case TerminalSettingsEdit.Written:
-                await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location), cancellationToken);
+            case TerminalSettingsEdit.Written written:
+                await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location, written.Backup), cancellationToken);
                 return Step.Written;
             case TerminalSettingsEdit.IsALink:
                 await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, entries), cancellationToken);

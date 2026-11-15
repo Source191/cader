@@ -39,7 +39,7 @@ internal sealed record SharedParts(
         string consoleExecutable = Environment.ProcessPath ?? "cader";
         string ownFolder = ProgramFolder.Of(AppContext.BaseDirectory, Environment.ProcessPath);
         TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "logo.ico"));
-        TerminalSettings terminalSettings = TerminalSettings.ForCurrentUser();
+        TerminalSettings terminalSettings = TerminalSettings.ForCurrentUser(TimeProvider.System);
 
         // Every program the console starts is found on the PATH once and run by its full path, never by a bare name that Windows
         // would look for in the folder the console was started from first

@@ -1,6 +1,10 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Terminal;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 
 namespace Source191.Cader.Infrastructure.Tests;
@@ -19,16 +23,20 @@ public sealed class TerminalSettingsShould : IDisposable
         }
         """;
 
+    private static readonly DateTimeOffset Now = new(2026, 11, 15, 9, 30, 15, TimeSpan.Zero);
+
     private readonly string root = Path.Combine(Path.GetTempPath(), "test-terminal-" + Guid.NewGuid().ToString("N"));
     private readonly TerminalSettings settings;
 
     public TerminalSettingsShould()
     {
         Directory.CreateDirectory(root);
-        settings = new TerminalSettings(root);
+        settings = new TerminalSettings(root, new FakeTimeProvider(Now));
     }
 
     private string StateFile => Path.Combine(root, "state.json");
+
+    private string Backup => Path.Combine(root, "settings.json.2026-11-15T09-30-15.cader.backup");
 
     [Fact]
     public void LiveInTheLocalStateFolder()
@@ -324,6 +332,43 @@ public sealed class TerminalSettingsShould : IDisposable
         await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
 
         ShouldRead(await settings.ReadAsync(TestContext.Current.CancellationToken), generated: [PowerShellId, CaderId, SessionId], listed: [PowerShellId, CaderId, SessionId]);
+    }
+
+    [Fact]
+    public async Task KeepACopyOfTheFileAsItWasNamedWithTheUtcTime()
+    {
+        string original = Lf("""
+            {
+                "profiles": [ { "name": "mine" } ]
+            }
+            """);
+        Given(settings.Location, original, withByteOrderMark: true);
+
+        TerminalSettingsEdit edit = await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        edit.ShouldBe(new TerminalSettingsEdit.Written(Backup));
+        (await File.ReadAllBytesAsync(Backup, TestContext.Current.CancellationToken)).ShouldBe([.. Encoding.UTF8.Preamble.ToArray(), .. Encoding.UTF8.GetBytes(original)]);
+    }
+
+    /// <summary>File.Replace keeps the replaced file's creation time and access rules, which moving a new file over it would not.</summary>
+    [Fact]
+    [SupportedOSPlatform("windows")]
+    public async Task KeepTheFilesCreationTimeAndAccessRules()
+    {
+        Given(settings.Location, """{ "profiles": [] }""");
+        DateTime created = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        File.SetCreationTimeUtc(settings.Location, created);
+        FileInfo file = new(settings.Location);
+        FileSecurity security = file.GetAccessControl();
+        FileSystemAccessRule guests = new(new SecurityIdentifier(WellKnownSidType.BuiltinGuestsSid, null), FileSystemRights.Read, AccessControlType.Allow);
+        security.AddAccessRule(guests);
+        file.SetAccessControl(security);
+
+        await settings.AddProfileEntriesAsync([TerminalProfiles.Entries[1]], TestContext.Current.CancellationToken);
+
+        File.GetCreationTimeUtc(settings.Location).ShouldBe(created);
+        new FileInfo(settings.Location).GetAccessControl().GetAccessRules(includeExplicit: true, includeInherited: false, typeof(SecurityIdentifier)).Cast<FileSystemAccessRule>()
+            .ShouldContain(rule => rule.IdentityReference == guests.IdentityReference && rule.AccessControlType == AccessControlType.Allow && rule.FileSystemRights.HasFlag(FileSystemRights.Read));
     }
 
     [Theory]

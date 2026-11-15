@@ -989,7 +989,7 @@ public sealed class WordingShould
     [Fact]
     public void SayTheHiddenProfilesShowOnceTerminalReadsTheFile()
     {
-        Wording.HiddenProfilesShown(TerminalSettingsFile).ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart.");
+        Wording.HiddenProfilesShown(TerminalSettingsFile, TerminalSettingsFile + ".2026-11-15T09-30-15.cader.backup").ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart. The file as it was is kept as C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json.2026-11-15T09-30-15.cader.backup.");
     }
 
     [Fact]
