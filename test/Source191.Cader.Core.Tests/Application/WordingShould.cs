@@ -406,6 +406,16 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void GiveEveryConfigKeyATipOfItsOwn()
+    {
+        foreach (KeyHelp key in Wording.ConfigKeys)
+        {
+            key.Tip.ShouldNotBeNullOrWhiteSpace($"{key.Key} has no tip");
+            key.Tip.ShouldNotBe(key.Line, $"{key.Key}'s tip only repeats the help line");
+        }
+    }
+
+    [Fact]
     public void FitEveryColumnMeaningOnItsLines()
     {
         foreach (ColumnHelp column in Wording.SessionsColumns.Concat(Wording.WorktreesColumns))
