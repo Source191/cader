@@ -45,10 +45,14 @@ public sealed class RecordedProcessRunner(IProcessRunner inner, DiagnosticLog lo
     {
         try
         {
-            return await run();
+            T result = await run();
+            failedStarts.TryRemove((command, folder), out _);
+
+            return result;
         }
         catch (ProcessTimedOutException exception)
         {
+            failedStarts.TryRemove((command, folder), out _);
             log.Record(new ProcessTimedOut(command, exception.Limit));
             throw;
         }
