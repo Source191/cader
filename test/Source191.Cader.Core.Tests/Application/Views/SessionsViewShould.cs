@@ -245,6 +245,30 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void RefuseToOpenAStoppedSessionWhoseFolderHasGone()
+    {
+        SessionRow gone = Row("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Enter));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.FolderGone(Listed.As("fix-123")));
+    }
+
+    [Fact]
+    public void OpenARunningSessionWhoseFolderReadsAsGone()
+    {
+        Session.Background running = Job("fix-123", DisplayState.Idle, "Northwind.Orders-fix-123", "dddd4444") with { Process = new JobProcess.Running(4242) };
+        SessionRow gone = Row(running) with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123"), Tab = new LiveTab.Open(TabPalette.Green) };
+        SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Enter));
+
+        update.Effects.ShouldBe([new OpenTabForSession(running, new LiveTab.Open(TabPalette.Green))]);
+    }
+
+    [Fact]
     public void OfferToCloseATerminalSessionThatHasNoMessagesAndCloseItOnX()
     {
         Session.Interactive untouchedTerminal = Terminal("repos-f6", DisplayState.Idle, "repos");
