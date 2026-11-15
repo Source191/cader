@@ -39,7 +39,7 @@
 
 ## 6. Release and integration checks
 
-- [ ] 6.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` (minor, as CONTRIBUTING's Versions says) and add a `CHANGELOG.md` line under Added. **Verify:** `.github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD` passes.
+- [x] 6.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` (minor, as CONTRIBUTING's Versions says) and add a `CHANGELOG.md` line under Added. **Verify:** `.github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD` passes.
 - [ ] 6.2 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes`, `openspec validate track-branches --strict`, and the smoke check of a local install (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`). **Verify:** each exits 0.
 - [ ] 6.3 **Manual (owner):** over this repository with `gh` signed in, after `git fetch --prune`: a merged branch with a commit pushed after the merge reads `▲ left behind` (as an origin row if it has no local copy), a local branch whose origin copy was deleted reads `✗ gone`, an unpushed local branch reads `· no PR`, and `d` on a merged branch row asks and deletes it. **Verify:** by eye against `git for-each-ref` and `gh pr list --state all`.
 
