@@ -203,7 +203,7 @@ public sealed class WordingOfKeysAndColumnsShould
             HEALTH       ✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),
                          ✗ broken (registration or owner gone), □ empty (a leftover folder),
                          ↗ elsewhere (a worktree of a repository outside the roots),
-                         ⑂ branch (a branch with no worktree), ○ origin (a branch only on origin); the pane gives the reason
+                         ⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason
             LAST COMMIT  time since the last commit
             SESSION      the session running in it, if any
 
