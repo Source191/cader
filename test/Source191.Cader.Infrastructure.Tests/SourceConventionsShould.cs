@@ -17,7 +17,6 @@ public sealed class SourceConventionsShould
     private static readonly string[] ArgumentExceptionFiles =
     [
         @"src\Source191.Cader.Infrastructure\Claude\ClaudeSettings.cs",
-        @"src\Source191.Cader.Infrastructure\Processes\ProcessRegistry.cs",
     ];
 
     private static readonly string[] StateFileRecords = ["UserConfig", "EditorSetting", "TabFile", "UpdateCheckFile", "LastRunFile"];

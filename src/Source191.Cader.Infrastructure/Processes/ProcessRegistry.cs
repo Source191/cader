@@ -11,8 +11,8 @@ namespace Source191.Cader.Adapters.Processes;
 /// with exit code 0. Every read opens its own
 /// <see href="https://learn.microsoft.com/windows/win32/procthread/process-security-and-access-rights">limited-rights
 /// handle</see> directly: <see cref="Process.GetProcessById(int)"/> walks the whole table on every call, about twenty
-/// milliseconds, and a refresh reads a few hundred processes. It is used only to end a process, which needs a
-/// <see cref="Process"/>.
+/// milliseconds, and a refresh reads a few hundred processes. A process is looked up by id, with
+/// <see cref="Process.TryGetProcessById"/>, only to end it, which needs a <see cref="Process"/>.
 /// </summary>
 public sealed partial class ProcessRegistry : IProcessRegistry
 {
@@ -201,19 +201,21 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// <summary>Acts on a live process; a process that has gone, or refuses the action, is left alone.</summary>
     private static void WithProcess(int processId, Action<Process> action)
     {
+        if (!Process.TryGetProcessById(processId, out Process? process))
+        {
+            return;
+        }
+
         try
         {
-            using Process process = Process.GetProcessById(processId);
-
-            action(process);
+            using (process)
+            {
+                action(process);
+            }
         }
         catch (AggregateException)
         {
             // Process.Kill(entireProcessTree: true) throws this when a descendant has already gone or cannot be ended; what could be ended was.
-        }
-        catch (ArgumentException)
-        {
-            // The process has gone.
         }
         catch (InvalidOperationException)
         {

@@ -156,6 +156,33 @@ public sealed class ProcessRegistryIntegrationShould
         child.ExitCode.ShouldBe(0);
     }
 
+    /// <summary>Every door to a confirmed process needs a start time read here, so an id the lookup that ends processes throws for never reaches it.</summary>
+    [Fact]
+    public void ReadNoStartTimeForAnIdOfZeroOrLess()
+    {
+        registry.StartTimeOf(0).ShouldBeNull();
+        registry.StartTimeOf(-1).ShouldBeNull();
+    }
+
+    [Fact]
+    public void LeaveAProcessThatHasGoneAlone()
+    {
+        ConfirmedProcess gone = TestProcesses.Confirmed(int.MaxValue - 7, TimeProvider.System.GetUtcNow());
+
+        Should.NotThrow(() => registry.Terminate(gone));
+        Should.NotThrow(() => registry.EndCleanly(gone));
+    }
+
+    /// <summary>
+    /// The System process refuses to be ended by anyone. Only a clean end is aimed at it: ending a tree goes on to the
+    /// children of a process that refused, and System's are not this test's to try.
+    /// </summary>
+    [Fact]
+    public void LeaveAProtectedProcessThatRefusesToEndAlone()
+    {
+        Should.NotThrow(() => registry.EndCleanly(TestProcesses.Confirmed(4, TimeProvider.System.GetUtcNow())));
+    }
+
     [Fact]
     public void EndATreeWhoseChildHasAlreadyGoneWithoutThrowing()
     {
