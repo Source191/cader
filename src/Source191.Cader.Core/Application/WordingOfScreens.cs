@@ -237,7 +237,10 @@ public static partial class Wording
 
     public static ColumnHelp StateColumn { get; } = new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
 
-    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository");
+    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", $"the repository it runs in, or the folder's label outside a repository,\nwith {FolderGoneWords}: before the label when the folder no longer exists");
+
+    /// <summary>The REPOSITORY cell of a session whose folder has gone: the mark first, so a narrow column cuts the label and keeps it.</summary>
+    public static string FolderGone(string label) => $"{FolderGoneWords}: {label}";
 
     public static ColumnHelp PullRequestColumn { get; } = new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
 
