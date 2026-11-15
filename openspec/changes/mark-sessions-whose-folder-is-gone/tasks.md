@@ -4,7 +4,7 @@ Each task is red, green, refactor with a commit per step; "verify" means the Cor
 
 ## 1. The location case and its words (Application)
 
-- [ ] 1.1 Red `SessionsViewShould.FilterASessionWhoseFolderHasGoneByItsFolderName` (a row with `new SessionLocation.FolderGone("Northwind.Orders-fix-123")` stays under the filter `fix-123`), then green `SessionLocation.FolderGone(string Folder)` and its arm in `SessionRow.Repository`; verify.
+- [x] 1.1 Red `SessionsViewShould.FilterASessionWhoseFolderHasGoneByItsFolderName` (a row with `new SessionLocation.FolderGone("Northwind.Orders-fix-123")` stays under the filter `fix-123`), then green `SessionLocation.FolderGone(string Folder)` and its arm in `SessionRow.Repository`; verify.
 - [ ] 1.2 Red `WordingOfDetailShould.SayFolderGoneForASessionWhoseFolderHasGone` (the pane's Worktree and Changes lines both read `folder gone`, never `not in a repository`), then green the `FolderGone` arm in `PlaceOf` and the Changes choice in `Wording.Detail(SessionDetail, ...)`; verify.
 - [ ] 1.3 Red `WordingOfScreensShould.MarkAGoneFolderBeforeItsLabel` (`Wording.FolderGone(@"~\source\worktrees\Northwind.Orders-fix-123")` reads `folder gone: ~\source\worktrees\Northwind.Orders-fix-123`) and the updated REPOSITORY column help fact (names the folder gone mark), then green both in `WordingOfScreens`; verify, including `SpellBritish` and the help-height facts.
 - [ ] 1.4 Red `WordingOfScreensShould.TipOnlyARowWhoseFolderHasGone` (`Wording.SessionRowTip`: a background row whose folder has gone names `d` and is at most 80 characters, an interactive one says only that the folder has gone, every other row is empty), then green; verify.

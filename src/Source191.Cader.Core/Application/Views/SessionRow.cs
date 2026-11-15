@@ -12,11 +12,12 @@ namespace Source191.Cader.Application.Views;
 /// </summary>
 public sealed record SessionRow(Session Session, SessionLocation Location, Head Head, LiveTab Tab, bool HasTranscript)
 {
-    /// <summary>The repository's name, or the folder's outside a repository: what REPOSITORY, the filter and the folder keys read.</summary>
+    /// <summary>The repository's name, or the folder's outside a repository or once it has gone: what REPOSITORY, the filter and the folder keys read.</summary>
     public string Repository => Location switch
     {
         SessionLocation.Outside outside => outside.Folder,
         SessionLocation.InRepository inRepository => inRepository.Name,
+        SessionLocation.FolderGone gone => gone.Folder,
         _ => throw new UnreachableException(),
     };
 
