@@ -23,6 +23,9 @@ public abstract record SetupState
     /// <summary>The diagnostic log's files with the setting off, which may still hold what was written while it was on.</summary>
     public sealed record LogOff(LogFiles Files) : SetupState;
 
+    /// <summary>The older diagnostic log file, <c>cader.log.1</c>, which a rollover left; its row is shown only while it is there.</summary>
+    public sealed record OlderLog(LogFiles Files) : SetupState;
+
     /// <summary>The fragment is at this path, but Windows Terminal hides a Cader profile as deleted.</summary>
     public sealed record HiddenByTerminal(string Path) : SetupState;
 

@@ -182,7 +182,7 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow.Setup> setup = [.. ConfigRows.For(TestSettings.For(Repos), SetupFacts.Reading).OfType<ConfigRow.Setup>()];
 
-        setup.Select(row => row.Item).ShouldBe(Enum.GetValues<SetupItem>());
+        setup.Select(row => row.Item).ShouldBe(Enum.GetValues<SetupItem>().Where(item => item != SetupItem.OlderDiagnosticLogFile));
         setup.ShouldAllBe(row => row.State is SetupState.Reading);
     }
 
