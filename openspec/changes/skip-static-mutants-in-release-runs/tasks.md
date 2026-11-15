@@ -1,12 +1,12 @@
 ## 1. Set up
 
-- [ ] 1.1 Raise the version with `.github\scripts\Step-Version.ps1 -Preview` and add an Internal `CHANGELOG.md` line; verify `Assert-VersionBumped.ps1 -Base main -Head HEAD` passes.
+- [x] 1.1 Raise the version with `.github\scripts\Step-Version.ps1 -Preview` and add an Internal `CHANGELOG.md` line; verify `Assert-VersionBumped.ps1 -Base main -Head HEAD` passes.
 
 ## 2. Release runs set static mutants aside, a red and a green commit each
 
-- [ ] 2.1 Red then green: `Write-MutationRun` reports no finding and does not fail a release run whose only survivors are static, and records `staticSetAside` in `run.json`; a full run still counts them. Verify with `Invoke-Pester test\Scripts`.
-- [ ] 2.2 Red then green: `Format-MutationComment` lists only the non-static survivors of a release run and says how many static ones were left to the weekly full run. Verify with `Invoke-Pester test\Scripts`.
-- [ ] 2.3 Red then green: the cut report keeps a mutant's `static` flag, so the comment reads the same set as the run. Verify with `Invoke-Pester test\Scripts`.
+- [x] 2.1 Red then green: `Write-MutationRun` reports no finding and does not fail a release run whose only survivors are static, and records `staticSetAside` in `run.json`; a full run still counts them. Verify with `Invoke-Pester test\Scripts`.
+- [x] 2.2 Red then green: `Format-MutationComment` lists only the non-static survivors of a release run and says how many static ones were left to the weekly full run. Verify with `Invoke-Pester test\Scripts`.
+- [x] 2.3 Red then green: the cut report keeps a mutant's `static` flag, so the comment reads the same set as the run. Verify with `Invoke-Pester test\Scripts`.
 
 ## 3. The gaps and the survivor #302 found, each verified by the Core suite
 
