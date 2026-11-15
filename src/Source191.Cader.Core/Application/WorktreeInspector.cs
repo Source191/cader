@@ -30,7 +30,7 @@ public sealed class WorktreeInspector(IGit git)
         return entry switch
         {
             null when !folderExists => new WorktreeHealth(WorktreeHealthKind.Broken, new HealthReason.FolderGone()),
-            null => WorktreeHealth.From(new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: false)),
+            null => WorktreeHealth.From(new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnregisteredFolder.Other)),
             _ => WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable)),
         };
     }
