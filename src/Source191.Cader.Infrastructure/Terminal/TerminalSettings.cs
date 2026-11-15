@@ -45,7 +45,9 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
             using JsonDocument state = Parse(await File.ReadAllBytesAsync(StateFile, cancellationToken));
             using JsonDocument settings = Parse(await File.ReadAllBytesAsync(Location, cancellationToken));
 
-            return new TerminalProfileRecords.Read(Generated(state.RootElement), Listed(ProfileList(settings.RootElement)), new HashSet<TerminalProfileId>());
+            JsonElement list = ProfileList(settings.RootElement);
+
+            return new TerminalProfileRecords.Read(Generated(state.RootElement), Listed(list), Added(list));
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -260,6 +262,21 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
     }
 
     private static HashSet<TerminalProfileId> Listed(JsonElement list) => Ids(list.EnumerateArray().Where(entry => entry.ValueKind == JsonValueKind.Object).Select(entry => entry.TryGetProperty("guid", out JsonElement guid) ? guid : default));
+
+    private static HashSet<TerminalProfileId> Added(JsonElement list) => [.. TerminalProfiles.Entries.Where(entry => list.EnumerateArray().Any(element => IsAsSetupAdds(element, entry))).Select(entry => entry.Id)];
+
+    /// <summary>Exactly the four properties setup writes for the entry, with its values, the id in any letter case.</summary>
+    private static bool IsAsSetupAdds(JsonElement element, TerminalProfileEntry entry)
+    {
+        return element.ValueKind == JsonValueKind.Object
+            && element.EnumerateObject().Count() == 4
+            && Ids([element.TryGetProperty("guid", out JsonElement guid) ? guid : default]).Contains(entry.Id)
+            && element.TryGetProperty("hidden", out JsonElement hidden) && hidden.ValueKind == JsonValueKind.False
+            && HoldsText(element, "name", entry.Name)
+            && HoldsText(element, "source", entry.Source);
+    }
+
+    private static bool HoldsText(JsonElement element, string property, string text) => element.TryGetProperty(property, out JsonElement value) && value.ValueKind == JsonValueKind.String && value.ValueEquals(text);
 
     /// <summary>Every element that is a string holding a guid; anything else is left out.</summary>
     private static HashSet<TerminalProfileId> Ids(IEnumerable<JsonElement> elements)

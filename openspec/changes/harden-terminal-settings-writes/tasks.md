@@ -24,7 +24,7 @@ Every fact runs over a temporary folder or the fakes, never Windows Terminal's r
 
 ## 6. `--remove` takes out what setup added (gap 5)
 
-- [ ] 6.1 **Red:** `TerminalSettingsShould` facts that `ReadAsync` lists in `Added` only the entries exactly as setup adds them (any letter case of the guid; not one with a fifth property, `"hidden": true`, another name or another source). **Green:** `TerminalProfileRecords.Read.Added`. **Verify:** the facts pass.
+- [x] 6.1 **Red:** `TerminalSettingsShould` facts that `ReadAsync` lists in `Added` only the entries exactly as setup adds them (any letter case of the guid; not one with a fifth property, `"hidden": true`, another name or another source). **Green:** `TerminalProfileRecords.Read.Added`. **Verify:** the facts pass.
 - [ ] 6.2 **Red:** `TerminalSettingsShould` facts for `RemoveProfileEntriesAsync`: add then remove gives back the original bytes for every add shape; the first, a middle, the last and the only element, a trailing comma, a comma in a comment, a customised entry kept, nothing to remove answers `Unchanged`; a link, a read-only file, a change meanwhile and a failed check write nothing. **Green:** the removal through the guarded write. **Verify:** the facts pass.
 - [ ] 6.3 **Red:** `TerminalSetupRunnerShould` facts for `--remove`: shows the entries and asks, `--yes` answers, declined writes nothing, nothing to remove only with neither fragment nor entry, each refusal exits 1 with its words, unreadable files reported. `WordingShould` facts for the plan, question, done sentence and by-hand words; `CommandLineShould` for the `--remove` description. **Green:** the runner, `Wording`, `CommandLine`. **Verify:** the facts pass.
 
