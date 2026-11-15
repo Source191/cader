@@ -11,6 +11,7 @@ using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.ComponentModel;
 using System.Web;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
@@ -148,6 +149,22 @@ public sealed class DiagnosticsPrivacyShould
         string everything = string.Join('\n', sink.Lines);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
         everything.ShouldNotContain("orders", Case.Insensitive);
+    }
+
+    [Fact]
+    public async Task KeepAFailedStartsFolderOutOfTheLog()
+    {
+        children.Throw(request => request.WorkingDirectory == new WorkingFolder.At(Worktree), new Win32Exception(267, $"The directory name {Worktree} is invalid"));
+        GitCli git = new(processes, "git");
+
+        foreach (int _ in Enumerable.Range(0, 2))
+        {
+            (await git.RepositoryRootAsync(Worktree, CancellationToken.None)).ShouldBeNull();
+        }
+
+        sink.Lines.ShouldHaveSingleItem().ShouldContain("not started git rev-parse: Win32Exception (error 267)");
+        string everything = string.Join('\n', sink.Lines);
+        Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
     private static ReleaseVersion ReleaseVersion(string text)
