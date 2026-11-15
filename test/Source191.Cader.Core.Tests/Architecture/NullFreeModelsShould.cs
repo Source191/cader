@@ -38,6 +38,7 @@ public sealed class NullFreeModelsShould
         new(typeof(ConfirmedProcess), "TryConfirm(processStartedAt)", "takes IProcessRegistry.StartTimeOf's answer as it comes"),
         new(typeof(ConfirmedProcess), "TryConfirmClaim(processStartedAt)", "takes IProcessRegistry.StartTimeOf's answer as it comes"),
         new(typeof(ConfirmedProcess), "TryConfirmParent(parentStartedAt)", "takes IProcessRegistry.StartTimeOf's answer as it comes"),
+        new(typeof(BranchFlags), "Of(commitsAfterMergedHead)", "takes git's count as it comes, none when git could not count or there was nothing to count against"),
         new(typeof(ProcessTree), "Under(usageOf)", "takes IProcessRegistry.UsageOf as it is"),
         new(typeof(TerminalTab), "TerminalOf", "the walk from a confirmed process may end before a terminal"),
         new(typeof(FolderPath), "Parent", "a drive's root has no parent, as Path.GetDirectoryName says"),

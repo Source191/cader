@@ -11,7 +11,7 @@ public sealed class BranchFlagsShould
     [Fact]
     public void PutLeftBehindBeforeGone()
     {
-        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), new Upstream.Gone(), commitsAfterMergedHead: 2).ShouldBe(BranchFlag.LeftBehind);
+        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), new Upstream.Gone(), commitsAfterMergedHead: 2).ShouldBe(BranchFlagKind.LeftBehind);
     }
 
     [Theory]
@@ -19,13 +19,13 @@ public sealed class BranchFlagsShould
     [InlineData(PullRequestState.Completed)]
     public void SayLeftBehindForCommitsAfterTheMergedHead(PullRequestState merged)
     {
-        BranchFlags.Of(Shown(merged, MergedHead), Tracking, commitsAfterMergedHead: 1).ShouldBe(BranchFlag.LeftBehind);
+        BranchFlags.Of(Shown(merged, MergedHead), Tracking, commitsAfterMergedHead: 1).ShouldBe(BranchFlagKind.LeftBehind);
     }
 
     [Fact]
     public void SayGoneAfterAMergeWithNothingBehind()
     {
-        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), new Upstream.Gone(), commitsAfterMergedHead: 0).ShouldBe(BranchFlag.Gone);
+        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), new Upstream.Gone(), commitsAfterMergedHead: 0).ShouldBe(BranchFlagKind.Gone);
     }
 
     [Theory]
@@ -33,13 +33,13 @@ public sealed class BranchFlagsShould
     [InlineData(PullRequestState.Abandoned)]
     public void SayClosedWhileTheUpstreamStillTracks(PullRequestState closed)
     {
-        BranchFlags.Of(Shown(closed, new HeadCommit.NotRecorded()), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlag.Closed);
+        BranchFlags.Of(Shown(closed, new HeadCommit.NotRecorded()), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.Closed);
     }
 
     [Fact]
     public void SayNoPullRequestWhenTheHostListedNone()
     {
-        BranchFlags.Of(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), new Upstream.None(), commitsAfterMergedHead: null).ShouldBe(BranchFlag.NoPullRequest);
+        BranchFlags.Of(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), new Upstream.None(), commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.NoPullRequest);
     }
 
     [Theory]
@@ -48,7 +48,7 @@ public sealed class BranchFlagsShould
     [InlineData(PullRequestState.Active)]
     public void SayNothingForAnOpenPullRequest(PullRequestState open)
     {
-        BranchFlags.Of(Shown(open, MergedHead), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlag.None);
+        BranchFlags.Of(Shown(open, MergedHead), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.None);
     }
 
     [Theory]
@@ -64,27 +64,27 @@ public sealed class BranchFlagsShould
     {
         PullRequestLookup missing = new PullRequestLookup.Missing(gap);
 
-        BranchFlags.Of(missing, Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlag.None);
-        BranchFlags.Of(missing, new Upstream.None(), commitsAfterMergedHead: null).ShouldBe(BranchFlag.None);
-        BranchFlags.Of(missing, new Upstream.Gone(), commitsAfterMergedHead: null).ShouldBe(BranchFlag.Gone);
+        BranchFlags.Of(missing, Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.None);
+        BranchFlags.Of(missing, new Upstream.None(), commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.None);
+        BranchFlags.Of(missing, new Upstream.Gone(), commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.Gone);
     }
 
     [Fact]
     public void JudgeNothingLeftBehindWhenGitCouldNotCount()
     {
-        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlag.None);
+        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), Tracking, commitsAfterMergedHead: null).ShouldBe(BranchFlagKind.None);
     }
 
     [Fact]
     public void JudgeNothingLeftBehindWithoutARecordedHead()
     {
-        BranchFlags.Of(Shown(PullRequestState.Merged, new HeadCommit.NotRecorded()), Tracking, commitsAfterMergedHead: 3).ShouldBe(BranchFlag.None);
+        BranchFlags.Of(Shown(PullRequestState.Merged, new HeadCommit.NotRecorded()), Tracking, commitsAfterMergedHead: 3).ShouldBe(BranchFlagKind.None);
     }
 
     [Fact]
     public void SayNothingForAMergedBranchWithNothingBehind()
     {
-        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), Tracking, commitsAfterMergedHead: 0).ShouldBe(BranchFlag.None);
+        BranchFlags.Of(Shown(PullRequestState.Merged, MergedHead), Tracking, commitsAfterMergedHead: 0).ShouldBe(BranchFlagKind.None);
     }
 
     private static PullRequestLookup.Found Shown(PullRequestState state, HeadCommit head) =>
