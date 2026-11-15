@@ -225,6 +225,173 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         (await inventory.ScanAsync([], CancellationToken.None)).Select(row => row.Path.Value).ShouldBe([sibling]);
     }
 
+    [Fact]
+    public async Task ListLeftoversUnderARepositoryRootInNameOrder()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Ledger.worktrees")).WithDirectory(Path.Combine(Root, "Northwind.Billing.worktrees"));
+
+        IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], CancellationToken.None);
+
+        rows.Select(row => row.FolderName).ShouldBe(["Northwind.Billing.worktrees", "Northwind.Ledger.worktrees"]);
+    }
+
+    [Fact]
+    public async Task ListEmptyFoldersUnderTheWorktreeRootInNameOrder()
+    {
+        folders.WithDirectory(Path.Combine(WorktreeRoot, "Northwind.Orders-zeta")).WithDirectory(Path.Combine(WorktreeRoot, "Northwind.Orders-alpha"));
+
+        IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], CancellationToken.None);
+
+        rows.Select(row => row.FolderName).ShouldBe(["Northwind.Orders-alpha", "Northwind.Orders-zeta"]);
+    }
+
+    [Fact]
+    public async Task ListOrphansInNameOrder()
+    {
+        string orphans = Path.Combine(Repository, ".claude", "worktrees");
+        folders.WithFile(Path.Combine(orphans, "fix-b", "Program.cs")).WithFile(Path.Combine(orphans, "fix-a", "Program.cs"));
+
+        IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], CancellationToken.None);
+
+        rows.Select(row => row.FolderName).ShouldBe(["fix-a", "fix-b"]);
+    }
+
+    [Fact]
+    public async Task AskForThePullRequestOfEachRegisteredBranch()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Orders-fix-123"));
+        AnswerListingWithOneWorktree();
+        FakePullRequests hosts = new();
+        FakeProcessRunner origin = new FakeProcessRunner().Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
+        FakeTimeProvider clock = new(Fixtures.Noon);
+        using PullRequestCatalogue lookups = new(new GitCli(origin, "git"), hosts, clock, new RefreshCounts(clock, log));
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), lookups, log);
+
+        await inventory.ScanAsync([], CancellationToken.None);
+        await hosts.WhenCalledAsync(1).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        hosts.Requests.ShouldBe([(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), BranchName.From("fix-123"))]);
+    }
+
+    [Fact]
+    public async Task CountTheChangesOfARegisteredWorktreeAndMarkItsOwnerAndFolderAsThere()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Orders-fix-123"));
+        AnswerListingWithOneWorktree();
+        processes.Answer(request => request.Arguments[0] == "status", new ProcessResult(0, " M Program.cs\n?? notes.txt\n", string.Empty));
+        processes.Answer(request => request.Arguments[0] == "rev-list", new ProcessResult(0, "3\n", string.Empty));
+        processes.Answer(request => request.Arguments[0] == "log", new ProcessResult(0, "2026-10-20T09:00:00+00:00\n", string.Empty));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Ok);
+        row.DirtyFiles.ShouldBe(2);
+        row.UnpushedCommits.ShouldBe(3);
+        row.LastCommitAt.ShouldBe(new LastCommit.Made(new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero)));
+        row.LeftoverFileCount.ShouldBe(0);
+        row.OwnerExists.ShouldBeTrue();
+        row.FolderExists.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task KeepARegisteredWorktreeGitCannotReadAsARowWithNoCounts()
+    {
+        folders.WithDirectory(Path.Combine(Root, "Northwind.Orders-fix-123"));
+        AnswerListingWithOneWorktree();
+        processes.Answer(request => request.Arguments[0] == "status", new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Ok);
+        row.DirtyFiles.ShouldBe(0);
+        row.LastCommitAt.ShouldBe(new LastCommit.Unknown());
+        row.OwnerExists.ShouldBeTrue();
+        row.FolderExists.ShouldBeTrue();
+        log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+    }
+
+    [Fact]
+    public async Task ReportARegisteredWorktreeWhoseFolderIsGoneWithoutAskingGitAboutIt()
+    {
+        string worktree = Path.Combine(Root, "Northwind.Orders-fix-123");
+        AnswerListingWithOneWorktree();
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Broken, new HealthReason.FolderGone()));
+        row.FolderExists.ShouldBeFalse();
+        row.OwnerExists.ShouldBeTrue();
+        processes.CapturedRequests.ShouldNotContain(request => request.WorkingDirectory == new WorkingFolder.At(worktree));
+    }
+
+    [Fact]
+    public async Task CountTheFilesOfAPrunableWorktreeWithoutAskingGitAboutIt()
+    {
+        string worktree = Path.Combine(Root, "Northwind.Orders-fix-123");
+        folders.WithFile(Path.Combine(worktree, "Program.cs"));
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\nprunable gitdir file points to non-existent location\n", string.Empty));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Broken, new HealthReason.GitFileGone()));
+        row.LeftoverFileCount.ShouldBe(1);
+        row.FolderExists.ShouldBeTrue();
+        row.OwnerExists.ShouldBeTrue();
+        processes.CapturedRequests.ShouldNotContain(request => request.WorkingDirectory == new WorkingFolder.At(worktree));
+    }
+
+    [Fact]
+    public async Task SkipARegisteredWorktreeWhosePathGitGaveIsNoFullPath()
+    {
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree relative/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
+
+        (await Inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task NameTheWorktreeRootAsTheOwnerOfABrokenWorktreeWhoseGitFileNamesNoFolder()
+    {
+        string folder = Path.Combine(WorktreeRoot, "Northwind.Orders-garbled");
+        folders.WithFile(Path.Combine(folder, ".git"), "not a pointer\n");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Broken, new HealthReason.RegistrationGone()));
+        row.Repository.Value.ShouldBe(WorktreeRoot);
+        row.OwnerExists.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task NameTheContainingFolderAsTheOwnerOfABrokenWorktreeWhoseGitDirIsNoRegistration()
+    {
+        string sibling = Path.Combine(Root, "Northwind.Orders-republish");
+        folders.WithFile(Path.Combine(sibling, ".git"), "gitdir: C:/gone/Northwind.Orders\n");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Broken);
+        row.Repository.Value.ShouldBe(Root);
+        row.OwnerExists.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ReadARelativeGitDirFromTheFolderOfTheGitFile()
+    {
+        string worktree = Path.Combine(WorktreeRoot, "Northwind.Ledger-fix");
+        folders.WithFile(Path.Combine(worktree, ".git"), "gitdir: ../../../../../other/Northwind.Ledger/.git/worktrees/fix\n")
+            .WithDirectory(@"C:\other\Northwind.Ledger\.git\worktrees\fix");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Elsewhere);
+        row.Repository.Value.ShouldBe(@"C:\other\Northwind.Ledger");
+    }
+
+    private void AnswerListingWithOneWorktree()
+    {
+        processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments[0] == "worktree", new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
+    }
+
     public void Dispose()
     {
         catalogue.Dispose();
