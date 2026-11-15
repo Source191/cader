@@ -138,6 +138,22 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(At("setup:DiagnosticLogFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile))]);
     }
 
+    [Fact]
+    public void CopyAndOpenTheOlderLogFileItself()
+    {
+        ConfigViewState older = WithOlderLog() with { List = WithOlderLog().List.Select("setup:OlderDiagnosticLogFile") };
+
+        ConfigView.Reduce(older, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile + ".1"))]);
+        ConfigView.Reduce(older, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile + ".1"))]);
+    }
+
+    private static ConfigViewState WithOlderLog()
+    {
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
+
+        return ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
