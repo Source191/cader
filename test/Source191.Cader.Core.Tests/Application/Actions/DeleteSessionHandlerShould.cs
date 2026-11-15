@@ -224,4 +224,17 @@ public sealed class DeleteSessionHandlerShould
         folders.DirectoryExists(Worktree).ShouldBeTrue();
         outcome.ShouldBe(new DeleteSessionOutcome.NotDeleted(Listed.As("fix-123"), "Session 81cdb0f9 not found", TabClosed: false));
     }
+
+    [Fact]
+    public async Task NotWalkTheFilesOfAWorktreeThatIsHealthy()
+    {
+        folders.WithFile(Path.Combine(Worktree, "Program.cs"));
+        FoldersThatCountWalks counting = new(folders);
+        DeleteSessionHandler handler = new(new ClaudeCli(processes, Claude), new GitCli(processes, "git"), store, new SessionTabs(store, registry), counting, Remover(folders));
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+
+        await handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+
+        counting.Walks.ShouldBe(0);
+    }
 }
