@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "2",
+  "projectRoot": "D:\\a\\agent\\agent\\src\\Source191.Cader.Core",
+  "files": {
+    "D:\\a\\agent\\agent\\src\\Source191.Cader.Core\\Domain\\Alpha.cs": {
+      "language": "csharp",
+      "mutants": [
+        {
+          "id": "1",
+          "mutatorName": "Equality mutation",
+          "replacement": "a == b",
+          "location": {
+            "start": {
+              "line": 3,
+              "column": 9
+            },
+            "end": {
+              "line": 3,
+              "column": 14
+            }
+          },
+          "status": "Killed",
+          "killedBy": [
+            "t1"
+          ]
+        },
+        {
+          "id": "2",
+          "mutatorName": "Equality mutation",
+          "replacement": "a != b",
+          "location": {
+            "start": {
+              "line": 10,
+              "column": 9
+            },
+            "end": {
+              "line": 10,
+              "column": 14
+            }
+          },
+          "status": "Killed",
+          "killedBy": [
+            "t1"
+          ]
+        },
+        {
+          "id": "3",
+          "mutatorName": "Boolean mutation",
+          "replacement": "false",
+          "location": {
+            "start": {
+              "line": 12,
+              "column": 9
+            },
+            "end": {
+              "line": 12,
+              "column": 13
+            }
+          },
+          "status": "Killed",
+          "killedBy": [
+            "t1"
+          ]
+        },
+        {
+          "id": "4",
+          "mutatorName": "Equality mutation",
+          "replacement": "a != b",
+          "location": {
+            "start": {
+              "line": 20,
+              "column": 9
+            },
+            "end": {
+              "line": 20,
+              "column": 14
+            }
+          },
+          "status": "Killed",
+          "killedBy": [
+            "t2"
+          ]
+        }
+      ]
+    },
+    "D:\\a\\agent\\agent\\src\\Source191.Cader.Core\\Application\\Beta.cs": {
+      "language": "csharp",
+      "mutants": [
+        {
+          "id": "5",
+          "mutatorName": "String mutation",
+          "replacement": "\"\"",
+          "location": {
+            "start": {
+              "line": 5,
+              "column": 1
+            },
+            "end": {
+              "line": 5,
+              "column": 10
+            }
+          },
+          "status": "Killed",
+          "killedBy": [
+            "t3"
+          ]
+        }
+      ]
+    },
+    "D:\\a\\agent\\agent\\src\\Source191.Cader.Core\\Application\\Gamma.cs": {
+      "language": "csharp",
+      "mutants": [
+        {
+          "id": "6",
+          "mutatorName": "Block removal mutation",
+          "replacement": "{}",
+          "location": {
+            "start": {
+              "line": 7,
+              "column": 5
+            },
+            "end": {
+              "line": 9,
+              "column": 6
+            }
+          },
+          "status": "Timeout"
+        },
+        {
+          "id": "7",
+          "mutatorName": "Linq method mutation",
+          "replacement": "x.Last()",
+          "location": {
+            "start": {
+              "line": 11,
+              "column": 9
+            },
+            "end": {
+              "line": 11,
+              "column": 20
+            }
+          },
+          "status": "NoCoverage"
+        }
+      ]
+    }
+  },
+  "testFiles": {
+    "D:\\a\\agent\\agent\\test\\Source191.Cader.Core.Tests\\Shoulds.cs": {
+      "tests": [
+        {
+          "id": "t1",
+          "name": "AlphaShould.Decide"
+        },
+        {
+          "id": "t2",
+          "name": "AlphaShould.Reject"
+        },
+        {
+          "id": "t3",
+          "name": "BetaShould.Speak"
+        }
+      ]
+    }
+  }
+}
