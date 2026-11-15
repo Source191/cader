@@ -90,12 +90,17 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
 
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         Change changed = change(bytes);
+        if (!Holds(bytes, changed.Before))
+        {
+            return new TerminalSettingsEdit.NotVerified();
+        }
+
         if (changed.Written.AsSpan().SequenceEqual(bytes))
         {
             return new TerminalSettingsEdit.Unchanged();
         }
 
-        if (!Holds(bytes, changed.Before) || !Holds(changed.Written, changed.After))
+        if (!Holds(changed.Written, changed.After))
         {
             return new TerminalSettingsEdit.NotVerified();
         }
