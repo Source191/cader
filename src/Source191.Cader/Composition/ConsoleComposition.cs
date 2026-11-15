@@ -81,7 +81,7 @@ internal static class ConsoleComposition
         EditorLocator editors = new(folders, parts.Processes, EditorFolders.ForCurrentUser());
         EffectPorts ports = new(
             launch.Claude, launch.Git, parts.ProcessRegistry, transcripts, terminal, parts.Store,
-            TimeProvider.System, clipboard, desktop, editors, folders, parts.CrashFile);
+            TimeProvider.System, clipboard, desktop, editors, folders, parts.CrashFile, parts.LogFiles);
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
