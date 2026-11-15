@@ -292,6 +292,40 @@ public sealed class GitCliIntegrationShould : IDisposable
         (await git.DefaultRemoteBranchAsync(Repository, TestContext.Current.CancellationToken)).ShouldBe("origin/main");
     }
 
+    [Fact]
+    public async Task ListEveryLocalBranchWithItsUpstreamAndEachBranchOnlyOnOrigin()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "tracked");
+        await CommitInAsync(Repository, "Tracked.cs", "class Tracked;");
+        await RunGitAsync("push", "-q", "-u", "origin", "tracked");
+        await RunGitAsync("switch", "-q", "-c", "gone");
+        await RunGitAsync("push", "-q", "-u", "origin", "gone");
+        await RunGitAsync("push", "-q", "origin", "--delete", "gone");
+        await RunGitAsync("switch", "-q", "-c", "unpushed");
+        await CommitInAsync(Repository, "Unpushed.cs", "class Unpushed;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "HEAD");
+        await PushABranchFromElsewhereAsync("c-new-bug", "TESTS@example.test");
+        await PushABranchFromElsewhereAsync("dependabot-bump", "bot@example.test");
+        await RunGitAsync("fetch", "-q", "--prune");
+
+        IReadOnlyList<GitBranch> branches = await git.ListBranchesAsync(FolderPath.From(Repository), TestContext.Current.CancellationToken);
+
+        branches.ShouldAllBe(branch => branch.TipAt > DateTimeOffset.UnixEpoch);
+        branches.Select(branch => branch with { TipAt = DateTimeOffset.UnixEpoch }).ShouldBe(
+        [
+            Local("-x", new Upstream.None()),
+            Local("gone", new Upstream.Gone()),
+            Local("main", new Upstream.Tracking(RemoteBranch.From("origin/main"))),
+            Local("tracked", new Upstream.Tracking(RemoteBranch.From("origin/tracked"))),
+            Local("unpushed", new Upstream.None()),
+            new GitBranch.OriginOnly(BranchName.From("c-new-bug"), DateTimeOffset.UnixEpoch, Mine: true),
+            new GitBranch.OriginOnly(BranchName.From("dependabot-bump"), DateTimeOffset.UnixEpoch, Mine: false),
+        ],
+        ignoreOrder: true);
+    }
+
     public void Dispose()
     {
         if (!Directory.Exists(root))
@@ -348,6 +382,18 @@ public sealed class GitCliIntegrationShould : IDisposable
 
         return await OutputOfGitAsync(Elsewhere, "rev-parse", "HEAD");
     }
+
+    /// <summary>Pushes a new branch to origin from the other checkout, its one commit authored with the email given.</summary>
+    private async Task PushABranchFromElsewhereAsync(string branch, string email)
+    {
+        await OutputOfGitAsync(Elsewhere, "switch", "-q", "-c", branch, "main");
+        await File.WriteAllTextAsync(Path.Combine(Elsewhere, $"{branch}.txt"), branch, TestContext.Current.CancellationToken);
+        await OutputOfGitAsync(Elsewhere, "add", "-A");
+        await OutputOfGitAsync(Elsewhere, "-c", $"user.email={email}", "commit", "-q", "-m", $"Add {branch}");
+        await OutputOfGitAsync(Elsewhere, "push", "-q", "origin", branch);
+    }
+
+    private static GitBranch.Local Local(string branch, Upstream upstream) => new(BranchName.From(branch), upstream, DateTimeOffset.UnixEpoch, Mine: true);
 
     private static async Task CommitInAsync(string folder, string file, string content)
     {
