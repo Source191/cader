@@ -10,11 +10,11 @@
 
 ## 3. The gaps and the survivor #302 found, each verified by the Core suite
 
-- [ ] 3.1 `TerminalProfilesShould.RingWithASoundAndFlashTheWindowAndTheTaskbar` pins `TerminalProfiles.BellStyle`.
-- [ ] 3.2 `WordingShould.GiveEveryConfigKeyATipOfItsOwn` pins the Config tab's key tips; verify it fails with one tip blanked by hand.
-- [ ] 3.3 `ConfigViewShould`'s `At` checks the selection landed on the key; verify each Enter fact fails with its row's key blanked by hand.
-- [ ] 3.4 Red then green: `CharacterKindsShould.ReadALoneSurrogateAtTheStartAsTheReplacementCharacter`, then `CharacterKinds.First` on `Rune.DecodeFromUtf16`.
-- [ ] 3.5 Refactor: drop `DisplayState.Known`'s unreachable guard, and split `ReleaseVersion` at the first hyphen; verify the Core suite passes.
+- [x] 3.1 `TerminalProfilesShould.RingWithASoundAndFlashTheWindowAndTheTaskbar` pins `TerminalProfiles.BellStyle`.
+- [x] 3.2 `WordingShould.GiveEveryConfigKeyATipOfItsOwn` pins the Config tab's key tips; verify it fails with one tip blanked by hand.
+- [x] 3.3 `ConfigViewShould`'s `At` checks the selection landed on the key; verify each Enter fact fails with its row's key blanked by hand.
+- [x] 3.4 `CharacterKindsShould.ReadALoneSurrogateAtTheStartAsTheReplacementCharacter` pins what `EnumerateRunes` does today, then refactor `CharacterKinds.First` onto `Rune.DecodeFromUtf16`; verify the Core suite passes before and after.
+- [x] 3.5 Refactor: drop `DisplayState.Known`'s unreachable guard, and split `ReleaseVersion` at the first hyphen; verify the Core suite passes.
 
 ## 4. Prove and record
 
