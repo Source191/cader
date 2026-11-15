@@ -17,6 +17,8 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     private const string Billing = @"C:\Users\me\source\repos\Northwind.Billing";
     private const string WorktreeRoot = @"C:\Users\me\source\worktrees";
 
+    private static readonly string[] TenNames = ["Billing", "Customers", "Inventory", "Ledger", "Orders", "Payroll", "Products", "Shipping", "Suppliers", "Warehouse"];
+
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git", "objects"));
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
         .AnswerAll(new ProcessResult(0, string.Empty, string.Empty))
@@ -474,6 +476,39 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         }
 
         (await scan).Select(row => (row.Path.Value, row.DirtyFiles)).ShouldBe([(worktrees[0], 1), (worktrees[1], 2), (worktrees[2], 3)], "each row keeps its own counts, in git's listing order");
+    }
+
+    [Fact]
+    public async Task StartAtMostEightGitReadsAtOnce()
+    {
+        IReadOnlyList<string> repositories = TenRepositories();
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(8);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => row.Repository.Value).ShouldBe(repositories, "every repository is still listed, in name order");
+    }
+
+    /// <summary>Ten repositories under the root, each listing one worktree whose folder is gone, so each gives one row and no read beyond its listing.</summary>
+    private string[] TenRepositories()
+    {
+        string[] repositories = [.. TenNames.Select(name => Path.Combine(Root, $"Northwind.{name}"))];
+        foreach (string repository in repositories)
+        {
+            folders.WithDirectory(Path.Combine(repository, ".git", "objects"));
+            processes.Answer(request => IsListingOf(request, repository), new ProcessResult(0, Listing(repository, $"{repository}-gone"), string.Empty));
+        }
+
+        return repositories;
     }
 
     private static bool IsStatus(ProcessRequest request)
