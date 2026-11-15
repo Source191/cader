@@ -9,6 +9,8 @@ namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 
 public sealed class TerminalGuiBridgeShould
 {
+    private static readonly Action<ILogger, Exception?> InputLoopCrashed = LoggerMessage.Define(LogLevel.Error, new EventId(7), "Input loop crashed reading 'Northwind.Orders'");
+
     private readonly DiagnosticLog log = new(new FakeTimeProvider(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero)), []);
 
     [Fact]
@@ -49,6 +51,18 @@ public sealed class TerminalGuiBridgeShould
         line.ShouldNotContain("Logging.Warning");
     }
 
+    [Fact]
+    public void NameTheCallerOfALoggerExtensionWithItsFailure()
+    {
+        TerminalGuiBridge bridge = new(log, typeof(TerminalGuiLogging));
+        GitException failure = new(@"C:\Users\me\source\repos\Northwind.Orders", inUse: false);
+
+        FailWith(bridge, failure);
+
+        string line = DiagnosticLine.Render(log.Snapshot().Single());
+        line.ShouldBe($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] terminal.gui Error from TerminalGuiBridgeShould.FailWith: {ExceptionSummary.From(failure)}");
+        line.ShouldNotContain("Northwind");
+    }
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
@@ -84,6 +98,11 @@ public sealed class TerminalGuiBridgeShould
         TerminalGuiLogging.Warning(input);
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void FailWith(ILogger logger, Exception failure)
+    {
+        InputLoopCrashed(logger, failure);
+    }
     private static CodeName Named(string method)
     {
         return CodeName.For(typeof(TerminalGuiBridgeShould).GetMethod(method)!);
