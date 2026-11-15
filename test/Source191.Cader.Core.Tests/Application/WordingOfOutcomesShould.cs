@@ -189,6 +189,13 @@ public sealed class WordingOfOutcomesShould
     }
 
     [Fact]
+    public void SayWhyNothingWasClosedForEverySessionSkippedOrGone()
+    {
+        Wording.Describe(new CloseEmptyTerminalsOutcome([], [], [new SkippedSession(Listed.As("repos-31"))], [Listed.As("repos-f6")]))
+            .ShouldBe("Nothing closed: repos-31 has messages (press b to move it into the background); repos-f6 no longer runs under its listed process (refresh and try again).");
+    }
+
+    [Fact]
     public void NameWhatWasClosedEndedAndSkipped()
     {
         Wording.Describe(new CloseEmptyTerminalsOutcome([Listed.As("repos-f6")], [Listed.As("repos-a1")], [new SkippedSession(Listed.As("repos-93"))], []))
@@ -289,6 +296,12 @@ public sealed class WordingOfOutcomesShould
     public void SayADeletedSessionsWorktreeAndBranchWentToo()
     {
         Wording.Describe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: false)).ShouldBe("Deleted fix-123 and removed the worktree and branch fix-123.");
+    }
+
+    [Fact]
+    public void SayADeletedSessionsTabWasClosedBeforeItsBranchIsNotMerged()
+    {
+        Wording.Describe(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: true, FolderLeft: false)).ShouldBe("Deleted fix-123 and closed its tab, and removed the worktree; branch fix-123 is not merged.");
     }
 
     [Fact]
