@@ -32,7 +32,7 @@
 
 ## 7. Release housekeeping
 
-- [ ] 7.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1` (0.22.0-preview.20 to preview.21, or the next free number), and add a `## Unreleased`, `### Changed` line to `CHANGELOG.md` saying the Worktrees tab now scans several repositories and worktrees at once, so a refresh that took about ten seconds takes a fraction of that. Verify `Assert-VersionBumped.ps1 -Base main -Head HEAD` and the changelog check pass, and `dotnet format --verify-no-changes` is clean.
+- [x] 7.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1` (0.22.0-preview.20 to preview.21, or the next free number), and add a `## Unreleased`, `### Changed` line to `CHANGELOG.md` saying the Worktrees tab now scans several repositories and worktrees at once, so a refresh that took about ten seconds takes a fraction of that. Verify `Assert-VersionBumped.ps1 -Base main -Head HEAD` and the changelog check pass, and `dotnet format --verify-no-changes` is clean.
 
 ## Workflow follow-up
 
