@@ -99,8 +99,8 @@ public sealed class WhereLabelShould
     [Fact]
     public void RefuseANegativeWidthWhateverTheLabel()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Outside("notes").Fit(-1));
-        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(-1));
+        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Outside("notes").Fit(-1)).ParamName.ShouldBe("width");
+        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(-1)).ParamName.ShouldBe("width");
     }
 
     [Fact]
