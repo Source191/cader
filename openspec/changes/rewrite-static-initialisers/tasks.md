@@ -21,7 +21,7 @@ Each group is verified by the Core and Infrastructure suites passing; the groups
 ## 4. Prove and record
 
 - [x] 4.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`; verify all pass.
-- [x] 4.2 Run `dotnet stryker --since:main` over the whole branch; verify in the JSON report that no mutant has `static: true` and none survived or lacks coverage (the post-merge release run's mode, which the full run cannot show).
+- [x] 4.2 Run `dotnet stryker --since:main` over the whole branch; verify in the JSON report that no mutant has `static: true` and none lacks coverage, and check every survivor by hand (the value blanked, the Core suite run): a real gap gets the fact that pins it, an equivalent one is recorded in `checks.md`.
 - [ ] 4.3 Dispatch `mutation.yml` on the branch; verify no static mutant, no survivor and no mutant without coverage, and record the run.
 - [x] 4.4 Update `.claude\rules\checks.md` (the static-mutant entries, the #3742 follow-up, the ledger's Accepted count back to 1) and `CLAUDE.md`'s C# idioms (Core declares no static initialiser, held by the new fact); verify `openspec validate rewrite-static-initialisers` passes.
 
