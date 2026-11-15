@@ -285,7 +285,19 @@ public sealed class WordingOfDetailShould
         WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Flag = BranchFlagKind.Gone };
         WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 
-        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1].ShouldBe(["Branch fix-123, merged into origin/main · origin no longer has it, as of the last fetch", "PR none"]);
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1].ShouldBe(["Branch fix-123 · origin no longer has it, as of the last fetch", "PR none"]);
+    }
+
+    [Fact]
+    public void FitAFlagsReasonInFullBesideAPullRequestAt120Columns()
+    {
+        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded()));
+        WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Head = new Head.OnBranch(BranchName.From("fix-invoice-rounding")), Flag = BranchFlagKind.Gone, PullRequest = merged };
+        WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        IReadOnlyList<IReadOnlyList<TextPart>> laid = DetailLayout.Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc), width: 118, height: Wording.DetailFactRows);
+
+        string.Concat(laid[1].Select(part => part.Text)).ShouldContain("fix-invoice-rounding · origin no longer has it, as of the last fetch");
     }
 
     [Fact]
