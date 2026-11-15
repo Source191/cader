@@ -179,6 +179,8 @@ public static partial class Wording
             HealthReason.EmptyLeftover => "leftover folder with nothing in it",
             HealthReason.NotRegistered => "folder is not registered with git",
             HealthReason.RepositoryOutsideRoots outside => $"its repository {outside.Repository} is not under the roots",
+            HealthReason.CheckedOutNowhere => "checked out in no worktree",
+            HealthReason.OnlyOnOrigin => "only on origin, as of the last fetch",
             _ => reason.ToString(),
         };
     }

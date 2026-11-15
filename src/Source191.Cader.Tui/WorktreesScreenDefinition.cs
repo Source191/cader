@@ -39,6 +39,8 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
             WorktreeHealthKind.Orphan => Palette.Red,
             WorktreeHealthKind.Broken => Palette.Red,
             WorktreeHealthKind.Elsewhere => Palette.Amber,
+            WorktreeHealthKind.Branch => Palette.Grey,
+            WorktreeHealthKind.Origin => Palette.Amber,
         };
     }
 

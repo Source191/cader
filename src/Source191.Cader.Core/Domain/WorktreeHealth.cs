@@ -4,6 +4,12 @@ namespace Source191.Cader.Domain;
 
 public sealed record WorktreeHealth(WorktreeHealthKind Kind, HealthReason Reason)
 {
+    /// <summary>A branch row's health: a local branch checked out in no worktree.</summary>
+    public static WorktreeHealth CheckedOutNowhere { get; } = new(WorktreeHealthKind.Branch, new HealthReason.CheckedOutNowhere());
+
+    /// <summary>An origin row's health: a branch only on origin.</summary>
+    public static WorktreeHealth OnlyOnOrigin { get; } = new(WorktreeHealthKind.Origin, new HealthReason.OnlyOnOrigin());
+
     public static WorktreeHealth From(WorktreeObservation observation)
     {
         return observation switch
