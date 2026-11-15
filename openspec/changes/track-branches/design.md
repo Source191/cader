@@ -69,7 +69,7 @@ Azure DevOps documents a pull request's `lastMergeSourceCommit` as "the commit a
 
 ### 9. Choices made while building the rows and keys
 
-- **`Placement` is read from the health:** `Branch` and `Origin` are `NoFolder`, every other health `Folder`, so the two can never disagree. `Key` is `Path.Key` for a folder row and `<repository key>|branch|<name>` otherwise; rows of one folder are ordered by it after the folder name.
+- **`Placement` is read from the health:** `Branch` and `Origin` are `NoFolder`, every other health `Folder`, so the two can never disagree. `Key` is `Path.Key` for a folder row and `<repository key>|branch|<name>` otherwise; a repository's folder rows come before its branch and origin rows, so the tab still opens on a worktree, and rows of one folder are ordered by the key after the folder name. A message about a row with no folder, such as p's missing pull request, names its branch.
 - **The WORKTREE cell names the branch:** a row with no folder shows `Northwind.Orders › spike-refunds` in the slug's place. It is built with the rows rather than with group 5, because without it two branch rows of one repository read the same.
 - **A scan never guesses that nothing is at risk:**
   - When git cannot list a repository's worktrees, it gets no branch rows, because nothing says which branches are free.
