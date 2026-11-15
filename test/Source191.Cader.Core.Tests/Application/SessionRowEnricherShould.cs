@@ -232,6 +232,40 @@ public sealed class SessionRowEnricherShould : IDisposable
     }
 
     [Fact]
+    public async Task MarkAFolderDeletedInsideTheCacheWindow()
+    {
+        AnswerGit(@"C:\repos\Northwind.Orders-fix-123", root: "C:/repos/Northwind.Orders-fix-123", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix-123");
+        Session session = Session(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRowEnricher enricher = Enricher;
+
+        SessionRow before = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+        folders.DeleteTree(@"C:\repos\Northwind.Orders-fix-123");
+        clock.Advance(TimeSpan.FromSeconds(10));
+        SessionRow after = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        before.Location.ShouldBeOfType<SessionLocation.InRepository>();
+        after.Location.ShouldBe(new SessionLocation.FolderGone("Northwind.Orders-fix-123"));
+        after.Head.ShouldBe(new Head.Unknown());
+    }
+
+    [Fact]
+    public async Task ReadAFolderThatComesBackWithGit()
+    {
+        AnswerGit(@"C:\repos\Northwind.Orders-fix-123", root: "C:/repos/Northwind.Orders-fix-123", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix-123");
+        Session session = Session(@"C:\repos\Northwind.Orders-fix-123");
+        folders.DeleteTree(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRowEnricher enricher = Enricher;
+
+        SessionRow gone = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+        folders.WithDirectory(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRow back = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        gone.Location.ShouldBe(new SessionLocation.FolderGone("Northwind.Orders-fix-123"));
+        back.Location.ShouldBe(new SessionLocation.InRepository("Northwind.Orders", FolderPath.From(@"C:\repos\Northwind.Orders")));
+        processes.CapturedRequests.ShouldNotBeEmpty();
+    }
+
+    [Fact]
     public async Task MarkASessionWithALiveTabOpenedHere()
     {
         Session session = Session(@"C:\repos\Northwind.Orders");
