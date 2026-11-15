@@ -20,6 +20,13 @@ public sealed class SourceConventionsShould
         @"src\Source191.Cader.Infrastructure\Claude\ClaudeSettings.cs",
     ];
 
+    /// <summary>
+    /// The static initialisers Core keeps because the value's identity is its meaning; neither holds anything Stryker
+    /// mutates. <c>StatusMessage.None</c>: the reducers and the screen compare status messages with ReferenceEquals.
+    /// <c>DetailRequests.NoRow</c>: an object that stands for no row by being no other object.
+    /// </summary>
+    private static readonly string[] KeptStaticInitialisers = ["StatusMessage.None", "DetailRequests.NoRow"];
+
     private static readonly string[] StateFileRecords = ["UserConfig", "EditorSetting", "TabFile", "UpdateCheckFile", "LastRunFile"];
 
     private static readonly string[] AmericanWords =
@@ -102,6 +109,34 @@ public sealed class SourceConventionsShould
         bool inApplication = string.Equals(Path.GetDirectoryName(relativePath), ApplicationFolder, StringComparison.Ordinal);
 
         return inApplication && (name == "CommandLine.cs" || name.StartsWith("Wording", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Core declares no static initialiser, so mutation testing never meets a value built once per test process (Stryker
+    /// switches mutants without restarting it, stryker-mutator/stryker-net#3742): a table or sentinel is a computed
+    /// property, and each mutant in it is covered by the tests that read it. A constant stays a <c>const</c>.
+    /// </summary>
+    [Fact]
+    public void GiveCoreNoStaticInitialiser()
+    {
+        List<string> offenders = [.. Find(["src"], IsStaticInitialiserInCore).Select(found => $"{Describe(found)}: {found.Text.Split('\n')[0].Trim()}")];
+
+        offenders.ShouldBeEmpty($"{offenders.Count} static initialisers in Core:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private static bool IsStaticInitialiserInCore(SyntaxNodeOrToken item)
+    {
+        string file = item.SyntaxTree?.FilePath ?? string.Empty;
+        (bool isInitialiser, string member) = item.AsNode() switch
+        {
+            VariableDeclaratorSyntax { Initializer: not null, Parent.Parent: FieldDeclarationSyntax field } declarator => (field.Modifiers.Any(SyntaxKind.StaticKeyword), declarator.Identifier.Text),
+            PropertyDeclarationSyntax { Initializer: not null } property => (property.Modifiers.Any(SyntaxKind.StaticKeyword), property.Identifier.Text),
+            ConstructorDeclarationSyntax constructor => (constructor.Modifiers.Any(SyntaxKind.StaticKeyword), constructor.Identifier.Text),
+            _ => (false, string.Empty),
+        };
+        string? type = item.AsNode()?.Ancestors().OfType<BaseTypeDeclarationSyntax>().FirstOrDefault()?.Identifier.Text;
+
+        return isInitialiser && file.StartsWith(CoreFolder, StringComparison.Ordinal) && !KeptStaticInitialisers.Contains($"{type}.{member}");
     }
 
     /// <summary>
