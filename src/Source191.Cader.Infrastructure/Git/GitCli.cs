@@ -120,10 +120,7 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     {
         ProcessResult result = await RunOrThrowAsync(worktree, ["rev-list", "--count", "HEAD", "--not", "--remotes"], cancellationToken);
 
-        // An unreadable count is a failed command too, so the scan's catch for GitException covers it.
-        return int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count)
-            ? count
-            : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
+        return CountOrThrow(result);
     }
 
     /// <summary>Only a full ref name is given to git, so no revision can be read as one of rev-list's options.</summary>
@@ -136,16 +133,14 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
 
         ProcessResult result = await RunAsync(repository.Value, ["rev-list", "--count", revision, "--not", head.Value], cancellationToken);
 
-        return result.ExitCode == 0 && int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count) ? count : null;
+        return result.ExitCode == 0 && TryCount(result, out int count) ? count : null;
     }
 
     public async Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(repository.Value, ["rev-list", "--count", $"refs/heads/{branch.Value}", "--not", "--remotes"], cancellationToken);
 
-        return int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count)
-            ? count
-            : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
+        return CountOrThrow(result);
     }
 
     public async Task<IReadOnlyList<UnpushedCommit>> UnpushedCommitsAsync(string worktree, int limit, CancellationToken cancellationToken)
@@ -263,6 +258,13 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
             return new ProcessResult(ExitCode: -1, StandardOutput: string.Empty, StandardError: $"the folder {directory} does not exist");
         }
     }
+
+    // An unreadable count is a failed command too, so the scan's catch for GitException covers it.
+    private static int CountOrThrow(ProcessResult result) => TryCount(result, out int count)
+        ? count
+        : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
+
+    private static bool TryCount(ProcessResult result, out int count) => int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out count);
 
     private static List<string> Lines(string output) => [.. output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
 
