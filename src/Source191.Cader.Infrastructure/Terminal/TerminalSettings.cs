@@ -57,11 +57,17 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
     /// <summary>
     /// Inserts the entries as text after the list's last element, or after its <c>[</c> when it is empty, each on a line of
     /// its own, indented like the first element, with the file's own line ending; nothing else in the file is touched, a
-    /// byte order mark included. Written beside the file and put in its place with File.Replace, so Terminal, which reloads the
-    /// file when it changes, never reads half of it, and the file keeps its creation time and access rules; the file as it was
-    /// is kept beside it, named after Terminal's own backups with the UTC time.
+    /// byte order mark included.
     /// </summary>
-    public async Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    public Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => EditAsync(bytes => Inserted(bytes, entries), cancellationToken);
+
+    /// <summary>
+    /// The one guarded write: refuses a link or a read-only file, checks the new bytes hold the profile list expected, and
+    /// writes nothing if the file changed since it was read. Written beside the file and put in its place with File.Replace,
+    /// so Terminal, which reloads the file when it changes, never reads half of it, and the file keeps its creation time and
+    /// access rules; the file as it was is kept beside it, named after Terminal's own backups with the UTC time.
+    /// </summary>
+    private async Task<TerminalSettingsEdit> EditAsync(Func<byte[], Change> change, CancellationToken cancellationToken)
     {
         if (IsALink())
         {
@@ -74,12 +80,8 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         }
 
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
-        int start = ByteOrderMarkLength(bytes);
-        ListPlace place = PlaceOfTheList(bytes, start);
-        string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
-        byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
-        byte[] written = [.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)];
-        if (!Holds(written, [.. ListOf(bytes), .. entries.Select(entry => JsonElement.Parse(entry.Json))]))
+        Change changed = change(bytes);
+        if (!Holds(changed.Written, changed.Expected))
         {
             return new TerminalSettingsEdit.NotVerified();
         }
@@ -88,7 +90,7 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         string temporary = Location + ".cader-tmp";
         try
         {
-            await File.WriteAllBytesAsync(temporary, written, cancellationToken);
+            await File.WriteAllBytesAsync(temporary, changed.Written, cancellationToken);
             byte[] now = await File.ReadAllBytesAsync(Location, cancellationToken);
             if (!bytes.AsSpan().SequenceEqual(now))
             {
@@ -103,6 +105,16 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         }
 
         return new TerminalSettingsEdit.Written(backup);
+    }
+
+    private Change Inserted(byte[] bytes, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        int start = ByteOrderMarkLength(bytes);
+        ListPlace place = PlaceOfTheList(bytes, start);
+        string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
+        byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
+
+        return new Change([.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)], [.. ListOf(bytes), .. entries.Select(entry => JsonElement.Parse(entry.Json))]);
     }
 
     /// <summary>Whether the new bytes, read as Terminal reads them, hold exactly the expected profile list, element for element.</summary>
@@ -220,6 +232,9 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
 
         return new ListPlace(first, end);
     }
+
+    /// <summary>The bytes to write, and the profile list they must hold once read back.</summary>
+    private sealed record Change(byte[] Written, JsonElement[] Expected);
 
     /// <summary>Byte offsets after any byte order mark.</summary>
     private sealed record ListPlace(int First, int InsertAt)
