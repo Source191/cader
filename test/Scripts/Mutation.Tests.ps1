@@ -252,4 +252,16 @@ Describe 'mutation.yml' {
 
         $workflow | Should -Match ([regex]::Escape('if ($env:KIND -eq ''release'') { $arguments += @(''--break-at'', ''0'') }'))
     }
+
+    It 'records whether the run is failing, and fails the job last, after both uploads, when it is' {
+        $workflow = Get-Content $script:Workflow -Raw
+        $mutationJob = $workflow.Substring(0, $workflow.IndexOf("`n  report:"))
+        $lastStep = $mutationJob.Substring($mutationJob.LastIndexOf('      - '))
+
+        $workflow | Should -Match ([regex]::Escape('"fail=$($result.Failing.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT'))
+        $mutationJob.IndexOf('name: stryker-output') | Should -BeGreaterThan $mutationJob.IndexOf('name: mutation-results')
+        $mutationJob.IndexOf('name: stryker-output') | Should -BeLessThan $mutationJob.LastIndexOf('      - ')
+        $lastStep | Should -Match ([regex]::Escape("if: always() && steps.run.outputs.fail == 'true'"))
+        $lastStep | Should -Match 'exit 1'
+    }
 }
