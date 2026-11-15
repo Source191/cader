@@ -15,7 +15,7 @@ namespace Source191.Cader.Tui;
 /// Every effect that needs a dialog, for every tab. Each flow asks its question, then hands the answer back through
 /// the reducer or dispatches the effect it settles on; the work itself is always a handler's.
 /// </summary>
-public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentRepositories recent, IFolders folders, CurrentSettings settings, SolutionFinder solutions, UpdateCheck updates, DeleteSessionHandler deleteSession, RemoveWorktreeHandler removeWorktree, ProblemReports reports, IProcessRegistry processes, EditorPresets presets)
+public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentRepositories recent, IFolders folders, CurrentSettings settings, SolutionFinder solutions, UpdateCheck updates, DeleteSessionHandler deleteSession, RemoveWorktreeHandler removeWorktree, ProblemReports reports, IProcessRegistry processes, EditorPresets presets, TimeProvider clock)
 {
     /// <summary>One flow per dialog effect, keyed by the effect's type; <see cref="Handles"/> lets <c>DialogEffectsShould</c> check the set is complete.</summary>
     private static readonly FrozenDictionary<Type, Action<DialogEffects, IEffectContext, ViewEffect>> Flows = new Dictionary<Type, Action<DialogEffects, IEffectContext, ViewEffect>>
@@ -144,7 +144,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
 
     private void StartSession(IEffectContext context, WizardOrigin origin)
     {
-        switch (LaunchWizardDialog.Show(context.App, context.Diagnostics, catalogue, recent, folders, settings.Value, origin))
+        switch (LaunchWizardDialog.Show(context.App, context.Diagnostics, clock, catalogue, recent, folders, settings.Value, origin))
         {
             case WizardEffect.Launch launch:
                 context.Dispatch(new StartSession(launch.Plan));
