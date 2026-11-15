@@ -46,10 +46,10 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 
 ## 6. Batch 5: the rest of Application (56)
 
-- [ ] 6.1 File cycle, `CommandLine` (11), facts in `CommandLineShould` (invoke the root with recording actions and `StringWriter`s).
-- [ ] 6.2 File cycle, one per file for the `Wording*` files (28 between them: `WordingOfDetail` 9, `WordingOfReleaseNotes` 5, `WordingOfOutcomes` 4, `WordingOfScreens` 3, `WordingOfConfig` 3, `WordingOfConsole` 2, `Wording` 2), facts in the matching `Wording*Should` classes; a literal no fact reads is a gap.
-- [ ] 6.3 File cycle, `MemoryBreakdown` (3), facts in `MemoryBreakdownShould`; then the tail of `Application` (14 mutants in about 12 files, among them `WorktreeInspector` and `KeyBar`), a file cycle each.
-- [ ] 6.4 Record and ratchet, as 2.7.
+- [x] 6.1 File cycle, `CommandLine` (11), facts in `CommandLineShould` (invoke the root with recording actions and `StringWriter`s).
+- [x] 6.2 File cycle, one per file for the `Wording*` files (28 between them: `WordingOfDetail` 9, `WordingOfReleaseNotes` 5, `WordingOfOutcomes` 4, `WordingOfScreens` 3, `WordingOfConfig` 3, `WordingOfConsole` 2, `Wording` 2), facts in the matching `Wording*Should` classes; a literal no fact reads is a gap.
+- [x] 6.3 File cycle, `MemoryBreakdown` (3), facts in `MemoryBreakdownShould`; then the tail of `Application` (14 mutants in about 12 files, among them `WorktreeInspector` and `KeyBar`), a file cycle each.
+- [x] 6.4 Record and ratchet, as 2.7.
 
 ## 7. Batch 6: Views, Detail and Reporting (51)
 
