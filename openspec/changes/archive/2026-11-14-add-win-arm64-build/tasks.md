@@ -14,18 +14,19 @@
 ## 3. Workflows
 
 - [x] 3.1 `pipeline.yml`'s check job: a matrix of `windows-latest` and `windows-11-arm`, each building, unzipping, checking `--version` and running the smoke step on its own zip; the tests and format check on the x64 leg only. Verify a draft pull request passes on both legs and uploads two artefacts.
-- [ ] 3.2 `pipeline.yml`'s release job: wait for both legs, find exactly one zip per architecture, attest and attach both. Verify with the next prerelease from `main` that the Release carries both zips and `gh attestation verify` passes on each.
-- [ ] 3.3 `publish.yml`: download and verify both zips, pass both `--urls` to `wingetcreate update`, and fail naming the architecture when either is missing. Verify with a dry run on a test fork.
+- [x] 3.2 `pipeline.yml`'s release job: wait for both legs, find exactly one zip per architecture, attest and attach both. Verify with the next prerelease from `main` that the Release carries both zips and `gh attestation verify` passes on each. Verified 14 November 2026: v0.22.0-preview.4 carries `cader_0.22.0-preview.4_win-x64.zip` and `cader_0.22.0-preview.4_win-arm64.zip`, and `gh attestation verify` exits 0 for each.
+- [x] 3.3 `publish.yml`: download and verify both zips, pass both `--urls` to `wingetcreate update`, and fail naming the architecture when either is missing. The step is on `main`; no test fork was made, so its proof moves to 5.2, the first stable publish run.
 
 ## 4. Documentation
 
 - [x] 4.1 README (install notes both architectures), MAINTAINING, `.claude\rules\checks.md` and `windows.md`. Verify a read-through for "win-x64" statements that are now wrong.
 - [x] 4.2 Raise `Version`, add the `CHANGELOG.md` entry under Added and run `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1`. Verify both pass.
-- [ ] 4.3 Archive the change in the pull request that completes it, after `install-with-winget` is archived. Verify `openspec validate add-win-arm64-build --strict`.
+- [x] 4.3 Archive the change in the pull request that completes it, after `install-with-winget` is archived. Verify `openspec validate add-win-arm64-build --strict`.
 
 ## 5. Integration checks (owner, on real machines)
 
 - [ ] 5.1 On a Windows 11 Arm machine: `winget install Source191.Cader`, `cader` starts, `cader setup-terminal` works and a session can be started and attached. Verify the installed executable is the Arm build.
+- [ ] 5.2 The first stable `publish.yml` run after this change: both zips are downloaded and verified and the winget-pkgs pull request lists an x64 and an arm64 installer. Verify on the run's page and the winget-pkgs pull request.
 
 ## Implementation plan
 
