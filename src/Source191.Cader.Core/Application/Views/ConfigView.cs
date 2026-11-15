@@ -93,13 +93,19 @@ public static class ConfigView
     /// <summary>d asks to clear the log from either log file row, whatever the setting, once its files are read and one is there.</summary>
     private static RowDecision ClearLog(ConfigRow row)
     {
-        return row switch
+        return row is ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile } log
+            ? ClearLog(log.State)
+            : new RowDecision.Explain(new StatusMessage.ClearsOnlyTheLog());
+    }
+
+    private static RowDecision ClearLog(SetupState state)
+    {
+        return state switch
         {
-            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.LogFile file } => ClearLog(file.Files),
-            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.LogOff off } => ClearLog(off.Files),
-            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.OlderLog older } => ClearLog(older.Files),
-            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile } => new RowDecision.Explain(new StatusMessage.LogFilesNotRead()),
-            _ => new RowDecision.Explain(new StatusMessage.ClearsOnlyTheLog()),
+            SetupState.LogFile file => ClearLog(file.Files),
+            SetupState.LogOff off => ClearLog(off.Files),
+            SetupState.OlderLog older => ClearLog(older.Files),
+            _ => new RowDecision.Explain(new StatusMessage.LogFilesNotRead()),
         };
     }
 
