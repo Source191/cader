@@ -39,6 +39,42 @@ public sealed class WizardFilterWatchShould
     }
 
     [Fact]
+    public void RecordTheFirstFilterChangeOnce()
+    {
+        WizardFilterWatch watch = WizardFilterWatch.Open(Opened(new WizardOrigin.Anywhere()), log, clock);
+        watch.ListFilled();
+        clock.Advance(TimeSpan.FromMilliseconds(12));
+
+        watch.FilterChanged(" ");
+        watch.FilterChanged(" o");
+
+        Recorded.ShouldBe([new WizardOpened(3), new WizardFilterStarted(TimeSpan.FromMilliseconds(12), CharacterKind.Whitespace, 1, ListFilled: true)]);
+    }
+
+    [Fact]
+    public void SayWhenTheFirstChangeCameBeforeTheListWasFilled()
+    {
+        WizardFilterWatch watch = WizardFilterWatch.Open(Opened(new WizardOrigin.Anywhere()), log, clock);
+        clock.Advance(TimeSpan.FromMilliseconds(1800));
+
+        watch.FilterChanged("or");
+
+        Recorded.Last().ShouldBe(new WizardFilterStarted(TimeSpan.FromMilliseconds(1800), CharacterKind.LetterOrDigit, 2, ListFilled: false));
+    }
+
+    [Fact]
+    public void WaitForAFilterThatHoldsSomething()
+    {
+        WizardFilterWatch watch = WizardFilterWatch.Open(Opened(new WizardOrigin.Anywhere()), log, clock);
+
+        watch.FilterChanged(string.Empty);
+        Recorded.ShouldBe([new WizardOpened(3)], "an empty filter has no first character to record");
+
+        watch.FilterChanged("​");
+        Recorded.Last().ShouldBeOfType<WizardFilterStarted>().FirstCharacter.ShouldBe(CharacterKind.Format);
+    }
+
+    [Fact]
     public void RecordNothingForAFixedFolder()
     {
         WizardFilterWatch watch = WizardFilterWatch.Open(Opened(WizardOrigin.In(FolderPath.From(Billing))), log, clock);
