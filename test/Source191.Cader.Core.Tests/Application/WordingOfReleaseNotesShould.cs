@@ -62,6 +62,37 @@ public sealed class WordingOfReleaseNotesShould
     }
 
     [Fact]
+    public void LeaveABlankLineBeforeWhatUpdateNowDoes()
+    {
+        IReadOnlyList<string> lines = Wording.WhatsNewBeforeUpdate(Sections(ReleaseVersions.Version("0.20.0"), ReleaseVersions.Version("0.21.0")));
+
+        lines[^2].ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void NameEveryHeadingAChangeCanSitUnder()
+    {
+        ReleaseSection section = new(ReleaseVersions.Version("0.21.0"), [.. Enum.GetValues<ChangeKind>().Select(kind => new ReleaseEntry(kind, $"A {kind} entry (#1)"))]);
+
+        Wording.WhatsNewAfterUpdate([section]).ShouldBe(
+        [
+            "0.21.0",
+            "  Added",
+            "    • A Added entry (#1)",
+            "  Changed",
+            "    • A Changed entry (#1)",
+            "  Fixed",
+            "    • A Fixed entry (#1)",
+            "  Removed",
+            "    • A Removed entry (#1)",
+            "  Security",
+            "    • A Security entry (#1)",
+            "  Internal",
+            "    • A Internal entry (#1)",
+        ]);
+    }
+
+    [Fact]
     public void SayTheNotesCouldNotBeRead()
     {
         Wording.WhatsNewBeforeUpdate([])[0].ShouldBe("The notes for this release could not be read; Release page shows them on GitHub.");
