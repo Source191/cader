@@ -11,6 +11,8 @@ public sealed class RecordedProcessRunnerShould
     private static readonly ProcessRequest WorktreeList = new("git", ["worktree", "list", "--porcelain"], new WorkingFolder.At(@"C:\Users\me\source\repos\Northwind.Orders"));
     private static readonly ProcessRequest Agents = new(@"C:\Users\me\.local\bin\claude.exe", ["agents", "--json", "--all"], WorkingFolder.Inherit);
 
+    private static readonly ProcessRequest RevParse = new("git", ["rev-parse", "--show-toplevel"], new WorkingFolder.At(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123"));
+
     private static readonly DateTimeOffset Written = new(2026, 11, 1, 10, 0, 0, TimeSpan.Zero);
 
     private readonly FakeTimeProvider clock = new(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero));
@@ -84,6 +86,22 @@ public sealed class RecordedProcessRunnerShould
         failed.Command.ShouldBe(ChildCommand.For(WorktreeList));
         DiagnosticLine.Render(log.Snapshot().Single()).ShouldNotContain(@"C:\Users\me");
         DiagnosticLine.Render(counts, Written).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RecordAFailedStartOncePerCommandAndFolder()
+    {
+        processes.Fail(new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        foreach (int _ in Enumerable.Range(0, 3))
+        {
+            await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        }
+
+        string line = DiagnosticLine.Render(log.Snapshot().ShouldHaveSingleItem());
+        line.ShouldContain("not started git rev-parse: Win32Exception (error 267)");
+        line.ShouldNotContain("Northwind");
     }
 
     [Fact]
