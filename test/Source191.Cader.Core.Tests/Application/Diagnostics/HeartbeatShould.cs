@@ -136,6 +136,24 @@ public sealed class HeartbeatShould
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalledRunning(TimeSpan.FromMilliseconds(600), Key, TimeSpan.FromMilliseconds(650))]);
     }
 
+    [Fact]
+    public void TimeAMarkOnlySinceTheLastBeat()
+    {
+        heartbeat.Beat();
+        heartbeat.Mark(Key, () =>
+        {
+            foreach (int _ in Enumerable.Range(0, 120))
+            {
+                BeatAfter(250);
+            }
+
+            clock.Advance(TimeSpan.FromMilliseconds(400));
+        });
+        BeatAfter(450);
+
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalledRunning(TimeSpan.FromMilliseconds(600), Key, TimeSpan.FromMilliseconds(400))], "a dialog's 30 seconds are never blamed");
+    }
+
     private void BeatAfter(int milliseconds)
     {
         clock.Advance(TimeSpan.FromMilliseconds(milliseconds));
