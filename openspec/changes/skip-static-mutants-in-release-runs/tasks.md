@@ -19,8 +19,8 @@
 ## 4. Prove and record
 
 - [ ] 4.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `Invoke-Pester test\Scripts`; verify all pass.
-- [ ] 4.2 Run `Write-MutationRun.ps1` and `Format-MutationComment.ps1` on the downloaded results of runs 43720610875 and 43723005967 as release runs; verify the first leaves no finding and the second reports only `CharacterKinds` (now fixed).
-- [ ] 4.3 Update `.claude\rules\checks.md` (the release rule, the two runs, when to remove the rule: #3742 and #3695) and `MAINTAINING.md`'s mutation issue line; verify `openspec validate skip-static-mutants-in-release-runs` passes.
+- [x] 4.2 Run `Write-MutationRun.ps1` and `Format-MutationComment.ps1` on the downloaded results of runs 43720610875 and 43723005967 as release runs; verify the first leaves no finding and the second reports only `CharacterKinds` (now fixed).
+- [x] 4.3 Update `.claude\rules\checks.md` (the release rule, the two runs, when to remove the rule: #3742 and #3695) and `MAINTAINING.md`'s mutation issue line; verify `openspec validate skip-static-mutants-in-release-runs` passes.
 
 ## Workflow follow-up
 
