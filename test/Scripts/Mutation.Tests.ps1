@@ -224,6 +224,26 @@ Describe 'Format-MutationComment' {
 
         (Get-Content (Join-Path $results 'comment.md') -Raw) | Should -Match '\\\|\\\|'
     }
+
+    It 'says the run failed, and names the count, when run.json says failing' {
+        Write-CountedRelease 'failing-comment' -Killed 19 -Survived 1 | Out-Null
+        $results = Join-Path $TestDrive 'failing-comment'
+
+        & $script:Format -ResultsDirectory $results -RunUrl https://example.test/run -OutputPath (Join-Path $results 'comment.md')
+
+        $body = Get-Content (Join-Path $results 'comment.md') -Raw
+        $body | Should -Match 'This run failed: it counted 20 mutants and 1 survived or had no covering test\.'
+        $body | Should -Match 'Release v1, range v0\.\.abc, run https://example.test/run'
+    }
+
+    It 'says nothing of failing when run.json does not' {
+        Write-CountedRelease 'small-comment' -Killed 18 -Survived 1 | Out-Null
+        $results = Join-Path $TestDrive 'small-comment'
+
+        & $script:Format -ResultsDirectory $results -RunUrl https://example.test/run -OutputPath (Join-Path $results 'comment.md')
+
+        (Get-Content (Join-Path $results 'comment.md') -Raw) | Should -Not -Match 'failed'
+    }
 }
 
 Describe 'mutation.yml' {
