@@ -376,6 +376,17 @@ public sealed class GitCliIntegrationShould : IDisposable
         await Should.ThrowAsync<GitException>(() => git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("no-such-branch"), TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task DeleteABranchWhoseNameStartsWithAHyphen()
+    {
+        await CreateRepositoryWithOneCommitAsync();
+        await RunGitAsync("update-ref", "refs/heads/-x", "HEAD");
+
+        await git.DeleteBranchAsync(Repository, "-x", force: true, TestContext.Current.CancellationToken);
+
+        (await git.BranchExistsAsync(FolderPath.From(Repository), BranchName.From("-x"), TestContext.Current.CancellationToken)).ShouldBeFalse();
+    }
+
     public void Dispose()
     {
         if (!Directory.Exists(root))
