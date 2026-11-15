@@ -22,6 +22,9 @@ public abstract record StatusMessage
     /// <summary>A stopped session with no transcript: there is nothing to open or resume.</summary>
     public sealed record NeverSentAMessage(ListedName Name) : StatusMessage;
 
+    /// <summary>A session whose folder no longer exists: a resume could not land there, so nothing is removed or resumed.</summary>
+    public sealed record FolderGone(ListedName Name) : StatusMessage;
+
     public sealed record NoEmptyTerminals : StatusMessage;
 
     public sealed record NoMessagesToRename(ListedName Name) : StatusMessage;
