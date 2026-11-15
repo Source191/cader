@@ -169,7 +169,8 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
     {
         Settings now = settings.Value;
 
-        // Stryker disable once Linq : Equivalent: Any reads the roots in no order, so Append to Prepend changes nothing; the line's Any to All mutant is killed by DeleteAnOrphanFolderWithoutTouchingGit
-        return now.RepositoryRoots.Append(now.WorktreeRoot).Any(root => folder.IsUnder(root) && !folder.Equals(root));
+        FolderPath[] roots = [.. now.RepositoryRoots, now.WorktreeRoot];
+
+        return roots.Any(root => folder.IsUnder(root) && !folder.Equals(root));
     }
 }
