@@ -29,6 +29,18 @@ public sealed class CharacterKindsShould
         CharacterKinds.First("orders ").ShouldBe(CharacterKind.LetterOrDigit);
     }
 
+    [Theory]
+    [InlineData("", false)]
+    [InlineData(" ", true)]
+    [InlineData("​", true)]
+    [InlineData(" \t\u001B", true)]
+    [InlineData(" o", false)]
+    [InlineData("-", false)]
+    public void CallATextInvisibleOnlyWhenEveryCharacterIs(string text, bool invisible)
+    {
+        CharacterKinds.AllInvisible(text).ShouldBe(invisible);
+    }
+
     [Fact]
     public void ReadACharacterOutsideTheBasicPlaneAsOne()
     {
