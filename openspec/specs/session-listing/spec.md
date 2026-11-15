@@ -256,8 +256,12 @@ Each item of the key bar SHALL show a tooltip while the mouse pointer rests on i
 - **THEN** a tooltip in colours distinct from the bar says that x stops the session, which stays listed as stopped and can be resumed
 
 #### Scenario: Every key has a tip
-- **WHEN** the help lists a key of either view
+- **WHEN** the help lists a key of the Sessions, Worktrees or Config tab
 - **THEN** that key has a tooltip sentence of at most 80 characters
+
+#### Scenario: Config tab's longest tips fit
+- **WHEN** the mouse pointer rests on Enter Edit or f Open folder in the Config tab's key bar
+- **THEN** the tooltip is one sentence of at most 80 characters saying what the key does on a setting, the roots or a setup row
 
 ### Requirement: Column headers explain themselves on hover
 A table column header SHALL show what the column shows as a tooltip while the mouse pointer rests on it, using the same words as the help key and keeping the help's line breaks so the tooltip never runs off the screen, drawn just under the header over the table's rows and never over the detail pane, and SHALL show nothing while the pointer rests on a row.
