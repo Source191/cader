@@ -31,7 +31,7 @@ public sealed class WorktreesScreenDefinitionShould
     public void ListItsColumnsAsWordingDoesWithWorktreeElastic()
     {
         definition.Columns.Select(column => column.Help).ShouldBe(Wording.WorktreesColumns);
-        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBeSameAs(Wording.WorktreeColumn);
+        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBe(Wording.WorktreeColumn);
     }
 
     [Fact]

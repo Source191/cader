@@ -9,11 +9,11 @@ public static partial class Wording
     private const int BarStart = 1;
     private const int BarGap = 2;
 
-    private static readonly string[] SecondBarRowForSessions = ["c", "f", "s", "p", "/", "?", "!", "q"];
-    private static readonly string[] SecondBarRowForConfig = ["c", "f", "/", "?", "!", "q"];
-    private static readonly string[] FirstBarRowForWorktrees = ["d", "D", "P", "n", "o", "enter"];
+    private static IReadOnlyList<string> SecondBarRowForSessions => ["c", "f", "s", "p", "/", "?", "!", "q"];
+    private static IReadOnlyList<string> SecondBarRowForConfig => ["c", "f", "/", "?", "!", "q"];
+    private static IReadOnlyList<string> FirstBarRowForWorktrees => ["d", "D", "P", "n", "o", "enter"];
 
-    public static readonly TextPart Dot = new(" · ", TextTone.Grey);
+    public static TextPart Dot => new(" · ", TextTone.Grey);
 
     /// <summary>The console's settings row, labels orange and values white, an available update in amber: Cader and Claude; the roots are on the Config tab.</summary>
     public static IReadOnlyList<TextPart> SettingsRow(ToolVersion tool, ClaudeCodeVersion claude, UpdateStatus update, MemorySize ownMemory) =>
@@ -169,7 +169,7 @@ public static partial class Wording
     private const string TerminalTabTip = "Close this terminal session's tab; it was never sent a message, so nothing is lost.";
 
     /// <summary>On an empty terminal session's row, d closes its tab rather than deleting a session.</summary>
-    private static readonly BarWord CloseTab = new("d", "Close tab", TerminalTabTip);
+    private static BarWord CloseTab => new("d", "Close tab", TerminalTabTip);
 
     /// <summary>A bar word that differs from the key's own hint, with the tip that goes with it.</summary>
     private sealed record BarWord(string Key, string Word, string Tip);

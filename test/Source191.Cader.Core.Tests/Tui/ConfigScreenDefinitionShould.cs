@@ -26,7 +26,7 @@ public sealed class ConfigScreenDefinitionShould
         ConfigScreenDefinition definition = new(new FakeTimeProvider());
 
         definition.Columns.Select(column => column.Help).ShouldBe(Wording.ConfigColumns);
-        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBeSameAs(Wording.ValueColumn);
+        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBe(Wording.ValueColumn);
     }
 
     [Fact]

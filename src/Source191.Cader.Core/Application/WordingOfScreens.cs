@@ -91,7 +91,7 @@ public static partial class Wording
     }
 
     /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>
-    private static readonly KeyHelp[] TabKeyHelp =
+    private static IReadOnlyList<KeyHelp> TabKeyHelp =>
     [
         KeyHelp.HelpOnly(Key.Left, "the tab to the left", tip: "Show the tab to the left of this one."),
         KeyHelp.HelpOnly(Key.Right, "the tab to the right", tip: "Show the tab to the right of this one."),
@@ -99,7 +99,7 @@ public static partial class Wording
         KeyHelp.HelpOnly(Key.Of('>'), "scroll the columns right", tip: "Scroll a table too wide for the terminal to the right."),
     ];
 
-    public static IReadOnlyList<KeyHelp> SessionsKeys { get; } =
+    public static IReadOnlyList<KeyHelp> SessionsKeys =>
     [
         new(Key.Enter, "Open", "open in its own tab, or switch to it", Tip: "Open this session in its own tab, or switch to that tab if it is open."),
         new(Key.Of('n'), "New session", "new session", Tip: "Start a new session, in a new worktree or on a current branch."),
@@ -122,7 +122,7 @@ public static partial class Wording
         .. TabKeyHelp,
     ];
 
-    public static IReadOnlyList<KeyHelp> WorktreesKeys { get; } =
+    public static IReadOnlyList<KeyHelp> WorktreesKeys =>
     [
         new(Key.Of('d'), "Remove", "remove (refused when work would be lost)", Tip: "Remove this worktree; refused when it holds work that would be lost."),
         new(Key.Of('D'), "Force remove", "force remove after typing its name", Tip: "Remove this worktree whatever it holds, after you type its name."),
@@ -143,7 +143,7 @@ public static partial class Wording
         .. TabKeyHelp,
     ];
 
-    public static IReadOnlyList<KeyHelp> ConfigKeys { get; } =
+    public static IReadOnlyList<KeyHelp> ConfigKeys =>
     [
         new(Key.Enter, "Edit", "edit the setting, or say how to set up", Tip: "Edit this setting; on a repository root, every root one per line; on a setup row, say how that setup is changed."),
         new(Key.Escape, "Sessions", "back to sessions (clears a filter first)", Tip: "Clear the filter, or go back to the sessions view when there is none."),
@@ -231,38 +231,38 @@ public static partial class Wording
     /// <summary>A health's word, the one the HEALTH cell, the counts and the pane's Health line all use.</summary>
     private static string HealthWord(WorktreeHealthKind kind) => kind.ToString().ToLowerInvariant();
 
-    public static ColumnHelp NameColumn { get; } = new("NAME", "the session name given at launch, or the folder name for an unnamed one");
+    public static ColumnHelp NameColumn => new("NAME", "the session name given at launch, or the folder name for an unnamed one");
 
-    public static ColumnHelp TabColumn { get; } = new("TAB", $"a block in the tab's colour, faded as the tab looks from the console's own tab,\nwhile a tab opened here shows the session; {TerminalSwatch} grey for a plain claude in its own terminal");
+    public static ColumnHelp TabColumn => new("TAB", $"a block in the tab's colour, faded as the tab looks from the console's own tab,\nwhile a tab opened here shows the session; {TerminalSwatch} grey for a plain claude in its own terminal");
 
-    public static ColumnHelp StateColumn { get; } = new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
+    public static ColumnHelp StateColumn => new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
 
-    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository");
+    public static ColumnHelp RepositoryColumn => new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository");
 
-    public static ColumnHelp PullRequestColumn { get; } = new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
+    public static ColumnHelp PullRequestColumn => new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
 
-    public static ColumnHelp AgeColumn { get; } = new("AGE", "time since the session started");
+    public static ColumnHelp AgeColumn => new("AGE", "time since the session started");
 
-    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
+    public static ColumnHelp WorktreeColumn => new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
 
-    public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots); the pane gives the reason");
+    public static ColumnHelp HealthColumn => new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots); the pane gives the reason");
 
-    public static ColumnHelp LastCommitColumn { get; } = new("LAST COMMIT", "time since the last commit");
+    public static ColumnHelp LastCommitColumn => new("LAST COMMIT", "time since the last commit");
 
-    public static ColumnHelp SettingColumn { get; } = new("SETTING", "a setting kept in config.json, or, under the Setup heading, setup it reads but does not change");
+    public static ColumnHelp SettingColumn => new("SETTING", "a setting kept in config.json, or, under the Setup heading, setup it reads but does not change");
 
-    public static ColumnHelp ValueColumn { get; } = new("VALUE", "its value; a setup row that needs attention says what to run");
+    public static ColumnHelp ValueColumn => new("VALUE", "its value; a setup row that needs attention says what to run");
 
-    public static ColumnHelp SessionColumn { get; } = new("SESSION", "the session running in it, if any");
+    public static ColumnHelp SessionColumn => new("SESSION", "the session running in it, if any");
 
-    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
+    public static IReadOnlyList<ColumnHelp> SessionsColumns => [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
 
-    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, LastCommitColumn, SessionColumn];
+    public static IReadOnlyList<ColumnHelp> WorktreesColumns => [WorktreeColumn, HealthColumn, LastCommitColumn, SessionColumn];
 
-    public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } = [SettingColumn, ValueColumn];
+    public static IReadOnlyList<ColumnHelp> ConfigColumns => [SettingColumn, ValueColumn];
 
     /// <summary>The sessions pane's lines, for the help.</summary>
-    public static IReadOnlyList<ColumnHelp> SessionsPane { get; } =
+    public static IReadOnlyList<ColumnHelp> SessionsPane =>
     [
         new("Waiting", "what it waits for: Claude Code's reason, a first prompt, or nothing"),
         new("Started", "when the session started"),
@@ -277,7 +277,7 @@ public static partial class Wording
     ];
 
     /// <summary>The worktrees pane's lines, for the help.</summary>
-    public static IReadOnlyList<ColumnHelp> WorktreesPane { get; } =
+    public static IReadOnlyList<ColumnHelp> WorktreesPane =>
     [
         new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots); then the reason in full"),
         new("Branch", "the branch checked out there, and whether it is merged into origin's default branch"),

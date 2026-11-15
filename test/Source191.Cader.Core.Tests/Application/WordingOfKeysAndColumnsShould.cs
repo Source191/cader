@@ -14,18 +14,9 @@ public sealed class WordingOfKeysAndColumnsShould
         ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.LastCommitColumn, Wording.SessionColumn];
         ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
 
-        AreTheSameInstances(Wording.SessionsColumns, sessions);
-        AreTheSameInstances(Wording.WorktreesColumns, worktrees);
-        AreTheSameInstances(Wording.ConfigColumns, config);
-    }
-
-    private static void AreTheSameInstances(IReadOnlyList<ColumnHelp> listed, ColumnHelp[] named)
-    {
-        listed.Count.ShouldBe(named.Length);
-        for (int index = 0; index < named.Length; index++)
-        {
-            listed[index].ShouldBeSameAs(named[index]);
-        }
+        Wording.SessionsColumns.ShouldBe(sessions);
+        Wording.WorktreesColumns.ShouldBe(worktrees);
+        Wording.ConfigColumns.ShouldBe(config);
     }
 
     [Fact]

@@ -32,7 +32,7 @@ public sealed class SessionsScreenDefinitionShould
     public void ListItsColumnsAsWordingDoesWithRepositoryElastic()
     {
         definition.Columns.Select(column => column.Help).ShouldBe(Wording.SessionsColumns);
-        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBeSameAs(Wording.RepositoryColumn);
+        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBe(Wording.RepositoryColumn);
     }
 
     [Fact]
