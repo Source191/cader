@@ -326,6 +326,56 @@ public sealed class GitCliIntegrationShould : IDisposable
         ignoreOrder: true);
     }
 
+    [Fact]
+    public async Task CountTheCommitsABranchHasAfterAPullRequestsHead()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "fix-88");
+        await CommitInAsync(Repository, "Fix.cs", "class Fix;");
+        CommitId head = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/fix-88", head, TestContext.Current.CancellationToken)).ShouldBe(0);
+
+        await CommitInAsync(Repository, "After.cs", "class After;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "refs/heads/fix-88");
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/fix-88", head, TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/-x", head, TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await git.CountCommitsAfterAsync(repository, "refs/remotes/origin/main", head, TestContext.Current.CancellationToken)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task AnswerNoCountForAHeadGitHasNotGotOrARevisionThatIsNotARef()
+    {
+        await CloneABareOriginAsync();
+        FolderPath repository = FolderPath.From(Repository);
+        CommitId head = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        CommitId unknown = CommitId.From("0123456789abcdef0123456789abcdef01234567");
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/main", unknown, TestContext.Current.CancellationToken)).ShouldBeNull();
+        (await git.CountCommitsAfterAsync(repository, "main", head, TestContext.Current.CancellationToken)).ShouldBeNull();
+        (await git.CountCommitsAfterAsync(repository, "--all", head, TestContext.Current.CancellationToken)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CountTheCommitsOfABranchCheckedOutNowhereThatAreOnNoRemote()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "spike-refunds");
+        await CommitInAsync(Repository, "Refunds.cs", "class Refunds;");
+        await CommitInAsync(Repository, "Retry.cs", "class Retry;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "refs/heads/spike-refunds");
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("spike-refunds"), TestContext.Current.CancellationToken)).ShouldBe(2);
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("-x"), TestContext.Current.CancellationToken)).ShouldBe(2);
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("main"), TestContext.Current.CancellationToken)).ShouldBe(0);
+        await Should.ThrowAsync<GitException>(() => git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("no-such-branch"), TestContext.Current.CancellationToken));
+    }
+
     public void Dispose()
     {
         if (!Directory.Exists(root))
