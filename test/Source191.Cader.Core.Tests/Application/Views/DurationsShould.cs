@@ -12,4 +12,12 @@ public sealed class DurationsShould
         Durations.Age(new TimeSpan(2, 4, 30, 0)).ShouldBe("2d4h");
         Durations.Age(TimeSpan.FromMinutes(-5)).ShouldBe("0m");
     }
+
+    [Fact]
+    public void ChangeUnitExactlyAtAnHourAndADay()
+    {
+        Durations.Age(new TimeSpan(0, 59, 59)).ShouldBe("59m");
+        Durations.Age(TimeSpan.FromHours(1)).ShouldBe("1h00m");
+        Durations.Age(TimeSpan.FromHours(24)).ShouldBe("1d0h");
+    }
 }
