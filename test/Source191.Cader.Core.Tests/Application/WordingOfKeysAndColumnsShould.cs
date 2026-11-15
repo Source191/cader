@@ -235,10 +235,10 @@ public sealed class WordingOfKeysAndColumnsShould
             Enter  edit the setting, or say how to set up         Esc    back to sessions (clears a filter first)
             /      filter                                         ?      help
             q      quit                                           c      copy the path
-            f      open the folder, or the settings or log file   U      update in a new tab
-            !      report a problem on GitHub                     ←      the tab to the left
-            →      the tab to the right                           <      scroll the columns left
-            >      scroll the columns right
+            f      open the folder, or the settings or log file   d      clear the diagnostic log, after asking
+            U      update in a new tab                            !      report a problem on GitHub
+            ←      the tab to the left                            →      the tab to the right
+            <      scroll the columns left                        >      scroll the columns right
 
             Columns
             SETTING  a setting kept in config.json, or, under the Setup heading, setup it reads but does not change
