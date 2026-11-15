@@ -9,7 +9,7 @@
 
 - [x] 2.1 Red `WizardViewShould.ExplainAFilterOfInvisibleCharacters` (a space, then U+200B: `Problem` is `InvisibleFilter`, `Filter` still holds the character, `Choices` is empty), then green `WizardProblem.InvisibleFilter` and its rule in `WizardView.Filtered`; verify with the Core suite.
 - [x] 2.2 Red `WizardViewShould.ClearTheInvisibleFilterProblemOnlyWhenTheFilterShowsSomething` (Backspace to empty clears it; " o" clears it; "zzz" never sets it; a `NoRepository` problem is kept by a filter change, as today), then green; verify with the Core suite.
-- [ ] 2.3 Red `WordingShould.DescribeAnInvisibleFilter` (the exact sentence, 76 cells or fewer), then green the case in `Wording.Describe(WizardProblem)`; verify with the Core suite, including the reflection facts that every problem case has words and `SpellBritish`.
+- [x] 2.3 Red `WordingShould.DescribeAnInvisibleFilter` (the exact sentence, 76 cells or fewer), then green the case in `Wording.Describe(WizardProblem)`; verify with the Core suite, including the reflection facts that every problem case has words and `SpellBritish`.
 
 ## 3. The diagnostic events (Application)
 
