@@ -11,9 +11,9 @@ public sealed class GitHubPullRequestsShould
     /// <summary>Recorded from gh 2.x's pr list --json, with the repository and branches made up.</summary>
     private const string Recorded = """
         [
-          {"createdAt":"2026-10-20T09:12:00Z","headRefName":"fix-123","isDraft":false,"number":123,"state":"OPEN","url":"https://github.com/northwind/Northwind.Orders/pull/123"},
+          {"createdAt":"2026-10-20T09:12:00Z","headRefName":"fix-123","headRefOid":"afdacd8b1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f60","isDraft":false,"number":123,"state":"OPEN","url":"https://github.com/northwind/Northwind.Orders/pull/123"},
           {"createdAt":"2026-10-19T15:40:21Z","headRefName":"refund-retry","isDraft":true,"number":121,"state":"OPEN","url":"https://github.com/northwind/Northwind.Orders/pull/121"},
-          {"createdAt":"2026-10-12T08:01:44Z","headRefName":"tidy-logging","isDraft":false,"number":88,"state":"MERGED","url":"https://github.com/northwind/Northwind.Orders/pull/88"},
+          {"createdAt":"2026-10-12T08:01:44Z","headRefName":"tidy-logging","headRefOid":"d6ed49cf0a1b2c3d4e5f60718293a4b5c6d7e8f9","isDraft":false,"number":88,"state":"MERGED","url":"https://github.com/northwind/Northwind.Orders/pull/88"},
           {"createdAt":"2026-10-02T11:30:00Z","headRefName":"spike-cache","isDraft":false,"number":80,"state":"CLOSED","url":"https://github.com/northwind/Northwind.Orders/pull/80"}
         ]
         """;
@@ -44,12 +44,12 @@ public sealed class GitHubPullRequestsShould
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.FileName.ShouldBe(Gh),
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Checkout.Value)),
-            request => request.Arguments.ShouldBe(["pr", "list", "--repo", "northwind/Northwind.Orders", "--head", "fix-123", "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,createdAt"]));
+            request => request.Arguments.ShouldBe(["pr", "list", "--repo", "northwind/Northwind.Orders", "--head", "fix-123", "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,headRefOid,createdAt"]));
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.ShouldBe(
         [
-            Row("fix-123", 123, PullRequestState.Open, "2026-10-20T09:12:00Z"),
+            Row("fix-123", 123, PullRequestState.Open, "2026-10-20T09:12:00Z", Head("afdacd8b1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f60")),
             Row("refund-retry", 121, PullRequestState.Draft, "2026-10-19T15:40:21Z"),
-            Row("tidy-logging", 88, PullRequestState.Merged, "2026-10-12T08:01:44Z"),
+            Row("tidy-logging", 88, PullRequestState.Merged, "2026-10-12T08:01:44Z", Head("d6ed49cf0a1b2c3d4e5f60718293a4b5c6d7e8f9")),
             Row("spike-cache", 80, PullRequestState.Closed, "2026-10-02T11:30:00Z"),
         ]);
     }
@@ -94,6 +94,23 @@ public sealed class GitHubPullRequestsShould
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Select(row => row.PullRequest.Number).ShouldBe([121]);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(",\"headRefOid\":null")]
+    [InlineData(",\"headRefOid\":\"\"")]
+    [InlineData(",\"headRefOid\":\"d6ed49cf\"")]
+    [InlineData(",\"headRefOid\":42")]
+    public async Task ListAPullRequestWhoseHeadCommitIsMissingOrUnreadableWithNoHeadCommit(string headRefOid)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"createdAt":"2026-10-12T08:01:44Z","headRefName":"fix-123","isDraft":false,"number":88,"state":"MERGED","url":"https://github.com/northwind/Northwind.Orders/pull/88"{{headRefOid}}}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Head.ShouldBe(new HeadCommit.NotRecorded());
+    }
+
     [Fact]
     public async Task ReportCliMissingWhenGhCannotStart()
     {
@@ -120,7 +137,11 @@ public sealed class GitHubPullRequestsShould
         (await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None)).ShouldBe(new PullRequestListing.Unavailable(PullRequestGap.Failed));
     }
 
-    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) =>
-        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), new HeadCommit.NotRecorded()));
+    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) => Row(branch, number, state, createdAt, new HeadCommit.NotRecorded());
+
+    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt, HeadCommit head) =>
+        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), head));
+
+    private static HeadCommit.Known Head(string commit) => new(CommitId.From(commit));
 
 }

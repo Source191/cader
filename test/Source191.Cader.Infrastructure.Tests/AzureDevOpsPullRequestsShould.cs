@@ -18,9 +18,9 @@ public sealed class AzureDevOpsPullRequestsShould
     /// </summary>
     private const string Recorded = """
         [
-          {"creationDate":"2026-10-20T09:12:00.1234567+00:00","isDraft":false,"pullRequestId":4521,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/fix-123","status":"active"},
+          {"creationDate":"2026-10-20T09:12:00.1234567+00:00","isDraft":false,"lastMergeSourceCommit":{"commitId":"5d1f0e2a3b4c5d6e7f8091a2b3c4d5e6f7089a1b","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b/commits/5d1f0e2a3b4c5d6e7f8091a2b3c4d5e6f7089a1b"},"pullRequestId":4521,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/fix-123","status":"active"},
           {"creationDate":"2026-10-19T15:40:21+00:00","isDraft":true,"pullRequestId":4519,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/feature/refund-retry","status":"active"},
-          {"creationDate":"2026-10-12T08:01:44+00:00","isDraft":false,"pullRequestId":4460,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/tidy-logging","status":"completed"},
+          {"creationDate":"2026-10-12T08:01:44+00:00","isDraft":false,"lastMergeSourceCommit":{"commitId":"9c9235150a1b2c3d4e5f60718293a4b5c6d7e8f9","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b/commits/9c9235150a1b2c3d4e5f60718293a4b5c6d7e8f9"},"pullRequestId":4460,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/tidy-logging","status":"completed"},
           {"creationDate":"2026-10-02T11:30:00+00:00","isDraft":false,"pullRequestId":4401,"repository":{"name":"Northwind.Orders","url":"https://dev.azure.com/northwind/0f1c/_apis/git/repositories/9a2b"},"sourceRefName":"refs/heads/spike-cache","status":"abandoned"}
         ]
         """;
@@ -43,9 +43,9 @@ public sealed class AzureDevOpsPullRequestsShould
             request => request.Arguments.ShouldBe(["repos", "pr", "list", "--org", "https://dev.azure.com/northwind", "--project", "Northwind Trading", "--repository", "Northwind.Orders", "--source-branch", "fix-123", "--status", "all", "--top", "20", "--output", "json"]));
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.ShouldBe(
         [
-            Row("fix-123", 4521, PullRequestState.Active, "2026-10-20T09:12:00.1234567+00:00"),
+            Row("fix-123", 4521, PullRequestState.Active, "2026-10-20T09:12:00.1234567+00:00", Head("5d1f0e2a3b4c5d6e7f8091a2b3c4d5e6f7089a1b")),
             Row("feature/refund-retry", 4519, PullRequestState.Draft, "2026-10-19T15:40:21+00:00"),
-            Row("tidy-logging", 4460, PullRequestState.Completed, "2026-10-12T08:01:44+00:00"),
+            Row("tidy-logging", 4460, PullRequestState.Completed, "2026-10-12T08:01:44+00:00", Head("9c9235150a1b2c3d4e5f60718293a4b5c6d7e8f9")),
             Row("spike-cache", 4401, PullRequestState.Abandoned, "2026-10-02T11:30:00+00:00"),
         ]);
     }
@@ -108,6 +108,25 @@ public sealed class AzureDevOpsPullRequestsShould
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Select(row => row.PullRequest.Number).ShouldBe([4460]);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(",\"lastMergeSourceCommit\":null")]
+    [InlineData(",\"lastMergeSourceCommit\":{}")]
+    [InlineData(",\"lastMergeSourceCommit\":{\"commitId\":\"\"}")]
+    [InlineData(",\"lastMergeSourceCommit\":{\"commitId\":\"not a commit\"}")]
+    [InlineData(",\"lastMergeSourceCommit\":{\"commitId\":42}")]
+    [InlineData(",\"lastMergeSourceCommit\":\"9c9235150a1b2c3d4e5f60718293a4b5c6d7e8f9\"")]
+    public async Task ListAPullRequestWhoseLastMergeSourceIsMissingOrUnreadableWithNoHeadCommit(string lastMergeSource)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"creationDate":"2026-10-12T08:01:44+00:00","isDraft":false,"pullRequestId":4460,"sourceRefName":"refs/heads/fix-123","status":"completed"{{lastMergeSource}}}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Head.ShouldBe(new HeadCommit.NotRecorded());
+    }
+
     [Fact]
     public async Task ReportCliMissingWhenAzCannotStart()
     {
@@ -146,6 +165,10 @@ public sealed class AzureDevOpsPullRequestsShould
         (await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None)).ShouldBe(new PullRequestListing.Unavailable(PullRequestGap.Failed));
     }
 
-    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) =>
-        new(BranchName.From(branch), new PullRequest(PullRequestHost.AzureDevOps, number, new Uri($"{WebUrl}/pullrequest/{number}"), state, DateTimeOffset.Parse(createdAt, CultureInfo.InvariantCulture), new HeadCommit.NotRecorded()));
+    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) => Row(branch, number, state, createdAt, new HeadCommit.NotRecorded());
+
+    private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt, HeadCommit head) =>
+        new(BranchName.From(branch), new PullRequest(PullRequestHost.AzureDevOps, number, new Uri($"{WebUrl}/pullrequest/{number}"), state, DateTimeOffset.Parse(createdAt, CultureInfo.InvariantCulture), head));
+
+    private static HeadCommit.Known Head(string commit) => new(CommitId.From(commit));
 }
