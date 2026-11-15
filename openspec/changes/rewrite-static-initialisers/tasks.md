@@ -16,7 +16,7 @@ Each group is verified by the Core and Infrastructure suites passing; the groups
 - [x] 3.2 Domain: `TabPalette`, `Key`, `DisplayState`, `BatchFileArgument`, `ClaudeCodeSupport`, `EditorChoice`, `InheritedEnvironment`, `ProgramLabel`, `ReleaseNotes`, `RowFilter`, `TerminalProfileId`, and the rest of `Domain`.
 - [x] 3.3 Ports: `TerminalProfiles`, `WorkingFolder`, `UserConfig`, `TabOwner` and the rest of `Ports`.
 - [x] 3.4 Application: the view states, `ConsoleState`, `DetailContent`, `TabScripts`, `OwnTab`, `ProblemReport`, `SetupFactsReader`, the timing constants and the rest; verify the guard fact passes.
-- [x] 3.5 Diagnostics: `ChildCommand`, `ChildCommandWords`, `DiagnosticLine`, `ExceptionSummary`, `Heartbeat` and the rest, removing the 15 static-initialiser `Accepted:` marks; verify a scoped Stryker run of the four files shows every mutant Killed with a `coveredBy`, and only the line-0 frame mark left (`git grep "Stryker disable"`).
+- [x] 3.5 Diagnostics: `ChildCommand`, `ChildCommandWords`, `DiagnosticLine`, `ExceptionSummary`, `Heartbeat` and the rest, removing the nine static-initialiser `Accepted:` marks; verify a scoped Stryker run of the four files shows every mutant Killed with a `coveredBy`, and only the line-0 frame mark left (`git grep "Stryker disable"`).
 
 ## 4. Prove and record
 

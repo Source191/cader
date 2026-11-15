@@ -2,14 +2,14 @@
 
 ## Why
 
-A release run of `mutation.yml` mutates only the code changed since the last run (`--since`), and it reported 223 survivors in v0.22.0-preview.19 (run 43720610875) that the full run on the same code (43713303950) kills: every one is a static mutant, 219 of them in the `Wording` tables. A static field or auto-property initialiser runs once per test process, and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so a mutant there is only killed when the process happens to start with it active, and no test can be credited with the kill. Today every release that touches a `Wording*` file fails its run with findings that are not real, and the four diagnostic tables carry 15 `Accepted:` marks that hide 61 mutants for the same reason.
+A release run of `mutation.yml` mutates only the code changed since the last run (`--since`), and it reported 223 survivors in v0.22.0-preview.19 (run 43720610875) that the full run on the same code (43713303950) kills: every one is a static mutant, 219 of them in the `Wording` tables. A static field or auto-property initialiser runs once per test process, and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so a mutant there is only killed when the process happens to start with it active, and no test can be credited with the kill. Today every release that touches a `Wording*` file fails its run with findings that are not real, and the four diagnostic tables carry nine `Accepted:` marks that hide 61 mutants for the same reason.
 
 ## What Changes
 
 - **Core declares no static initialiser:** each `static readonly` field and `{ get; } =` property in `src\Source191.Cader.Core` becomes a computed property (`static T Name => ...`), so its value is built each time it is read and Stryker sees its mutants as ordinary covered code, attributed to the tests that read them. Code that ran only inside an initialiser (`ReleaseVersion` parsing for `ClaudeCodeSupport.Minimum`, `ReportTitle` for `ProblemReport`, `CodeName`, `EditorChoice.Of`, the list policies of the view states) stops being static as well.
 - **A short kept list:** an initialiser stays only where identity is the point (`StatusMessage.None`, which the reducers and the screen compare by reference, and `DetailRequests`' `NoRow` object), each named with its reason.
 - **A guard:** a `SourceConventionsShould` fact fails for a static initialiser in Core that is not on the kept list, so the problem cannot come back.
-- **The Accepted marks go:** the 15 static-initialiser marks in `ChildCommand`, `ChildCommandWords`, `DiagnosticLine` and `ExceptionSummary` are removed; facts already pin every value.
+- **The Accepted marks go:** the nine static-initialiser marks in `ChildCommand`, `ChildCommandWords`, `DiagnosticLine` and `ExceptionSummary` are removed; facts already pin every value.
 - **Docs:** `.claude\rules\checks.md` (the static-mutant entries, the follow-up on #3742, the ledger's Accepted count back to 1), `CLAUDE.md`'s C# idioms, and an Internal changelog line.
 
 ## Out of scope
