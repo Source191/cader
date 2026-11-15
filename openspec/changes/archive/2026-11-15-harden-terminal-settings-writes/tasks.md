@@ -30,6 +30,6 @@ Every fact runs over a temporary folder or the fakes, never Windows Terminal's r
 
 ## 7. Docs and release
 
-- [ ] 7.1 Update `.claude\rules\security.md` (the `settings.json` bullet), `.claude\rules\windows.md` (the `File.Replace` facts, dated) and `docs\user-guide.md` (the backup, the refusals, what `--remove` takes out). **Verify:** read through.
-- [ ] 7.2 `Step-Version.ps1` once and a `CHANGELOG.md` line. **Verify:** `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `stack-17-winget-banner`.
+- [x] 7.1 Update `.claude\rules\security.md` (the `settings.json` bullet), `.claude\rules\windows.md` (the `File.Replace` facts, dated) and `docs\user-guide.md` (the backup, the refusals, what `--remove` takes out). **Verify:** read through.
+- [x] 7.2 `Step-Version.ps1` once and a `CHANGELOG.md` line. **Verify:** `Assert-VersionBumped.ps1` and `Assert-ChangelogUpdated.ps1` against `stack-17-winget-banner`.
 - [ ] 7.3 **Owner, after merge:** with Windows Terminal open, run `cader setup-terminal` against a hidden profile and confirm Terminal shows it again after the `File.Replace` write with no restart, and that `--remove` takes the entry out; look at the backup beside `settings.json`.
