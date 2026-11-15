@@ -420,6 +420,118 @@ public sealed class WorktreesViewShould
         Reduce(shown, new MessageDismissed(older)).Message.ShouldBeSameAs(newer);
     }
 
+    [Fact]
+    public void AskBeforeDeletingABranchRowWithNothingAtRisk()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds");
+
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(Only(spike), new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBe([new ConfirmDeleteBranch(new BranchToConfirm(FolderPath.From(Repository), BranchName.From("spike-refunds")))]);
+    }
+
+    [Fact]
+    public void RefuseDOnABranchRowWithCommitsAtRiskAndOfferD()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds") with { UnpushedCommits = 2 };
+
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(Only(spike), new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NotRemoved(new RemovalReason.UnpushedCommits("spike-refunds", 2), OfferForce: true));
+    }
+
+    [Fact]
+    public void ForceABranchRowByItsTypedNameAndDeleteTheBranchNotAFolder()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds") with { UnpushedCommits = 2 };
+        DeleteBranch delete = new(new BranchToConfirm(FolderPath.From(Repository), BranchName.From("spike-refunds")));
+
+        ViewUpdate<WorktreesViewState> asked = WorktreesView.Reduce(Only(spike), new KeyPressed(Key.Of('D')));
+        ViewUpdate<WorktreesViewState> confirmed = WorktreesView.Reduce(Only(spike), new ForceConfirmed(spike, "spike-refunds", Typed: "spike-refunds"));
+        ViewUpdate<WorktreesViewState> wrong = WorktreesView.Reduce(Only(spike), new ForceConfirmed(spike, "spike-refunds", Typed: "spike"));
+
+        asked.Effects.ShouldBe([new ConfirmForceRemove(spike, ConfirmationText: "spike-refunds")]);
+        confirmed.Effects.ShouldBe([delete]);
+        confirmed.State.Message.ShouldBe(new StatusMessage.Working(delete));
+        wrong.Effects.ShouldBeEmpty();
+        wrong.State.Message.ShouldBe(new StatusMessage.TypedWrongName("spike", "spike-refunds"));
+    }
+
+    [Fact]
+    public void RefuseDAndCapitalDOnAnOriginRowAndNeverDeleteOnOrigin()
+    {
+        WorktreeRow origin = OriginRow("c-new-bug");
+
+        foreach (ViewInput input in new ViewInput[] { new KeyPressed(Key.Of('d')), new KeyPressed(Key.Of('D')), new ForceConfirmed(origin, "c-new-bug", Typed: "c-new-bug") })
+        {
+            ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(Only(origin), input);
+
+            update.Effects.ShouldBeEmpty();
+            update.State.Message.ShouldBe(new StatusMessage.NotDeletedOnOrigin(BranchName.From("c-new-bug")));
+        }
+    }
+
+    [Fact]
+    public void NeverAimAWorktreeRemovalAtTheRepositoryFromARowWithNoFolder()
+    {
+        WorktreeRow[] noFolder = [BranchRow("spike-refunds"), BranchRow("old-idea") with { UnpushedCommits = 2 }, OriginRow("c-new-bug")];
+
+        foreach (WorktreeRow row in noFolder)
+        {
+            IEnumerable<ViewEffect> effects =
+            [
+                .. WorktreesView.Reduce(Only(row), new KeyPressed(Key.Of('d'))).Effects,
+                .. WorktreesView.Reduce(Only(row), new KeyPressed(Key.Of('D'))).Effects,
+                .. WorktreesView.Reduce(Only(row), new ForceConfirmed(row, row.FolderName, Typed: row.FolderName)).Effects,
+            ];
+
+            effects.ShouldNotContain(effect => effect is RemoveWorktree, $"{row.Health.Kind} row");
+        }
+    }
+
+    [Theory]
+    [InlineData('n', WorktreeHealthKind.Branch)]
+    [InlineData('o', WorktreeHealthKind.Branch)]
+    [InlineData('f', WorktreeHealthKind.Branch)]
+    [InlineData('s', WorktreeHealthKind.Branch)]
+    [InlineData('\r', WorktreeHealthKind.Branch)]
+    [InlineData('n', WorktreeHealthKind.Origin)]
+    [InlineData('o', WorktreeHealthKind.Origin)]
+    [InlineData('f', WorktreeHealthKind.Origin)]
+    [InlineData('s', WorktreeHealthKind.Origin)]
+    [InlineData('\r', WorktreeHealthKind.Origin)]
+    public void SayARowWithNoFolderHasNoWorktreeForTheFolderAndSessionKeys(char key, WorktreeHealthKind kind)
+    {
+        WorktreeRow row = kind is WorktreeHealthKind.Branch ? BranchRow("spike-refunds") : OriginRow("spike-refunds");
+
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(Only(row), new KeyPressed(key == '\r' ? Key.Enter : Key.Of(key)));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoWorktree(BranchName.From("spike-refunds")));
+    }
+
+    [Fact]
+    public void OpenThePullRequestCopyTheRepositoryAndPruneItFromARowWithNoFolder()
+    {
+        PullRequest merged = new(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, DateTimeOffset.UnixEpoch, new HeadCommit.NotRecorded());
+        WorktreeRow origin = OriginRow("c-new-bug") with { PullRequest = new PullRequestLookup.Found(merged) };
+
+        WorktreesView.Reduce(Only(origin), new KeyPressed(Key.Of('p'))).Effects.ShouldBe([new OpenPullRequest(merged)]);
+        WorktreesView.Reduce(Only(origin), new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(Repository))]);
+        WorktreesView.Reduce(Only(BranchRow("spike-refunds")), new KeyPressed(Key.Of('P'))).Effects.ShouldBe([new PruneRepository(FolderPath.From(Repository))]);
+    }
+
+    [Fact]
+    public void MarkTheBranchQuestionAsADialog()
+    {
+        new ConfirmDeleteBranch(new BranchToConfirm(FolderPath.From(Repository), BranchName.From("spike-refunds"))).ShouldBeAssignableTo<IDialogEffect>();
+    }
+
+    private static WorktreesViewState Only(WorktreeRow row) => Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([row]));
+
+    private static WorktreeRow OriginRow(string branch) => Row(Repository, On(branch), WorktreeHealthKind.Origin, new HealthReason.OnlyOnOrigin());
+
     private static WorktreesViewState Reduce(WorktreesViewState state, ViewInput input)
     {
         return WorktreesView.Reduce(state, input).State;
