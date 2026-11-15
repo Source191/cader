@@ -141,7 +141,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
 
         List<FolderPath> paths = [];
-        List<WorktreeRow> rows = [];
+        List<Task<WorktreeRow>> rows = [];
         foreach (GitWorktreeEntry entry in entries.Where(entry => !entry.IsMain))
         {
             if (!FolderPath.TryParse(entry.Path, out FolderPath? path))
@@ -150,16 +150,22 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             }
 
             paths.Add(path);
-            // The disc decides whether the folder exists; git's prunable says only that its .git file is gone, and such a
-            // folder may still hold work, so it is counted like any leftover.
-            bool folderExists = folders.DirectoryExists(path.Value);
-            WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable));
-            rows.Add(folderExists && !entry.IsPrunable
-                ? await InspectedAsync(repository, path, entry, health, cancellationToken)
-                : new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), CountLeftoverFiles(path), OwnerExists: true, FolderExists: folderExists));
+            rows.Add(RegisteredRowAsync(repository, path, entry, cancellationToken));
         }
 
-        return new Registrations(paths, rows);
+        return new Registrations(paths, await Task.WhenAll(rows));
+    }
+
+    private async Task<WorktreeRow> RegisteredRowAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, CancellationToken cancellationToken)
+    {
+        // The disc decides whether the folder exists; git's prunable says only that its .git file is gone, and such a
+        // folder may still hold work, so it is counted like any leftover.
+        bool folderExists = folders.DirectoryExists(path.Value);
+        WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable));
+
+        return folderExists && !entry.IsPrunable
+            ? await InspectedAsync(repository, path, entry, health, cancellationToken)
+            : new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), CountLeftoverFiles(path), OwnerExists: true, FolderExists: folderExists);
     }
 
     private async Task<WorktreeRow> InspectedAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, WorktreeHealth health, CancellationToken cancellationToken)
