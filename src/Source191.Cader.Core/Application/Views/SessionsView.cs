@@ -60,6 +60,8 @@ public static class SessionsView
         return row.Session switch
         {
             not Session.Background => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
+            // Without a process Enter removes the job and resumes it in its folder, which a gone folder would leave removed and not resumed.
+            Session.Background { Process: JobProcess.None } when row.Location is SessionLocation.FolderGone => new RowDecision.Explain(new StatusMessage.FolderGone(row.Session.Name)),
             // Attaching to a session with no process resumes it from its transcript; a session never sent a message has none.
             Session.Background { Process: JobProcess.None } when !row.HasTranscript => new RowDecision.Explain(new StatusMessage.NeverSentAMessage(row.Session.Name)),
             Session.Background session => new RowDecision.Act(new OpenTabForSession(session, row.Tab)),
