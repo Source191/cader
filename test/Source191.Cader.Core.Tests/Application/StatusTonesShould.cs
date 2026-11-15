@@ -252,6 +252,9 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.SetupAdvice)] = StatusTone.Hint,
         [typeof(StatusMessage.NoPathHere)] = StatusTone.Notice,
         [typeof(StatusMessage.NoSettingSelected)] = StatusTone.Notice,
+        [typeof(StatusMessage.NoLogToClear)] = StatusTone.Hint,
+        [typeof(StatusMessage.LogFilesNotRead)] = StatusTone.Hint,
+        [typeof(StatusMessage.ClearsOnlyTheLog)] = StatusTone.Hint,
     };
 
     public static TheoryData<Type> StatusMessageCases => [.. typeof(StatusMessage).GetNestedTypes().Where(type => type.IsAssignableTo(typeof(StatusMessage)))];

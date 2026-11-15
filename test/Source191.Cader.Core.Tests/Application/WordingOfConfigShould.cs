@@ -186,6 +186,9 @@ public sealed class WordingOfConfigShould
     public void SayTheConfigStatusMessages()
     {
         Wording.Describe(new StatusMessage.NoPathHere()).ShouldBe("This row's value is not a path.");
+        Wording.Describe(new StatusMessage.NoLogToClear()).ShouldBe("There is no log file to delete.");
+        Wording.Describe(new StatusMessage.LogFilesNotRead()).ShouldBe("The log files have not been read yet; press d again in a moment.");
+        Wording.Describe(new StatusMessage.ClearsOnlyTheLog()).ShouldBe("d clears the diagnostic log on the Diagnostic log file row, and changes nothing here.");
     }
 
     [Fact]

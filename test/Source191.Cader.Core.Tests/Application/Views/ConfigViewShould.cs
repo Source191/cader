@@ -147,6 +147,62 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(older, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile + ".1"))]);
     }
 
+    [Theory]
+    [InlineData("setup:DiagnosticLogFile")]
+    [InlineData("setup:OlderDiagnosticLogFile")]
+    public void AskToClearTheLogFromEitherLogRow(string key)
+    {
+        ConfigViewState state = WithOlderLog() with { List = WithOlderLog().List.Select(key) };
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(state, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBe([new ClearDiagnosticLog(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read())]);
+        update.State.Message.ShouldBe(StatusMessage.None);
+    }
+
+    [Fact]
+    public void AskToClearALogThatIsOff()
+    {
+        ConfigView.Reduce(At("setup:DiagnosticLogFile"), new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new ClearDiagnosticLog(new FakeDiagnosticLogFiles().WithCurrent(300).Read())]);
+    }
+
+    [Fact]
+    public void SayThereIsNoLogFileToClear()
+    {
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoLogToClear());
+    }
+
+    [Fact]
+    public void SayTheLogFilesAreNotReadYet()
+    {
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), SetupFacts.Reading))).State;
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.LogFilesNotRead());
+    }
+
+    [Theory]
+    [InlineData("worktree-root")]
+    [InlineData("diagnostic-log")]
+    [InlineData("setup:SettingsFile")]
+    public void SayDClearsOnlyTheLogAndChangeNothingElsewhere(string key)
+    {
+        ConfigViewState state = At(key);
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(state, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.ShouldBe(state with { Message = new StatusMessage.ClearsOnlyTheLog() });
+    }
+
     private static ConfigViewState WithOlderLog()
     {
         SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
