@@ -21,20 +21,26 @@ BeforeAll {
     }
 
     # A report of made-up mutants in one file, so many of each status.
-    function New-CountedReport([string] $Path, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
-        $statuses = @(@('Killed') * $Killed) + @(@('Survived') * $Survived) + @(@('Ignored') * $Ignored)
+    # StaticSurvived adds survivors Stryker marked static: run in a static initialiser, so a short run cannot judge them.
+    function New-CountedReport([string] $Path, [int] $Killed, [int] $Survived, [int] $Ignored = 0, [int] $StaticSurvived = 0) {
+        $statuses = @(@('Killed') * $Killed) + @(@('Survived') * $Survived) + @(@('Ignored') * $Ignored) + @(@('StaticSurvived') * $StaticSurvived)
         $line = 0
         $mutants = foreach ($status in $statuses) {
             $line++
-            [ordered]@{ mutatorName = 'Boolean mutation'; replacement = 'false'; location = @{ start = @{ line = $line } }; status = $status }
+            $mutant = [ordered]@{ mutatorName = 'String mutation'; replacement = '""'; location = @{ start = @{ line = $line } }; status = $status }
+            if ($status -eq 'StaticSurvived') {
+                $mutant.status = 'Survived'
+                $mutant['static'] = $true
+            }
+            $mutant
         }
         $report = [ordered]@{ projectRoot = 'C:\r\src\Core'; files = @{ 'C:\r\src\Core\Domain\Small.cs' = @{ mutants = @($mutants) } } }
         $report | ConvertTo-Json -Depth 8 | Set-Content $Path
     }
 
-    function Write-CountedRelease([string] $Name, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
+    function Write-CountedRelease([string] $Name, [int] $Killed, [int] $Survived, [int] $Ignored = 0, [int] $StaticSurvived = 0) {
         $report = Join-Path $TestDrive "$Name.json"
-        New-CountedReport $report $Killed $Survived $Ignored
+        New-CountedReport $report $Killed $Survived $Ignored $StaticSurvived
         & (Join-Path $script:Scripts 'Write-MutationRun.ps1') -ReportPath $report -Kind release -ReleaseTag v1 -Since v0 -HeadSha abc -OutputDirectory (Join-Path $TestDrive $Name)
     }
 }
@@ -188,6 +194,31 @@ Describe 'Write-MutationRun' {
 
         $result.Counted | Should -Be 19
         $result.Failing | Should -BeFalse
+    }
+
+    It 'leaves a release run''s static survivors to the weekly full run, and records how many' {
+        $result = Write-CountedRelease 'only-static-left' -Killed 20 -StaticSurvived 3
+
+        $result.Finding | Should -BeFalse
+        $result.Failing | Should -BeFalse
+        (Get-Content (Join-Path $TestDrive 'only-static-left\run.json') -Raw | ConvertFrom-Json).staticSetAside | Should -Be 3
+    }
+
+    It 'still fails a release run on a survivor that is not static' {
+        $result = Write-CountedRelease 'static-and-one-left' -Killed 20 -Survived 1 -StaticSurvived 3
+
+        $result.Finding | Should -BeTrue
+        $result.Failing | Should -BeTrue
+        $result.Reason | Should -Be '1 mutants survived or had no covering test.'
+    }
+
+    It 'counts static survivors in a full run''s score' {
+        $report = Join-Path $TestDrive 'full-static.json'
+        New-CountedReport $report -Killed 20 -Survived 0 -StaticSurvived 5
+
+        $result = & (Join-Path $script:Scripts 'Write-MutationRun.ps1') -ReportPath $report -Kind full -HeadSha abc -OutputDirectory (Join-Path $TestDrive 'full-static')
+
+        $result.Score | Should -Be 80
     }
 }
 
