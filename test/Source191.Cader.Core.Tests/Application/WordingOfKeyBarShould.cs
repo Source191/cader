@@ -101,7 +101,7 @@ public sealed class WordingOfKeyBarShould
         KeyBar bar = Wording.ConfigBar(updateKnown: false);
 
         Texts(bar.First).ShouldBe(["Enter Edit"]);
-        Texts(bar.Second).ShouldBe(["c Copy", "f Open folder", "/ Filter", "? Help", "! Report", "q Quit"]);
+        Texts(bar.Second).ShouldBe(["c Copy", "f Open folder", "d Clear log", "/ Filter", "? Help", "! Report", "q Quit"]);
     }
 
     [Fact]

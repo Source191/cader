@@ -46,7 +46,7 @@ public sealed class WordingOfKeysAndColumnsShould
         Wording.ConfigKeys.Select(key => $"{key.Key} {key.Hint}").ShouldBe(
         [
             "enter Edit", "esc Sessions", "/ Filter", "? Help", "q Quit",
-            "c Copy", "f Open folder", "U Update", "! Report", .. TabKeys,
+            "c Copy", "f Open folder", "d Clear log", "U Update", "! Report", .. TabKeys,
         ]);
     }
 
