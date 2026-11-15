@@ -164,6 +164,7 @@ public static partial class Wording
         new(Key.Of('q'), "Quit", "quit", Tip: "Quit; your sessions keep running in the background."),
         new(Key.Of('c'), "Copy", "copy the path", Tip: "Copy the row's path to the clipboard."),
         new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the row's folder, the settings or log file itself, or the folder holding another file, in the editor chosen above."),
+        new(Key.Of('d'), "Clear log", "clear the diagnostic log, after asking", Tip: "On a diagnostic log file row, delete cader.log and cader.log.1 after asking; the report's events stay."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
