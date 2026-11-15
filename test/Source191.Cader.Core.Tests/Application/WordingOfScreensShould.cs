@@ -286,6 +286,18 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
+    public void MarkAGoneFolderBeforeItsLabel()
+    {
+        Wording.FolderGone(@"~\source\worktrees\Northwind.Orders-fix-123").ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Orders-fix-123");
+    }
+
+    [Fact]
+    public void NameTheFolderGoneMarkInTheRepositoryHelp()
+    {
+        Wording.RepositoryColumn.Meaning.ShouldBe("the repository it runs in, or the folder's label outside a repository,\nwith folder gone: before the label when the folder no longer exists");
+    }
+
+    [Fact]
     public void HoldTheTabBlockAndTheGreyDotBetweenCounts()
     {
         Wording.TabBlock.ShouldBe("██");
