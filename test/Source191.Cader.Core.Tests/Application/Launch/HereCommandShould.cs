@@ -10,7 +10,7 @@ public sealed class HereCommandShould
     [Fact]
     public void StartInTheCurrentFolderOnItsBranchNamedAfterTheFolderByDefault()
     {
-        LaunchPlan plan = HereCommand.Plan(Directory, new HereName.FolderName(), prompt: string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
+        LaunchPlan plan = HereCommand.Plan(Directory, new HereName.FolderName(), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
 
         plan.Directory.Value.ShouldBe(Directory);
         plan.Name.Value.ShouldBe("Northwind.Orders");
@@ -22,13 +22,13 @@ public sealed class HereCommandShould
     [Fact]
     public void NeverPlanAFetchOrAPull()
     {
-        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), prompt: string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.BeforeBranching.ShouldBe(BeforeBranching.None);
+        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.BeforeBranching.ShouldBe(BeforeBranching.None);
     }
 
     [Fact]
     public void TakeANameAndAnOpeningPrompt()
     {
-        LaunchPlan plan = HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), "Fix the failing tests", isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
+        LaunchPlan plan = HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), "Fix the failing tests").ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
 
         plan.Name.Value.ShouldBe("fix-tests");
         plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Fix the failing tests"));
@@ -37,7 +37,7 @@ public sealed class HereCommandShould
     [Fact]
     public void WorkInAFolderThatIsNotARepository()
     {
-        LaunchPlan plan = HereCommand.Plan(@"C:\notes", new HereName.FolderName(), prompt: string.Empty, isRepository: _ => false).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
+        LaunchPlan plan = HereCommand.Plan(@"C:\notes", new HereName.FolderName(), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
 
         plan.Repository.IsRepository.ShouldBeFalse();
         plan.Name.Value.ShouldBe("notes");
@@ -46,26 +46,26 @@ public sealed class HereCommandShould
     [Fact]
     public void PlanWithAnEmptyOrATypedPrompt()
     {
-        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.OpeningPrompt.ShouldBe(new OpeningPrompt.None());
-        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), " Fix it ", isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Fix it"));
+        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.OpeningPrompt.ShouldBe(new OpeningPrompt.None());
+        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), " Fix it ").ShouldBeOfType<LaunchPlanResult.Planned>().Plan.OpeningPrompt.ShouldBe(new OpeningPrompt.Text("Fix it"));
     }
 
     [Fact]
     public void RefuseABadNameAsAFact()
     {
-        HereCommand.Plan(Directory, new HereName.Typed(""), prompt: string.Empty, isRepository: _ => true).ShouldBe(new LaunchPlanResult.Refused(new LaunchProblem.InvalidName(NameProblem.Missing)));
+        HereCommand.Plan(Directory, new HereName.Typed(""), prompt: string.Empty).ShouldBe(new LaunchPlanResult.Refused(new LaunchProblem.InvalidName(NameProblem.Missing)));
     }
 
     [Fact]
     public void RefuseADashLedPromptAsAFact()
     {
-        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), "-fix the tests", isRepository: _ => true).ShouldBe(new LaunchPlanResult.Refused(new LaunchProblem.PromptLooksLikeAnOption()));
+        HereCommand.Plan(Directory, new HereName.Typed("fix-tests"), "-fix the tests").ShouldBe(new LaunchPlanResult.Refused(new LaunchProblem.PromptLooksLikeAnOption()));
     }
 
     [Fact]
     public void PlanANameWithASemicolonOrDoubleQuote()
     {
-        HereCommand.Plan(Directory, new HereName.Typed("a;b"), prompt: string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("a;b");
-        HereCommand.Plan(Directory, new HereName.Typed("say \"hi\""), prompt: string.Empty, isRepository: _ => true).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("say \"hi\"");
+        HereCommand.Plan(Directory, new HereName.Typed("a;b"), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("a;b");
+        HereCommand.Plan(Directory, new HereName.Typed("say \"hi\""), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("say \"hi\"");
     }
 }
