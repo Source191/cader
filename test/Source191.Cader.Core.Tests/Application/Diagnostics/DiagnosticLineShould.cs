@@ -88,6 +88,13 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void RecogniseACrashLineWhoseTextStartsAtTheCrashMarkerAndOneThatEndsAtIt()
+    {
+        DiagnosticLine.IsCrashLine(" failed Crash: GitException").ShouldBeTrue();
+        DiagnosticLine.IsCrashLine("2026-10-29T14:03:12.345Z failed Crash").ShouldBeTrue();
+    }
+
+    [Fact]
     public void NotTakeOtherLinesForACrashLine()
     {
         Failed load = new(FailureSite.Load, CodeName.For(typeof(SessionsViewState)), ExceptionSummary.From(new GitException("x", inUse: false)));

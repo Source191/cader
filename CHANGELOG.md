@@ -32,6 +32,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 - C# 15 outside Core: every type hierarchy in the console's screen and the tools is a closed record, so a switch over one needs no fallback and a new case fails the build; Core stays on C# 14 until the mutation testing tool can compile C# 15, and the rest of the C# 15 and .NET 11 features are declined with the reasons recorded (#279)
 - No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
 - Mutation testing of Domain and Ports: facts now pin the mutants the weekly run left alive (equality of settings and editors, the wording of exceptions, the edges of fits and orderings), and the ones no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#282)
+- Mutation testing of the diagnostics and the worktree scan: facts now pin every word a child command may name, the edges of crash lines, heartbeat gaps, code names and process counts, and the scan of registered worktrees, leftovers and gitdir pointers, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#283)
 
 ## 0.21.1 - 2026-11-13
 

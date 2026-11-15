@@ -20,6 +20,7 @@ public sealed class DurationSample
         {
             latest[runs % Capacity] = duration;
             runs++;
+            // Stryker disable once Equality : Equivalent: for equal durations the longest is the same value either way
             longest = duration > longest ? duration : longest;
         }
     }

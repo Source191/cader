@@ -45,6 +45,7 @@ public sealed record CodeName
     {
         int end = name.IndexOf('>', StringComparison.Ordinal);
 
+        // Stryker disable once Equality : Equivalent: a name that starts with < has its > after the first character, never at 0
         return IsGenerated(name) && end > 0 ? name[1..end] : name;
     }
 }
