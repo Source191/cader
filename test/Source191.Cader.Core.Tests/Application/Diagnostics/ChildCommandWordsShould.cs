@@ -9,7 +9,7 @@ public sealed class ChildCommandWordsShould
 
     private static readonly (string Program, string[] Words)[] Listed =
     [
-        ("git", ["worktree", "list", "add", "remove", "prune", "status", "rev-list", "log", "branch", "symbolic-ref", "merge-base", "rev-parse", "remote", "get-url", "ls-files", "fetch", "merge", "-c", "core.quotePath=false"]),
+        ("git", ["worktree", "list", "add", "remove", "prune", "status", "rev-list", "log", "branch", "symbolic-ref", "merge-base", "rev-parse", "remote", "get-url", "ls-files", "fetch", "merge", "-c", "core.quotePath=false", "for-each-ref", "config"]),
         ("claude", ["agents", "attach", "stop", "rm", "--version", "--bg", "--resume", "--json", "--all"]),
         ("gh", ["pr", "list", "auth", "status"]),
         ("az", ["repos", "pr", "list", "extension", "account", "show"]),
