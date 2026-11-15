@@ -38,8 +38,8 @@ No new effect or handler: every refusal answers from the reducer.
 ## 5. Documentation and release
 
 - [x] 5.1 Update the REPOSITORY line in `docs\user-guide.md`'s sessions table to name the folder gone mark, and say in its keys section that Enter, rename and resume-all leave such a session alone and `d` deletes it. Verify the wording against `Wording.RepositoryColumn` and the status message.
-- [ ] 5.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1` (a preview raises its prerelease number). Add one `CHANGELOG.md` line under `## Unreleased`, `### Fixed`, ending with the pull request's number: a session whose folder has been deleted now reads folder gone, with `d` to delete it, and no longer fills the diagnostic log with git lines every 30 seconds. Verify that `Assert-VersionBumped.ps1 -Base main -Head HEAD` and `Assert-ChangelogUpdated.ps1 -Base main -Head HEAD` pass.
-- [ ] 5.3 Run `openspec validate mark-sessions-whose-folder-is-gone --strict` and verify it passes.
+- [x] 5.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1` (a preview raises its prerelease number). Add one `CHANGELOG.md` line under `## Unreleased`, `### Fixed`, ending with the pull request's number: a session whose folder has been deleted now reads folder gone, with `d` to delete it, and no longer fills the diagnostic log with git lines every 30 seconds. Verify that `Assert-VersionBumped.ps1 -Base main -Head HEAD` and `Assert-ChangelogUpdated.ps1 -Base main -Head HEAD` pass.
+- [x] 5.3 Run `openspec validate mark-sessions-whose-folder-is-gone --strict` and verify it passes.
 
 ## Workflow follow-up
 
