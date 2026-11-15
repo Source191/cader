@@ -44,4 +44,15 @@ public sealed class MemoryBreakdownShould
 
         MemoryBreakdown.Of(Listed.As("fix-123"), tree).Programs.ShouldBe([new MemoryShare("gk-alpha", MemorySize.Zero)]);
     }
+
+    [Fact]
+    public void LabelAProgramWhoseLabelCameBackEmptyByItsNameAlone()
+    {
+        FakeProcessRegistry processes = new FakeProcessRegistry()
+            .InTree(100, "claude", 1).Using(100, Fixtures.Noon, MemorySize.FromMegabytes(296))
+            .InTree(200, "gk-alpha", 100).Using(200, Fixtures.Noon.AddSeconds(1), MemorySize.FromMegabytes(40));
+        ProcessTree tree = ProcessTree.Under(100, processes.Snapshot(), processes.UsageOf).ShouldBeOfType<ProcessTreeLookup.Found>().Tree;
+
+        MemoryBreakdown.Of(Listed.As("fix-123"), tree).Programs.ShouldBe([new MemoryShare("gk-alpha", MemorySize.FromMegabytes(40))]);
+    }
 }

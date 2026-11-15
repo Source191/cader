@@ -135,6 +135,36 @@ public sealed class WordingOfConfigShould
     }
 
     [Fact]
+    public void SayNothingToDescribeAHeading()
+    {
+        Wording.ConfigDescription(new ConfigRow.Heading()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void SayASetupRowIsReadingWhileItIs()
+    {
+        Wording.ConfigValue(new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Reading()), Now, TimeZoneInfo.Utc).ShouldBe("reading…");
+    }
+
+    [Fact]
+    public void SayASetupThatIsDisabledIsOff()
+    {
+        Wording.ConfigValue(new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Disabled()), Now, TimeZoneInfo.Utc).ShouldBe("off");
+    }
+
+    [Theory]
+    [InlineData(SetupItem.SettingsFile, "This tab writes the settings file: edit a setting above to change it.")]
+    [InlineData(SetupItem.ClaudeFolder, "Cader follows CLAUDE_CONFIG_DIR as Claude Code does: start Cader with it set to read another account.")]
+    [InlineData(SetupItem.DiagnosticLogFile, "Turn the log on or off with Diagnostic log above; f opens this file and c copies its path.")]
+    [InlineData(SetupItem.TerminalProfiles, "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.")]
+    [InlineData(SetupItem.ClaudeBell, "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.")]
+    [InlineData(SetupItem.LastUpdateCheck, "The winget community repository is asked at most once a day; turn the check on or off with Check for updates.")]
+    public void SayHowEachNamedPieceOfSetupIsChanged(SetupItem item, string how)
+    {
+        Wording.Describe(item).ShouldBe(how);
+    }
+
+    [Fact]
     public void SayTheConfigStatusMessages()
     {
         Wording.Describe(new StatusMessage.NoPathHere()).ShouldBe("This row's value is not a path.");

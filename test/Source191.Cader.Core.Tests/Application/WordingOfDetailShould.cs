@@ -56,6 +56,61 @@ public sealed class WordingOfDetailShould
     }
 
     [Fact]
+    public void LabelTheWaitingLineOfASessionThatWaitsForNothing()
+    {
+        DetailLine waiting = Wording.Detail(Detail(Row(DisplayState.Working, process: new JobProcess.Running(4242))), Now, TimeZoneInfo.Utc).Facts[0][0];
+
+        waiting.Label.ShouldBe("Waiting");
+    }
+
+    [Theory]
+    [InlineData(0, 0, TextTone.Plain)]
+    [InlineData(1, 0, TextTone.Amber)]
+    [InlineData(0, 1, TextTone.Amber)]
+    public void ToneTheChangesOfAWorktreeOnlyWhenThereAreSome(int dirty, int unpushed, TextTone tone)
+    {
+        WorktreeDetail detail = new(WorktreeRowOf(unpushed, dirty), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        Wording.Detail(detail, Now, TimeZoneInfo.Utc).Facts[3][0].Tone.ShouldBe(tone);
+    }
+
+    [Fact]
+    public void NameTheFoundPullRequestAndTheKeyThatOpensIt()
+    {
+        PullRequestLookup.Found found = new(new PullRequest(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Now));
+        WorktreeDetail detail = new(WorktreeRowOf(unpushed: 0, dirty: 0) with { PullRequest = found }, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1][1].ShouldBe($"PR {Wording.PullRequestCell(found)} (p opens it)");
+        Wording.PullRequestCell(found).ShouldStartWith("#123");
+    }
+
+    [Fact]
+    public void SayAMergedBranchIsMerged()
+    {
+        WorktreeDetail detail = new(WorktreeRowOf(unpushed: 0, dirty: 0), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1][0].ShouldBe("Branch fix-123, merged into origin/main");
+    }
+
+    [Fact]
+    public void LeaveOutTheLastCommitOfASessionWhoseLastCommitIsUnknown()
+    {
+        SessionDetail detail = new(Row(DisplayState.Idle, process: new JobProcess.Running(4242)), new LastPrompt.NotSeen(), new DetailFact<WorktreeCounts>.Known(new WorktreeCounts(3, 0, new LastCommit.Unknown())));
+
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[3][0].ShouldBe("Changes 3 changed files · 0 unpushed commits");
+    }
+
+    [Fact]
+    public void SayGitIsUnavailableWhenEitherListingCouldNotBeRead()
+    {
+        WorktreeDetail commitsUnreadable = new(WorktreeRowOf(unpushed: 0, dirty: 0), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.Unavailable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+        WorktreeDetail filesUnreadable = new(WorktreeRowOf(unpushed: 0, dirty: 0), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.Unavailable());
+
+        Wording.Detail(commitsUnreadable, Now, TimeZoneInfo.Utc).Below.Select(line => $"{line.Label} {line.Text}").ShouldBe(["Git unavailable"]);
+        Wording.Detail(filesUnreadable, Now, TimeZoneInfo.Utc).Below.Select(line => $"{line.Label} {line.Text}").ShouldBe(["Git unavailable"]);
+    }
+
+    [Fact]
     public void NameTheMainCheckoutAndAFolderInsideIt()
     {
         SessionRow main = Row(DisplayState.Idle, process: new JobProcess.Running(4242), folder: Repository);

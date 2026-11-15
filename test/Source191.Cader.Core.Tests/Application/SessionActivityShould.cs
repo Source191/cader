@@ -68,6 +68,32 @@ public sealed class SessionActivityShould
         activity.LastPromptedAt(waiting.Session.SessionId).ShouldBe(new LastPrompt.Seen(Fixtures.Noon.AddMinutes(10)));
     }
 
+    [Theory]
+    [MemberData(nameof(NotWaiting))]
+    public void IgnoreASessionThatWasNotWaitingBeforeItWorked(DisplayState before)
+    {
+        SessionActivity activity = new(clock);
+        SessionRow row = Row(before);
+
+        activity.Observe([row], [WithState(row, DisplayState.Working)]);
+
+        activity.LastPromptedAt(row.Session.SessionId).ShouldBe(new LastPrompt.NotSeen());
+    }
+
+    public static TheoryData<DisplayState> NotWaiting => new(DisplayState.Working, DisplayState.Completed);
+
+    [Fact]
+    public void IgnoreASessionFirstSeenWorking()
+    {
+        SessionActivity activity = new(clock);
+        SessionRow earlier = Row(DisplayState.NeedsInput);
+        SessionRow newcomer = Row(DisplayState.Working);
+
+        activity.Observe([earlier], [earlier, newcomer]);
+
+        activity.LastPromptedAt(newcomer.Session.SessionId).ShouldBe(new LastPrompt.NotSeen());
+    }
+
     private static SessionRow WithState(SessionRow row, DisplayState state) => row with { Session = row.Session with { State = state } };
 
     private static SessionRow Row(DisplayState state, bool interactive = false)

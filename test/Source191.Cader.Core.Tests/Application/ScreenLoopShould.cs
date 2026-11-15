@@ -144,7 +144,8 @@ public sealed class ScreenLoopShould : IDisposable
     {
         ScriptedConsoleScreen screen = new(state => new ConsoleExit(state, new AttachToSession(JobId.From("81cdb0f9"))));
 
-        await Should.ThrowAsync<UnreachableException>(() => Loop(screen).RunAsync(processId: 100, CancellationToken.None));
+        UnreachableException refused = await Should.ThrowAsync<UnreachableException>(() => Loop(screen).RunAsync(processId: 100, CancellationToken.None));
+        refused.Message.ShouldBe("Only quit leaves the console, but AttachToSession did.");
 
         screen.Given.Count.ShouldBe(1, "only quit leaves the console, so it is never run a second time");
         console.Recovered.ShouldBe(0);

@@ -298,6 +298,7 @@ public static partial class Wording
     /// <summary>The keys two to a line, so the dialog stays short enough for a small terminal.</summary>
     private static string KeyColumns(IReadOnlyList<KeyHelp> keys)
     {
+        // Stryker disable once Arithmetic, Linq : Equivalent: no key name is longer than six characters (WordingOfScreensShould holds it), so the floor of seven decides the width
         int keyWidth = Math.Max(keys.Max(key => key.HelpKey.Length) + 1, 7);
         string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
         int width = keys.Where((_, index) => index % 2 == 0).Max(key => Entry(key).Length) + 3;
@@ -324,6 +325,7 @@ public static partial class Wording
         string line = string.Empty;
         foreach (string word in paragraph.Split(' '))
         {
+            // Stryker disable once Equality : Equivalent: of the three fixed report paragraphs none reaches exactly the width at a break and none opens with a word wider than it
             if (line.Length > 0 && line.Length + 1 + word.Length > width)
             {
                 lines.Add(line);

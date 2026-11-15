@@ -38,4 +38,10 @@ public sealed class PowerShellScriptShould
 
         line.ShouldBe("& 'C:\\Users\\me\\.local\\bin\\claude.exe' 'attach' '81cdb0f9'");
     }
+
+    [Fact]
+    public void QuoteEmptyTextAsAnEmptyLiteral()
+    {
+        PowerShellScript.Quote(string.Empty).ShouldBe("''");
+    }
 }

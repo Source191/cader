@@ -267,6 +267,21 @@ public sealed class SessionRowEnricherShould : IDisposable
     }
 
     [Fact]
+    public async Task AskGitAgainOnceTheCacheWindowHasPassedExactly()
+    {
+        AnswerGit(@"C:\repos\Northwind.Orders", root: "C:/repos/Northwind.Orders", commonDir: "C:/repos/Northwind.Orders/.git", branch: "main");
+        Session session = Session(@"C:\repos\Northwind.Orders");
+        SessionRowEnricher enricher = Enricher;
+
+        await enricher.EnrichAsync([session], CancellationToken.None);
+        int afterFirst = processes.CapturedRequests.Count;
+        clock.Advance(TimeSpan.FromSeconds(30));
+        await enricher.EnrichAsync([session], CancellationToken.None);
+
+        processes.CapturedRequests.Count.ShouldBeGreaterThan(afterFirst);
+    }
+
+    [Fact]
     public async Task SurviveOverlappingRefreshes()
     {
         AnswerGit(@"C:\repos\Northwind.Orders", root: "C:/repos/Northwind.Orders", commonDir: "C:/repos/Northwind.Orders/.git", branch: "main");

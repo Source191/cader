@@ -161,6 +161,7 @@ public static partial class Wording
         return outcome switch
         {
             StartSessionOutcome.StartedAndOpened { Update: BaseUpdate.Current } opened => ToneOf(opened.Tab),
+            // Stryker disable once Conditional : Equivalent: the tone of an opened tab is never Failure, so the condition is always false (the mutant that makes it true is killed by MarkAStartWhoseBaseWasNotUpdatedAsANotice)
             StartSessionOutcome.StartedAndOpened opened => ToneOf(opened.Tab) == StatusTone.Failure ? StatusTone.Failure : StatusTone.Notice,
             StartSessionOutcome.NotTrusted or StartSessionOutcome.Failed => StatusTone.Failure,
             _ => StatusTone.Notice,
@@ -366,5 +367,6 @@ public static partial class Wording
     private static string Gone(DeleteSessionOutcome outcome, ListedName name) => outcome.TabClosed ? $"Deleted {Name(name)} and closed its tab" : $"Deleted {Name(name)}";
 
     /// <summary>A sentence carried on after a semicolon: its first letter lowered.</summary>
+    // Stryker disable once Conditional : Equivalent: the one sentence lowered is a removal's and never empty, and an empty one would throw rather than differ (the mutant that never lowers is killed by the removal facts of WordingOfOutcomesShould)
     private static string Lowered(string sentence) => sentence.Length == 0 ? sentence : char.ToLowerInvariant(sentence[0]) + sentence[1..];
 }

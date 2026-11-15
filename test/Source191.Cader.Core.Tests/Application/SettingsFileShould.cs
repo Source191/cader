@@ -158,6 +158,12 @@ public sealed class SettingsFileShould
     }
 
     [Fact]
+    public void ReadAPresetNumberNoEditorHasAsVsCode()
+    {
+        SettingsFile.From(new UserConfig(null, null, null, new EditorSetting("99", null, null)), Home).Editor.ShouldBe(EditorChoice.VsCode);
+    }
+
+    [Fact]
     public void ReadACustomEditorWithoutAPlaceholderAsVsCode()
     {
         SettingsFile.From(new UserConfig(null, null, null, new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n"])), Home).Editor.ShouldBe(EditorChoice.VsCode);

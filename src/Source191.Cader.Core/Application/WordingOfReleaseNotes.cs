@@ -48,6 +48,7 @@ public static partial class Wording
         if (section.Entries.Count == 0)
         {
             yield return "  No changes you would notice.";
+            // Stryker disable once Statement : Equivalent: with no entries the loop below yields nothing, so the break only saves reading it
             yield break;
         }
 

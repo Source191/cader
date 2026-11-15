@@ -79,4 +79,16 @@ public sealed class InMemoryStateShould
         IReadOnlyList<TabRegistration> remaining = await state.ReadTabsAsync();
         remaining.Count.ShouldBe(registrations.Count(registration => registration.Id.GetHashCode() % 2 != 0));
     }
+
+    [Fact]
+    public async Task CountTheTimesTheRunningVersionWasRecorded()
+    {
+        state.LastRunWrites.ShouldBe(0);
+
+        await state.WriteLastRunAsync(ReleaseVersions.Version("0.21.0"));
+        await state.WriteLastRunAsync(ReleaseVersions.Version("0.22.0"));
+
+        state.LastRunWrites.ShouldBe(2);
+        (await state.ReadLastRunAsync()).ShouldBe(new LastRun.Ran(ReleaseVersions.Version("0.22.0")));
+    }
 }

@@ -111,7 +111,9 @@ public sealed class PullRequestCatalogueShould : IDisposable
 
         Task refresh = catalogue.RefreshStaleAsync(twelve);
         await hosts.WhenCalledAsync(4).WaitAsync(Deadline, TestContext.Current.CancellationToken);
-        hosts.Calls.Count.ShouldBe(4, "the rest wait for a free slot");
+        Task fifth = hosts.WhenCalledAsync(5);
+        (await Task.WhenAny(fifth, Task.Delay(TimeSpan.FromMilliseconds(250), TestContext.Current.CancellationToken))).ShouldNotBeSameAs(fifth, "the rest wait for a free slot");
+        hosts.Calls.Count.ShouldBe(4);
         hosts.ReleaseOne();
         await hosts.WhenCalledAsync(5).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         hosts.Calls.Count.ShouldBe(5, "a released slot lets the fifth start");
@@ -233,6 +235,16 @@ public sealed class PullRequestCatalogueShould : IDisposable
         await refresh;
 
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new RefreshSlow(RefreshPart.PullRequestRefresh, TimeSpan.FromSeconds(4))]);
+    }
+
+    [Fact]
+    public async Task TimeOneRefreshThatStartsSeveralLookups()
+    {
+        BranchName spike = BranchName.From("spike-cache");
+
+        await catalogue.RefreshStaleAsync([(Checkout, Fix), (Checkout, spike)]);
+
+        refreshes.Snapshot().Single().Durations.Runs.ShouldBe(1, "one refresh is one timed run however many lookups it starts");
     }
 
     private static PullRequestListing.Listed Listing(PullRequest pullRequest) => new([new BranchPullRequest(Fix, pullRequest)]);

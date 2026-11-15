@@ -457,6 +457,18 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void SayWhichFileIsOpeningInTheEditor()
+    {
+        Wording.Working(new OpenFileInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Cader\config.json"))).ShouldBe("Opening config.json in the editor...");
+    }
+
+    [Fact]
+    public void SayNoSettingIsSelected()
+    {
+        Wording.Describe(new StatusMessage.NoSettingSelected()).ShouldBe("No setting selected.");
+    }
+
+    [Fact]
     public void SayWhatEachFolderEffectIsDoingWhileItRuns()
     {
         FolderPath folder = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123");
