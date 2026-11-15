@@ -5,7 +5,9 @@ namespace Source191.Cader.Application.Diagnostics;
 /// beat is judged by how late it ran after the one before. More than <see cref="Stall"/> late is counted; more than
 /// <see cref="Freeze"/> is also recorded, so a sustained slowdown shows in the counts without pushing every other event
 /// out of the log. A gap longer than <see cref="Sleep"/> is the machine sleeping and only sets a new baseline, as the
-/// first beat does. Terminal.Gui keeps running timeouts under a modal dialog, so a dialog needs no restart.
+/// first beat does. Terminal.Gui keeps running timeouts under a modal dialog, so a dialog needs no restart. Work the
+/// screen runs through <see cref="Mark"/> is timed since the later of its start and the last beat, and a freeze names the
+/// longest piece marked since the beat before it; marks may nest, and the outer piece includes the inner ones.
 /// Called on the UI thread only.
 /// </summary>
 public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, DiagnosticLog log)
@@ -34,7 +36,8 @@ public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, Diagnostic
         }
         finally
         {
-            TimeSpan took = clock.GetElapsedTime(started);
+            // A dialog opened by the work runs its own loop and the heartbeat beats in it, so only the time since the last beat is the work's.
+            TimeSpan took = clock.GetElapsedTime(Math.Max(started, previous));
             if (longest is not { } kept || took > kept.Took)
             {
                 longest = (work, took);
