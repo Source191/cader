@@ -53,6 +53,71 @@ public sealed class DiagnosticLogFilesShould : IDisposable
         DiagnosticFile.OlderPath(path).ShouldBe(OlderPath);
     }
 
+    [Fact]
+    public void DeleteBothFilesAndCountTheirBytes()
+    {
+        FileOfBytes(path, 2_516_582);
+        FileOfBytes(OlderPath, 10_485_700);
+        DiagnosticLogFiles files = new(path);
+
+        files.Clear().ShouldBe(new LogFilesCleared(Removed: 2, Bytes: 13_002_282, Kept: 0));
+
+        File.Exists(path).ShouldBeFalse();
+        File.Exists(OlderPath).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DeleteTheOneFileThatIsThere()
+    {
+        FileOfBytes(path, 300);
+        DiagnosticLogFiles files = new(path);
+
+        files.Clear().ShouldBe(new LogFilesCleared(Removed: 1, Bytes: 300, Kept: 0));
+
+        File.Exists(path).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ClearNothingWhenNeitherFileNorTheFolderIsThere()
+    {
+        DiagnosticLogFiles files = new(Path.Combine(folder, "missing", "cader.log"));
+
+        files.Clear().ShouldBe(new LogFilesCleared(Removed: 0, Bytes: 0, Kept: 0));
+    }
+
+    [Fact]
+    public void KeepAFileHeldOpenAndStillDeleteTheOther()
+    {
+        FileOfBytes(path, 300);
+        FileOfBytes(OlderPath, 512_000);
+        DiagnosticLogFiles files = new(path);
+        LogFilesCleared cleared;
+
+        using (FileStream held = new(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            cleared = files.Clear();
+        }
+
+        cleared.ShouldBe(new LogFilesCleared(Removed: 1, Bytes: 512_000, Kept: 1));
+        File.Exists(path).ShouldBeTrue();
+        File.Exists(OlderPath).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void LeaveTheCrashFileAndEveryOtherFileAlone()
+    {
+        FileOfBytes(path, 300);
+        File.WriteAllText(Path.Combine(folder, "last-crash.log"), "a crash");
+        File.WriteAllText(Path.Combine(folder, "config.json"), "{}");
+        File.WriteAllText(Path.Combine(folder, "cader.log.2"), "not ours");
+        DiagnosticLogFiles files = new(path);
+
+        files.Clear();
+
+        Directory.GetFiles(folder).Select(Path.GetFileName).Order().ShouldBe(["cader.log.2", "config.json", "last-crash.log"]);
+        File.ReadAllText(Path.Combine(folder, "last-crash.log")).ShouldBe("a crash");
+    }
+
     private string OlderPath => path + ".1";
 
     private static void FileOfBytes(string file, long length)
