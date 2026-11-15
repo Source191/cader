@@ -29,7 +29,7 @@ Each constructor change lands with every call site it breaks (`src`, `test` and 
 
 ## 5. The dialog
 
-- [ ] 5.1 **Red:** `WordingShould` facts for `ClearLogTitle` and `ClearLogQuestion` (names each existing file with its size, never an absent one, says the events kept for a problem report stay and that a log that is on starts again with its next event), and for `DialogName.ClearLog`'s tab title `Cader (Clear log)`. **Green:** the words and the `DialogName` member with its `DialogWord` arm. **Verify:** the facts pass.
+- [x] 5.1 **Red:** `WordingShould` facts for `ClearLogTitle` and `ClearLogQuestion` (names each existing file with its size, never an absent one, says the events kept for a problem report stay and that a log that is on starts again with its next event), and for `DialogName.ClearLog`'s tab title `Cader (Clear log)`. **Green:** the words and the `DialogName` member with its `DialogWord` arm. **Verify:** the facts pass.
 - [ ] 5.2 **Red:** mark `ClearDiagnosticLog` as an `IDialogEffect`; `DialogEffectsShould` fails for it with no flow. **Green:** `ConfirmClearLog` in `Tui\DialogEffects`: `Confirm.Ask` with `Wording.DeleteButtons`; Cancel shows `StatusMessage.Kept`; Delete dispatches the effect. **Verify:** `DialogEffectsShould`, `EffectRoutingShould` and `ScreenLoopShould` pass.
 
 ## 6. The key

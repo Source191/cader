@@ -45,6 +45,7 @@ public static partial class Wording
         DialogName.WhatsNew => "What's new",
         DialogName.Memory => "Memory",
         DialogName.ProblemReport => ProblemReportDialogTitle,
+        DialogName.ClearLog => "Clear log",
     };
 
     /// <summary>An amount of memory as the settings row, the detail pane and the breakdown write it: whole megabytes below 1,000 MB, gigabytes to one decimal from there.</summary>
