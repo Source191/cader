@@ -443,6 +443,33 @@ public sealed class WordingShould
         Wording.ForceRemoveWarning.ShouldBe("This deletes the folder below and everything in it that is not committed and pushed.\nTo confirm, give its name:");
     }
 
+    [Fact]
+    public void TitleAndWarnTheForcedDeletionOfABranchRowAsABranchNotAFolder()
+    {
+        Wording.ForceTitle(Placement.Folder).ShouldBe(Wording.ForceRemoveTitle);
+        Wording.ForceWarning(Placement.Folder).ShouldBe(Wording.ForceRemoveWarning);
+        Wording.ForceTitle(Placement.NoFolder).ShouldBe("Force delete branch");
+        Wording.ForceWarning(Placement.NoFolder).ShouldBe("This deletes the local branch below and every commit on it that is on no remote branch.\nTo confirm, give its name:");
+    }
+
+    [Fact]
+    public void AskBeforeDeletingABranchRowsBranch()
+    {
+        Wording.DeleteBranchRowQuestion("spike-refunds").ShouldBe("Delete the local branch spike-refunds?\nEvery commit on it is on a remote branch or inside its merged pull request.");
+    }
+
+    [Fact]
+    public void SayARowWithNoFolderHasNoWorktree()
+    {
+        Wording.Describe(new StatusMessage.NoWorktree(BranchName.From("spike-refunds"))).ShouldBe("spike-refunds has no worktree; nothing to open or start there.");
+    }
+
+    [Fact]
+    public void SayCaderNeverDeletesABranchOnOrigin()
+    {
+        Wording.Describe(new StatusMessage.NotDeletedOnOrigin(BranchName.From("c-new-bug"))).ShouldBe("c-new-bug is only on origin, and Cader never deletes a branch on origin.");
+    }
+
     // What the status line says while an effect runs.
 
     [Fact]
