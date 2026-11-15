@@ -32,7 +32,7 @@ Each task is red, green, refactor, a commit per step; "verify" means the Core su
 
 ## 6. The marks on the UI thread (Tui)
 
-- [ ] 6.1 Run `TableBody.Apply`'s body through `context.Heartbeat.Mark(CodeName.For(input.GetType()), ...)`, `RunInBackground`'s `app.Invoke` body through `Mark(Attempt.What(working), ...)`, and `DetailReader`'s `Show` through `Mark(CodeName.For(typeof(DetailContent)), ...)`, handing `DetailReader<TRow>.For` the heartbeat. These are one-line screen wiring with the logic tested in group 5. Verify that `dotnet build -c Debug` passes with warnings as errors and that the full `dotnet test -c Debug --no-build` passes, then that the smoke check passes on both architectures in CI's `check` jobs, which open every screen and dialog through these marks.
+- [x] 6.1 Run `TableBody.Apply`'s body through `context.Heartbeat.Mark(CodeName.For(input.GetType()), ...)`, `RunInBackground`'s `app.Invoke` body through `Mark(Attempt.What(working), ...)`, and `DetailReader`'s `Show` through `Mark(CodeName.For(typeof(DetailContent)), ...)`, handing `DetailReader<TRow>.For` the heartbeat. These are one-line screen wiring with the logic tested in group 5. Verify that `dotnet build -c Debug` passes with warnings as errors and that the full `dotnet test -c Debug --no-build` passes, then that the smoke check passes on both architectures in CI's `check` jobs, which open every screen and dialog through these marks.
 
 ## 7. Release housekeeping
 

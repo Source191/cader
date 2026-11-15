@@ -39,9 +39,9 @@ internal abstract class DetailReader<TRow>
     public abstract void Release();
 
     /// <summary>The reader for a tab's detail: the pane under the table (which then stops short of it), or none.</summary>
-    public static DetailReader<TRow> For(TableDetail<TRow> detail, TableView table, IApplication app, DiagnosticLog log, ITabHost host) => detail switch
+    public static DetailReader<TRow> For(TableDetail<TRow> detail, TableView table, IApplication app, DiagnosticLog log, Heartbeat heartbeat, ITabHost host) => detail switch
     {
-        TableDetail<TRow>.Pane pane => new Reading(pane.Source, table, app, log, host),
+        TableDetail<TRow>.Pane pane => new Reading(pane.Source, table, app, log, heartbeat, host),
         TableDetail<TRow>.None => new None(),
     };
 
@@ -72,6 +72,7 @@ internal abstract class DetailReader<TRow>
         private readonly IDetailSource<TRow> source;
         private readonly IApplication app;
         private readonly DiagnosticLog log;
+        private readonly Heartbeat heartbeat;
         private readonly ITabHost host;
         private readonly DetailPane pane;
         private readonly DetailRequests requests = new();
@@ -83,11 +84,12 @@ internal abstract class DetailReader<TRow>
         /// <summary>The key of the row whose detail was last asked for, or <see cref="askAgain"/>.</summary>
         private object key;
 
-        public Reading(IDetailSource<TRow> source, TableView table, IApplication app, DiagnosticLog log, ITabHost host)
+        public Reading(IDetailSource<TRow> source, TableView table, IApplication app, DiagnosticLog log, Heartbeat heartbeat, ITabHost host)
         {
             this.source = source;
             this.app = app;
             this.log = log;
+            this.heartbeat = heartbeat;
             this.host = host;
             key = askAgain;
             pane = new DetailPane(source.Rows);
@@ -146,7 +148,7 @@ internal abstract class DetailReader<TRow>
                     return;
                 }
 
-                app.Invoke(() => Show(request, content));
+                app.Invoke(() => heartbeat.Mark(CodeName.For(typeof(DetailContent)), () => Show(request, content)));
             }, token);
         }
 
