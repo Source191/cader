@@ -525,4 +525,12 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         output.Dispose();
         error.Dispose();
     }
+
+    [Fact]
+    public async Task EndTheLineOfAQuestionOnceItIsAnswered()
+    {
+        await RunAsync("n\nn\n");
+
+        output.ToString().ShouldContain(Wording.WriteProfilesQuestion + Environment.NewLine);
+    }
 }
