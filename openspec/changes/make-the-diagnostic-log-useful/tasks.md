@@ -9,7 +9,7 @@ Each task is red, green, refactor, a commit per step; "verify" means the Core su
 
 ## 2. Windows' error number (Application, `ExceptionSummary`)
 
-- [ ] 2.1 Red `ExceptionSummaryShould.NameAWindowsErrorByItsNumber` (an `InvalidOperationException` wrapping `new Win32Exception(2)` summarises as `InvalidOperationException ...; inner Win32Exception (error 2) ...`, and Windows' message for error 2 is absent), then green the number in `ExceptionSummary.Part` (design 3), and add Windows' error number to `security.md`'s list of what an `ExceptionSummary` holds. Verify.
+- [x] 2.1 Red `ExceptionSummaryShould.NameAWindowsErrorByItsNumber` (an `InvalidOperationException` wrapping `new Win32Exception(2)` summarises as `InvalidOperationException ...; inner Win32Exception (error 2) ...`, and Windows' message for error 2 is absent), then green the number in `ExceptionSummary.Part` (design 3), and add Windows' error number to `security.md`'s list of what an `ExceptionSummary` holds. Verify.
 
 ## 3. A failed start once per command and folder (Application, `RecordedProcessRunner`)
 
