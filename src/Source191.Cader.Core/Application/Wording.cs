@@ -432,7 +432,7 @@ public static partial class Wording
         ]);
     }
 
-    public static string HiddenProfilesShown(string settingsPath, string backup) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
+    public static string HiddenProfilesShown(string settingsPath, string backup) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart. The file as it was is kept as {backup}.";
 
     /// <summary>Why nothing was written to a linked settings file, and the entries to add by hand.</summary>
     public static string TerminalSettingsLinked(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)

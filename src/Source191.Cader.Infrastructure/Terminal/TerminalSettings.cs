@@ -57,8 +57,9 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
     /// <summary>
     /// Inserts the entries as text after the list's last element, or after its <c>[</c> when it is empty, each on a line of
     /// its own, indented like the first element, with the file's own line ending; nothing else in the file is touched, a
-    /// byte order mark included. Written beside the file and moved over it, so Terminal, which reloads the file when it
-    /// changes, never reads half of it.
+    /// byte order mark included. Written beside the file and put in its place with File.Replace, so Terminal, which reloads the
+    /// file when it changes, never reads half of it, and the file keeps its creation time and access rules; the file as it was
+    /// is kept beside it, named after Terminal's own backups with the UTC time.
     /// </summary>
     public async Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
@@ -79,7 +80,7 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         try
         {
             await File.WriteAllBytesAsync(temporary, written, cancellationToken);
-            File.Move(temporary, Location, overwrite: true);
+            File.Replace(temporary, Location, backup);
         }
         finally
         {
