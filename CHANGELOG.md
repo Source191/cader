@@ -31,6 +31,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 - .NET 11's process APIs are checked against how Cader starts, captures and ends programs: ending a session's or tab's process now looks it up with .NET 11's TryGetProcessById, and the rest are declined, with facts that show why, so nothing a user can see changes (#278)
 - C# 15 outside Core: every type hierarchy in the console's screen and the tools is a closed record, so a switch over one needs no fallback and a new case fails the build; Core stays on C# 14 until the mutation testing tool can compile C# 15, and the rest of the C# 15 and .NET 11 features are declined with the reasons recorded (#279)
 - No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
+- Mutation testing of Domain and Ports: facts now pin the mutants the weekly run left alive (equality of settings and editors, the wording of exceptions, the edges of fits and orderings), and the ones no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes
 
 ## 0.21.1 - 2026-11-13
 
