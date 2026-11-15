@@ -30,7 +30,7 @@ public sealed class DiagnosticLineShould
         string process = $"[{Environment.ProcessId}]";
 
         DiagnosticLine.Render(new TimedEvent(At, new ViewShown(ViewKind.Sessions))).ShouldBe($"2026-10-29T14:03:12.345Z {process} view Sessions");
-        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z {process} counts git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z {process} counts since start git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public sealed class DiagnosticLineShould
 
         counts.Add(agents, 0, TimeSpan.FromMilliseconds(4900));
 
-        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] counts claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] counts since start claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
     }
 
     [Fact]
@@ -215,8 +215,8 @@ public sealed class DiagnosticLineShould
             stalls.Add(TimeSpan.FromMilliseconds(milliseconds));
         }
 
-        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls ui thread: 0 stalls"]);
-        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
+        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
     }
 
     public static TheoryData<Type> EventTypes => DiagnosticEventsShould.EventTypes;

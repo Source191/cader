@@ -48,7 +48,7 @@ public sealed class ProblemReportShould
         fitted.Split('\n').Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         fitted.ShouldContain($"2026-10-29T12:07:31.000Z [{Environment.ProcessId}] failed Effect Quit: GitException", customMessage: "the newest failure is kept");
         fitted.ShouldNotContain("view Sessions 0", customMessage: "the crash file's ordinary lines go first");
-        fitted.ShouldContain("counts git status exit 128", customMessage: "non-zero counts outlast ordinary events");
+        fitted.ShouldContain("counts since start git status exit 128", customMessage: "non-zero counts outlast ordinary events");
         fitted.ShouldMatch(@"\n\(\d+ lines left out to fit the page address\)$");
     }
 
@@ -76,7 +76,7 @@ public sealed class ProblemReportShould
 
         fitted.ShouldNotContain("view Sessions");
         fitted.ShouldNotContain("view Worktrees");
-        fitted.ShouldContain("counts git status exit 0");
+        fitted.ShouldContain("counts since start git status exit 0");
         fitted.ShouldContain("failed Load: GitException");
         fitted.ShouldEndWith("\n(2 lines left out to fit the page address)");
     }

@@ -47,7 +47,7 @@ public sealed class ProblemReportsShould
             $"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] view Worktrees",
             string.Empty,
             "Child program counts",
-            $"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] counts git status exit 0: 1 run, median 12 ms, p95 12 ms, longest 12 ms"));
+            $"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] counts since start git status exit 0: 1 run, median 12 ms, p95 12 ms, longest 12 ms"));
     }
 
     [Fact]

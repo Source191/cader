@@ -17,14 +17,14 @@ public static class DiagnosticLine
     public static string Render(TimedEvent timed) => $"{Stamp(timed.At)} {Body(timed.Event)}";
 
     /// <summary>The child program counts, one line per program, subcommand and exit code, each with the time it was written.</summary>
-    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at) => [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
+    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at) => [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts since start {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
 
     /// <summary>Every count, each line with the time it was written: the child programs, each refresh part that has run, and the UI thread's stalls even with none, so a file shows the heartbeat ran.</summary>
     public static IReadOnlyList<string> Render(PerformanceCounts counts, DateTimeOffset at)
     {
-        IEnumerable<string> refreshes = counts.Refreshes.Snapshot().Select(count => $"{Stamp(at)} refreshes {Name(count.Part)}: {Figures(count.Durations, "run", "runs")}");
+        IEnumerable<string> refreshes = counts.Refreshes.Snapshot().Select(count => $"{Stamp(at)} refreshes since start {Name(count.Part)}: {Figures(count.Durations, "run", "runs")}");
 
-        string stalls = $"{Stamp(at)} stalls ui thread: {Figures(counts.Stalls.Figures(), "stall", "stalls")}";
+        string stalls = $"{Stamp(at)} stalls since start ui thread: {Figures(counts.Stalls.Figures(), "stall", "stalls")}";
 
         return [.. Render(counts.Processes, at), .. refreshes, stalls];
     }
