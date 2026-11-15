@@ -142,13 +142,15 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $latest = Get-ChildItem test\Source191.Cader.Core.Tests\StrykerOutput -Directory -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -Last 1
-          if (-not $latest) { "finding=false" >> $env:GITHUB_OUTPUT; exit 0 }
+          if (-not $latest) { "finding=false" >> $env:GITHUB_OUTPUT; "fail=false" >> $env:GITHUB_OUTPUT; exit 0 }
           $kind = if ($env:KIND -eq 'release') { 'release' } else { 'full' }
           $previous = if (Test-Path previous) { 'previous' } else { '' }
           $result = .github\scripts\Write-MutationRun.ps1 -ReportPath (Join-Path $latest.FullName 'reports\mutation-report.json') `
               -Kind $kind -ReleaseTag $env:TAG -Since $env:SINCE -HeadSha $env:HEAD_SHA -OutputDirectory results -PreviousDirectory $previous
           Write-Host "Score $($result.Score) %. $($result.Reason)"
           "finding=$($result.Finding.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "fail=$($result.Failing.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "counted=$($result.Counted)" >> $env:GITHUB_OUTPUT
           if ($result.Finding) {
               $runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
               .github\scripts\Format-MutationComment.ps1 -ResultsDirectory results -RunUrl $runUrl -OutputPath results\comment.md
@@ -169,6 +171,18 @@ jobs:
           path: test\Source191.Cader.Core.Tests\StrykerOutput
           retention-days: 30
           if-no-files-found: ignore
+
+      # The strict release rule (Write-MutationRun.ps1): a release run that counted 20 or more mutants and left one
+      # alive fails here, last, so both artefacts are uploaded and the report job still comments. It blocks nothing:
+      # the run starts after the release, and a full run is never failing this way.
+      - name: Fail a release run that left a mutant alive
+        if: always() && steps.run.outputs.fail == 'true'
+        shell: pwsh
+        env:
+          COUNTED: ${{ steps.run.outputs.counted }}
+        run: |
+          Write-Host "::error::This release run counted $env:COUNTED mutants and left at least one alive; the mutation issue names them."
+          exit 1
 
   # One rolling issue: a comment on the open mutation issue, or a new one when none is open. Its assignee is subscribed
   # to it, so GitHub notifies them of every comment. A job of its own, so only it holds issues: write, and it runs
