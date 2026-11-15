@@ -235,6 +235,16 @@ public sealed class PullRequestCatalogueShould : IDisposable
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new RefreshSlow(RefreshPart.PullRequestRefresh, TimeSpan.FromSeconds(4))]);
     }
 
+    [Fact]
+    public async Task TimeOneRefreshThatStartsSeveralLookups()
+    {
+        BranchName spike = BranchName.From("spike-cache");
+
+        await catalogue.RefreshStaleAsync([(Checkout, Fix), (Checkout, spike)]);
+
+        refreshes.Snapshot().Single().Durations.Runs.ShouldBe(1, "one refresh is one timed run however many lookups it starts");
+    }
+
     private static PullRequestListing.Listed Listing(PullRequest pullRequest) => new([new BranchPullRequest(Fix, pullRequest)]);
 
     public void Dispose()
