@@ -86,6 +86,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void DescribeAFolderGone()
+    {
+        Wording.Describe(new StatusMessage.FolderGone(Listed.As("fix-123"))).ShouldBe("fix-123's folder no longer exists, so nothing was resumed. d deletes it.");
+    }
+
+    [Fact]
     public void SayThereAreNoEmptyTerminals()
     {
         Wording.Describe(new StatusMessage.NoEmptyTerminals()).ShouldBe("No terminal sessions without messages.");

@@ -214,6 +214,7 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.NoSessionSelected)] = StatusTone.Notice,
         [typeof(StatusMessage.RunsInOwnTerminal)] = StatusTone.Notice,
         [typeof(StatusMessage.NeverSentAMessage)] = StatusTone.Notice,
+        [typeof(StatusMessage.FolderGone)] = StatusTone.Notice,
         [typeof(StatusMessage.NoEmptyTerminals)] = StatusTone.Notice,
         [typeof(StatusMessage.NoMessagesToRename)] = StatusTone.Notice,
         [typeof(StatusMessage.WorkingSoRenameWaits)] = StatusTone.Notice,
