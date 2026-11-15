@@ -59,9 +59,30 @@ public sealed class CodeNameShould
     }
 
     [Fact]
+    public void NameALambdaByTheMethodItWasWrittenIn()
+    {
+        Func<int> lambda = static () => 1;
+
+        CodeName.For(lambda.Method).ToString().ShouldBe("CodeNameShould.NameALambdaByTheMethodItWasWrittenIn");
+    }
+
+    [Fact]
+    public void KeepTheNameOfAMethodThatImplementsAnInterfaceExplicitly()
+    {
+        MethodBase method = typeof(Explicit).GetMethod("System.IEquatable<System.String>.Equals", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        CodeName.For(method).ToString().ShouldBe("CodeNameShould.Explicit.System.IEquatable<System.String>.Equals");
+    }
+
+    [Fact]
     public void EqualAnotherNameForTheSameType()
     {
         CodeName.For(typeof(Quit)).ShouldBe(CodeName.For(typeof(Quit)));
+    }
+
+    private sealed class Explicit : IEquatable<string>
+    {
+        bool IEquatable<string>.Equals(string? other) => other is not null;
     }
 
     private static async Task WaitAsync()
