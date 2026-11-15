@@ -11,8 +11,6 @@ public sealed class RemovalDecisionShould
         DirtyFileCount: 0,
         UnpushedCommitCount: 0,
         Session: new WorktreeSession.None(),
-        BranchCreatedHere: true,
-        BranchMerged: true,
         LeftoverFileCount: 0);
 
     [Fact]
@@ -20,7 +18,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean, forced: false);
 
-        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Delete));
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false));
     }
 
     [Fact]
@@ -44,7 +42,7 @@ public sealed class RemovalDecisionShould
     {
         RemovalDecision decision = RemovalDecision.For(Clean with { DirtyFileCount = 5, UnpushedCommitCount = 1 }, forced: true);
 
-        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: true, BranchAction.Delete));
+        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: true));
     }
 
     [Fact]
@@ -74,19 +72,21 @@ public sealed class RemovalDecisionShould
     }
 
     [Fact]
+    public void DeleteAMergedBranchCreatedHereWithoutAsking()
+    {
+        RemovalDecision.BranchActionFor(createdHere: true, merged: true).ShouldBe(BranchAction.Delete);
+    }
+
+    [Fact]
     public void AskAboutTheBranchWhenItWasNotCreatedHere()
     {
-        RemovalDecision decision = RemovalDecision.For(Clean with { BranchCreatedHere = false }, forced: false);
-
-        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Ask));
+        RemovalDecision.BranchActionFor(createdHere: false, merged: true).ShouldBe(BranchAction.Ask);
     }
 
     [Fact]
     public void AskAboutTheBranchWhenItIsNotMerged()
     {
-        RemovalDecision decision = RemovalDecision.For(Clean with { BranchMerged = false }, forced: false);
-
-        decision.ShouldBe(new RemovalDecision.RemoveWorktree(Forced: false, BranchAction.Ask));
+        RemovalDecision.BranchActionFor(createdHere: true, merged: false).ShouldBe(BranchAction.Ask);
     }
 
     [Theory]
