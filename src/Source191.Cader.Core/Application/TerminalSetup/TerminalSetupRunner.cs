@@ -6,7 +6,7 @@ namespace Source191.Cader.Application.TerminalSetup;
 /// <summary>
 /// <c>cader setup-terminal</c> from start to finish, once the command line is parsed: check the request and the sounds, show what will be written, ask, write
 /// the Windows Terminal fragment, offer to show again a Cader profile Windows Terminal hides as deleted, then offer Claude Code's terminal bell. Exit 0 when done, declined or nothing to
-/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment, one Claude setting and, only to add a hidden profile's entry, Windows Terminal's settings file; nothing else.
+/// remove, 1 when a write failed, 2 for a refused request (--remove with a sound, a missing or non-wav sound). It touches the fragment, one Claude setting and, only to add a hidden profile's entry or, with --remove, to take out the entries it added, Windows Terminal's settings file; nothing else.
 /// </summary>
 public sealed class TerminalSetupRunner(
     IFolders folders,
@@ -37,7 +37,7 @@ public sealed class TerminalSetupRunner(
             return 2;
         }
 
-        return request.Remove ? await RemoveAsync(cancellationToken) : await SetUpAsync(request with { Sound = FullPath(request.Sound), SessionSound = FullPath(request.SessionSound) }, cancellationToken);
+        return request.Remove ? await RemoveAsync(request, cancellationToken) : await SetUpAsync(request with { Sound = FullPath(request.Sound), SessionSound = FullPath(request.SessionSound) }, cancellationToken);
     }
 
     /// <summary>Windows Terminal does not share our working directory, so a sound is written as a full path.</summary>
@@ -47,8 +47,13 @@ public sealed class TerminalSetupRunner(
         _ => sound,
     };
 
-    private async Task<int> RemoveAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Removes the fragment, then takes out of Windows Terminal's settings file the entries setup added there, after showing
+    /// them and asking. Terminal's files are read first, while the fragment still stands.
+    /// </summary>
+    private async Task<int> RemoveAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
+        TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
         // Stryker disable once Boolean : Equivalent: TryWriteAsync leaves with Failed unless the removal ran, so the lambda has set this before it is read
         bool removed = false;
         Step step = await TryWriteAsync(fragment.Location, async () => removed = await fragment.RemoveAsync(cancellationToken));
@@ -57,9 +62,67 @@ public sealed class TerminalSetupRunner(
             return 1;
         }
 
-        await output.WriteLineAsync(removed ? Wording.ProfilesRemoved(fragment.Location) : Wording.NothingToRemove, cancellationToken);
+        if (removed)
+        {
+            await output.WriteLineAsync(Wording.ProfilesRemoved(fragment.Location), cancellationToken);
+        }
+
+        Step entriesStep = await RemoveAddedEntriesAsync(request, records, cancellationToken);
+        if (entriesStep == Step.Failed)
+        {
+            return 1;
+        }
+
+        if (!removed && entriesStep == Step.Skipped)
+        {
+            await output.WriteLineAsync(records is TerminalProfileRecords.Read { Added.Count: > 0 } or TerminalProfileRecords.Unreadable ? Wording.NothingWritten : Wording.NothingToRemove, cancellationToken);
+        }
 
         return 0;
+    }
+
+    private async Task<Step> RemoveAddedEntriesAsync(TerminalSetupRequest request, TerminalProfileRecords records, CancellationToken cancellationToken)
+    {
+        if (records is TerminalProfileRecords.Unreadable unreadable)
+        {
+            await output.WriteLineAsync(Wording.TerminalSettingsUnreadable(terminalSettings.Location, unreadable.Reason), cancellationToken);
+            return Step.Skipped;
+        }
+
+        IReadOnlyList<TerminalProfileEntry> added = records is TerminalProfileRecords.Read read ? [.. TerminalProfiles.Entries.Where(entry => read.Added.Contains(entry.Id))] : [];
+        if (added.Count == 0)
+        {
+            return Step.Skipped;
+        }
+
+        await output.WriteLineAsync(Wording.EntriesToRemovePlan(terminalSettings.Location, added), cancellationToken);
+        if (!await ConfirmedAsync(request, Wording.RemoveEntriesQuestion))
+        {
+            return Step.Skipped;
+        }
+
+        return await TryWriteAsync(terminalSettings.Location, async () => await ReportRemovalAsync(await terminalSettings.RemoveProfileEntriesAsync(added, cancellationToken), added, cancellationToken));
+    }
+
+    /// <summary>A written file is reported on the output; a refused one, which wrote nothing, on the error output with the entries to take out by hand.</summary>
+    private async Task<Step> ReportRemovalAsync(TerminalSettingsEdit edit, IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    {
+        switch (edit)
+        {
+            case TerminalSettingsEdit.Written written:
+                await output.WriteLineAsync(Wording.EntriesRemoved(terminalSettings.Location, written.Backup), cancellationToken);
+                return Step.Written;
+            case TerminalSettingsEdit.Unchanged:
+                return Step.Skipped;
+            case TerminalSettingsEdit.IsALink:
+                await error.WriteLineAsync(Wording.TerminalSettingsLinkedForRemoval(terminalSettings.Location, entries), cancellationToken);
+                return Step.Failed;
+            case TerminalSettingsEdit.IsReadOnly:
+                await error.WriteLineAsync(Wording.TerminalSettingsReadOnlyForRemoval(terminalSettings.Location, entries), cancellationToken);
+                return Step.Failed;
+            default:
+                return await ReportRefusalAsync(edit, cancellationToken);
+        }
     }
 
     private async Task<int> SetUpAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
@@ -183,9 +246,21 @@ public sealed class TerminalSetupRunner(
             case TerminalSettingsEdit.IsALink:
                 await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, entries), cancellationToken);
                 return Step.Failed;
+            case TerminalSettingsEdit.Unchanged:
+                return Step.Skipped;
             case TerminalSettingsEdit.IsReadOnly:
                 await error.WriteLineAsync(Wording.TerminalSettingsReadOnly(terminalSettings.Location, entries), cancellationToken);
                 return Step.Failed;
+            default:
+                return await ReportRefusalAsync(edit, cancellationToken);
+        }
+    }
+
+    /// <summary>The refusals worded alike for adding and taking out.</summary>
+    private async Task<Step> ReportRefusalAsync(TerminalSettingsEdit edit, CancellationToken cancellationToken)
+    {
+        switch (edit)
+        {
             case TerminalSettingsEdit.ChangedMeanwhile:
                 await error.WriteLineAsync(Wording.TerminalSettingsChanged(terminalSettings.Location), cancellationToken);
                 return Step.Failed;
@@ -196,6 +271,7 @@ public sealed class TerminalSetupRunner(
                 throw new UnreachableException();
         }
     }
+
     private async Task<Step> OfferBellAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
         NotificationChannelState state = await claudeSettings.ReadNotificationChannelAsync(cancellationToken);

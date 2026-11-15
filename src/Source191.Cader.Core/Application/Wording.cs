@@ -460,15 +460,42 @@ public static partial class Wording
 
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
-    public static string RemoveEntriesQuestion => string.Empty;
+    public static string RemoveEntriesQuestion => "Take them out? [y/N] ";
 
-    public static string EntriesToRemovePlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    /// <summary>The entries setup added to Windows Terminal's settings file, which <c>--remove</c> would take out, as they are written.</summary>
+    public static string EntriesToRemovePlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        string names = string.Join(" and ", entries.Select(entry => entry.Name));
+        (string which, string them, string profiles) = entries.Count == 1 ? ("the entry", "it", $"the {names} profile") : ("the entries", "them", $"the {names} profiles");
 
-    public static string EntriesRemoved(string settingsPath, string backup) => string.Empty;
+        return string.Join(Environment.NewLine, [
+            $"{settingsPath} holds {which} setup added to show {profiles} again.",
+            $"This takes {them} out of its profile list and keeps everything else in the file as it is:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
 
-    public static string TerminalSettingsLinkedForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    public static string EntriesRemoved(string settingsPath, string backup) => $"Took the entries out of {settingsPath}. The file as it was is kept as {backup}.";
 
-    public static string TerminalSettingsReadOnlyForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    /// <summary>Why nothing was taken out of a linked settings file, and the entries to take out by hand.</summary>
+    public static string TerminalSettingsLinkedForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not take the entries out: {settingsPath} is a link, and writing it would replace the link with a file, so nothing was written.",
+            "Take each of these out of the profile list in the file it links to:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    /// <summary>Why nothing was taken out of a read-only settings file, and the entries to take out by hand.</summary>
+    public static string TerminalSettingsReadOnlyForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not take the entries out: {settingsPath} is read-only, so nothing was written.",
+            "Take each of these out of its profile list by hand, or clear its read-only attribute and run the command again:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 

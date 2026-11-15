@@ -2,7 +2,7 @@ namespace Source191.Cader.Ports;
 
 /// <summary>
 /// Windows Terminal's own settings and state files, which Terminal owns: read to find a Cader profile it hides as
-/// deleted. Implemented over System.IO at the boundary and faked in tests.
+/// deleted, or the entries setup added. Implemented over System.IO at the boundary and faked in tests.
 /// </summary>
 public interface ITerminalSettings
 {

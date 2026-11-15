@@ -632,6 +632,18 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     }
 
     [Fact]
+    public async Task SayNothingWasWrittenWhenTerminalsSettingsAreUnreadableAndThereIsNoFragment()
+    {
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Unreadable("bad json"));
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(Wording.NothingWritten);
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+    }
+
+    [Fact]
     public async Task LeaveTheEntriesWhenTheFragmentCannotBeRemoved()
     {
         fragment.Installed();
