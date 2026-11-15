@@ -9,7 +9,7 @@
 ## 3. Repositories are listed together, in today's order
 
 - [x] 3.1 Red: `WorktreeInventoryLeftoversShould.ListTwoRepositoriesAtOnceAndKeepTheirOrder`: Northwind.Billing and Northwind.Orders (one live worktree each), every `worktree list` held; two listings have started when `ScanAsync` returns its task. Then Orders' hold opens, the test awaits its worktree's `status` start (proof Orders' listing answered), and Billing's hold opens; the rows equal the serial scan's (Billing's before Orders'). Holds open in a `finally`. Verify it fails on the start count (one, not two).
-- [ ] 3.2 Green: `RegisteredRowsAsync` answers a private record of its registered paths and rows instead of writing the shared set; `ScanAsync` starts every repository with `Task.WhenAll` and merges the results in repository order (union the paths, add the rows, then `OrphanRows`), as design decision 3 says. Verify 3.1, 2.1 and the rest of `WorktreeInventoryLeftoversShould` pass.
+- [x] 3.2 Green: `RegisteredRowsAsync` answers a private record of its registered paths and rows instead of writing the shared set; `ScanAsync` starts every repository with `Task.WhenAll` and merges the results in repository order (union the paths, add the rows, then `OrphanRows`), as design decision 3 says. Verify 3.1, 2.1 and the rest of `WorktreeInventoryLeftoversShould` pass.
 - [ ] 3.3 Refactor: keep `ScanAsync` readable (a named merge step if it helps), with no change to the leftover, candidate and empty-folder rules. Verify the Core suite and `dotnet format --verify-no-changes`.
 
 ## 4. A repository's worktrees are inspected together
