@@ -7,7 +7,8 @@
     mutation.yml's report job runs this on the mutation-results artefact (run.json and mutation-report.json).
 
     - After a release: the release tag, the range and the run's link, then at most MaxMutants Survived or NoCoverage
-      mutants (file from src\, line, mutator, replacement) and a count of the rest.
+      mutants (file from src\, line, mutator, replacement) and a count of the rest; when run.json says the run is
+      failing, a line saying so with the count.
     - After a full run: the previous and the current whole score, and the five files whose scores fell most.
 
     The body is cut to 60,000 characters, under GitHub's limit for a comment. A replacement is code from the
@@ -40,6 +41,10 @@ function Format-ReleaseBody($run, $report) {
     $lines = [Collections.Generic.List[string]]::new()
     $lines.Add("Release $($run.release), range $range, run $RunUrl.")
     $lines.Add('')
+    if ($run.failing) {
+        $lines.Add("This run failed: it counted $($run.counted) mutants and $($mutants.Count) survived or had no covering test.")
+        $lines.Add('')
+    }
     $lines.Add("$($mutants.Count) mutants survived or had no covering test in the changed code:")
     $lines.Add('')
     $lines.Add('| File | Line | Status | Mutator | Replacement |')

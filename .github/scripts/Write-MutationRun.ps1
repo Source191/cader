@@ -19,7 +19,12 @@
     (the artefact expired, or this is the first full run) the comparison is skipped with a notice and this run
     becomes the baseline.
 
-    Answers an object with Score, Finding and Reason.
+    A release run is failing when it counted at least MinimumCounted mutants (Killed, Timeout, Survived and
+    NoCoverage, what the score is over; an Ignored mutant, marked in the source, counts for nothing) and any of them
+    survived or had no covering test: below that a score is 0 or 100 on one change, so a small run only reports.
+    A full run is never failing this way; it is judged by its score.
+
+    Answers an object with Score, Finding, Reason, Counted and Failing; run.json records counted and failing too.
 
 .EXAMPLE
     .github\scripts\Write-MutationRun.ps1 -ReportPath mutation-report.json -Kind full -HeadSha abc -OutputDirectory out
@@ -35,7 +40,8 @@ param(
     [Parameter(Mandatory)] [string] $HeadSha,
     [Parameter(Mandatory)] [string] $OutputDirectory,
     [string] $PreviousDirectory = '',
-    [double] $Tolerance = 0.5
+    [double] $Tolerance = 0.5,
+    [int] $MinimumCounted = 20
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,12 +59,18 @@ $run = [ordered]@{
     score    = $score
 }
 
+$countedStatuses = 'Killed', 'Timeout', 'Survived', 'NoCoverage'
+$counted = @($allMutants | Where-Object { $_.status -in $countedStatuses }).Count
+$run['counted'] = $counted
+
 $finding = $false
+$failing = $false
 $reason = 'Nothing to report.'
 
 if ($Kind -eq 'release') {
     $undetected = @(Get-UndetectedMutants $report)
     $finding = $undetected.Count -gt 0
+    $failing = $finding -and $counted -ge $MinimumCounted
     if ($finding) { $reason = "$($undetected.Count) mutants survived or had no covering test." }
 }
 else {
@@ -87,11 +99,10 @@ else {
 
 # Only what the score and the comment read, and only the mutants that count: a full report is many megabytes
 # of coverage ids, and an artefact of those would outlive its use.
-$counted = 'Killed', 'Timeout', 'Survived', 'NoCoverage'
 $trimmed = [ordered]@{ projectRoot = $report.projectRoot; files = [ordered]@{} }
 foreach ($file in $report.files.GetEnumerator()) {
     $trimmed.files[$file.Key] = [ordered]@{
-        mutants = @($file.Value.mutants | Where-Object { $_.status -in $counted } | ForEach-Object {
+        mutants = @($file.Value.mutants | Where-Object { $_.status -in $countedStatuses } | ForEach-Object {
             [ordered]@{
                 mutatorName = $_.mutatorName
                 replacement = $_.replacement
@@ -102,8 +113,10 @@ foreach ($file in $report.files.GetEnumerator()) {
     }
 }
 
+$run['failing'] = $failing
+
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $run | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'run.json')
 $trimmed | ConvertTo-Json -Depth 8 -Compress | Set-Content (Join-Path $OutputDirectory 'mutation-report.json')
 
-[pscustomobject]@{ Score = $score; Finding = $finding; Reason = $reason }
+[pscustomobject]@{ Score = $score; Finding = $finding; Reason = $reason; Counted = $counted; Failing = $failing }

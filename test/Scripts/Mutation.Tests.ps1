@@ -19,6 +19,24 @@ BeforeAll {
         $report = [ordered]@{ projectRoot = 'C:\r\src\Core'; files = @{ 'C:\r\src\Core\Domain\Big.cs' = @{ mutants = @($mutants) } } }
         $report | ConvertTo-Json -Depth 8 | Set-Content $Path
     }
+
+    # A report of made-up mutants in one file, so many of each status.
+    function New-CountedReport([string] $Path, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
+        $statuses = @(@('Killed') * $Killed) + @(@('Survived') * $Survived) + @(@('Ignored') * $Ignored)
+        $line = 0
+        $mutants = foreach ($status in $statuses) {
+            $line++
+            [ordered]@{ mutatorName = 'Boolean mutation'; replacement = 'false'; location = @{ start = @{ line = $line } }; status = $status }
+        }
+        $report = [ordered]@{ projectRoot = 'C:\r\src\Core'; files = @{ 'C:\r\src\Core\Domain\Small.cs' = @{ mutants = @($mutants) } } }
+        $report | ConvertTo-Json -Depth 8 | Set-Content $Path
+    }
+
+    function Write-CountedRelease([string] $Name, [int] $Killed, [int] $Survived, [int] $Ignored = 0) {
+        $report = Join-Path $TestDrive "$Name.json"
+        New-CountedReport $report $Killed $Survived $Ignored
+        & (Join-Path $script:Scripts 'Write-MutationRun.ps1') -ReportPath $report -Kind release -ReleaseTag v1 -Since v0 -HeadSha abc -OutputDirectory (Join-Path $TestDrive $Name)
+    }
 }
 
 Describe 'Resolve-MutationRange' {
@@ -141,6 +159,36 @@ Describe 'Write-MutationRun' {
 
         $result.Finding | Should -BeFalse
     }
+
+    It 'fails a release run that counted 20 mutants and left one surviving' {
+        $result = Write-CountedRelease 'twenty-one-left' -Killed 19 -Survived 1
+
+        $result.Failing | Should -BeTrue
+        $result.Counted | Should -Be 20
+        $run = Get-Content (Join-Path $TestDrive 'twenty-one-left\run.json') -Raw | ConvertFrom-Json
+        $run.failing | Should -BeTrue
+        $run.counted | Should -Be 20
+    }
+
+    It 'does not fail a release run that counted 19' {
+        $result = Write-CountedRelease 'nineteen-one-left' -Killed 18 -Survived 1
+
+        $result.Finding | Should -BeTrue
+        $result.Failing | Should -BeFalse
+    }
+
+    It 'does not fail one that counted 20 with no survivor' {
+        $result = Write-CountedRelease 'twenty-none-left' -Killed 20 -Survived 0
+
+        $result.Failing | Should -BeFalse
+    }
+
+    It 'counts an Ignored mutant for nothing' {
+        $result = Write-CountedRelease 'nineteen-and-ignored' -Killed 18 -Survived 1 -Ignored 5
+
+        $result.Counted | Should -Be 19
+        $result.Failing | Should -BeFalse
+    }
 }
 
 Describe 'Format-MutationComment' {
@@ -176,6 +224,26 @@ Describe 'Format-MutationComment' {
 
         (Get-Content (Join-Path $results 'comment.md') -Raw) | Should -Match '\\\|\\\|'
     }
+
+    It 'says the run failed, and names the count, when run.json says failing' {
+        Write-CountedRelease 'failing-comment' -Killed 19 -Survived 1 | Out-Null
+        $results = Join-Path $TestDrive 'failing-comment'
+
+        & $script:Format -ResultsDirectory $results -RunUrl https://example.test/run -OutputPath (Join-Path $results 'comment.md')
+
+        $body = Get-Content (Join-Path $results 'comment.md') -Raw
+        $body | Should -Match 'This run failed: it counted 20 mutants and 1 survived or had no covering test\.'
+        $body | Should -Match 'Release v1, range v0\.\.abc, run https://example.test/run'
+    }
+
+    It 'says nothing of failing when run.json does not' {
+        Write-CountedRelease 'small-comment' -Killed 18 -Survived 1 | Out-Null
+        $results = Join-Path $TestDrive 'small-comment'
+
+        & $script:Format -ResultsDirectory $results -RunUrl https://example.test/run -OutputPath (Join-Path $results 'comment.md')
+
+        (Get-Content (Join-Path $results 'comment.md') -Raw) | Should -Not -Match 'failed'
+    }
 }
 
 Describe 'mutation.yml' {
@@ -183,5 +251,17 @@ Describe 'mutation.yml' {
         $workflow = Get-Content $script:Workflow -Raw
 
         $workflow | Should -Match ([regex]::Escape('if ($env:KIND -eq ''release'') { $arguments += @(''--break-at'', ''0'') }'))
+    }
+
+    It 'records whether the run is failing, and fails the job last, after both uploads, when it is' {
+        $workflow = Get-Content $script:Workflow -Raw
+        $mutationJob = $workflow.Substring(0, $workflow.IndexOf("`n  report:"))
+        $lastStep = $mutationJob.Substring($mutationJob.LastIndexOf('      - '))
+
+        $workflow | Should -Match ([regex]::Escape('"fail=$($result.Failing.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT'))
+        $mutationJob.IndexOf('name: stryker-output') | Should -BeGreaterThan $mutationJob.IndexOf('name: mutation-results')
+        $mutationJob.IndexOf('name: stryker-output') | Should -BeLessThan $mutationJob.LastIndexOf('      - ')
+        $lastStep | Should -Match ([regex]::Escape("if: always() && steps.run.outputs.fail == 'true'"))
+        $lastStep | Should -Match 'exit 1'
     }
 }

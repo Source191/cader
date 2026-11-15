@@ -11,6 +11,7 @@ public sealed record ChildCommand
 {
     private const int MostWords = 3;
 
+    // Stryker disable once String : Accepted: a static initialiser runs once per test process and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so the mutant cannot be attributed; ChildCommandShould and ChildCommandWordsShould pin every program name
     private static readonly Dictionary<string, ChildProgram> Programs = new(StringComparer.OrdinalIgnoreCase)
     {
         ["git"] = ChildProgram.Git,
