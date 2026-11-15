@@ -1,5 +1,11 @@
 # Cader
 
+[![winget: awaiting approval](https://img.shields.io/badge/winget-awaiting_approval-FF8C00?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/microsoft/winget-pkgs/pull/479528)
+
+> [!IMPORTANT]
+> ## 🚀 Nearly here: Cader is in the queue for winget
+> The package is [waiting for Microsoft's approval](https://github.com/microsoft/winget-pkgs/pull/479528). Until it lands, `winget install Source191.Cader` will not find it. Watch that pull request, and come back when it merges.
+
 ![Cader: every agent session in one tab, still there after a reboot. Beside it, the icon: two branches curving from one node into a C, with a star in its opening](https://raw.githubusercontent.com/Source191/cader/main/assets/header/readme-banner.png)
 
 <a href="https://buymeacoffee.com/simonvane"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy me a coffee" height="40"></a> &nbsp; [![Built by Simon Vane](https://img.shields.io/badge/Built_by-Simon_Vane-0A66C2?style=for-the-badge)](https://www.linkedin.com/in/simonvane/)
