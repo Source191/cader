@@ -53,6 +53,7 @@ public sealed record ExceptionSummary
 
     private static bool IsAwaitMachinery(MethodBase method)
     {
+        // Stryker disable once String : Equivalent: any text that is no prefix of a machinery namespace skips a frame with no namespace as empty text does
         string space = method.DeclaringType?.Namespace ?? string.Empty;
 
         return AwaitMachinery.Any(machinery => space.StartsWith(machinery, StringComparison.Ordinal));
@@ -67,6 +68,7 @@ public sealed record ExceptionSummary
         return (file, line) switch
         {
             (null, _) => method,
+            // Stryker disable once String : Accepted: no managed code makes the runtime report a file with line 0 (hidden lines lose the file too), so only the branch beside it, with a line, is pinned
             (_, 0) => $"{method} ({Path.GetFileName(file)})",
             _ => $"{method} ({Path.GetFileName(file)}:{line})",
         };
