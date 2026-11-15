@@ -432,7 +432,7 @@ public static partial class Wording
         ]);
     }
 
-    public static string HiddenProfilesShown(string settingsPath) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
+    public static string HiddenProfilesShown(string settingsPath, string backup) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart. The file as it was is kept as {backup}.";
 
     /// <summary>Why nothing was written to a linked settings file, and the entries to add by hand.</summary>
     public static string TerminalSettingsLinked(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
@@ -444,7 +444,58 @@ public static partial class Wording
         ]);
     }
 
+    /// <summary>Why nothing was written to a read-only settings file, and the entries to add by hand.</summary>
+    public static string TerminalSettingsReadOnly(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not add the entries: {settingsPath} is read-only, so nothing was written.",
+            "Add each of these to its profile list by hand, or clear its read-only attribute and run the command again:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    public static string TerminalSettingsChanged(string settingsPath) => $"{settingsPath} changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.";
+
+    public static string TerminalSettingsNotVerified(string settingsPath) => $"{settingsPath} would not have held exactly the profile list it should once changed, so nothing was written. A file that names \"profiles\" twice does this.";
+
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
+
+    public static string RemoveEntriesQuestion => "Take them out? [y/N] ";
+
+    /// <summary>The entries setup added to Windows Terminal's settings file, which <c>--remove</c> would take out, as they are written.</summary>
+    public static string EntriesToRemovePlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        string names = string.Join(" and ", entries.Select(entry => entry.Name));
+        (string which, string them, string profiles) = entries.Count == 1 ? ("the entry", "it", $"the {names} profile") : ("the entries", "them", $"the {names} profiles");
+
+        return string.Join(Environment.NewLine, [
+            $"{settingsPath} holds {which} setup added to show {profiles} again.",
+            $"This takes {them} out of its profile list and keeps everything else in the file as it is:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    public static string EntriesRemoved(string settingsPath, string backup) => $"Took the entries out of {settingsPath}. The file as it was is kept as {backup}.";
+
+    /// <summary>Why nothing was taken out of a linked settings file, and the entries to take out by hand.</summary>
+    public static string TerminalSettingsLinkedForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not take the entries out: {settingsPath} is a link, and writing it would replace the link with a file, so nothing was written.",
+            "Take each of these out of the profile list in the file it links to:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    /// <summary>Why nothing was taken out of a read-only settings file, and the entries to take out by hand.</summary>
+    public static string TerminalSettingsReadOnlyForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not take the entries out: {settingsPath} is read-only, so nothing was written.",
+            "Take each of these out of its profile list by hand, or clear its read-only attribute and run the command again:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 

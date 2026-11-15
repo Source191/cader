@@ -20,6 +20,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- cader setup-terminal now changes Windows Terminal's settings file more carefully: it keeps a copy of the file as it was beside it and names it, keeps the file's permissions, writes nothing when Terminal saved the file meanwhile, when the file is read-only (giving the entries to add by hand) or when the new file would not hold exactly the profile list it should; and --remove now also takes out the entries setup added there, leaving any you customised (#275, #294)
 - Cader now follows CLAUDE_CONFIG_DIR: when it is set to a full path, adopt, rename, resume and Enter look for transcripts there, the Claude bell and cader setup-terminal use that folder's settings.json, and a new Claude folder row on the Config tab names the folder (a relative or ~ value is not used, and the row says so) (#276)
 - A Cader profile deleted in Windows Terminal's settings no longer stays hidden after cader setup-terminal: setup now shows the one entry Terminal needs to show it again and, if you agree, adds it to Terminal's settings file and changes nothing else there; a settings file that is a link, as a dotfiles set-up makes it, is never written and you are given the entry to add by hand; the Config tab's Windows Terminal profiles row says when Terminal is hiding one (#218, #275)
 - Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)

@@ -2,7 +2,7 @@ namespace Source191.Cader.Ports;
 
 /// <summary>
 /// Windows Terminal's own settings and state files, which Terminal owns: read to find a Cader profile it hides as
-/// deleted. Implemented over System.IO at the boundary and faked in tests.
+/// deleted, or the entries setup added. Implemented over System.IO at the boundary and faked in tests.
 /// </summary>
 public interface ITerminalSettings
 {
@@ -13,9 +13,17 @@ public interface ITerminalSettings
     Task<TerminalProfileRecords> ReadAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Adds each entry to the settings file's profile list, by insertion, leaving every other character as it was.
-    /// Throws <see cref="IOException"/> or <see cref="UnauthorizedAccessException"/> when the file cannot be written, and
-    /// an <see cref="IOException"/> naming the reason when it no longer holds a readable profile list.
+    /// Adds each entry to the settings file's profile list, by insertion, leaving every other character as it was, or
+    /// answers why it wrote nothing. Throws <see cref="IOException"/> or <see cref="UnauthorizedAccessException"/> when
+    /// the file cannot be written, and an <see cref="IOException"/> naming the reason when it no longer holds a readable
+    /// profile list.
     /// </summary>
-    Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
+    Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Takes out of the settings file's profile list each element that is exactly one of the entries as setup adds it,
+    /// leaving every other character as it was, or answers why it wrote nothing; <see cref="TerminalSettingsEdit.Unchanged"/>
+    /// when there was none. Throws as <see cref="AddProfileEntriesAsync"/> does.
+    /// </summary>
+    Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
 }

@@ -989,7 +989,29 @@ public sealed class WordingShould
     [Fact]
     public void SayTheHiddenProfilesShowOnceTerminalReadsTheFile()
     {
-        Wording.HiddenProfilesShown(TerminalSettingsFile).ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart.");
+        Wording.HiddenProfilesShown(TerminalSettingsFile, TerminalSettingsFile + ".2026-11-15T09-30-15.cader.backup").ShouldBe(@"Added the entries to C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. Windows Terminal shows the profiles again once it reads the file, with no restart. The file as it was is kept as C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json.2026-11-15T09-30-15.cader.backup.");
+    }
+
+    [Fact]
+    public void SayTerminalsSettingsChangedWhileTheyWereWritten()
+    {
+        Wording.TerminalSettingsChanged(TerminalSettingsFile).ShouldBe(@"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.");
+    }
+
+    [Fact]
+    public void GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        Wording.TerminalSettingsReadOnly(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not add the entries: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is read-only, so nothing was written.
+            Add each of these to its profile list by hand, or clear its read-only attribute and run the command again:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void SayTerminalsNewSettingsDidNotCheckOut()
+    {
+        Wording.TerminalSettingsNotVerified(TerminalSettingsFile).ShouldBe(@"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json would not have held exactly the profile list it should once changed, so nothing was written. A file that names ""profiles"" twice does this.");
     }
 
     [Fact]
@@ -1006,6 +1028,59 @@ public sealed class WordingShould
     public void SayTerminalsUnreadableSettingsWereLeftAlone()
     {
         Wording.TerminalSettingsUnreadable(TerminalSettingsFile, "bad json").ShouldBe(@"Could not read Windows Terminal's settings or state (bad json), so C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json was left alone.");
+    }
+
+    [Fact]
+    public void NameTheEntriesSetupAddedAndShowEach()
+    {
+        Wording.EntriesToRemovePlan(TerminalSettingsFile, TerminalProfiles.Entries).ShouldBe("""
+            C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json holds the entries setup added to show the Cader and Cader session profiles again.
+            This takes them out of its profile list and keeps everything else in the file as it is:
+              { "guid": "{3d7a06d2-710f-51d9-90c9-dacae2c3ab46}", "hidden": false, "name": "Cader", "source": "Cader" }
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void NameTheOneEntrySetupAdded()
+    {
+        Wording.EntriesToRemovePlan(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json holds the entry setup added to show the Cader session profile again.
+            This takes it out of its profile list and keeps everything else in the file as it is:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void AskToTakeTheEntriesOut()
+    {
+        Wording.RemoveEntriesQuestion.ShouldBe("Take them out? [y/N] ");
+    }
+
+    [Fact]
+    public void SayTheEntriesWereTakenOutAndNameTheCopy()
+    {
+        Wording.EntriesRemoved(TerminalSettingsFile, TerminalSettingsFile + ".2026-11-15T09-30-15.cader.backup").ShouldBe(@"Took the entries out of C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json. The file as it was is kept as C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json.2026-11-15T09-30-15.cader.backup.");
+    }
+
+    [Fact]
+    public void GiveTheEntriesToTakeOutByHandWhenTerminalsSettingsFileIsALink()
+    {
+        Wording.TerminalSettingsLinkedForRemoval(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not take the entries out: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is a link, and writing it would replace the link with a file, so nothing was written.
+            Take each of these out of the profile list in the file it links to:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
+    }
+
+    [Fact]
+    public void GiveTheEntriesToTakeOutByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        Wording.TerminalSettingsReadOnlyForRemoval(TerminalSettingsFile, [TerminalProfiles.Entries[1]]).ShouldBe("""
+            Could not take the entries out: C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json is read-only, so nothing was written.
+            Take each of these out of its profile list by hand, or clear its read-only attribute and run the command again:
+              { "guid": "{cdf8708d-a821-5c97-95d0-fea560807dea}", "hidden": false, "name": "Cader session", "source": "Cader" }
+            """);
     }
 
     private const string TerminalSettingsFile = @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";

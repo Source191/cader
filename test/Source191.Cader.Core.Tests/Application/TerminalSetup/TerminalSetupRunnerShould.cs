@@ -342,7 +342,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         terminal.Added.ShouldBe([[SessionEntry]]);
         output.ToString().ShouldContain(Wording.HiddenProfilesPlan(terminal.Location, [SessionEntry]));
         output.ToString().ShouldContain(Wording.ShowHiddenProfilesQuestion);
-        output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
         settings.Enabled.ShouldBe(1);
     }
 
@@ -356,7 +356,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
 
         exitCode.ShouldBe(0);
         terminal.Added.ShouldBeEmpty();
-        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
     }
 
     [Fact]
@@ -375,7 +375,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task SayTerminalsSettingsAreNotChangedAndAskNothingOfThemWhenNothingIsHidden()
     {
         fragment.Installed();
-        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Read(new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>([CaderEntry.Id])));
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Read(new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>([CaderEntry.Id]), new HashSet<TerminalProfileId>()));
 
         await RunAsync("y\ny\n");
 
@@ -473,12 +473,12 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task ReportAFailedEntryWriteAndStillOfferTheBell()
     {
         terminal = Hiding(SessionEntry);
-        terminal.FailTheWriteWith = new IOException("read-only");
+        terminal.FailTheWriteWith = new IOException("in use");
 
         int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
 
         exitCode.ShouldBe(1);
-        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "read-only"));
+        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "in use"));
         fragment.Written.Count.ShouldBe(1);
         settings.Enabled.ShouldBe(1);
     }
@@ -487,15 +487,246 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
     {
         terminal = Hiding(SessionEntry);
-        terminal.FailTheWriteWith = new SettingsFileIsALinkException(terminal.Location);
+        terminal.Answer = new TerminalSettingsEdit.IsALink();
 
         int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
 
         exitCode.ShouldBe(1);
         error.ToString().ShouldContain(Wording.TerminalSettingsLinked(terminal.Location, [SessionEntry]));
-        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location));
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
         fragment.Written.Count.ShouldBe(1);
         settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ReportThatTerminalsSettingsChangedMeanwhileAndStillOfferTheBell()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.ChangedMeanwhile();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsChanged(terminal.Location));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.IsReadOnly();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsReadOnly(terminal.Location, [SessionEntry]));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ReportThatTerminalsNewSettingsDidNotCheckOutAndStillOfferTheBell()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.NotVerified();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsNotVerified(terminal.Location));
+        terminal.Added.ShouldBeEmpty();
+        fragment.Written.Count.ShouldBe(1);
+        settings.Enabled.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SayNothingWhenAWriteFindsNothingToAdd()
+    {
+        terminal = Hiding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.Unchanged();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
+
+        exitCode.ShouldBe(0);
+        error.ToString().ShouldBeEmpty();
+        output.ToString().ShouldNotContain(Wording.HiddenProfilesShown(terminal.Location, terminal.Backup));
+    }
+
+    [Fact]
+    public async Task ShowTheEntriesSetupAddedAndTakeThemOutOnceAgreed()
+    {
+        fragment.Installed();
+        terminal = Adding(CaderEntry, SessionEntry);
+
+        int exitCode = await RunAsync("y\n", Defaults with { Remove = true });
+
+        exitCode.ShouldBe(0);
+        fragment.Exists.ShouldBeFalse();
+        terminal.Removed.ShouldBe([[CaderEntry, SessionEntry]]);
+        output.ToString().ShouldContain(Wording.ProfilesRemoved(fragment.Location));
+        output.ToString().ShouldContain(Wording.EntriesToRemovePlan(terminal.Location, [CaderEntry, SessionEntry]));
+        output.ToString().ShouldContain(Wording.RemoveEntriesQuestion);
+        output.ToString().ShouldContain(Wording.EntriesRemoved(terminal.Location, terminal.Backup));
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+        settings.Enabled.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task TakeTheEntriesOutWithoutAskingGivenYes()
+    {
+        terminal = Adding(SessionEntry);
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(0);
+        terminal.Removed.ShouldBe([[SessionEntry]]);
+        output.ToString().ShouldNotContain(Wording.RemoveEntriesQuestion);
+        output.ToString().ShouldContain(Wording.EntriesRemoved(terminal.Location, terminal.Backup));
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+    }
+
+    [Fact]
+    public async Task LeaveTheEntriesWhenDeclinedAndSayNothingWasWritten()
+    {
+        terminal = Adding(SessionEntry);
+
+        int exitCode = await RunAsync("n\n", Defaults with { Remove = true });
+
+        exitCode.ShouldBe(0);
+        terminal.Removed.ShouldBeEmpty();
+        output.ToString().ShouldContain(Wording.NothingWritten);
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+    }
+
+    [Fact]
+    public async Task RemoveTheFragmentAndLeaveTerminalsSettingsAloneWhenSetupAddedNothing()
+    {
+        fragment.Installed();
+        terminal = Adding();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true });
+
+        exitCode.ShouldBe(0);
+        terminal.Removed.ShouldBeEmpty();
+        output.ToString().ShouldContain(Wording.ProfilesRemoved(fragment.Location));
+        output.ToString().ShouldNotContain(Wording.RemoveEntriesQuestion);
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+    }
+
+    [Fact]
+    public async Task ReportUnreadableTerminalSettingsWhenRemovingAndLeaveThemAlone()
+    {
+        fragment.Installed();
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Unreadable("bad json"));
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(0);
+        fragment.Exists.ShouldBeFalse();
+        terminal.Removed.ShouldBeEmpty();
+        output.ToString().ShouldContain(Wording.TerminalSettingsUnreadable(terminal.Location, "bad json"));
+    }
+
+    [Fact]
+    public async Task SayNothingWasWrittenWhenTerminalsSettingsAreUnreadableAndThereIsNoFragment()
+    {
+        terminal = new FakeTerminalSettings(new TerminalProfileRecords.Unreadable("bad json"));
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(Wording.NothingWritten);
+        output.ToString().ShouldNotContain(Wording.NothingToRemove);
+    }
+
+    [Fact]
+    public async Task LeaveTheEntriesWhenTheFragmentCannotBeRemoved()
+    {
+        fragment.Installed();
+        fragment.FailTheRemovalWith = new IOException("in use");
+        terminal = Adding(SessionEntry);
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        terminal.Removed.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task GiveTheEntriesToTakeOutByHandWhenTerminalsSettingsFileIsALink()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.IsALink();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsLinkedForRemoval(terminal.Location, [SessionEntry]));
+    }
+
+    [Fact]
+    public async Task GiveTheEntriesToTakeOutByHandWhenTerminalsSettingsFileIsReadOnly()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.IsReadOnly();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsReadOnlyForRemoval(terminal.Location, [SessionEntry]));
+    }
+
+    [Fact]
+    public async Task ReportThatTerminalsSettingsChangedWhileTheEntriesWereTakenOut()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.ChangedMeanwhile();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsChanged(terminal.Location));
+    }
+
+    [Fact]
+    public async Task ReportThatTerminalsSettingsWithoutTheEntriesDidNotCheckOut()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.NotVerified();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSettingsNotVerified(terminal.Location));
+    }
+
+    [Fact]
+    public async Task SayNothingWasWrittenWhenTheEntriesHaveGoneByTheTimeOfTheWrite()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.Answer = new TerminalSettingsEdit.Unchanged();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(Wording.NothingWritten);
+        output.ToString().ShouldNotContain(Wording.EntriesRemoved(terminal.Location, terminal.Backup));
+    }
+
+    [Fact]
+    public async Task ReportAFailedRemovalFromTerminalsSettings()
+    {
+        terminal = Adding(SessionEntry);
+        terminal.FailTheWriteWith = new IOException("in use");
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(1);
+        error.ToString().ShouldContain(Wording.TerminalSetupFailed(terminal.Location, "in use"));
     }
 
     private static TerminalProfiles DefaultProfiles => new(OwnExecutable, new BellSound.File(NotifyMessaging), new BellSound.File(ProximityNotification));
@@ -510,7 +741,15 @@ public sealed class TerminalSetupRunnerShould : IDisposable
         HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
         HashSet<TerminalProfileId> listed = [.. generated.Except(hidden.Select(entry => entry.Id))];
 
-        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, listed));
+        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, listed, new HashSet<TerminalProfileId>()));
+    }
+
+    /// <summary>Terminal lists both profiles, and these entries are exactly as setup adds them.</summary>
+    private static FakeTerminalSettings Adding(params TerminalProfileEntry[] added)
+    {
+        HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
+
+        return new FakeTerminalSettings(new TerminalProfileRecords.Read(generated, generated, new HashSet<TerminalProfileId>(added.Select(entry => entry.Id))));
     }
 
     private Task<int> RunAsync(string answers, TerminalSetupRequest? request = null)

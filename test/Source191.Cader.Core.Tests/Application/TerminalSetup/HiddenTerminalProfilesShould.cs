@@ -13,7 +13,7 @@ public sealed class HiddenTerminalProfilesShould
     [Fact]
     public void AnswerAProfileGeneratedAndNotListed()
     {
-        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(Cader.Id, CaderSession.Id, PowerShell), Ids(Cader.Id, PowerShell));
+        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(Cader.Id, CaderSession.Id, PowerShell), Ids(Cader.Id, PowerShell), Ids());
 
         HiddenTerminalProfiles.Of(records).ShouldBe([CaderSession]);
     }
@@ -21,7 +21,7 @@ public sealed class HiddenTerminalProfilesShould
     [Fact]
     public void AnswerBothInTheFragmentsOrder()
     {
-        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(CaderSession.Id, Cader.Id), Ids(PowerShell));
+        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(CaderSession.Id, Cader.Id), Ids(PowerShell), Ids());
 
         HiddenTerminalProfiles.Of(records).ShouldBe([Cader, CaderSession]);
     }
@@ -29,7 +29,7 @@ public sealed class HiddenTerminalProfilesShould
     [Fact]
     public void AnswerNoneWhenEachGeneratedProfileIsListedHiddenOrNot()
     {
-        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(Cader.Id, CaderSession.Id), Ids(Cader.Id, CaderSession.Id));
+        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(Cader.Id, CaderSession.Id), Ids(Cader.Id, CaderSession.Id), Ids());
 
         HiddenTerminalProfiles.Of(records).ShouldBeEmpty();
     }
@@ -37,7 +37,7 @@ public sealed class HiddenTerminalProfilesShould
     [Fact]
     public void AnswerNoneWhenTerminalHasNotLoadedTheProfiles()
     {
-        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(PowerShell), Ids(PowerShell));
+        TerminalProfileRecords records = new TerminalProfileRecords.Read(Ids(PowerShell), Ids(PowerShell), Ids());
 
         HiddenTerminalProfiles.Of(records).ShouldBeEmpty();
     }

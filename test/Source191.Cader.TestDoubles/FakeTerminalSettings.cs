@@ -7,6 +7,8 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
 {
     private readonly List<IReadOnlyList<TerminalProfileEntry>> added = [];
 
+    private readonly List<IReadOnlyList<TerminalProfileEntry>> removed = [];
+
     public FakeTerminalSettings()
         : this(new TerminalProfileRecords.Missing())
     {
@@ -14,23 +16,52 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
 
     public string Location => @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";
 
-    /// <summary>Every call's entries, oldest first.</summary>
+    /// <summary>The copy a write answers it kept.</summary>
+    public string Backup => Location + ".2026-11-15T09-30-15.cader.backup";
+
+    /// <summary>Every call's entries that were written, oldest first.</summary>
     public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Added => added;
+
+    /// <summary>Every call's entries that were taken out, oldest first.</summary>
+    public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Removed => removed;
 
     /// <summary>When set, the next write throws it.</summary>
     public Exception? FailTheWriteWith { get; set; }
 
+    /// <summary>What a write answers, written with <see cref="Backup"/> unless set; a refusal writes nothing.</summary>
+    public TerminalSettingsEdit? Answer { get; set; }
+
     public Task<TerminalProfileRecords> ReadAsync(CancellationToken cancellationToken) => Task.FromResult(records);
 
-    public Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    public Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
         if (FailTheWriteWith is not null)
         {
             throw FailTheWriteWith;
         }
 
-        added.Add(entries);
+        TerminalSettingsEdit answer = Answer ?? new TerminalSettingsEdit.Written(Backup);
+        if (answer is TerminalSettingsEdit.Written)
+        {
+            added.Add(entries);
+        }
 
-        return Task.CompletedTask;
+        return Task.FromResult(answer);
+    }
+
+    public Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    {
+        if (FailTheWriteWith is not null)
+        {
+            throw FailTheWriteWith;
+        }
+
+        TerminalSettingsEdit answer = Answer ?? new TerminalSettingsEdit.Written(Backup);
+        if (answer is TerminalSettingsEdit.Written)
+        {
+            removed.Add(entries);
+        }
+
+        return Task.FromResult(answer);
     }
 }

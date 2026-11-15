@@ -66,7 +66,7 @@ public sealed class SetupFactsReaderShould
     {
         FakeTerminalFragment fragment = new FakeTerminalFragment().Installed();
         HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
-        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>([TerminalProfiles.Entries[0].Id])));
+        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>([TerminalProfiles.Entries[0].Id]), new HashSet<TerminalProfileId>()));
         SetupFactsReader reader = new(fragment, terminal, new FakeClaudeSettings(), new InMemoryState(), new FakeFolders(), Folder, SettingsFile, LogFile, log);
 
         (await reader.ReadAsync(TestContext.Current.CancellationToken)).TerminalProfiles.ShouldBe(new SetupState.HiddenByTerminal(fragment.Location));
@@ -88,7 +88,7 @@ public sealed class SetupFactsReaderShould
     public async Task ReadTheProfilesAsNotSetUpWithNoFragmentWhateverTerminalSays()
     {
         HashSet<TerminalProfileId> generated = [.. TerminalProfiles.Entries.Select(entry => entry.Id)];
-        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>()));
+        FakeTerminalSettings terminal = new(new TerminalProfileRecords.Read(generated, new HashSet<TerminalProfileId>(), new HashSet<TerminalProfileId>()));
         SetupFactsReader reader = new(new FakeTerminalFragment(), terminal, new FakeClaudeSettings(), new InMemoryState(), new FakeFolders(), Folder, SettingsFile, LogFile, log);
 
         (await reader.ReadAsync(TestContext.Current.CancellationToken)).TerminalProfiles.ShouldBe(new SetupState.NotSetUp());
