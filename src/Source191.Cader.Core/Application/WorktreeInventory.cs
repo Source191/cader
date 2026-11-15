@@ -19,6 +19,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private readonly OncePerFolder unreadableRepositories = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
     private readonly OncePerFolder unreadableWorktrees = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
     private readonly OncePerFolder unreadableBranches = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
+    private readonly OncePerFolder uncountableBranches = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
 
     private const string GitDirPrefix = "gitdir:";
 
@@ -63,23 +64,30 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
         candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
+        List<WorktreeRow> originCandidates = [];
+        Dictionary<(FolderPath, BranchName), Upstream> upstreams = [];
         foreach (FolderPath repository in repositories)
         {
             // One unusable folder must not blank the whole view.
             IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
             rows.AddRange(await RegisteredRowsAsync(repository, entries, registered, cancellationToken));
             rows.AddRange(OrphanRows(repository, registered));
-            rows.AddRange(await BranchRowsAsync(repository, entries, cancellationToken));
+            RepositoryBranches branches = await BranchesAsync(repository, entries, cancellationToken);
+            rows.AddRange(branches.Rows);
+            originCandidates.AddRange(branches.OriginCandidates);
+            foreach (GitBranch.Local local in branches.Locals)
+            {
+                upstreams[(repository, local.Name)] = local.Upstream;
+            }
         }
 
         rows.AddRange(candidates.Where(candidate => !registered.Contains(candidate)).Select(BrokenWorktree));
         rows.AddRange(underWorktreeRoot.Where(child => !registered.Contains(child) && folders.IsEmpty(child.Value)).Select(child => EmptyLeftover(snapshot.WorktreeRoot, child)));
 
         // Never awaited: the rows show what the catalogue already holds, and the next rescan picks up what lands.
-        _ = pullRequests.RefreshStaleAsync(BranchesOf(rows));
+        _ = pullRequests.RefreshStaleAsync(BranchesOf([.. rows, .. originCandidates]));
 
-        // A branch row's path is its repository, so a session in the main checkout is not the branch's.
-        return [.. rows.Select(row => WithPullRequest(row.Placement is Placement.NoFolder ? row : row with { Session = LiveSessionIn(row.Path, sessions) }))];
+        return await ShownAsync(rows, originCandidates, upstreams, sessions, cancellationToken);
     }
 
     private FolderKind Classify(FolderPath child)
@@ -138,39 +146,107 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnregisteredFolder.EmptyLeftover), ownerExists: false);
 
     /// <summary>
-    /// A row for each local branch checked out nowhere, from one branch listing, leaving out the one that tracks origin's
-    /// default branch; origin's default is asked for only when there is such a branch. An empty worktree listing is one git
-    /// could not give (a real one always has the main checkout), so nothing says which branches are free, and none is listed.
+    /// The rows with their sessions, pull requests and branch flags, then each origin candidate whose landed lookup flags
+    /// it left behind or closed; one still looking, or flagged nothing, waits for a later scan.
     /// </summary>
-    private async Task<IReadOnlyList<WorktreeRow>> BranchRowsAsync(FolderPath repository, IReadOnlyList<GitWorktreeEntry> entries, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<WorktreeRow>> ShownAsync(IReadOnlyList<WorktreeRow> rows, IReadOnlyList<WorktreeRow> originCandidates, IReadOnlyDictionary<(FolderPath, BranchName), Upstream> upstreams, IReadOnlyList<Session> sessions, CancellationToken cancellationToken)
+    {
+        List<WorktreeRow> shown = [];
+        foreach (WorktreeRow row in rows)
+        {
+            // A branch row's path is its repository, so a session in the main checkout is not the branch's.
+            WorktreeRow withSession = row.Placement is Placement.NoFolder ? row : row with { Session = LiveSessionIn(row.Path, sessions) };
+            shown.Add(await FlaggedAsync(WithPullRequest(withSession), upstreams, cancellationToken));
+        }
+
+        foreach (WorktreeRow candidate in originCandidates)
+        {
+            WorktreeRow flagged = await FlaggedAsync(WithPullRequest(candidate), upstreams, cancellationToken);
+            if (flagged.Flag is BranchFlagKind.LeftBehind or BranchFlagKind.Closed)
+            {
+                shown.Add(flagged);
+            }
+        }
+
+        return shown;
+    }
+
+    /// <summary>
+    /// The row's branch flag, counting the branch's commits after its pull request's head only when that pull request has
+    /// merged with a recorded head. A branch row's commits at risk are none only when that count is exactly zero: they are
+    /// inside what merged. A count git could not make leaves them as they were.
+    /// </summary>
+    private async Task<WorktreeRow> FlaggedAsync(WorktreeRow row, IReadOnlyDictionary<(FolderPath, BranchName), Upstream> upstreams, CancellationToken cancellationToken)
+    {
+        if (row.Head is not Head.OnBranch on)
+        {
+            return row;
+        }
+
+        int? after = BranchFlags.TryMergedHead(row.PullRequest, out CommitId? head) ? await git.CountCommitsAfterAsync(row.Repository, RevisionOf(row, on.Branch), head, cancellationToken) : null;
+        Upstream upstream = upstreams.GetValueOrDefault((row.Repository, on.Branch), new Upstream.None());
+
+        return row with
+        {
+            Flag = BranchFlags.Of(row.PullRequest, upstream, after),
+            UnpushedCommits = row.Health.Kind is WorktreeHealthKind.Branch && after == 0 ? 0 : row.UnpushedCommits,
+        };
+    }
+
+    /// <summary>An origin row's branch is origin's copy; every other row's is the local branch.</summary>
+    private static string RevisionOf(WorktreeRow row, BranchName branch) => row.Health.Kind is WorktreeHealthKind.Origin ? $"refs/remotes/origin/{branch.Value}" : $"refs/heads/{branch.Value}";
+
+    /// <summary>
+    /// One branch listing per repository. An empty worktree listing is one git could not give (a real one always has the
+    /// main checkout), so nothing says which branches are free, and no branch is listed.
+    /// </summary>
+    private async Task<RepositoryBranches> BranchesAsync(FolderPath repository, IReadOnlyList<GitWorktreeEntry> entries, CancellationToken cancellationToken)
     {
         if (entries.Count == 0)
         {
-            return [];
+            return RepositoryBranches.None;
         }
 
         HashSet<BranchName> checkedOut = [.. entries.Select(entry => entry.Head).OfType<Head.OnBranch>().Select(on => on.Branch)];
 
-        return await unreadableBranches.RunAsync<IReadOnlyList<WorktreeRow>>(
-            repository,
-            async () =>
-            {
-                IReadOnlyList<GitBranch.Local> free = [.. (await git.ListBranchesAsync(repository, cancellationToken)).OfType<GitBranch.Local>().Where(branch => !checkedOut.Contains(branch.Name))];
-                if (free.Count == 0)
-                {
-                    return [];
-                }
-
-                RemoteBranch? originDefault = RemoteBranch.TryParse(await git.DefaultRemoteBranchAsync(repository.Value, cancellationToken), out RemoteBranch? parsed) ? parsed : null;
-
-                return [.. free.Where(branch => !(branch.Upstream is Upstream.Tracking tracking && tracking.Branch == originDefault)).Select(branch => BranchRow(repository, branch))];
-            },
-            IsGitFailure,
-            _ => []);
+        return await unreadableBranches.RunAsync(repository, () => ListedBranchesAsync(repository, checkedOut, cancellationToken), IsGitFailure, _ => RepositoryBranches.None);
     }
 
-    private static WorktreeRow BranchRow(FolderPath repository, GitBranch.Local branch) =>
-        new(repository, repository, new Head.OnBranch(branch.Name), WorktreeHealth.CheckedOutNowhere, 0, 0, new LastCommit.Made(branch.TipAt), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
+    /// <summary>
+    /// A row for each local branch checked out nowhere, leaving out the one that tracks origin's default branch, and an
+    /// origin candidate for each branch of yours only on origin but its default; origin's default is asked for only when
+    /// there is either. A branch row whose commits at risk git cannot count is left out: nothing at risk is never guessed.
+    /// </summary>
+    private async Task<RepositoryBranches> ListedBranchesAsync(FolderPath repository, HashSet<BranchName> checkedOut, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<GitBranch> listed = await git.ListBranchesAsync(repository, cancellationToken);
+        IReadOnlyList<GitBranch.Local> locals = [.. listed.OfType<GitBranch.Local>()];
+        IReadOnlyList<GitBranch.Local> free = [.. locals.Where(branch => !checkedOut.Contains(branch.Name))];
+        IReadOnlyList<GitBranch.OriginOnly> yours = [.. listed.OfType<GitBranch.OriginOnly>().Where(branch => branch.Mine)];
+        if (free.Count == 0 && yours.Count == 0)
+        {
+            return new RepositoryBranches([], [], locals);
+        }
+
+        RemoteBranch? originDefault = RemoteBranch.TryParse(await git.DefaultRemoteBranchAsync(repository.Value, cancellationToken), out RemoteBranch? parsed) ? parsed : null;
+        List<WorktreeRow> rows = [];
+        foreach (GitBranch.Local branch in free.Where(branch => !(branch.Upstream is Upstream.Tracking tracking && tracking.Branch == originDefault)))
+        {
+            int? atRisk = await uncountableBranches.RunAsync<int?>(repository, async () => await git.CountCommitsOnNoRemoteAsync(repository, branch.Name, cancellationToken), IsGitFailure, _ => null);
+            rows.AddRange(atRisk is int count ? [BranchRow(repository, branch, WorktreeHealth.CheckedOutNowhere) with { UnpushedCommits = count }] : []);
+        }
+
+        return new RepositoryBranches(rows, [.. yours.Where(branch => branch.Name != originDefault?.Branch).Select(branch => BranchRow(repository, branch, WorktreeHealth.OnlyOnOrigin))], locals);
+    }
+
+    private static WorktreeRow BranchRow(FolderPath repository, GitBranch branch, WorktreeHealth health) =>
+        new(repository, repository, new Head.OnBranch(branch.Name), health, 0, 0, new LastCommit.Made(branch.TipAt), new WorktreeSession.None(), 0, OwnerExists: true, FolderExists: true);
+
+    /// <summary>One repository's branches as the scan uses them: the branch rows, the origin rows that wait on their lookup, and every local branch for its upstream.</summary>
+    private sealed record RepositoryBranches(IReadOnlyList<WorktreeRow> Rows, IReadOnlyList<WorktreeRow> OriginCandidates, IReadOnlyList<GitBranch.Local> Locals)
+    {
+        public static readonly RepositoryBranches None = new([], [], []);
+    }
 
     private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, IReadOnlyList<GitWorktreeEntry> entries, HashSet<FolderPath> registered, CancellationToken cancellationToken)
     {
