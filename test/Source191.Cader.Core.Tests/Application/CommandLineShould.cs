@@ -1,8 +1,8 @@
-using System.CommandLine;
-using System.Text.RegularExpressions;
 using Source191.Cader.Application;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.TerminalSetup;
+using System.CommandLine;
+using System.Text.RegularExpressions;
 
 namespace Source191.Cader.Core.Tests.Application;
 
