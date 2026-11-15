@@ -6,6 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Added
 
+- d on the Config tab's Diagnostic log file row clears the diagnostic log: it asks first, naming cader.log and cader.log.1 with their sizes, then deletes both, keeping the events a problem report carries; each log row now shows its file's size, and a Diagnostic log file (older) row shows cader.log.1 while it exists
 - The new-session wizard now says when its repository filter holds only blank or invisible characters, which match no repository, and that Backspace clears them; the diagnostic log records how many repositories the wizard offered and when its filter first changed and with what kind of character, never the character itself, so a problem report can show why the list was empty (#298)
 - A Before branching setting on the Config tab, and a Before branching choice in the new-session wizard: Fetch origin, Pull default branch or Nothing, for what happens before a new worktree branches from origin's default branch (#273)
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
