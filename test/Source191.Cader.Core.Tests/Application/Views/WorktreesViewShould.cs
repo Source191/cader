@@ -56,6 +56,26 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void ListARepositorysBranchRowsAfterItsWorktreesSoTheTabOpensOnAWorktree()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds");
+        WorktreeRow origin = OriginRow("c-new-bug");
+
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([spike, origin, Dirty, Clean]));
+
+        loaded.VisibleRows.ShouldBe([Clean, Dirty, origin, spike]);
+        loaded.Selected.ShouldBe(Clean);
+    }
+
+    [Fact]
+    public void NameTheBranchWhenARowWithNoFolderHasNoPullRequest()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds") with { PullRequest = new PullRequestLookup.Missing(PullRequestGap.NoPullRequest) };
+
+        WorktreesView.Reduce(Only(spike), new KeyPressed(Key.Of('p'))).State.Message.ShouldBe(new StatusMessage.NoPullRequest("spike-refunds", PullRequestGap.NoPullRequest, new LookupHost.NotRead()));
+    }
+
+    [Fact]
     public void KeepTheSelectionOnOneOfTwoBranchRowsOfARepositoryAcrossAReload()
     {
         WorktreeRow spike = BranchRow("spike-refunds");
