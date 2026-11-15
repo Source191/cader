@@ -25,6 +25,18 @@ internal static class PullRequestListingJson
         }
     }
 
+    /// <summary>
+    /// The commit id in <paramref name="holder"/>'s <paramref name="property"/>, or <see cref="HeadCommit.NotRecorded"/> when
+    /// the holder is not an object, or the property is missing, not text or not a commit id: the pull request is still listed.
+    /// </summary>
+    public static HeadCommit HeadCommitIn(JsonElement holder, string property) =>
+        holder.ValueKind == JsonValueKind.Object
+        && holder.TryGetProperty(property, out JsonElement value)
+        && value.ValueKind == JsonValueKind.String
+        && CommitId.TryParse(value.GetString(), out CommitId? commit)
+            ? new HeadCommit.Known(commit)
+            : new HeadCommit.NotRecorded();
+
     private static BranchPullRequest? Skipping(JsonElement item, Func<JsonElement, BranchPullRequest?> row)
     {
         try
