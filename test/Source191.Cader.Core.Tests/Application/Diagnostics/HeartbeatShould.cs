@@ -101,6 +101,26 @@ public sealed class HeartbeatShould
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalledRunning(TimeSpan.FromMilliseconds(820), Rows, TimeSpan.FromMilliseconds(610))]);
     }
 
+    [Fact]
+    public void SayNoMarkedWorkRan()
+    {
+        heartbeat.Beat();
+        BeatAfter(950);
+
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalled(TimeSpan.FromMilliseconds(700))]);
+    }
+
+    [Fact]
+    public void ForgetWorkMarkedBeforeAnOnTimeBeat()
+    {
+        heartbeat.Beat();
+        heartbeat.Mark(Rows, () => clock.Advance(TimeSpan.FromMilliseconds(100)));
+        BeatAfter(150);
+        BeatAfter(850);
+
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalled(TimeSpan.FromMilliseconds(600))]);
+    }
+
     private void BeatAfter(int milliseconds)
     {
         clock.Advance(TimeSpan.FromMilliseconds(milliseconds));

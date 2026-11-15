@@ -190,9 +190,9 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
-    public void RenderAStall()
+    public void RenderAStallWithNoMarkedWork()
     {
-        Body(new UiThreadStalled(TimeSpan.FromMilliseconds(820))).ShouldBe("stalled ui thread for 820 ms");
+        Body(new UiThreadStalled(TimeSpan.FromMilliseconds(700))).ShouldBe("stalled ui thread for 700 ms, no marked work");
     }
 
     [Fact]
