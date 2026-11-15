@@ -1,4 +1,5 @@
 using Source191.Cader.Application.Launch;
+using Source191.Cader.Domain;
 using System.Diagnostics;
 
 namespace Source191.Cader.Application.Views;
@@ -43,10 +44,18 @@ public static class WizardView
             return state with { Focus = WizardField.RepositoryFilter };
         }
 
-        WizardState filtered = state with { Filter = text, Focus = WizardField.RepositoryFilter };
+        WizardState filtered = state with { Filter = text, Focus = WizardField.RepositoryFilter, Problem = FilterProblem(state.Problem, text) };
 
         return filtered with { SelectedIndex = filtered.Choices.Count > 0 ? 0 : null };
     }
+
+    /// <summary>A filter of characters nobody can see is explained; any other filter clears that explanation and leaves every other problem as it was.</summary>
+    private static WizardProblem FilterProblem(WizardProblem current, string text) => (CharacterKinds.AllInvisible(text), current) switch
+    {
+        (true, _) => new WizardProblem.InvisibleFilter(),
+        (false, WizardProblem.InvisibleFilter) => new WizardProblem.None(),
+        (false, _) => current,
+    };
 
     /// <summary>An arrow or page key in the filter moves focus into the list, so its highlight shows, and moves the selection within bounds.</summary>
     private static WizardState Moved(WizardState state, int delta)

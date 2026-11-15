@@ -694,6 +694,15 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void DescribeAnInvisibleFilter()
+    {
+        string sentence = Wording.Describe(new WizardProblem.InvisibleFilter());
+
+        sentence.ShouldBe("The filter holds only blank or invisible characters; Backspace clears it.");
+        sentence.Length.ShouldBeLessThanOrEqualTo(76, "the wizard's problem line is 76 cells wide");
+    }
+
+    [Fact]
     public void GiveThePlanBuildersReasonInTheWizard()
     {
         Wording.Describe(new WizardProblem.Refused(new LaunchProblem.WorktreeNeedsLetters()))

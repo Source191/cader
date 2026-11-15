@@ -53,6 +53,8 @@ public static class DiagnosticLine
         DialogShown dialog => $"dialog {dialog.Dialog}",
         PackagedNotesUnreadable unreadable => $"no readable release notes in the package of {unreadable.Running.Text}",
         EffectRan ran => $"effect {ran.Effect} -> {ran.Outcome} in {Milliseconds(ran.Duration)}",
+        WizardOpened opened => $"wizard opened offering {Count(opened.Repositories, "repository", "repositories")}",
+        WizardFilterStarted filter => $"wizard filter first changed after {Milliseconds(filter.After)}: {filter.FirstCharacter}, {Count(filter.Characters, "character", "characters")}, {(filter.ListFilled ? "list filled" : "list not filled")}",
 
         ProcessSlow slow => $"slow {slow.Command} exit {slow.ExitCode} in {Milliseconds(slow.Duration)}",
         RefreshSlow slow => $"slow refresh {Name(slow.Part)} in {Milliseconds(slow.Duration)}",
@@ -77,12 +79,14 @@ public static class DiagnosticLine
     /// <summary>The number of runs, then the typical and longest durations when there were any.</summary>
     private static string Figures(DurationFigures figures, string one, string many)
     {
-        string runs = figures.Runs == 1 ? $"1 {one}" : $"{figures.Runs.ToString(CultureInfo.InvariantCulture)} {many}";
+        string runs = Count(figures.Runs, one, many);
 
         return figures.Runs == 0
             ? runs
             : $"{runs}, median {Milliseconds(figures.Median)}, p95 {Milliseconds(figures.NinetyFifth)}, longest {Milliseconds(figures.Longest)}";
     }
+
+    private static string Count(int count, string one, string many) => count == 1 ? $"1 {one}" : $"{count.ToString(CultureInfo.InvariantCulture)} {many}";
 
     private static string Milliseconds(TimeSpan duration) => $"{((long)duration.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)} ms";
 }

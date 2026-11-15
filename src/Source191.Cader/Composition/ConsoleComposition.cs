@@ -101,7 +101,7 @@ internal static class ConsoleComposition
         EditorPresets presets = new(new EditorLocator(folders, parts.Processes, EditorFolders.ForCurrentUser()));
 
         return new DialogEffects(
-            repositories, parts.Store, folders, settings, solutions, updates, deleteSession, removeWorktree, reports, parts.ProcessRegistry, presets);
+            repositories, parts.Store, folders, settings, solutions, updates, deleteSession, removeWorktree, reports, parts.ProcessRegistry, presets, TimeProvider.System);
     }
 
     private static ScreenContext Context(SharedParts parts, ClaudeVersionReport claudeVersionReport, UpdateCheck updates, ScreenClipboard clipboard)

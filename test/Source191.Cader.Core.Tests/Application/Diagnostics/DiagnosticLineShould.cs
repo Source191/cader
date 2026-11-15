@@ -57,6 +57,23 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void RenderTheWizardOpening()
+    {
+        Body(new WizardOpened(3)).ShouldBe("wizard opened offering 3 repositories");
+        Body(new WizardOpened(1)).ShouldBe("wizard opened offering 1 repository");
+        Body(new WizardOpened(0)).ShouldBe("wizard opened offering 0 repositories");
+    }
+
+    [Fact]
+    public void RenderTheWizardsFirstFilterChange()
+    {
+        Body(new WizardFilterStarted(TimeSpan.FromMilliseconds(12.4), CharacterKind.Whitespace, 1, ListFilled: true))
+            .ShouldBe("wizard filter first changed after 12 ms: Whitespace, 1 character, list filled");
+        Body(new WizardFilterStarted(TimeSpan.FromMilliseconds(1800), CharacterKind.LetterOrDigit, 2, ListFilled: false))
+            .ShouldBe("wizard filter first changed after 1800 ms: LetterOrDigit, 2 characters, list not filled");
+    }
+
+    [Fact]
     public void RenderAnEffectWithItsOutcomeAndDuration()
     {
         EffectRan ran = new(CodeName.For(typeof(StopSession)), CodeName.For(typeof(StopSessionOutcome)), TimeSpan.FromMilliseconds(412.7));

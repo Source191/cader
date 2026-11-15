@@ -20,7 +20,7 @@ namespace Source191.Cader.Tui;
 internal static class LaunchWizardDialog
 {
     /// <summary>The effect the wizard ended on: <see cref="WizardEffect.Launch"/> with the plan, or <see cref="WizardEffect.Close"/>.</summary>
-    public static WizardEffect Show(IApplication app, DiagnosticLog log, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin)
+    public static WizardEffect Show(IApplication app, DiagnosticLog log, TimeProvider clock, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin)
     {
         // Read once, on a pool thread: Terminal.Gui installs a synchronisation context while it runs, so awaiting
         // on the UI thread and then blocking for the result would deadlock (it did, after every attach-and-return).
@@ -28,6 +28,7 @@ internal static class LaunchWizardDialog
         IReadOnlyList<FolderPath> recent = Task.Run(recentRepositories.ReadRecentRepositoriesAsync).GetAwaiter().GetResult();
 #pragma warning restore RS0030
         WizardState state = WizardState.Open(catalogue, recent, folders, settings, origin);
+        WizardFilterWatch watch = WizardFilterWatch.Open(state, log, clock);
         WizardEffect result = new WizardEffect.Close();
         bool binding = false;
         IReadOnlyList<string> listed = [];
@@ -70,6 +71,7 @@ internal static class LaunchWizardDialog
                 controls.Repositories.SetSource(new ObservableCollection<string>(names));
             }
 
+            watch.ListFilled();
             controls.Repositories.SelectedItem = state.SelectedIndex;
             controls.Chosen.Text = Wording.WizardChosen(state);
             controls.Preview.Text = state.Preview;
@@ -87,7 +89,12 @@ internal static class LaunchWizardDialog
         }
 
         controls.WhenFocused(field => Apply(new WizardInput.FieldFocused(field)));
-        controls.Filter.TextChanging += (_, changing) => Apply(new WizardInput.FilterChanged(changing.Result ?? string.Empty));
+        // The watch hears the change before Apply, so it records whether the list was filled before this input's own Push.
+        controls.Filter.TextChanging += (_, changing) =>
+        {
+            watch.FilterChanged(changing.Result ?? string.Empty);
+            Apply(new WizardInput.FilterChanged(changing.Result ?? string.Empty));
+        };
         controls.Repositories.ValueChanged += (_, _) => Apply(new WizardInput.ChoiceSelected(controls.Repositories.SelectedItem ?? -1));
         controls.Name.TextChanging += (_, changing) => Apply(new WizardInput.NameChanged(changing.Result ?? string.Empty));
         controls.Mode.ValueChanged += (_, _) => Apply(new WizardInput.ModeChanged(OptionSelectors.At<LaunchMode>(controls.Mode.Value)));

@@ -44,7 +44,9 @@ public static class SmokeScript
             // The wizard's Before branching choice sits low in the form, so its caption and last choice show only while the dialog is tall enough.
             new SmokeStep(Opened(DialogName.NewSession), string.Empty, Usual),
             new SmokeStep(new CaptureMarker.ScreenText(Wording.WizardBeforeBranchingCaption), string.Empty, Usual),
-            new SmokeStep(new CaptureMarker.ScreenText(LastBeforeBranching), escape, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(LastBeforeBranching), " ", Usual),
+            // Focus starts in the filter, so the space lands there and matches nothing; the problem line must say why.
+            new SmokeStep(new CaptureMarker.ScreenText(Wording.Describe(new WizardProblem.InvisibleFilter())), escape, Usual),
             new SmokeStep(closed, KeyFor(sessions, "Report"), Usual),
             new SmokeStep(Opened(DialogName.ProblemReport), escape, Usual),
             new SmokeStep(closed, TabKeys(sessions, ConsoleTab.Sessions, ConsoleTab.Config), Usual),
