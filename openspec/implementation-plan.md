@@ -39,6 +39,21 @@ Rewritten 2026-11-14 against `main` at 0.22.0-preview.4 (`a49f437e`), when A to 
 - **Why this order:** 3 to 6 each touch the Config tab's rows and wording, so they go one at a time and before .NET 11, whose C# 15 sweep is meant to come after them. N needs the .NET 11 code settled, and O to S need N's finding.
 - **Mutation runs:** N and O to S dispatch `mutation.yml` on the stack's own branch (`gh workflow run mutation.yml --ref <branch>`), since `main` will not yet carry the stack. The local full run is made in an ordinary clone under `$env:TEMP\mutation-gap`, never committed or attached.
 
+## Held: 16, strict release runs
+
+Built up to 15 (#271 to #285) on 15 November 2026; 16 is not started. Its switch-on check (close-mutation-gaps 9.1) needs a runner full run with no unmarked survivor, and run 43682241837 (98.97 %, `break` 94) leaves 31, all in static field initialisers: `ChildCommand` 4, `ChildCommandWords` 25, `DiagnosticLine` 1, `ExceptionSummary` 1. Facts pin each value, but Stryker cannot tie a static initialiser's mutant to a test, so the set moves from run to run (30, 29, 61, 31, 31 across the batches, always these four files; a local scoped run kills most of them). The owner chooses one, then 16 runs as planned:
+
+- **Mark them Accepted:** a mark per statement, each reason naming the fact that pins it (`ChildCommandWordsShould` for the privacy word lists). The design keeps Accepted to a minimum and never the default for diagnostic code, so this needs the owner's say-so.
+- **Build the tables inside a method:** the mutants become covered ones the facts kill. A production change, which the design lists as a non-goal.
+- **Wait for a Stryker release** that covers static mutants, leaving the change open.
+
+Lessons for 16, beyond `.claude\rules\checks.md`:
+
+- A runner full dispatch takes about 19 minutes.
+- A `// Stryker disable once` mark ignores its mutator across the whole statement, so check a scoped run's Ignored list as well as its survivors.
+- Edit CRLF files under `src\` with pwsh, not `sed` or MSYS arguments starting `//`.
+- `--mutate` takes one file per option.
+
 ## Not in this stack
 
 - **csharp15-in-core:** Core's C# 15 sweep, deferred by PR L of upgrade-to-net11 until a Stryker release compiles C# 15 (evidence in the archived upgrade-to-net11 design and in `.claude\rules\checks.md`); proposal, design and tasks only, no specs.
@@ -50,9 +65,10 @@ After merge (the change is archived without them, but they are not forgotten):
 
 - **add-win-arm64-build:** 5.1 on a Windows 11 Arm machine, and 5.2, the first stable publish run carrying both installers.
 - **check-mutation-before-publishing:** the warning appears on the next publish run while a `mutation` issue is open.
-- **fix-dependabot-workflow:** the next weekly Dependabot pull request goes green with no hand edits.
+- **fix-dependabot-workflow:** 2.2 and 4.2, the next weekly Dependabot pull request going green with no hand edits, and the token's expiry in MAINTAINING.md.
 - **fetch-before-branching:** 9.2. **open-the-diagnostic-log:** 4.4's by-eye part. **restore-hidden-terminal-profiles:** 7.1 and 7.2. **honour-claude-config-folder:** 6.2.
 - **close-mutation-gaps:** the first strict release run, and the deliberate-failure check.
+- **upgrade-to-net11:** 1.1 and 2.6 (refresh timings over the owner's own state) and 1.7 (re-observing the Terminal.Gui and UI Automation facts).- **fetch-before-branching:** 8.2, remaking the README GIF with `tools\New-ReadmeScreenshot.ps1` (it needs the desktop and ffmpeg).
 
 ## Why these models and efforts
 
