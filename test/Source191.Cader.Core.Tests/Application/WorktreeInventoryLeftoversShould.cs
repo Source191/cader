@@ -447,6 +447,40 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         (await scan).Select(row => row.Path.Value).ShouldBe([billingWorktree, ordersWorktree], "Orders answered first, but Billing's rows still come first");
     }
 
+    [Fact]
+    public async Task InspectThreeWorktreesOfOneRepositoryAtOnce()
+    {
+        string[] worktrees = [Path.Combine(Root, "Northwind.Orders-fix-c"), Path.Combine(Root, "Northwind.Orders-fix-a"), Path.Combine(Root, "Northwind.Orders-fix-b")];
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(0, Listing(Repository, worktrees), string.Empty));
+        AnswerCounts(dirty: string.Empty, unpushed: "0\n");
+        for (int index = 0; index < worktrees.Length; index++)
+        {
+            string worktree = worktrees[index];
+            folders.WithDirectory(worktree);
+            processes.Answer(request => IsStatus(request) && request.WorkingDirectory == new WorkingFolder.At(worktree), new ProcessResult(0, string.Concat(Enumerable.Repeat("?? notes.txt\n", index + 1)), string.Empty));
+        }
+
+        HeldRuns runs = new(IsStatus);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            await runs.WhenStarted(IsStatus, 3).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => (row.Path.Value, row.DirtyFiles)).ShouldBe([(worktrees[0], 1), (worktrees[1], 2), (worktrees[2], 3)], "each row keeps its own counts, in git's listing order");
+    }
+
+    private static bool IsStatus(ProcessRequest request)
+    {
+        return request.Arguments[0] == "status";
+    }
+
     private static bool IsListing(ProcessRequest request)
     {
         return request.Arguments[0] == "worktree";

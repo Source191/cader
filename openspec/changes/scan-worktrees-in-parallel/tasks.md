@@ -14,7 +14,7 @@
 
 ## 4. A repository's worktrees are inspected together
 
-- [ ] 4.1 Red: `WorktreeInventoryLeftoversShould.InspectThreeWorktreesOfOneRepositoryAtOnce`: three live worktrees of Northwind.Orders, every `status` held; the test awaits the third `status` start with `WaitAsync(TimeSpan.FromSeconds(10))`, then opens the hold; each row has its own counts in git's listing order. Verify it fails with a `TimeoutException`, the serial scan having started only one.
+- [x] 4.1 Red: `WorktreeInventoryLeftoversShould.InspectThreeWorktreesOfOneRepositoryAtOnce`: three live worktrees of Northwind.Orders, every `status` held; the test awaits the third `status` start with `WaitAsync(TimeSpan.FromSeconds(10))`, then opens the hold; each row has its own counts in git's listing order. Verify it fails with a `TimeoutException`, the serial scan having started only one.
 - [ ] 4.2 Green: `RegisteredRowsAsync` builds its rows with `Task.WhenAll` over the entries (which keeps their order), each live one through `InspectedAsync` as now. Verify 4.1 and `AskGitThreeThingsPerRegisteredWorktreeAndNothingAboutMergeState` (still serial within a worktree) pass.
 
 ## 5. At most eight git reads at once per scan
