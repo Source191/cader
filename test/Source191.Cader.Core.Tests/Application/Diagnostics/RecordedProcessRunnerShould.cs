@@ -105,6 +105,23 @@ public sealed class RecordedProcessRunnerShould
     }
 
     [Fact]
+    public async Task RecordANewFolderOrCommandAgain()
+    {
+        processes.Fail(new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+        ProcessRequest secondFolder = RevParse with { WorkingDirectory = new WorkingFolder.At(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-456") };
+        ProcessRequest status = RevParse with { Arguments = ["status", "--porcelain"] };
+
+        foreach (ProcessRequest request in (ProcessRequest[])[RevParse, secondFolder, status, RevParse])
+        {
+            await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(request, CancellationToken.None));
+        }
+
+        log.Snapshot().Select(timed => timed.Event).OfType<ProcessFailedToStart>().Select(failed => failed.Command)
+            .ShouldBe([ChildCommand.For(RevParse), ChildCommand.For(RevParse), ChildCommand.For(status)]);
+    }
+
+    [Fact]
     public async Task RecordARunThatTimedOutAndRethrow()
     {
         ProcessTimedOutException timedOut = new("claude.exe", TimeSpan.FromSeconds(60));
