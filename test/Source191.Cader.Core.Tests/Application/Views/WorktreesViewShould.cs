@@ -56,6 +56,20 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void KeepTheSelectionOnOneOfTwoBranchRowsOfARepositoryAcrossAReload()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds");
+        WorktreeRow oldIdea = BranchRow("old-idea");
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([spike, oldIdea]));
+
+        WorktreesViewState moved = Press(loaded, Key.Down);
+
+        moved.Selected.ShouldNotBe(loaded.Selected);
+        Reduce(moved, new WorktreeRowsLoaded([oldIdea, spike])).Selected.ShouldBe(moved.Selected);
+        Reduce(moved, new WorktreeRowsLoaded([spike, oldIdea])).Selected.ShouldBe(moved.Selected);
+    }
+
+    [Fact]
     public void FilterByABranchAndFindNoneInADetachedRow()
     {
         WorktreeRow detached = Row(@"C:\repos\Northwind.Orders-spike", new Head.Detached(), WorktreeHealthKind.Ok);
@@ -420,7 +434,9 @@ public sealed class WorktreesViewShould
 
     private static WorktreesViewState At(WorktreeRow row) => At(Loaded, row);
 
-    private static WorktreesViewState At(WorktreesViewState state, WorktreeRow row) => state with { List = state.List.Select(row.Path.Key) };
+    private static WorktreesViewState At(WorktreesViewState state, WorktreeRow row) => state with { List = state.List.Select(row.Key) };
+
+    private static WorktreeRow BranchRow(string branch) => Row(Repository, On(branch), WorktreeHealthKind.Branch, new HealthReason.CheckedOutNowhere());
 
     private static WorktreesViewState Press(WorktreesViewState state, params Key[] keys)
     {
