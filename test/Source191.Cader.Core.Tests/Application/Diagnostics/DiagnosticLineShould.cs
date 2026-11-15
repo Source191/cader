@@ -81,6 +81,13 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void RenderAClearedLogInNumbersOnly()
+    {
+        Body(new DiagnosticLogCleared(2, 13_002_282, 0)).ShouldBe("diagnostic log cleared: 2 files, 13002282 bytes, 0 kept");
+        Body(new DiagnosticLogCleared(1, 300, 1)).ShouldBe("diagnostic log cleared: 1 file, 300 bytes, 1 kept");
+    }
+
+    [Fact]
     public void RenderADialog()
     {
         Body(new DialogShown(DialogName.Settings)).ShouldBe("dialog Settings");
