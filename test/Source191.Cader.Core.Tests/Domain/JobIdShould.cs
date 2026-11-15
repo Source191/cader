@@ -43,4 +43,12 @@ public sealed class JobIdShould
     {
         $"{JobId.From("81cdb0f9")}".ShouldBe("81cdb0f9");
     }
+
+    [Fact]
+    public void TakeTheJobIdFromASessionIdOfExactlyEightCharacters()
+    {
+        JobId.TryParse(SessionId.From("81cdb0f9"), out JobId? id).ShouldBeTrue();
+
+        id.ShouldBe(JobId.From("81cdb0f9"));
+    }
 }
