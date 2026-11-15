@@ -150,6 +150,7 @@ public static partial class Wording
         int x = BarStart;
         foreach (string key in row)
         {
+            // Stryker disable once Linq : Equivalent: every key a bar row names is in its view's key list, and a missing one would throw either way
             KeyHelp help = keys.First(candidate => candidate.Key == key);
             KeyBarItem item = words.FirstOrDefault(word => word.Key == key) is BarWord word
                 ? new(help.HelpKey, word.Word, x, word.Tip, help.Press)
@@ -162,6 +163,7 @@ public static partial class Wording
     }
 
     /// <summary>A key's item in its own words: its hint, or its help line for a key the bar has no hint for.</summary>
+    // Stryker disable once Conditional : Equivalent: every key a bar places has a hint (WordingOfKeyBarShould holds it), so OnBar is always true
     private static KeyBarItem OwnItem(KeyHelp help, int x) => new(help.HelpKey, help.OnBar ? help.Hint : help.Line, x, help.Tip, help.Press);
 
     private const string TerminalTabTip = "Close this terminal session's tab; it was never sent a message, so nothing is lost.";
