@@ -13,6 +13,9 @@ public abstract record SetupState
     /// <summary>In place at this path: the settings file, the profiles' fragment, the diagnostic log.</summary>
     public sealed record At(string Path) : SetupState;
 
+    /// <summary>The Claude folder Cader reads, and where its choice came from.</summary>
+    public sealed record Folder(ClaudeFolder Claude) : SetupState;
+
     /// <summary>The diagnostic log file with the setting on: its path, and whether anything has been written to it yet.</summary>
     public sealed record LogFile(string Path, bool Exists) : SetupState;
 

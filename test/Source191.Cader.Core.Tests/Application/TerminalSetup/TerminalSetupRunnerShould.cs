@@ -204,6 +204,18 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     }
 
     [Fact]
+    public async Task NameTheSettingsFileOfTheClaudeFolderItWasGiven()
+    {
+        FakeClaudeSettings personal = new() { Location = @"C:\Users\me\.claude-personal\settings.json" };
+        TerminalSetupRunner runner = new(folders, fragment, terminal, personal, OwnExecutable, Media, new StringReader("n\nn\n"), output, error);
+
+        await runner.RunAsync(Defaults, CancellationToken.None);
+
+        output.ToString().ShouldContain(@"C:\Users\me\.claude-personal\settings.json");
+        output.ToString().ShouldNotContain(@"C:\Users\me\.claude\settings.json");
+    }
+
+    [Fact]
     public async Task OfferTheTerminalBellWhenThereIsNoSettingsFile()
     {
         await RunAsync("n\nn\n");

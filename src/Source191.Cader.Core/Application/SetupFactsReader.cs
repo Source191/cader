@@ -1,6 +1,7 @@
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.TerminalSetup;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Diagnostics;
 
@@ -10,7 +11,7 @@ namespace Source191.Cader.Application;
 /// Reads the setup the Config tab shows, through the ports that already read it for <c>cader setup-terminal</c> and the
 /// update check; a piece whose read fails is unreadable on its own, and never stops the others.
 /// </summary>
-public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettings terminalSettings, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
+public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettings terminalSettings, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, ClaudeFolder claudeFolder, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
 {
     private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
 
@@ -18,6 +19,7 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettin
     {
         return new SetupFacts(
             new SetupState.At(settingsFile),
+            new SetupState.Folder(claudeFolder),
             new SetupState.LogFile(diagnosticLogFile, folders.FileExists(diagnosticLogFile)),
             await Guarded(() => TerminalProfilesAsync(cancellationToken)),
             await Guarded(() => ClaudeBellAsync(cancellationToken)),
