@@ -111,7 +111,9 @@ public sealed class PullRequestCatalogueShould : IDisposable
 
         Task refresh = catalogue.RefreshStaleAsync(twelve);
         await hosts.WhenCalledAsync(4).WaitAsync(Deadline, TestContext.Current.CancellationToken);
-        hosts.Calls.Count.ShouldBe(4, "the rest wait for a free slot");
+        Task fifth = hosts.WhenCalledAsync(5);
+        (await Task.WhenAny(fifth, Task.Delay(TimeSpan.FromMilliseconds(250), TestContext.Current.CancellationToken))).ShouldNotBeSameAs(fifth, "the rest wait for a free slot");
+        hosts.Calls.Count.ShouldBe(4);
         hosts.ReleaseOne();
         await hosts.WhenCalledAsync(5).WaitAsync(Deadline, TestContext.Current.CancellationToken);
         hosts.Calls.Count.ShouldBe(5, "a released slot lets the fifth start");
