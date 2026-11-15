@@ -130,7 +130,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     /// <summary>An empty folder no repository explains, its root standing in for the repository nothing on disc names.</summary>
     private WorktreeRow EmptyLeftover(FolderPath root, FolderPath folder) =>
-        Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnderClaudeWorktrees: false, EmptyLeftover: true), ownerExists: false);
+        Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnregisteredFolder.EmptyLeftover), ownerExists: false);
 
     private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, HashSet<FolderPath> registered, CancellationToken cancellationToken)
     {
@@ -202,8 +202,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
             string gitFile = IOPath.Combine(folder.Value, ".git");
             GitPointer pointer = folders.FileExists(gitFile) ? TargetOf(folder) : new GitPointer.NoGitFile();
-            // Stryker disable once Boolean : Equivalent: the health of an orphan under .claude\worktrees is answered before EmptyLeftover is read, so that flag is never read here
-            WorktreeObservation observation = new WorktreeObservation.Unregistered(pointer, UnderClaudeWorktrees: true, EmptyLeftover: false);
+            WorktreeObservation observation = new WorktreeObservation.Unregistered(pointer, UnregisteredFolder.UnderClaudeWorktrees);
             yield return Leftover(repository, folder, observation, ownerExists: true);
         }
     }
@@ -219,16 +218,14 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         if (TryGitDirOf(folder, out FolderPath? gitDir) && folders.DirectoryExists(gitDir.Value))
         {
             FolderPath repository = RepositoryOf(gitDir);
-            // Stryker disable once Boolean : Equivalent: a pointer to a registration elsewhere decides the health before either flag is read
-            WorktreeObservation elsewhere = new WorktreeObservation.Unregistered(new GitPointer.RegisteredElsewhere(repository), UnderClaudeWorktrees: false, EmptyLeftover: false);
+            WorktreeObservation elsewhere = new WorktreeObservation.Unregistered(new GitPointer.RegisteredElsewhere(repository), UnregisteredFolder.Other);
 
             return Leftover(repository, folder, elsewhere, ownerExists: true);
         }
 
         FolderPath owner = gitDir is not null && IsRegistration(gitDir) ? RepositoryOf(gitDir) : folder.Parent ?? folder;
         bool ownerExists = folders.DirectoryExists(IOPath.Combine(owner.Value, ".git"));
-        // Stryker disable once Boolean : Equivalent: a pointer to a gone target decides the health before either flag is read
-        WorktreeObservation observation = new WorktreeObservation.Unregistered(new GitPointer.TargetGone(), UnderClaudeWorktrees: false, EmptyLeftover: false);
+        WorktreeObservation observation = new WorktreeObservation.Unregistered(new GitPointer.TargetGone(), UnregisteredFolder.Other);
 
         return Leftover(owner, folder, observation, ownerExists);
     }
@@ -279,12 +276,10 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     /// <summary>The first session with a process working in the worktree or a folder inside it.</summary>
     private static WorktreeSession LiveSessionIn(FolderPath worktree, IReadOnlyList<Session> sessions)
     {
-        // Stryker disable once Linq : Equivalent: DefaultIfEmpty guarantees an element, so First and FirstOrDefault agree
         return sessions
             .Where(session => session is Session.Interactive or Session.Background { Process: JobProcess.Running })
             .Where(session => session.WorkingDirectory.IsUnder(worktree))
             .Select(WorktreeSession (session) => new WorktreeSession.Running(session.SessionId, session.Name))
-            .DefaultIfEmpty(new WorktreeSession.None())
-            .First();
+            .FirstOrDefault(new WorktreeSession.None());
     }
 }

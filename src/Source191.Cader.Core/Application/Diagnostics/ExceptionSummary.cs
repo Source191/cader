@@ -52,13 +52,8 @@ public sealed record ExceptionSummary
         }
     }
 
-    private static bool IsAwaitMachinery(MethodBase method)
-    {
-        // Stryker disable once String : Equivalent: any text that is no prefix of a machinery namespace skips a frame with no namespace as empty text does
-        string space = method.DeclaringType?.Namespace ?? string.Empty;
-
-        return AwaitMachinery.Any(machinery => space.StartsWith(machinery, StringComparison.Ordinal));
-    }
+    private static bool IsAwaitMachinery(MethodBase method) =>
+        method.DeclaringType?.Namespace is string space && AwaitMachinery.Any(machinery => space.StartsWith(machinery, StringComparison.Ordinal));
 
     private static string Frame(StackFrame frame, MethodBase called)
     {

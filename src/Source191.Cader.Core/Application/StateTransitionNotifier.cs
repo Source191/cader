@@ -11,12 +11,7 @@ public sealed class StateTransitionNotifier(TextWriter terminal)
 {
     public void Observe(IReadOnlyList<SessionRow> previous, IReadOnlyList<SessionRow> current)
     {
-        // Stryker disable once Block, Statement : Equivalent: with no previous rows nothing is found in the map built below, so no bell rings either way
-        if (previous.Count == 0)
-        {
-            return;
-        }
-
+        // With no previous rows, the first refresh, nothing is found in this map, so no bell rings.
         Dictionary<SessionId, DisplayStateKind> before = previous.ToDictionary(row => row.Session.SessionId, row => row.Session.State.Kind);
         bool someoneStartedWaiting = current
             .Where(row => row.Session is Session.Background { State.Kind: DisplayStateKind.NeedsInput })

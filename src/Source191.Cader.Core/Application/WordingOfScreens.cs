@@ -298,9 +298,9 @@ public static partial class Wording
     /// <summary>The keys two to a line, so the dialog stays short enough for a small terminal.</summary>
     private static string KeyColumns(IReadOnlyList<KeyHelp> keys)
     {
-        // Stryker disable once Arithmetic, Linq : Equivalent: no key name is longer than six characters (WordingOfScreensShould holds it), so the floor of seven decides the width
-        int keyWidth = Math.Max(keys.Max(key => key.HelpKey.Length) + 1, 7);
-        string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
+        // No key name is longer than six characters (WordingOfScreensShould holds it), so seven leaves a space after each.
+        const int keyWidth = 7;
+        static string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
         int width = keys.Where((_, index) => index % 2 == 0).Max(key => Entry(key).Length) + 3;
 
         return string.Join('\n', keys.Chunk(2).Select(pair => pair.Length == 1 ? Entry(pair[0]) : Entry(pair[0]).PadRight(width) + Entry(pair[1])));
@@ -311,32 +311,12 @@ public static partial class Wording
     {
         IEnumerable<string> paneSection = pane.Count == 0 ? [] : [string.Empty, "Pane", .. Explained(pane)];
 
-        return string.Join('\n', ["Keys", KeyColumns(keys), string.Empty, "Columns", .. Explained(columns), .. paneSection, string.Empty, "Report a problem (!)", .. ReportParagraphs.SelectMany(paragraph => Wrapped(paragraph, HelpWidth))]);
+        return string.Join('\n', ["Keys", KeyColumns(keys), string.Empty, "Columns", .. Explained(columns), .. paneSection, string.Empty, "Report a problem (!)", .. ReportParagraphs.SelectMany(paragraph => StatusLayout.Rows(paragraph, HelpWidth))]);
     }
 
     private const int HelpWidth = 100;
 
     private static IEnumerable<string> ReportParagraphs => [ReportHolds, ReportNeverAttachesTheLog, ReportLogFile];
-
-    /// <summary>The help box does not wrap, so a paragraph is broken at spaces into lines of at most <paramref name="width"/>.</summary>
-    private static IEnumerable<string> Wrapped(string paragraph, int width)
-    {
-        List<string> lines = [];
-        string line = string.Empty;
-        foreach (string word in paragraph.Split(' '))
-        {
-            // Stryker disable once Equality : Equivalent: of the three fixed report paragraphs none reaches exactly the width at a break and none opens with a word wider than it
-            if (line.Length > 0 && line.Length + 1 + word.Length > width)
-            {
-                lines.Add(line);
-                line = string.Empty;
-            }
-
-            line = line.Length == 0 ? word : $"{line} {word}";
-        }
-
-        return [.. lines, line];
-    }
 
     /// <summary>Each name padded to the longest, its meaning beside it and its further lines indented to match.</summary>
     private static IEnumerable<string> Explained(IReadOnlyList<ColumnHelp> entries)

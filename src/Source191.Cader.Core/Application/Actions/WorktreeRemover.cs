@@ -20,18 +20,18 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private static readonly TimeSpan BetweenAttempts = TimeSpan.FromMilliseconds(250);
 
-    public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, CancellationToken cancellationToken)
+    public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, bool merged, CancellationToken cancellationToken)
     {
         return decision switch
         {
             RemovalDecision.Refused refused => new RemoveWorktreeOutcome.Refused(refused.Reason),
             RemovalDecision.DeleteFolder deleteFolder => await DeleteFolderAsync(row, deleteFolder, cancellationToken),
-            RemovalDecision.RemoveWorktree removeWorktree => await RemoveThroughGitAsync(row, removeWorktree, createdHere, cancellationToken),
+            RemovalDecision.RemoveWorktree removeWorktree => await RemoveThroughGitAsync(row, removeWorktree, createdHere, merged, cancellationToken),
             _ => throw new UnreachableException(),
         };
     }
 
-    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, CancellationToken cancellationToken)
+    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, bool merged, CancellationToken cancellationToken)
     {
         GitRemoval removal = await RemoveWithGitAsync(row, decision.Forced, cancellationToken);
         if (removal == GitRemoval.StillRegistered)
@@ -41,9 +41,9 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
         bool folderLeft = removal == GitRemoval.FolderLeft;
         await createdWorktrees.ForgetCreatedWorktreeAsync(row.Path);
-        return (decision.Branch, row.Head) switch
+        return (RemovalDecision.BranchActionFor(createdHere, merged), row.Head) switch
         {
-            (BranchAction.Delete, Head.OnBranch merged) => await DeleteBranchAsync(row, merged.Branch, folderLeft, cancellationToken),
+            (BranchAction.Delete, Head.OnBranch deleted) => await DeleteBranchAsync(row, deleted.Branch, folderLeft, cancellationToken),
             (BranchAction.Ask, Head.OnBranch kept) => new RemoveWorktreeOutcome.BranchKept(row.FolderName, new BranchToConfirm(row.Repository, kept.Branch), createdHere, folderLeft),
             (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName, folderLeft),
             _ => throw new UnreachableException(),
@@ -169,7 +169,8 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
     {
         Settings now = settings.Value;
 
-        // Stryker disable once Linq : Equivalent: Any reads the roots in no order, so Append to Prepend changes nothing; the line's Any to All mutant is killed by DeleteAnOrphanFolderWithoutTouchingGit
-        return now.RepositoryRoots.Append(now.WorktreeRoot).Any(root => folder.IsUnder(root) && !folder.Equals(root));
+        FolderPath[] roots = [.. now.RepositoryRoots, now.WorktreeRoot];
+
+        return roots.Any(root => folder.IsUnder(root) && !folder.Equals(root));
     }
 }

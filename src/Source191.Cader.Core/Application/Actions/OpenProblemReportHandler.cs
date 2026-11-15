@@ -16,7 +16,7 @@ public sealed class OpenProblemReportHandler(IDesktop desktop, ICrashFile crashF
     {
         // The previewed text, unless this title escapes longer than the room it leaves.
         string fitted = effect.Report.Fitted;
-        // Stryker disable once Equality : Equivalent: at exactly the limit the text fitted for the longest title already fits this one, and fitting again for this title drops the same lines (the mutant that fits again below the limit is killed by KeepTheFittedTextWhenTheTitleLeavesRoomForMore)
+        // Stryker disable once Equality : Equivalent: at exactly the limit the text fitted for the longest title already fits this one, and fitting again for this title drops the same lines, so no fact can tell the two apart and fitting always would lose the previewed text (the mutant that fits again below the limit is killed by KeepTheFittedTextWhenTheTitleLeavesRoomForMore)
         if (ProblemReportAddress.Length(effect.Title, fitted) > ProblemReport.AddressLimit)
         {
             fitted = effect.Report.FitWithin(effect.Title, ProblemReport.AddressLimit);

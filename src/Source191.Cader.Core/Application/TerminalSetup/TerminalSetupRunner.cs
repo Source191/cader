@@ -54,14 +54,13 @@ public sealed class TerminalSetupRunner(
     private async Task<int> RemoveAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
     {
         TerminalProfileRecords records = await terminalSettings.ReadAsync(cancellationToken);
-        // Stryker disable once Boolean : Equivalent: TryWriteAsync leaves with Failed unless the removal ran, so the lambda has set this before it is read
-        bool removed = false;
-        Step step = await TryWriteAsync(fragment.Location, async () => removed = await fragment.RemoveAsync(cancellationToken));
+        Step step = await TryWriteAsync(fragment.Location, async () => await fragment.RemoveAsync(cancellationToken) ? Step.Written : Step.Skipped);
         if (step == Step.Failed)
         {
             return 1;
         }
 
+        bool removed = step == Step.Written;
         if (removed)
         {
             await output.WriteLineAsync(Wording.ProfilesRemoved(fragment.Location), cancellationToken);

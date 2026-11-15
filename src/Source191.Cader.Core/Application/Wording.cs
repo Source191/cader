@@ -320,8 +320,7 @@ public static partial class Wording
         const string total = "Total";
         const int figureWidth = 7;
         IReadOnlyList<MemoryShare> shares = [new MemoryShare(claudeCode, breakdown.ClaudeCode), .. breakdown.Programs];
-        // Stryker disable once Linq : Equivalent: Append to Prepend only moves a number Max reads; the other Linq mutants of this line are killed by LayOutTheMemoryBreakdownAsAlignedLines
-        int labelWidth = shares.Select(share => share.Label.Length).Append(total.Length).Max() + 2;
+        int labelWidth = Math.Max(shares.Max(share => share.Label.Length), total.Length) + 2;
         IEnumerable<string> lines = shares.Select(share => $"{share.Label.PadRight(labelWidth)}{Memory(share.Memory).PadLeft(figureWidth)}");
         string processes = breakdown.ProcessCount == 1 ? "process" : "processes";
 

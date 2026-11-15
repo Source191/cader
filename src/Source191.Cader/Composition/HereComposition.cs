@@ -1,5 +1,4 @@
 using Source191.Cader.Adapters.Claude;
-using Source191.Cader.Adapters.Files;
 using Source191.Cader.Adapters.Terminal;
 using Source191.Cader.Application;
 using Source191.Cader.Application.Actions;
@@ -22,7 +21,7 @@ internal static class HereComposition
         // here does not ask Claude Code for its version, so as not to slow the attach down.
         parts.RecordStart(new ClaudeVersionReport.NotRead());
         TerminalConsole hereConsole = new(Console.Out, Wording.TabTitle);
-        HereCommandRunner runner = new(new Folders(), launchService, new TerminalEffects(claude, hereConsole), hereConsole, Console.Out, Console.Error);
+        HereCommandRunner runner = new(launchService, new TerminalEffects(claude, hereConsole), hereConsole, Console.Out, Console.Error);
 
         return await runner.RunAsync(Directory.GetCurrentDirectory(), name, prompt, cancellationToken);
     }
