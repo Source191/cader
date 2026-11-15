@@ -1,5 +1,7 @@
+using Source191.Cader.Application;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application.Views;
@@ -64,6 +66,46 @@ public sealed class ConfigRowsShould
 
         ConfigRows.For(on, AllSetUp).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()));
         ConfigRows.For(on, notWritten).OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FollowTheLogFileRowWithTheOlderFileWhileItIsThere(bool logOn)
+    {
+        Settings settings = logOn ? TestSettings.For(Repos).WithDiagnosticLogToggled() : TestSettings.For(Repos);
+        LogFiles files = new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read();
+        SetupFacts facts = AllSetUp with { DiagnosticLogFile = new SetupState.LogFile(files) };
+
+        ConfigRow.Setup[] setup = [.. ConfigRows.For(settings, facts).OfType<ConfigRow.Setup>()];
+
+        setup.Select(row => row.Item).ShouldBe([SetupItem.SettingsFile, SetupItem.ClaudeFolder, SetupItem.DiagnosticLogFile, SetupItem.OlderDiagnosticLogFile, SetupItem.TerminalProfiles, SetupItem.ClaudeBell, SetupItem.LastUpdateCheck]);
+        ConfigRow.Setup older = setup.Single(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+        older.State.ShouldBe(new SetupState.OlderLog(files));
+        older.Key.ShouldBe("setup:OlderDiagnosticLogFile");
+    }
+
+    [Fact]
+    public void ShowNoOlderRowWhileThereIsNoOlderFile()
+    {
+        ConfigRows.For(TestSettings.For(Repos), AllSetUp).OfType<ConfigRow.Setup>().ShouldNotContain(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+    }
+
+    [Fact]
+    public void ShowNoOlderRowWhileTheLogIsBeingReadOrCouldNotBeRead()
+    {
+        SetupFacts unreadable = AllSetUp with { DiagnosticLogFile = new SetupState.Unreadable() };
+
+        ConfigRows.For(TestSettings.For(Repos), SetupFacts.Reading).OfType<ConfigRow.Setup>().ShouldNotContain(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+        ConfigRows.For(TestSettings.For(Repos), unreadable).OfType<ConfigRow.Setup>().ShouldNotContain(row => row.Item == SetupItem.OlderDiagnosticLogFile);
+    }
+
+    [Fact]
+    public void CountTheOlderRowNeitherAsASettingNorAsSetupToDo()
+    {
+        SetupFacts facts = AllSetUp with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
+
+        Wording.ConfigCounts(ConfigRows.For(TestSettings.For(Repos), facts)).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
     }
 
     [Fact]
