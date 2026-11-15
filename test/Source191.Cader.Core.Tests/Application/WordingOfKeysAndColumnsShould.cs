@@ -187,7 +187,7 @@ public sealed class WordingOfKeysAndColumnsShould
     {
         Wording.WorktreesHelp.ShouldBe("""
             Keys
-            d      remove (refused when work would be lost)      D      force remove after typing its name
+            d      remove or delete (refused if work is lost)    D      force remove or delete after typing its name
             P      prune stale registrations in its repository   n      start a session in this worktree
             o      open a PowerShell tab there                   Enter  open its session's tab, or switch to it
             Esc    back to sessions (clears a filter first)      /      filter

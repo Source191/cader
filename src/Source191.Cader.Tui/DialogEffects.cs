@@ -27,6 +27,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         [typeof(CloseEmptyTerminals)] = (_, context, effect) => ConfirmCloseEmpty(context, (CloseEmptyTerminals)effect),
         [typeof(DeleteSession)] = (self, context, effect) => self.ConfirmDelete(context, (DeleteSession)effect),
         [typeof(ConfirmForceRemove)] = (_, context, effect) => ConfirmForce(context, (ConfirmForceRemove)effect),
+        [typeof(ConfirmDeleteBranch)] = (_, context, effect) => ConfirmDeleteBranchRow(context, ((ConfirmDeleteBranch)effect).Branch),
         [typeof(RemoveWorktree)] = (self, context, effect) => self.Remove(context, (RemoveWorktree)effect),
         [typeof(FindSolution)] = (self, context, effect) => self.OpenSolutionOf(context, (FindSolution)effect),
         [typeof(EditSetting)] = (self, context, effect) => self.EditSettings(context, ((EditSetting)effect).Scope),
@@ -63,6 +64,18 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         return new StatusMessage.Working(deleteBranch);
     }
 
+    /// <summary>d on a branch row: the same question and buttons as the branch a removal leaves, and the same DeleteBranch on a yes.</summary>
+    private static void ConfirmDeleteBranchRow(IEffectContext context, BranchToConfirm branch)
+    {
+        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.DeleteBranch, Wording.DeleteBranchTitle, Wording.DeleteBranchRowQuestion(branch.Branch.Value), [.. Wording.DeleteBranchButtons]))
+        {
+            context.ShowMessage(new StatusMessage.Kept());
+            return;
+        }
+
+        context.Dispatch(new DeleteBranch(branch));
+    }
+
     private static void Rename(IEffectContext context, Session.Background session)
     {
         ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.Rename, Wording.RenameTitle, Wording.RenamePrompt(session.Name), Wording.Name(session.Name)) switch
@@ -91,8 +104,8 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
             context.App,
             context.Diagnostics,
             DialogName.ForceRemove,
-            Wording.ForceRemoveTitle,
-            Wording.ForceRemoveWarning,
+            Wording.ForceTitle(confirm.Row.Placement),
+            Wording.ForceWarning(confirm.Row.Placement),
             confirm.ConfirmationText);
         ViewInput answered = answer switch
         {

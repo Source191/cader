@@ -54,6 +54,12 @@ public abstract record StatusMessage
 
     public sealed record NoSessionIn(string FolderName) : StatusMessage;
 
+    /// <summary>A folder or session key on a branch or origin row: the branch has no worktree to act in.</summary>
+    public sealed record NoWorktree(BranchName Branch) : StatusMessage;
+
+    /// <summary>d or D on an origin row: Cader never deletes a branch on origin.</summary>
+    public sealed record NotDeletedOnOrigin(BranchName Branch) : StatusMessage;
+
     /// <summary>Enter on a worktree whose session the Sessions tab's latest listing no longer holds.</summary>
     public sealed record SessionNotListed(ListedName Name) : StatusMessage;
 

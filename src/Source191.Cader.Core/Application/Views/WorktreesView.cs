@@ -33,17 +33,17 @@ public static class WorktreesView
             { Name: KeyName.Down } => Unchanged(state with { List = state.List.Move(+1), Message = StatusMessage.None }),
             { Name: KeyName.Escape } when state.List.Filter.Text.Length > 0 => Unchanged(state with { List = state.List.ClearFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Escape } => Effect(state, new SelectTab(ConsoleTab.Sessions)),
-            { Name: KeyName.Enter } => RowAction(state, OpenSession),
+            { Name: KeyName.Enter } => RowAction(state, row => InWorktree(row, OpenSession)),
             { Name: KeyName.Character, Character: '/' } => Unchanged(state with { List = state.List.StartFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'd' } => RowAction(state, row => Remove(row, forced: false)),
             { Name: KeyName.Character, Character: 'D' } => RowAction(state, row => Remove(row, forced: true)),
             { Name: KeyName.Character, Character: 'P' } => RowAction(state, Prune),
             { Name: KeyName.Character, Character: 'p' } => RowAction(state, PullRequestOf),
-            { Name: KeyName.Character, Character: 'n' } => RowAction(state, row => InRealWorktree(row, new StartSessionIn(row))),
-            { Name: KeyName.Character, Character: 'o' } => RowAction(state, row => InRealWorktree(row, new OpenShellTab(row))),
+            { Name: KeyName.Character, Character: 'n' } => RowAction(state, row => InWorktree(row, _ => InRealWorktree(row, new StartSessionIn(row)))),
+            { Name: KeyName.Character, Character: 'o' } => RowAction(state, row => InWorktree(row, _ => InRealWorktree(row, new OpenShellTab(row)))),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithFolder(row, new CopyFolderPath(row.Path))),
-            { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithFolder(row, new OpenFolderInEditor(row.Path))),
-            { Name: KeyName.Character, Character: 's' } => RowAction(state, row => WithFolder(row, new FindSolution(row.Path, row.RepositoryName))),
+            { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => InWorktree(row, _ => WithFolder(row, new OpenFolderInEditor(row.Path)))),
+            { Name: KeyName.Character, Character: 's' } => RowAction(state, row => InWorktree(row, _ => WithFolder(row, new FindSolution(row.Path, row.RepositoryName)))),
             _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
@@ -67,7 +67,27 @@ public static class WorktreesView
         };
     }
 
-    private static RowDecision Remove(WorktreeRow row, bool forced)
+    /// <summary>A row with no folder is a branch, never a worktree, so it never reaches the removal rules, which would aim git at its repository.</summary>
+    private static RowDecision Remove(WorktreeRow row, bool forced) => row.Placement switch
+    {
+        Placement.Folder => RemoveFolderRow(row, forced),
+        Placement.NoFolder => DeleteBranchOf(row, forced),
+    };
+
+    /// <summary>
+    /// d asks only when nothing is at risk (the scan counts the commits on no remote branch and not inside the merged head);
+    /// D asks for the branch's name typed; an origin row is never deleted.
+    /// </summary>
+    private static RowDecision DeleteBranchOf(WorktreeRow row, bool forced) => (row.Health.Kind, row.Head) switch
+    {
+        (WorktreeHealthKind.Branch, Head.OnBranch on) when forced => new RowDecision.Act(new ConfirmForceRemove(row, on.Branch.Value)),
+        (WorktreeHealthKind.Branch, Head.OnBranch on) when row.UnpushedCommits > 0 => new RowDecision.Explain(new StatusMessage.NotRemoved(new RemovalReason.UnpushedCommits(on.Branch.Value, row.UnpushedCommits), OfferForce: true)),
+        (WorktreeHealthKind.Branch, Head.OnBranch on) => new RowDecision.Act(new ConfirmDeleteBranch(new BranchToConfirm(row.Repository, on.Branch))),
+        (_, Head.OnBranch on) => new RowDecision.Explain(new StatusMessage.NotDeletedOnOrigin(on.Branch)),
+        _ => throw new UnreachableException(),
+    };
+
+    private static RowDecision RemoveFolderRow(WorktreeRow row, bool forced)
     {
         RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
         if (decision is RemovalDecision.Refused refused)
@@ -89,11 +109,23 @@ public static class WorktreesView
             "" => Unchanged(state with { Message = new StatusMessage.NothingTyped() }),
             string typed when !string.Equals(typed, confirmed.ConfirmationText, StringComparison.Ordinal) =>
                 Unchanged(state with { Message = new StatusMessage.TypedWrongName(typed, confirmed.ConfirmationText) }),
-            _ => Forced(state, new RemoveWorktree(confirmed.Row, Forced: true)),
+            _ => confirmed.Row.Placement switch
+            {
+                Placement.Folder => Working(state, new RemoveWorktree(confirmed.Row, Forced: true)),
+                Placement.NoFolder => ForcedBranch(state, confirmed.Row),
+            },
         };
     }
 
-    private static ViewUpdate<WorktreesViewState> Forced(WorktreesViewState state, RemoveWorktree remove) => Effect(state with { Message = new StatusMessage.Working(remove) }, remove);
+    /// <summary>A forced branch row deletes its local branch; an origin row, which D never asks about, still deletes nothing.</summary>
+    private static ViewUpdate<WorktreesViewState> ForcedBranch(WorktreesViewState state, WorktreeRow row) => (row.Health.Kind, row.Head) switch
+    {
+        (WorktreeHealthKind.Branch, Head.OnBranch on) => Working(state, new DeleteBranch(new BranchToConfirm(row.Repository, on.Branch))),
+        (_, Head.OnBranch on) => Unchanged(state with { Message = new StatusMessage.NotDeletedOnOrigin(on.Branch) }),
+        _ => throw new UnreachableException(),
+    };
+
+    private static ViewUpdate<WorktreesViewState> Working(WorktreesViewState state, ViewEffect effect) => Effect(state with { Message = new StatusMessage.Working(effect) }, effect);
 
     private static RowDecision PullRequestOf(WorktreeRow row) => row.PullRequest switch
     {
@@ -108,6 +140,13 @@ public static class WorktreesView
             ? new RowDecision.Act(new PruneRepository(row.Repository))
             : new RowDecision.Explain(new StatusMessage.NothingToPrune(row.RepositoryName));
     }
+
+    /// <summary>A branch or origin row has no worktree to start in, open or look into, so those keys only say so; its folder is its repository's.</summary>
+    private static RowDecision InWorktree(WorktreeRow row, Func<WorktreeRow, RowDecision> decide) => (row.Placement, row.Head) switch
+    {
+        (Placement.NoFolder, Head.OnBranch on) => new RowDecision.Explain(new StatusMessage.NoWorktree(on.Branch)),
+        _ => decide(row),
+    };
 
     /// <summary>A real worktree is one git still has: ok, locked, or elsewhere (registered with a repository outside the roots).</summary>
     private static RowDecision InRealWorktree(WorktreeRow row, ViewEffect effect)

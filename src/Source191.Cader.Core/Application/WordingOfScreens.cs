@@ -124,8 +124,8 @@ public static partial class Wording
 
     public static IReadOnlyList<KeyHelp> WorktreesKeys { get; } =
     [
-        new(Key.Of('d'), "Remove", "remove (refused when work would be lost)", Tip: "Remove this worktree; refused when it holds work that would be lost."),
-        new(Key.Of('D'), "Force remove", "force remove after typing its name", Tip: "Remove this worktree whatever it holds, after you type its name."),
+        new(Key.Of('d'), "Remove", "remove or delete (refused if work is lost)", Tip: "Remove this worktree or delete a branch row's branch; refused if work is lost."),
+        new(Key.Of('D'), "Force remove", "force remove or delete after typing its name", Tip: "Remove this worktree or delete a branch row's branch, whatever it holds."),
         new(Key.Of('P'), "Prune", "prune stale registrations in its repository", Tip: "Prune the stale worktree registrations of this row's repository."),
         new(Key.Of('n'), "New session", "start a session in this worktree", Tip: "Start a new session in this worktree, on the branch checked out there."),
         new(Key.Of('o'), "Open shell", "open a PowerShell tab there", Tip: "Open a PowerShell tab in this worktree's folder."),
