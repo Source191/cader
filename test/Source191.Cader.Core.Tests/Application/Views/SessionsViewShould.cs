@@ -548,6 +548,21 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void LeaveSessionsWhoseFolderHasGoneOutOfResumeAll()
+    {
+        SessionRow gone = Row("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState both = Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, gone]));
+        SessionsViewState onlyGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> resumed = SessionsView.Reduce(both, new KeyPressed(Key.Of('R')));
+        ViewUpdate<SessionsViewState> nothing = SessionsView.Reduce(onlyGone, new KeyPressed(Key.Of('R')));
+
+        resumed.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(Session.Background)Stopped.Session]);
+        nothing.Effects.ShouldBeEmpty();
+        nothing.State.Message.ShouldBe(new StatusMessage.NothingToResume());
+    }
+
+    [Fact]
     public void SayThereIsNothingToResume()
     {
         SessionsViewState loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Working, Interactive, Waiting])).State;
