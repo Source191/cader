@@ -34,6 +34,25 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void SayCountsAreSinceStart()
+    {
+        FakeTimeProvider clock = new(Fixtures.Noon);
+        RefreshCounts refreshes = new(clock, new DiagnosticLog(clock, []));
+        PerformanceCounts counts = new(new ProcessCounts(), refreshes, new StallCounts());
+        counts.Processes.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
+        refreshes.Add(RefreshPart.WorktreesScan, TimeSpan.FromMilliseconds(800));
+
+        string[] bodies = [.. DiagnosticLine.Render(counts, At).Select(line => line[$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] ".Length..])];
+
+        bodies.ShouldBe(
+        [
+            "counts since start git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms",
+            "refreshes since start worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
+            "stalls since start ui thread: 0 stalls",
+        ]);
+    }
+
+    [Fact]
     public void RenderTheStart()
     {
         Started started = new(new ToolVersion("0.17.0-preview.4"), new Version(2, 1, 310), new Version(10, 0, 26100), new Version(10, 0, 1), 120, 36);
