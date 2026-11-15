@@ -205,7 +205,7 @@ public sealed class GitCliShould
     {
         await Git.DeleteBranchAsync(Repository, "fix-123", force, CancellationToken.None);
 
-        Only.Arguments.ShouldBe(["branch", flag, "fix-123"]);
+        Only.Arguments.ShouldBe(["branch", flag, "--", "fix-123"]);
     }
 
     [Fact]

@@ -20,7 +20,7 @@ public sealed class DeleteBranchHandlerShould
 
         Outcome message = await handler.HandleAsync(new DeleteBranch(new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123"))), CancellationToken.None);
 
-        processes.CapturedRequests.Single().Arguments.ShouldBe(["branch", "-D", "fix-123"]);
+        processes.CapturedRequests.Single().Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
         message.ShouldBe(new DeleteBranchOutcome());
     }
 

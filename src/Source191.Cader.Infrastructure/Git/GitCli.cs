@@ -169,7 +169,8 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
             : null;
     }
 
-    public Task DeleteBranchAsync(string repository, string branch, bool force, CancellationToken cancellationToken) => RunOrThrowAsync(repository, ["branch", force ? "-D" : "-d", branch], cancellationToken);
+    /// <summary>The name follows --, so a branch named like a switch (-x, made with git update-ref) is still a name.</summary>
+    public Task DeleteBranchAsync(string repository, string branch, bool force, CancellationToken cancellationToken) => RunOrThrowAsync(repository, ["branch", force ? "-D" : "-d", "--", branch], cancellationToken);
 
     public async Task<string?> DefaultRemoteBranchAsync(string repository, CancellationToken cancellationToken)
     {
