@@ -384,14 +384,15 @@ public static partial class Wording
         };
     }
 
-    public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles)
+    public static string TerminalSetupPlan(string fragmentPath, TerminalProfiles profiles, bool terminalHidesAProfile)
     {
-        return string.Join(Environment.NewLine,
+        return string.Join(Environment.NewLine, [
             $"Two Windows Terminal profiles will be written to {fragmentPath}",
-            "Your Windows Terminal settings file is not changed.",
+            .. terminalHidesAProfile ? Array.Empty<string>() : ["Your Windows Terminal settings file is not changed."],
             $"  {TerminalProfiles.ConsoleProfileName,-13}  runs {profiles.ConsoleExecutable}; bell sound {SoundText(profiles.ConsoleSound)}",
             $"  {TerminalProfiles.SessionProfileName,-13}  runs PowerShell; bell sound {SoundText(profiles.SessionSound)}",
-            "Both ring the bell and flash the window and the taskbar.");
+            "Both ring the bell and flash the window and the taskbar.",
+        ]);
     }
 
     public static string ProfilesWritten(string fragmentPath) => $"Wrote {fragmentPath}. Restart Windows Terminal to see the Cader and Cader session profiles.";
@@ -413,6 +414,36 @@ public static partial class Wording
     public static string ClaudeBellEnabled(string settingsPath) => $"Set preferredNotifChannel to {NotificationChannelState.TerminalBell} in {settingsPath}. It applies to sessions started from now on.";
 
     public static string ClaudeSettingsUnreadable(string settingsPath, string reason) => $"Could not read {settingsPath} ({reason}), so it was left alone.";
+
+    public static string ShowHiddenProfilesQuestion => "Show the hidden profiles again? [y/N] ";
+
+    /// <summary>Which profiles Windows Terminal hides, why, and the entry setup would add for each, as it would write it.</summary>
+    public static string HiddenProfilesPlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        string names = string.Join(" and ", entries.Select(entry => entry.Name));
+        string which = entries.Count == 1 ? $"the {names} profile" : $"the {names} profiles";
+        string adds = entries.Count == 1 ? "an entry" : "an entry for each";
+
+        return string.Join(Environment.NewLine, [
+            $"Windows Terminal is hiding {which}: it keeps a profile deleted from its settings hidden, however often the fragment is written.",
+            $"This adds {adds} to the profile list in {settingsPath} and keeps everything else in the file as it is:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    public static string HiddenProfilesShown(string settingsPath) => $"Added the entries to {settingsPath}. Windows Terminal shows the profiles again once it reads the file, with no restart.";
+
+    /// <summary>Why nothing was written to a linked settings file, and the entries to add by hand.</summary>
+    public static string TerminalSettingsLinked(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not add the entries: {settingsPath} is a link, and writing it would replace the link with a file, so nothing was written.",
+            "Add each of these to the profile list in the file it links to:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
+
+    public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 

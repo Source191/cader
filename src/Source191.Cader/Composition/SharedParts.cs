@@ -18,6 +18,7 @@ internal sealed record SharedParts(
     string ConsoleExecutable,
     string OwnFolder,
     TerminalFragment TerminalFragment,
+    TerminalSettings TerminalSettings,
     ProgramLocator Programs,
     DiagnosticLogSwitch LogSwitch,
     string LogFile,
@@ -37,6 +38,7 @@ internal sealed record SharedParts(
         string consoleExecutable = Environment.ProcessPath ?? "cader";
         string ownFolder = ProgramFolder.Of(AppContext.BaseDirectory, Environment.ProcessPath);
         TerminalFragment terminalFragment = TerminalFragment.ForCurrentUser(Path.Combine(ownFolder, "logo.ico"));
+        TerminalSettings terminalSettings = TerminalSettings.ForCurrentUser();
 
         // Every program the console starts is found on the PATH once and run by its full path, never by a bare name that Windows
         // would look for in the folder the console was started from first
@@ -56,7 +58,7 @@ internal sealed record SharedParts(
         CrashFile crashFile = new(stateFolder);
         CrashRecorder crashes = new(log, counts, crashFile, TimeProvider.System);
 
-        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, programs, logSwitch, logFile, log, counts, processes, crashFile, crashes);
+        return new SharedParts(store, processRegistry, version, consoleExecutable, ownFolder, terminalFragment, terminalSettings, programs, logSwitch, logFile, log, counts, processes, crashFile, crashes);
     }
 
     // The start facts: versions and the terminal's size, never a path or a name.

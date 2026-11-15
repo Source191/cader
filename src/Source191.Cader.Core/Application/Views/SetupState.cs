@@ -19,6 +19,9 @@ public abstract record SetupState
     /// <summary>The diagnostic log file with the setting off: its path only.</summary>
     public sealed record LogOff(string Path) : SetupState;
 
+    /// <summary>The fragment is at this path, but Windows Terminal hides a Cader profile as deleted.</summary>
+    public sealed record HiddenByTerminal(string Path) : SetupState;
+
     /// <summary>Not set up: the advice is to run <c>cader setup-terminal</c>.</summary>
     public sealed record NotSetUp : SetupState;
 
