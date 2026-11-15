@@ -28,7 +28,6 @@ public abstract record WhereLabel
     {
         public override string Fit(int width)
         {
-            // Stryker disable once Statement : Equivalent: a negative width still throws ArgumentOutOfRangeException from the slice in CutEnd
             ArgumentOutOfRangeException.ThrowIfNegative(width);
 
             return CutEnd(Place, width);
@@ -41,8 +40,7 @@ public abstract record WhereLabel
         /// <summary>Whole when it fits, else the repository elided in its middle, else the place cut at its end.</summary>
         public override string Fit(int width)
         {
-            // Stryker disable once Statement : Equivalent: a negative width still throws ArgumentOutOfRangeException from TextFit.ElideMiddle
-            ArgumentOutOfRangeException.ThrowIfNegative(width);
+            // A negative width never fits, so it reaches TextFit.ElideMiddle, whose guard refuses it.
             string tail = Place.Length == 0 ? string.Empty : Separator + Place;
             if (Repository.Length + tail.Length <= width)
             {
