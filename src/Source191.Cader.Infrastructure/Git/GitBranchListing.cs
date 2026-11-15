@@ -11,11 +11,12 @@ namespace Source191.Cader.Adapters.Git;
 /// </summary>
 internal static class GitBranchListing
 {
-    /// <summary>The ref, its upstream, the upstream's state ("[gone]" once a fetch with prune has deleted it), the tip's commit time and author email, and the symbolic ref's target.</summary>
-    public const string Format = "--format=%(refname)%00%(upstream:short)%00%(upstream:track)%00%(committerdate:iso-strict)%00%(authoremail)%00%(symref)";
+    /// <summary>The ref, its upstream's full ref, the upstream's state ("[gone]" once a fetch with prune has deleted it), the tip's commit time and author email, and the symbolic ref's target.</summary>
+    public const string Format = "--format=%(refname)%00%(upstream)%00%(upstream:track)%00%(committerdate:iso-strict)%00%(authoremail)%00%(symref)";
 
     private const string LocalPrefix = "refs/heads/";
     private const string OriginPrefix = "refs/remotes/origin/";
+    private const string RemotesPrefix = "refs/remotes/";
 
     /// <summary>The email is compared here, ordinal ignoring case, and answered only as each branch's Mine; an empty one matches nothing.</summary>
     public static IReadOnlyList<GitBranch> Parse(string output, string userEmail)
@@ -44,10 +45,12 @@ internal static class GitBranchListing
         };
     }
 
+    /// <summary>Only a remote-tracking branch is an upstream: a local one (git branch --set-upstream-to=another) is none, and so is its deletion.</summary>
     private static Upstream UpstreamOf(string upstream, string track) => upstream switch
     {
+        _ when !upstream.StartsWith(RemotesPrefix, StringComparison.Ordinal) => new Upstream.None(),
         _ when track == "[gone]" => new Upstream.Gone(),
-        _ when RemoteBranch.TryParse(upstream, out RemoteBranch? remote) => new Upstream.Tracking(remote),
+        _ when RemoteBranch.TryParse(upstream[RemotesPrefix.Length..], out RemoteBranch? remote) => new Upstream.Tracking(remote),
         _ => new Upstream.None(),
     };
 }
