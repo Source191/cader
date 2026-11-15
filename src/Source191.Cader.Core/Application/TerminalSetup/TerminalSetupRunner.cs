@@ -183,6 +183,9 @@ public sealed class TerminalSetupRunner(
             case TerminalSettingsEdit.IsALink:
                 await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, entries), cancellationToken);
                 return Step.Failed;
+            case TerminalSettingsEdit.ChangedMeanwhile:
+                await error.WriteLineAsync(Wording.TerminalSettingsChanged(terminalSettings.Location), cancellationToken);
+                return Step.Failed;
             default:
                 throw new UnreachableException();
         }

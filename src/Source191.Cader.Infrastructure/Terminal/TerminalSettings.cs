@@ -80,6 +80,12 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         try
         {
             await File.WriteAllBytesAsync(temporary, written, cancellationToken);
+            byte[] now = await File.ReadAllBytesAsync(Location, cancellationToken);
+            if (!bytes.AsSpan().SequenceEqual(now))
+            {
+                return new TerminalSettingsEdit.ChangedMeanwhile();
+            }
+
             File.Replace(temporary, Location, backup);
         }
         finally

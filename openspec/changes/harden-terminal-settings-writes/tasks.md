@@ -4,15 +4,15 @@ Every fact runs over a temporary folder or the fakes, never Windows Terminal's r
 
 ## 1. The result of a write
 
-- [ ] 1.1 **Refactor:** `ITerminalSettings.AddProfileEntriesAsync` answers a `Ports\TerminalSettingsEdit` (`Written`, `IsALink`); `SettingsFileIsALinkException` becomes the `IsALink` case; `TerminalSettings` takes a `TimeProvider` (wiring in `SharedParts` and `SceneHost`); the runner switches over the result. **Verify:** every existing fact passes with the same words.
+- [x] 1.1 **Refactor:** `ITerminalSettings.AddProfileEntriesAsync` answers a `Ports\TerminalSettingsEdit` (`Written`, `IsALink`); `SettingsFileIsALinkException` becomes the `IsALink` case; `TerminalSettings` takes a `TimeProvider` (wiring in `SharedParts` and `SceneHost`); the runner switches over the result. **Verify:** every existing fact passes with the same words.
 
 ## 2. Backup (gap 2)
 
-- [ ] 2.1 **Red:** `TerminalSettingsShould.KeepABackupNamedWithTheUtcTime` and `KeepTheFilesCreationTimeAndPermissions` (the `File.Replace` fact); `TerminalSetupRunnerShould` and `WordingShould` facts that the shown sentence names the backup. **Green:** `File.Replace` with the backup; `Written(Backup)`; `Wording.HiddenProfilesShown(path, backup)`. **Verify:** the facts pass; record the fact in `windows.md`.
+- [x] 2.1 **Red:** `TerminalSettingsShould.KeepABackupNamedWithTheUtcTime` and `KeepTheFilesCreationTimeAndPermissions` (the `File.Replace` fact); `TerminalSetupRunnerShould` and `WordingShould` facts that the shown sentence names the backup. **Green:** `File.Replace` with the backup; `Written(Backup)`; `Wording.HiddenProfilesShown(path, backup)`. **Verify:** the facts pass; record the fact in `windows.md`.
 
 ## 3. Race with Terminal (gap 1)
 
-- [ ] 3.1 **Red:** `TerminalSettingsShould.WriteNothingWhenTheFileChangesWhileItIsWritten`, with a clock that rewrites the file when read; runner and `Wording` facts for `ChangedMeanwhile`. **Green:** read the file again before replacing it. **Verify:** the facts pass.
+- [x] 3.1 **Red:** `TerminalSettingsShould.WriteNothingWhenTheFileChangesWhileItIsWritten`, with a clock that rewrites the file when read; runner and `Wording` facts for `ChangedMeanwhile`. **Green:** read the file again before replacing it. **Verify:** the facts pass.
 
 ## 4. Verify the output (gap 3)
 
