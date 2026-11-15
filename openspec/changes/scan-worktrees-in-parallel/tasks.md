@@ -27,7 +27,7 @@
 ## 6. The whole solution and the documentation
 
 - [x] 6.1 Run `dotnet test -c Debug --no-build` at the solution, including `Infrastructure.Tests\WorktreeInventoryShould` over real git and `DiagnosticsPrivacyShould`; loosen any fact that asserted the order of git requests across folders to the order within one folder, and record each in the commit. Verify the solution suite passes three runs in a row.
-- [ ] 6.2 Run Stryker on `WorktreeInventory` (`.claude\rules\checks.md`); kill any new surviving mutant with a fact (5.1 already kills `ScanSlots` raised or lowered), and mark only a true equivalent with a Stryker comment and its reason. Verify the report shows no unexplained survivor in the changed lines.
+- [x] 6.2 Run Stryker on `WorktreeInventory` (`.claude\rules\checks.md`); kill any new surviving mutant with a fact (5.1 already kills `ScanSlots` raised or lowered), and mark only a true equivalent with a Stryker comment and its reason. Verify the report shows no unexplained survivor in the changed lines.
 - [x] 6.3 Add one sentence to `.claude\rules\console-screen.md`, Refreshing: a scan lists repositories and inspects worktrees at most eight git reads at once and merges them in repository order. Verify `git diff` shows only that sentence there.
 
 ## 7. Release housekeeping
