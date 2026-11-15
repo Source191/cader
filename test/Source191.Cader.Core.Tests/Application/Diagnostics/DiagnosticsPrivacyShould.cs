@@ -167,6 +167,22 @@ public sealed class DiagnosticsPrivacyShould
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task KeepAClearedLogsFolderOutOfTheLog()
+    {
+        FakeDiagnosticLogFiles files = new FakeDiagnosticLogFiles(Path.Combine(Repository, "cader.log")).WithCurrent(2_516_582).WithOlder(10_485_700);
+        EffectDispatcher dispatcher = new EffectDispatcher(log, clock).Register(new ClearDiagnosticLogHandler(files, log));
+
+        await dispatcher.DispatchAsync(new ClearDiagnosticLog(files.Read()), CancellationToken.None);
+
+        IReadOnlyList<string> lines = sink.Lines;
+        lines.Count.ShouldBe(2);
+        lines[0].ShouldEndWith("diagnostic log cleared: 2 files, 13002282 bytes, 0 kept");
+        lines[1].ShouldContain("effect ClearDiagnosticLog -> ClearDiagnosticLogOutcome.Cleared");
+        string everything = string.Join('\n', lines);
+        Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
+    }
+
     private static ReleaseVersion ReleaseVersion(string text)
     {
         Source191.Cader.Domain.ReleaseVersion.TryParse(text, out ReleaseVersion? version).ShouldBeTrue();
