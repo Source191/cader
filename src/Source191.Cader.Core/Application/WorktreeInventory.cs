@@ -202,9 +202,11 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     /// <summary>One git read once a slot is free, the slot held only while it runs, so no read waits on another for a slot; a read still waiting when the scan is cancelled never starts.</summary>
     private static async Task<T> InSlotAsync<T>(SemaphoreSlim slots, Func<Task<T>> read, CancellationToken cancellationToken)
     {
-        await slots.WaitAsync(cancellationToken);
+        // Checked once the slot is held, not while waiting: a slot freed as the scan is cancelled can reach a waiter before its cancellation does.
+        await slots.WaitAsync(CancellationToken.None);
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return await read();
         }
         finally
