@@ -297,6 +297,18 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     }
 
     [Fact]
+    public async Task ReportNothingToRemoveWhenTerminalsSettingsHoldNoEntrySetupAdded()
+    {
+        terminal = Adding();
+
+        int exitCode = await RunAsync(string.Empty, Defaults with { Remove = true, Yes = true });
+
+        exitCode.ShouldBe(0);
+        output.ToString().ShouldContain(Wording.NothingToRemove);
+        output.ToString().ShouldNotContain(Wording.NothingWritten);
+    }
+
+    [Fact]
     public async Task ReturnOneWhenTheFragmentCannotBeWritten()
     {
         fragment.FailTheWriteWith = new IOException("disk full");
