@@ -19,4 +19,11 @@ public interface ITerminalSettings
     /// profile list.
     /// </summary>
     Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Takes out of the settings file's profile list each element that is exactly one of the entries as setup adds it,
+    /// leaving every other character as it was, or answers why it wrote nothing; <see cref="TerminalSettingsEdit.Unchanged"/>
+    /// when there was none. Throws as <see cref="AddProfileEntriesAsync"/> does.
+    /// </summary>
+    Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
 }

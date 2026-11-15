@@ -63,6 +63,8 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
     /// </summary>
     public Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => EditAsync(bytes => Inserted(bytes, entries), cancellationToken);
 
+    public Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => Task.FromResult<TerminalSettingsEdit>(new TerminalSettingsEdit.Unchanged());
+
     /// <summary>
     /// The one guarded write: refuses a link or a read-only file, checks the new bytes hold the profile list expected, and
     /// writes nothing if the file changed since it was read. Written beside the file and put in its place with File.Replace,

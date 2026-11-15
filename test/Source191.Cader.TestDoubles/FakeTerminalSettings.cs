@@ -7,6 +7,8 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
 {
     private readonly List<IReadOnlyList<TerminalProfileEntry>> added = [];
 
+    private readonly List<IReadOnlyList<TerminalProfileEntry>> removed = [];
+
     public FakeTerminalSettings()
         : this(new TerminalProfileRecords.Missing())
     {
@@ -19,6 +21,9 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
 
     /// <summary>Every call's entries that were written, oldest first.</summary>
     public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Added => added;
+
+    /// <summary>Every call's entries that were taken out, oldest first.</summary>
+    public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Removed => removed;
 
     /// <summary>When set, the next write throws it.</summary>
     public Exception? FailTheWriteWith { get; set; }
@@ -39,6 +44,22 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
         if (answer is TerminalSettingsEdit.Written)
         {
             added.Add(entries);
+        }
+
+        return Task.FromResult(answer);
+    }
+
+    public Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    {
+        if (FailTheWriteWith is not null)
+        {
+            throw FailTheWriteWith;
+        }
+
+        TerminalSettingsEdit answer = Answer ?? new TerminalSettingsEdit.Written(Backup);
+        if (answer is TerminalSettingsEdit.Written)
+        {
+            removed.Add(entries);
         }
 
         return Task.FromResult(answer);
