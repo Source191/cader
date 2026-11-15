@@ -35,6 +35,7 @@ public static class ConfigView
             ConfigRow.Setup { State: SetupState.HiddenByTerminal hidden } => hidden.Path,
             ConfigRow.Setup { State: SetupState.LogFile file } => file.Files.Current.Path,
             ConfigRow.Setup { State: SetupState.LogOff off } => off.Files.Current.Path,
+            ConfigRow.Setup { State: SetupState.OlderLog older } => older.Files.Older.Path,
             _ => null,
         };
 
@@ -92,7 +93,7 @@ public static class ConfigView
     /// <summary>The settings and the diagnostic log files open themselves; every other path opens as a folder.</summary>
     private static ViewEffect OpenEffect(ConfigRow row, string path)
     {
-        return row is ConfigRow.Setup { Item: SetupItem.SettingsFile or SetupItem.DiagnosticLogFile }
+        return row is ConfigRow.Setup { Item: SetupItem.SettingsFile or SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile }
             ? new OpenFileInEditor(FolderPath.From(path))
             : new OpenFolderInEditor(FolderOf(row, path));
     }
