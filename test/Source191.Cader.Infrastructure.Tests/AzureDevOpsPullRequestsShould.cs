@@ -147,5 +147,5 @@ public sealed class AzureDevOpsPullRequestsShould
     }
 
     private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) =>
-        new(BranchName.From(branch), new PullRequest(PullRequestHost.AzureDevOps, number, new Uri($"{WebUrl}/pullrequest/{number}"), state, DateTimeOffset.Parse(createdAt, CultureInfo.InvariantCulture)));
+        new(BranchName.From(branch), new PullRequest(PullRequestHost.AzureDevOps, number, new Uri($"{WebUrl}/pullrequest/{number}"), state, DateTimeOffset.Parse(createdAt, CultureInfo.InvariantCulture), new HeadCommit.NotRecorded()));
 }

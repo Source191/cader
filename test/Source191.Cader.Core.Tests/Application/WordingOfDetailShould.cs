@@ -77,7 +77,7 @@ public sealed class WordingOfDetailShould
     [Fact]
     public void NameTheFoundPullRequestAndTheKeyThatOpensIt()
     {
-        PullRequestLookup.Found found = new(new PullRequest(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Now));
+        PullRequestLookup.Found found = new(new PullRequest(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Now, new HeadCommit.NotRecorded()));
         WorktreeDetail detail = new(WorktreeRowOf(unpushed: 0, dirty: 0) with { PullRequest = found }, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 
         Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1][1].ShouldBe($"PR {Wording.PullRequestCell(found)} (p opens it)");

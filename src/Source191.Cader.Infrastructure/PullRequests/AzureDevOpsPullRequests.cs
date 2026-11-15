@@ -60,7 +60,7 @@ public sealed class AzureDevOpsPullRequests(IProcessRunner processes, ProgramLoc
 
         DateTimeOffset createdAt = DateTimeOffset.Parse(item.GetProperty("creationDate").GetString() ?? string.Empty, CultureInfo.InvariantCulture);
 
-        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.AzureDevOps, number, url, state.Value, createdAt));
+        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.AzureDevOps, number, url, state.Value, createdAt, new HeadCommit.NotRecorded()));
     }
 
     private static PullRequestState? State(string? status, bool isDraft) => status switch

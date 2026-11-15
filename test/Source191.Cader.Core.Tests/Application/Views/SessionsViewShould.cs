@@ -508,7 +508,7 @@ public sealed class SessionsViewShould
     [Fact]
     public void OpenTheSelectedRowsPullRequest()
     {
-        PullRequest active = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Shipping/pullrequest/4521"), PullRequestState.Active, Fixtures.Noon);
+        PullRequest active = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Shipping/pullrequest/4521"), PullRequestState.Active, Fixtures.Noon, new HeadCommit.NotRecorded());
         SessionsViewState state = Reduce(SessionsViewState.Empty, new RowsLoaded([Waiting with { PullRequest = new PullRequestLookup.Found(active) }]));
 
         SessionsView.Reduce(state, new KeyPressed(Key.Of('p'))).Effects.ShouldBe([new OpenPullRequest(active)]);

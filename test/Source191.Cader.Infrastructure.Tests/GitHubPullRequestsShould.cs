@@ -121,6 +121,6 @@ public sealed class GitHubPullRequestsShould
     }
 
     private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) =>
-        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture)));
+        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), new HeadCommit.NotRecorded()));
 
 }
