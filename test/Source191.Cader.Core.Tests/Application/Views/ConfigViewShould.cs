@@ -318,4 +318,18 @@ public sealed class ConfigViewShould
     private static ConfigViewState At(string key) => Loaded with { List = Loaded.List.Select(key) };
 
     private static ConfigViewState Press(ConfigViewState state, params Key[] keys) => keys.Aggregate(state, (current, key) => ConfigView.Reduce(current, new KeyPressed(key)).State);
+
+    [Fact]
+    public void CallItsEntriesRows()
+    {
+        Loaded.Title.Noun.ShouldBe("row");
+    }
+
+    [Fact]
+    public void ShowNoRowWhoseSettingAndPathAreNotWhatWasTyped()
+    {
+        ConfigViewState filtered = Press(Loaded, Key.Slash, Key.Of('s'), Key.Of('t'), Key.Of('r'), Key.Of('y'), Key.Of('k'), Key.Of('e'), Key.Of('r'), Key.Enter);
+
+        filtered.List.Visible.ShouldBeEmpty("a row with no path has nothing of its own beyond its setting to match");
+    }
 }
