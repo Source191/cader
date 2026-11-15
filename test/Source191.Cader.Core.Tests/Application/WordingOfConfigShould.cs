@@ -111,6 +111,19 @@ public sealed class WordingOfConfigShould
         Wording.ConfigValue(row, Now, TimeZoneInfo.Utc).ShouldBe(value);
     }
 
+    [Theory]
+    [InlineData(0L, "0 KB")]
+    [InlineData(300L, "1 KB")]
+    [InlineData(512_000L, "500 KB")]
+    [InlineData(1_048_575L, "1024 KB")]
+    [InlineData(1_048_576L, "1.0 MB")]
+    [InlineData(2_516_582L, "2.4 MB")]
+    [InlineData(10_485_700L, "10.0 MB")]
+    public void SayAFileSizeInKilobytesBelowAMegabyteAndMegabytesToOneDecimalFromThere(long bytes, string size)
+    {
+        Wording.FileSize(bytes).ShouldBe(size);
+    }
+
     [Fact]
     public void SayASummerCheckInUnitedKingdomTime()
     {
