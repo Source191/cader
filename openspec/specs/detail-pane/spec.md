@@ -12,6 +12,10 @@ On the Sessions tab the pane SHALL show what the selected row does not, titled w
 - **WHEN** fix-123 is selected, listed as waiting for a permission prompt, started at 14:02 today in a Cader tab coloured yellow, in the worktree Northwind.Orders-fix-123 on branch fix-123 with three changed files
 - **THEN** the pane is titled fix-123 and reads Waiting permission prompt, Started 14:02 (5m ago), Worktree fix-123, Branch fix-123, Tab open, yellow, and Changes 3 changed files · 0 unpushed commits with the last commit's age
 
+#### Scenario: Facts in two columns of five rows
+- **WHEN** a session is selected
+- **THEN** the pane's left column reads, top to bottom, Waiting, Folder, Worktree, Branch and Changes, and its right column Started, Prompted, Session, Tab and Memory, each fact beside the one in the same row
+
 #### Scenario: A session never sent a prompt
 - **WHEN** a session that needs input and has no transcript is selected
 - **THEN** the pane's Waiting line reads a first prompt
