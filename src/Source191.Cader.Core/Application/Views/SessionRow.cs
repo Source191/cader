@@ -5,8 +5,8 @@ namespace Source191.Cader.Application.Views;
 
 /// <summary>
 /// A listed session with what git, the state store and the transcript folder add to it. Location says whether it runs
-/// in a repository (and which main checkout) or outside one; Repository is the name either gives. Head is Unknown outside a
-/// repository or when git did not name a branch. Tab says whether a live session tab shows the session, and in which
+/// in a repository (and which main checkout), outside one, or in a folder that has gone; Repository is the name each gives.
+/// Head is Unknown outside a repository, in a folder that has gone, or when git did not name a branch. Tab says whether a live session tab shows the session, and in which
 /// colour. HasTranscript is false for a session never sent a message: Claude writes nothing to resume from until then,
 /// so every caller must say which it is.
 /// </summary>
