@@ -696,7 +696,7 @@ public sealed class WordingShould
     [Fact]
     public void SayWhatToTypeWhenNothingIsTypedYet()
     {
-        Wording.NothingTypedYet("Northwind.Orders-fix-123").ShouldBe("Nothing typed yet; the folder name is Northwind.Orders-fix-123.");
+        Wording.NothingTypedYet("Northwind.Orders-fix-123").ShouldBe("Nothing typed yet; the name to type is Northwind.Orders-fix-123.", "the same dialog asks for a branch row's branch");
     }
 
     [Fact]
