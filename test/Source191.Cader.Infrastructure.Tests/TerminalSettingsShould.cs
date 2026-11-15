@@ -586,6 +586,9 @@ public sealed class TerminalSettingsShould : IDisposable
     [InlineData("a comma in a comment before it", "[\n    { \"guid\": \"PS\" } /* , */ ,\n    CADER\n]", "[\n    { \"guid\": \"PS\" } /* , */ \n]")]
     [InlineData("a comma in a comment after it", "[\n    CADER // mine, too\n    , { \"guid\": \"PS\" }\n]", "[ // mine, too\n     { \"guid\": \"PS\" }\n]")]
     [InlineData("the last, after a line comment", "[\n    { \"guid\": \"PS\" }, // the shell\n    CADER\n]", "[\n    { \"guid\": \"PS\" } // the shell\n]")]
+    [InlineData("the last, over several lines", "[\n    { \"guid\": \"PS\" },\n    CADERLINES\n]", "[\n    { \"guid\": \"PS\" }\n]")]
+    [InlineData("a middle, over several lines", "[\n    { \"guid\": \"PS\" },\n    CADERLINES,\n    { \"name\": \"mine\" }\n]", "[\n    { \"guid\": \"PS\" },\n    { \"name\": \"mine\" }\n]")]
+    [InlineData("the only, over several lines", "[\n    CADERLINES\n]", "[\n]")]
     [InlineData("both, apart", "[\n    SESSION,\n    { \"guid\": \"PS\" },\n    CADER\n]", "[\n    { \"guid\": \"PS\" }\n]")]
     public async Task RemoveAnEntryAndOneCommaKeepingEveryOtherByte(string which, string list, string remaining)
     {
@@ -624,12 +627,13 @@ public sealed class TerminalSettingsShould : IDisposable
     }
 
     /// <summary>
-    /// The first: the walker edits the first "profiles" and System.Text.Json reads the last. The second: taking the line
-    /// break before the entry would pull the closing bracket into the comment.
+    /// The first and third: the walker edits the first "profiles" and System.Text.Json reads the last. The second: taking
+    /// the line break before the entry would pull the closing bracket into the comment.
     /// </summary>
     [Theory]
     [InlineData($$"""{ "profiles": { "list": [ {{"CADER"}} ] }, "profiles": [] }""")]
     [InlineData("{ \"profiles\": [\n    { \"guid\": \"PS\" }, // the shell\n    CADER ] }")]
+    [InlineData("{ \"profiles\": { \"list\": [] }, \"profiles\": [ CADER ] }")]
     public async Task WriteNothingWhenTheFileWithoutTheEntryWouldNotHoldTheListExpected(string text)
     {
         string original = Lf(text.Replace("CADER", CaderEntry, StringComparison.Ordinal).Replace("PS", PowerShellId, StringComparison.Ordinal));
@@ -690,13 +694,18 @@ public sealed class TerminalSettingsShould : IDisposable
         Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
     }
 
-    /// <summary>A settings file whose bare profile list is <paramref name="list"/>, CADER, SESSION and PS standing for the entries and PowerShell's id.</summary>
+    /// <summary>
+    /// A settings file whose bare profile list is <paramref name="list"/>, CADER, SESSION and PS standing for the entries and
+    /// PowerShell's id, and CADERLINES for the Cader entry as Terminal writes one over several lines.
+    /// </summary>
     private static string ProfilesOf(string list)
     {
-        string expanded = list.Replace("CADER", CaderEntry, StringComparison.Ordinal).Replace("SESSION", SessionEntry, StringComparison.Ordinal).Replace("\"PS\"", $"\"{PowerShellId}\"", StringComparison.Ordinal);
+        string expanded = list.Replace("CADERLINES", CaderEntryOverLines, StringComparison.Ordinal).Replace("CADER", CaderEntry, StringComparison.Ordinal).Replace("SESSION", SessionEntry, StringComparison.Ordinal).Replace("\"PS\"", $"\"{PowerShellId}\"", StringComparison.Ordinal);
 
         return $"{{ \"profiles\": {expanded} }}";
     }
+
+    private static string CaderEntryOverLines => $"{{\n        \"guid\": \"{CaderId}\",\n        \"hidden\": false,\n        \"name\": \"Cader\",\n        \"source\": \"Cader\"\n    }}";
 
     private static string CaderEntry => $$"""{ "guid": "{{CaderId}}", "hidden": false, "name": "Cader", "source": "Cader" }""";
 
