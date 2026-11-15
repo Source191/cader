@@ -11,7 +11,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public sealed record ConfirmedProcess
 {
-    private static readonly TimeSpan Rounding = TimeSpan.FromSeconds(5);
+    private static TimeSpan Rounding => TimeSpan.FromSeconds(5);
 
     private ConfirmedProcess(int id, DateTimeOffset startedAt)
     {

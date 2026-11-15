@@ -2,7 +2,7 @@ namespace Source191.Cader.Domain;
 
 public sealed record RowFilter(string Text)
 {
-    public static readonly RowFilter None = new(string.Empty);
+    public static RowFilter None => new(string.Empty);
 
     public bool Matches(IReadOnlyList<string> fields)
     {

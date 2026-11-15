@@ -18,7 +18,7 @@ public sealed record EditorChoice
         Arguments = arguments;
     }
 
-    public static EditorChoice VsCode { get; } = Of(EditorPreset.VsCode);
+    public static EditorChoice VsCode => Of(EditorPreset.VsCode);
 
     public EditorPreset Preset { get; }
 

@@ -12,7 +12,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public static class BatchFileArgument
 {
-    private static readonly SearchValues<char> Plain = SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._/-");
+    private static SearchValues<char> Plain => SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._/-");
 
     public static bool IsSafe(string text) => text.Length > 0 && !text.AsSpan().ContainsAnyExcept(Plain);
 }

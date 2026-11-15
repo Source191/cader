@@ -10,8 +10,8 @@ public static class ProgramLabel
 {
     private const string CommandShell = "cmd";
     private const string ExecutableExtension = ".exe";
-    private static readonly string[] PackageRunners = ["npx", "uvx"];
-    private static readonly string[] OptionsWithAValue = ["--from", "--with", "--registry", "--package", "-p", "--python", "--index-url"];
+    private static IReadOnlyList<string> PackageRunners => ["npx", "uvx"];
+    private static IReadOnlyList<string> OptionsWithAValue => ["--from", "--with", "--registry", "--package", "-p", "--python", "--index-url"];
 
     public static string From(string name, string commandLine)
     {

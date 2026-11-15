@@ -3,7 +3,7 @@ namespace Source191.Cader.Domain;
 /// <summary>When the console asks the winget community repository for its newest release, which answer counts, and whether it is worth offering.</summary>
 public static class UpdateCheckRule
 {
-    public static readonly TimeSpan Interval = TimeSpan.FromHours(24);
+    public static TimeSpan Interval => TimeSpan.FromHours(24);
 
     /// <summary>With no previous check: only a release build with the check on, and straight away.</summary>
     public static bool ShouldCheck(ToolVersion running, bool enabled) => enabled && ReleaseOf(running) is not null;

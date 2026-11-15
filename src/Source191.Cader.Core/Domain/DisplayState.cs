@@ -3,12 +3,12 @@ namespace Source191.Cader.Domain;
 /// <summary>What a session is doing, as a kind the rules read; the words for it are <c>Wording.StateWord</c>'s, and only an unknown combination carries the CLI's own.</summary>
 public abstract record DisplayState(DisplayStateKind Kind)
 {
-    public static readonly DisplayState Working = new Known(DisplayStateKind.Working);
-    public static readonly DisplayState NeedsInput = new Known(DisplayStateKind.NeedsInput);
-    public static readonly DisplayState Idle = new Known(DisplayStateKind.Idle);
-    public static readonly DisplayState Completed = new Known(DisplayStateKind.Completed);
-    public static readonly DisplayState Failed = new Known(DisplayStateKind.Failed);
-    public static readonly DisplayState Stopped = new Known(DisplayStateKind.Stopped);
+    public static DisplayState Working => new Known(DisplayStateKind.Working);
+    public static DisplayState NeedsInput => new Known(DisplayStateKind.NeedsInput);
+    public static DisplayState Idle => new Known(DisplayStateKind.Idle);
+    public static DisplayState Completed => new Known(DisplayStateKind.Completed);
+    public static DisplayState Failed => new Known(DisplayStateKind.Failed);
+    public static DisplayState Stopped => new Known(DisplayStateKind.Stopped);
 
     /// <summary>One of the six states the CLI's words map to; only <see cref="DisplayState"/> builds them.</summary>
     public sealed record Known : DisplayState
@@ -16,7 +16,6 @@ public abstract record DisplayState(DisplayStateKind Kind)
         internal Known(DisplayStateKind kind)
             : base(kind)
         {
-            ArgumentOutOfRangeException.ThrowIfEqual(kind, DisplayStateKind.Unknown);
         }
     }
 

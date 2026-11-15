@@ -9,7 +9,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public static class InheritedEnvironment
 {
-    private static readonly string[] Exact = ["NO_COLOR", "CLAUDECODE", "CLAUDE_PID", "GIT_TERMINAL_PROMPT"];
+    private static IReadOnlyList<string> Exact => ["NO_COLOR", "CLAUDECODE", "CLAUDE_PID", "GIT_TERMINAL_PROMPT"];
 
     public static bool ShouldDrop(string name)
     {

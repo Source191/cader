@@ -13,7 +13,7 @@ public sealed record TabRegistration(
     DateTimeOffset CreatedAt,
     TabClaim Claim)
 {
-    private static readonly TimeSpan PendingGracePeriod = TimeSpan.FromSeconds(60);
+    private static TimeSpan PendingGracePeriod => TimeSpan.FromSeconds(60);
 
     public static TabRegistration Pending(TabOwner owner, TabColour colour, DateTimeOffset createdAt) => new(Guid.NewGuid(), owner, colour, createdAt, new TabClaim.Pending());
 

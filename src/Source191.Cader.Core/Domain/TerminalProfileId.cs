@@ -10,7 +10,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public sealed record TerminalProfileId(Guid Value)
 {
-    private static readonly Guid RuntimeNamespace = new("f65ddb7e-706b-4499-8a50-40313caf510a");
+    private static Guid RuntimeNamespace => new("f65ddb7e-706b-4499-8a50-40313caf510a");
 
     /// <summary>Terminal's spelling: lower case, in braces.</summary>
     public string Text => Value.ToString("B");

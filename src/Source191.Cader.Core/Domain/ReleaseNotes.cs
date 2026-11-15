@@ -18,7 +18,7 @@ public sealed record ReleaseNotes
     private const string EntryMark = "- ";
 
     /// <summary>No notes: none were recorded, or they could not be read.</summary>
-    public static readonly ReleaseNotes None = new(string.Empty, []);
+    public static ReleaseNotes None => new(string.Empty, []);
 
     private ReleaseNotes(string text, IReadOnlyList<ReleaseSection> sections)
     {
