@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Ports;
+using System.Runtime.CompilerServices;
+using TerminalGuiLogging = Terminal.Gui.App.Logging;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 
@@ -31,6 +33,22 @@ public sealed class TerminalGuiBridgeShould
         log.Snapshot().Single().Event.ShouldBe(new TerminalGuiReported(DiagnosticLevel.Error, ExceptionSummary.From(failure)));
     }
 
+    [Fact]
+    public void NameTheTerminalGuiMethodThatWarned()
+    {
+        TerminalGuiBridge bridge = new(log);
+
+        using (TerminalGuiLogging.PushLogger(bridge))
+        {
+            WarnAbout("Northwind.Orders");
+        }
+
+        string line = DiagnosticLine.Render(log.Snapshot().Single());
+        line.ShouldBe($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] terminal.gui Warning from TerminalGuiBridgeShould.WarnAbout");
+        line.ShouldNotContain("Northwind");
+        line.ShouldNotContain("Logging.Warning");
+    }
+
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
@@ -58,5 +76,11 @@ public sealed class TerminalGuiBridgeShould
         bridge.Log(level, new EventId(6), "x", null, (state, _) => state);
 
         log.Snapshot().Single().Event.ShouldBe(new TerminalGuiReported(recorded, null));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void WarnAbout(string input)
+    {
+        TerminalGuiLogging.Warning(input);
     }
 }
