@@ -481,7 +481,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     [Fact]
     public async Task StartAtMostEightGitReadsAtOnce()
     {
-        IReadOnlyList<string> repositories = TenRepositories();
+        string[] repositories = TenRepositories();
         HeldRuns runs = new(IsListing);
         processes.WhileRunning = runs.WhileRunning;
 
@@ -496,6 +496,31 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         }
 
         (await scan).Select(row => row.Repository.Value).ShouldBe(repositories, "every repository is still listed, in name order");
+    }
+
+    [Fact]
+    public async Task StartNoGitReadOnceTheScanIsCancelled()
+    {
+        string[] repositories = TenRepositories();
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+        using CancellationTokenSource cancellation = new();
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], cancellation.Token);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(8);
+            await cancellation.CancelAsync();
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        Exception? thrown = await Record.ExceptionAsync(() => scan);
+
+        runs.CountStarted(request => request.WorkingDirectory == new WorkingFolder.At(repositories[8]) || request.WorkingDirectory == new WorkingFolder.At(repositories[9])).ShouldBe(0, "the ninth and tenth repositories were still waiting for a slot");
+        thrown.ShouldBeAssignableTo<OperationCanceledException>();
     }
 
     /// <summary>Ten repositories under the root, each listing one worktree whose folder is gone, so each gives one row and no read beyond its listing.</summary>
