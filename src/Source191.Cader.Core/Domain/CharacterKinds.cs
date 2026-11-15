@@ -19,7 +19,7 @@ public static class CharacterKinds
     };
 
     /// <summary>The kind of the text's first character.</summary>
-    public static CharacterKind First(string text) => Of(text.EnumerateRunes().First());
+    public static CharacterKind First(string text) => Of(Rune.GetRuneAt(text, 0));
 
     /// <summary>Whether the text holds characters and none of them can be seen: each is whitespace, a control or a format character.</summary>
     public static bool AllInvisible(string text) => text.Length > 0 && text.EnumerateRunes().All(rune => Of(rune) is CharacterKind.Whitespace or CharacterKind.Control or CharacterKind.Format);
