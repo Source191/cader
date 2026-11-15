@@ -169,6 +169,26 @@ Describe 'Write-MutationRun' {
         $run.failing | Should -BeTrue
         $run.counted | Should -Be 20
     }
+
+    It 'does not fail a release run that counted 19' {
+        $result = Write-CountedRelease 'nineteen-one-left' -Killed 18 -Survived 1
+
+        $result.Finding | Should -BeTrue
+        $result.Failing | Should -BeFalse
+    }
+
+    It 'does not fail one that counted 20 with no survivor' {
+        $result = Write-CountedRelease 'twenty-none-left' -Killed 20 -Survived 0
+
+        $result.Failing | Should -BeFalse
+    }
+
+    It 'counts an Ignored mutant for nothing' {
+        $result = Write-CountedRelease 'nineteen-and-ignored' -Killed 18 -Survived 1 -Ignored 5
+
+        $result.Counted | Should -Be 19
+        $result.Failing | Should -BeFalse
+    }
 }
 
 Describe 'Format-MutationComment' {
