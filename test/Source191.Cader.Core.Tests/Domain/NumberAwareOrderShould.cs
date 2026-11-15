@@ -40,4 +40,34 @@ public sealed class NumberAwareOrderShould
 
         sorted.ShouldBe(["Rider 2025.2", "Rider 2025.9", "Rider 2025.10"]);
     }
+
+    [Fact]
+    public void PutTextThatOnlyDiffersInCaseInOrdinalOrder()
+    {
+        NumberAwareOrder.Compare("a", "A").ShouldBeGreaterThan(0);
+        NumberAwareOrder.Compare("A", "a").ShouldBeLessThan(0);
+        NumberAwareOrder.Compare("a", "a").ShouldBe(0);
+    }
+
+    [Fact]
+    public void PutTheEmptyTextBeforeAnyOther()
+    {
+        NumberAwareOrder.Compare(string.Empty, "a").ShouldBeLessThan(0);
+        NumberAwareOrder.Compare("a", string.Empty).ShouldBeGreaterThan(0);
+        NumberAwareOrder.Compare(string.Empty, string.Empty).ShouldBe(0);
+    }
+
+    [Fact]
+    public void CompareADigitRunWithALetterAsCharacters()
+    {
+        NumberAwareOrder.Compare("10", "a").ShouldBeLessThan(0);
+        NumberAwareOrder.Compare("a", "10").ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public void CompareNumbersOfTheSameLengthByValueBeforeWhatFollows()
+    {
+        NumberAwareOrder.Compare("13a", "12b").ShouldBeGreaterThan(0);
+        NumberAwareOrder.Compare("12b", "13a").ShouldBeLessThan(0);
+    }
 }
