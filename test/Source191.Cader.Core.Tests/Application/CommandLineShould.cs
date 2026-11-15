@@ -277,7 +277,7 @@ public sealed class CommandLineShould : IDisposable
         help.ShouldContain("--session-sound <wav>");
         help.ShouldContain("The bell sound of the Cader session profile.");
         help.ShouldContain("Write without asking.");
-        help.ShouldContain("Remove the profiles.");
+        help.ShouldContain("Remove the profiles, and take out of Windows Terminal's settings the entries setup added there.");
     }
 
     [Fact]

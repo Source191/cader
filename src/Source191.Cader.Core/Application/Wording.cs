@@ -460,6 +460,16 @@ public static partial class Wording
 
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
+    public static string RemoveEntriesQuestion => string.Empty;
+
+    public static string EntriesToRemovePlan(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+
+    public static string EntriesRemoved(string settingsPath, string backup) => string.Empty;
+
+    public static string TerminalSettingsLinkedForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+
+    public static string TerminalSettingsReadOnlyForRemoval(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
 
     /// <summary>An exception's message reports what failed, here and nowhere as a reason.</summary>
