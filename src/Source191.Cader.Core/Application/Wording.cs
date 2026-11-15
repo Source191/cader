@@ -52,8 +52,8 @@ public static partial class Wording
     /// <summary>d on a branch row with nothing at risk: the reducer has already found every commit on a remote branch or inside the merged head.</summary>
     public static string DeleteBranchRowQuestion(string branch) => $"Delete the local branch {branch}?\nEvery commit on it is on a remote branch or inside its merged pull request.";
 
-    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the force-remove dialog asks for the worktree's folder name.</summary>
-    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the folder name is {expected}.";
+    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the worktree's folder name, or a branch row's branch.</summary>
+    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the name to type is {expected}.";
 
     /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
     public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
