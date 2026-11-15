@@ -298,9 +298,9 @@ public static partial class Wording
     /// <summary>The keys two to a line, so the dialog stays short enough for a small terminal.</summary>
     private static string KeyColumns(IReadOnlyList<KeyHelp> keys)
     {
-        // Stryker disable once Arithmetic, Linq : Equivalent: no key name is longer than six characters (WordingOfScreensShould holds it), so the floor of seven decides the width
-        int keyWidth = Math.Max(keys.Max(key => key.HelpKey.Length) + 1, 7);
-        string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
+        // No key name is longer than six characters (WordingOfScreensShould holds it), so seven leaves a space after each.
+        const int keyWidth = 7;
+        static string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
         int width = keys.Where((_, index) => index % 2 == 0).Max(key => Entry(key).Length) + 3;
 
         return string.Join('\n', keys.Chunk(2).Select(pair => pair.Length == 1 ? Entry(pair[0]) : Entry(pair[0]).PadRight(width) + Entry(pair[1])));

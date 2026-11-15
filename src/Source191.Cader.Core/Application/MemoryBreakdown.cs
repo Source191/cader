@@ -25,10 +25,7 @@ public sealed record MemoryBreakdown(ListedName SessionName, MemorySize ClaudeCo
     private static string LabelOf(ProcessTree child) => child.Usage switch
     {
         ProcessMeasure.Measured { Usage.Label.Length: > 0 } measured => measured.Usage.Label,
-        // Stryker disable once String : Equivalent: ProgramLabel.From reads only a package runner or the executable a cmd shell wraps from the text, so any other text gives the name
-        ProcessMeasure.Measured => ProgramLabel.From(child.Process.Name, string.Empty),
-        // Stryker disable once String : Equivalent: ProgramLabel.From reads only a package runner or the executable a cmd shell wraps from the text, so any other text gives the name
-        ProcessMeasure.Unmeasured => ProgramLabel.From(child.Process.Name, string.Empty),
+        ProcessMeasure.Measured or ProcessMeasure.Unmeasured => child.Process.Name,
         _ => throw new UnreachableException(),
     };
 }
