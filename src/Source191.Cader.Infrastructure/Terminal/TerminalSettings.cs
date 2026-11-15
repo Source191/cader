@@ -63,7 +63,12 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
     /// </summary>
     public Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => EditAsync(bytes => Inserted(bytes, entries), cancellationToken);
 
-    public Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => Task.FromResult<TerminalSettingsEdit>(new TerminalSettingsEdit.Unchanged());
+    /// <summary>
+    /// Takes out each element that is exactly one of the entries as setup adds it, one at a time, with one comma: the one
+    /// before it, or after it when it is the first. An element alone on its line goes with the whole line; one that starts
+    /// its line with the line break before it; any other with the spaces and tabs before it. Every other byte stays.
+    /// </summary>
+    public Task<TerminalSettingsEdit> RemoveProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken) => EditAsync(bytes => Removed(bytes, entries), cancellationToken);
 
     /// <summary>
     /// The one guarded write: refuses a link or a read-only file, checks the new bytes hold the profile list expected, and
@@ -85,7 +90,12 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
 
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         Change changed = change(bytes);
-        if (!Holds(changed.Written, changed.Expected))
+        if (changed.Written.AsSpan().SequenceEqual(bytes))
+        {
+            return new TerminalSettingsEdit.Unchanged();
+        }
+
+        if (!Holds(bytes, changed.Before) || !Holds(changed.Written, changed.After))
         {
             return new TerminalSettingsEdit.NotVerified();
         }
@@ -117,8 +127,124 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         ListPlace place = PlaceOfTheList(bytes, start);
         string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
         byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
+        JsonElement[] before = ElementsOf(bytes, start, place);
 
-        return new Change([.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)], [.. ListOf(bytes), .. entries.Select(entry => JsonElement.Parse(entry.Json))]);
+        return new Change([.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)], before, [.. before, .. entries.Select(entry => JsonElement.Parse(entry.Json))]);
+    }
+
+    private Change Removed(byte[] bytes, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        int start = ByteOrderMarkLength(bytes);
+        JsonElement[] before = ElementsOf(bytes, start, PlaceOfTheList(bytes, start));
+        byte[] written = bytes;
+        try
+        {
+            while (FirstToRemove(written, start, entries) is { Index: >= 0 } found)
+            {
+                written = WithoutElement(written, start, found.Place, found.Index);
+            }
+        }
+        catch (JsonException)
+        {
+            // A cut that left the file unreadable is kept as it is, for the check to refuse.
+        }
+
+        return new Change(written, before, [.. before.Where(element => !entries.Any(entry => IsAsSetupAdds(element, entry)))]);
+    }
+
+    /// <summary>The list as the text walker found it, and the index of its first element to take out, -1 when none.</summary>
+    private static (ListPlace Place, int Index) FirstToRemove(byte[] bytes, int start, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        ListPlace place = FindList(bytes.AsSpan(start));
+        JsonElement[] elements = ElementsOf(bytes, start, place);
+
+        return (place, Array.FindIndex(elements, element => entries.Any(entry => IsAsSetupAdds(element, entry))));
+    }
+
+    private static byte[] WithoutElement(byte[] bytes, int start, ListPlace place, int index)
+    {
+        int first = start + place.Items[index].Start;
+        int end = start + place.Items[index].End;
+        int comma = index > 0 ? CommaAt(bytes, start + place.Items[index - 1].End) : CommaAt(bytes, end);
+        int lineStart = Array.LastIndexOf(bytes, (byte)'\n', first - 1) + 1;
+        bool startsLine = bytes.AsSpan(lineStart, first - lineStart).IndexOfAnyExcept((byte)' ', (byte)'\t') < 0;
+        int lineEnd = LineEndAfter(bytes, end, comma);
+        (int From, int To) cut = (startsLine, lineEnd >= 0) switch
+        {
+            (true, true) => (lineStart, lineEnd),
+            (true, false) => (bytes[lineStart - 2] == '\r' ? lineStart - 2 : lineStart - 1, end),
+            _ => (bytes.AsSpan(0, first).LastIndexOfAnyExcept((byte)' ', (byte)'\t') + 1, end),
+        };
+
+        return comma < 0 || (comma >= cut.From && comma < cut.To)
+            ? [.. bytes.AsSpan(0, cut.From), .. bytes.AsSpan(cut.To)]
+            : Cut(bytes, cut, comma);
+    }
+
+    private static byte[] Cut(byte[] bytes, (int From, int To) cut, int comma)
+    {
+        return comma < cut.From
+            ? [.. bytes.AsSpan(0, comma), .. bytes.AsSpan(comma + 1, cut.From - comma - 1), .. bytes.AsSpan(cut.To)]
+            : [.. bytes.AsSpan(0, cut.From), .. bytes.AsSpan(cut.To, comma - cut.To), .. bytes.AsSpan(comma + 1)];
+    }
+
+    /// <summary>The comma that is the next thing after <paramref name="from"/>, past white space and comments, or -1.</summary>
+    private static int CommaAt(byte[] bytes, int from)
+    {
+        int at = PastSpaceAndComments(bytes, from);
+
+        return at < bytes.Length && bytes[at] == ',' ? at : -1;
+    }
+
+    private static int PastSpaceAndComments(byte[] bytes, int from)
+    {
+        int at = from;
+        int next = Past(bytes, at);
+        while (next != at)
+        {
+            at = next;
+            next = Past(bytes, at);
+        }
+
+        return at;
+    }
+
+    /// <summary>Past the white space character or comment at <paramref name="at"/>, or <paramref name="at"/> itself.</summary>
+    private static int Past(byte[] bytes, int at)
+    {
+        ReadOnlySpan<byte> rest = bytes.AsSpan(at);
+
+        return rest switch
+        {
+            [(byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n', ..] => at + 1,
+            [(byte)'/', (byte)'/', ..] => LineCommentEnd(bytes, at),
+            [(byte)'/', (byte)'*', ..] => at + 2 + rest[2..].IndexOf("*/"u8) + 2,
+            _ => at,
+        };
+    }
+
+    private static int LineCommentEnd(byte[] bytes, int at)
+    {
+        int newLine = Array.IndexOf(bytes, (byte)'\n', at);
+
+        return newLine < 0 ? bytes.Length : newLine;
+    }
+
+    /// <summary>Just past the line break that ends the element's line when nothing but spaces, tabs and its comma follow it there, else -1.</summary>
+    private static int LineEndAfter(byte[] bytes, int end, int comma)
+    {
+        int at = end;
+        while (at < bytes.Length && (bytes[at] == ' ' || bytes[at] == '\t' || at == comma))
+        {
+            at++;
+        }
+
+        return bytes.AsSpan(at) switch
+        {
+            [(byte)'\r', (byte)'\n', ..] => at + 2,
+            [(byte)'\n', ..] => at + 1,
+            _ => -1,
+        };
     }
 
     /// <summary>Whether the new bytes, read as Terminal reads them, hold exactly the expected profile list, element for element.</summary>
@@ -222,29 +348,49 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         throw new JsonException(NoProfileList);
     }
 
-    /// <summary>From the list's <c>[</c>: where its first element starts (-1 when empty) and where its last one ends.</summary>
+    /// <summary>From the list's <c>[</c>: just after it, and where each element starts and ends.</summary>
     private static ListPlace Elements(ref Utf8JsonReader reader)
     {
-        int first = -1;
-        int end = (int)reader.BytesConsumed;
+        int open = (int)reader.BytesConsumed;
+        List<ElementPlace> elements = [];
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
         {
-            first = first < 0 ? (int)reader.TokenStartIndex : first;
+            int first = (int)reader.TokenStartIndex;
             reader.Skip();
-            end = (int)reader.BytesConsumed;
+            elements.Add(new ElementPlace(first, (int)reader.BytesConsumed));
         }
 
-        return new ListPlace(first, end);
+        return new ListPlace(open, elements);
     }
 
-    /// <summary>The bytes to write, and the profile list they must hold once read back.</summary>
-    private sealed record Change(byte[] Written, JsonElement[] Expected);
+    /// <summary>Each element as the text walker found it, parsed on its own as the whole file is.</summary>
+    private static JsonElement[] ElementsOf(byte[] bytes, int start, ListPlace place)
+    {
+        return [.. place.Items.Select(element =>
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.AsMemory(start + element.Start, element.End - element.Start), DocumentOptions);
+
+            return document.RootElement.Clone();
+        })];
+    }
+
+    /// <summary>
+    /// The bytes to write, the profile list the file must hold as read for the text walker to have found it, and the list
+    /// the new bytes must hold once read back.
+    /// </summary>
+    private sealed record Change(byte[] Written, JsonElement[] Before, JsonElement[] After);
 
     /// <summary>Byte offsets after any byte order mark.</summary>
-    private sealed record ListPlace(int First, int InsertAt)
+    private sealed record ListPlace(int Open, IReadOnlyList<ElementPlace> Items)
     {
-        public bool Empty => First < 0;
+        public bool Empty => Items.Count == 0;
+
+        public int First => Items[0].Start;
+
+        public int InsertAt => Empty ? Open : Items[^1].End;
     }
+
+    private sealed record ElementPlace(int Start, int End);
 
     /// <summary>A byte order mark, which the parser does not skip, is left out.</summary>
     private static JsonDocument Parse(byte[] bytes) => JsonDocument.Parse(bytes.AsMemory(ByteOrderMarkLength(bytes)), DocumentOptions);
