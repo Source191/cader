@@ -11,7 +11,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void NameEachColumnOnce()
     {
         ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AgeColumn];
-        ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.LastCommitColumn, Wording.SessionColumn];
+        ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.BranchColumn, Wording.LastCommitColumn, Wording.SessionColumn];
         ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
 
         AreTheSameInstances(Wording.SessionsColumns, sessions);
@@ -84,7 +84,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void ExplainEveryColumnOfEachView()
     {
         Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "REPOSITORY", "PR", "AGE"]);
-        Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "LAST COMMIT", "SESSION"]);
+        Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "BRANCH", "LAST COMMIT", "SESSION"]);
         Wording.ConfigColumns.Select(column => column.Name).ShouldBe(["SETTING", "VALUE"]);
         Wording.SessionsColumns.Concat(Wording.WorktreesColumns).ShouldAllBe(column => column.Meaning.Length > 0);
     }
@@ -204,6 +204,9 @@ public sealed class WordingOfKeysAndColumnsShould
                          ✗ broken (registration or owner gone), □ empty (a leftover folder),
                          ↗ elsewhere (a worktree of a repository outside the roots),
                          ⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason
+            BRANCH       ▲ left behind (commits after its pull request merged), ✗ gone (deleted on origin),
+                         ✗ closed (its pull request closed unmerged), · no PR (none on its host);
+                         blank when none applies or not yet known; the pane gives the reason
             LAST COMMIT  time since the last commit
             SESSION      the session running in it, if any
 
