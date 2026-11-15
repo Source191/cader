@@ -22,6 +22,25 @@ public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, Diagnostic
 
     private long previous;
     private bool beaten;
+    private (CodeName Work, TimeSpan Took)? longest;
+
+    /// <summary>Runs a piece of UI-thread work and keeps it when it is the longest marked since the last beat, so a freeze can name it.</summary>
+    public void Mark(CodeName work, Action run)
+    {
+        long started = clock.GetTimestamp();
+        try
+        {
+            run();
+        }
+        finally
+        {
+            TimeSpan took = clock.GetElapsedTime(started);
+            if (longest is not { } kept || took > kept.Took)
+            {
+                longest = (work, took);
+            }
+        }
+    }
 
     public void Beat()
     {
@@ -46,7 +65,7 @@ public sealed class Heartbeat(TimeProvider clock, StallCounts stalls, Diagnostic
         stalls.Add(lateness);
         if (lateness > Freeze)
         {
-            log.Record(new UiThreadStalled(lateness));
+            log.Record(longest is { } work ? new UiThreadStalledRunning(lateness, work.Work, work.Took) : new UiThreadStalled(lateness));
         }
     }
 }
