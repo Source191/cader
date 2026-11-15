@@ -78,4 +78,26 @@ public sealed class StatusLayoutShould
 
     [Fact]
     public void OfferACloseMarkForSetupAdvice() => StatusLayout.Closes(new StatusMessage.SetupAdvice(SetupItem.ClaudeBell), running: false).ShouldBeTrue();
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void RefuseARowWithNoRoomInIt(int width)
+    {
+        ArgumentOutOfRangeException refusal = Should.Throw<ArgumentOutOfRangeException>(() => StatusLayout.Lines(string.Empty, width));
+
+        refusal.ParamName.ShouldBe("width");
+    }
+
+    [Fact]
+    public void BreakAFirstWordWiderThanARowWithoutAnEmptyRowBeforeIt()
+    {
+        StatusLayout.Lines("abcdefgh", 3).ShouldBe(["abc", "def", "gh"]);
+    }
+
+    [Fact]
+    public void LeaveAShortLastRowItsWholeTextBeforeTheEllipsis()
+    {
+        StatusLayout.Lines("aaaaaa bbbbbb cc dddddd", 6).ShouldBe(["aaaaaa", "bbbbbb", "cc…"]);
+    }
 }
