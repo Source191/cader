@@ -39,20 +39,9 @@ Rewritten 2026-11-14 against `main` at 0.22.0-preview.4 (`a49f437e`), when A to 
 - **Why this order:** 3 to 6 each touch the Config tab's rows and wording, so they go one at a time and before .NET 11, whose C# 15 sweep is meant to come after them. N needs the .NET 11 code settled, and O to S need N's finding.
 - **Mutation runs:** N and O to S dispatch `mutation.yml` on the stack's own branch (`gh workflow run mutation.yml --ref <branch>`), since `main` will not yet carry the stack. The local full run is made in an ordinary clone under `$env:TEMP\mutation-gap`, never committed or attached.
 
-## Held: 16, strict release runs
+## Done: 16, strict release runs
 
-Built up to 15 (#271 to #285) on 15 November 2026; 16 is not started. Its switch-on check (close-mutation-gaps 9.1) needs a runner full run with no unmarked survivor, and run 43682241837 (98.97 %, `break` 94) leaves 31, all in static field initialisers: `ChildCommand` 4, `ChildCommandWords` 25, `DiagnosticLine` 1, `ExceptionSummary` 1. Facts pin each value, but Stryker cannot tie a static initialiser's mutant to a test, so the set moves from run to run (30, 29, 61, 31, 31 across the batches, always these four files; a local scoped run kills most of them). The owner chooses one, then 16 runs as planned:
-
-- **Mark them Accepted:** a mark per statement, each reason naming the fact that pins it (`ChildCommandWordsShould` for the privacy word lists). The design keeps Accepted to a minimum and never the default for diagnostic code, so this needs the owner's say-so.
-- **Build the tables inside a method:** the mutants become covered ones the facts kill. A production change, which the design lists as a non-goal.
-- **Wait for a Stryker release** that covers static mutants, leaving the change open.
-
-Lessons for 16, beyond `.claude\rules\checks.md`:
-
-- A runner full dispatch takes about 19 minutes.
-- A `// Stryker disable once` mark ignores its mutator across the whole statement, so check a scoped run's Ignored list as well as its survivors.
-- Edit CRLF files under `src\` with pwsh, not `sed` or MSYS arguments starting `//`.
-- `--mutate` takes one file per option.
+Built on 15 November 2026, so the stack is complete (#271 to #285 and 16's pull request). The owner chose to mark the 31 static-initialiser survivors of run 43682241837 Accepted; the 15 marks ignore all 61 static mutants of those four files, and runner run 43689035514 scored 100 % with nothing left, so the strict release rule is switched on and close-mutation-gaps is archived. The marks come out when a Stryker release tests static mutants in a fresh process (.claude\rules\checks.md, Follow-up).
 
 ## Not in this stack
 
