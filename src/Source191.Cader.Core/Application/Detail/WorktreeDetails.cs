@@ -6,7 +6,7 @@ namespace Source191.Cader.Application.Detail;
 public sealed class WorktreeDetails(DetailLoader loader, TimeProvider clock) : IDetailSource<WorktreeRow>
 {
     /// <summary>The facts, the listed items and the line saying how many more.</summary>
-    public int Rows => Wording.DetailFactRows + Wording.DetailListedItems + 1;
+    public int Rows => Wording.WorktreeFactRows + Wording.DetailListedItems + 1;
 
     public object KeyOf(WorktreeRow row) => row.Path;
 
