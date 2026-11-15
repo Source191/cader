@@ -23,6 +23,17 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void PutTheProcessIdAfterTheTime()
+    {
+        ProcessCounts counts = new();
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
+        string process = $"[{Environment.ProcessId}]";
+
+        DiagnosticLine.Render(new TimedEvent(At, new ViewShown(ViewKind.Sessions))).ShouldBe($"2026-10-29T14:03:12.345Z {process} view Sessions");
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z {process} counts git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
+    }
+
+    [Fact]
     public void RenderTheStart()
     {
         Started started = new(new ToolVersion("0.17.0-preview.4"), new Version(2, 1, 310), new Version(10, 0, 26100), new Version(10, 0, 1), 120, 36);
