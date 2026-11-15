@@ -196,6 +196,12 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void RenderAStallWithTheLongestMarkedWork()
+    {
+        Body(new UiThreadStalledRunning(TimeSpan.FromMilliseconds(820), CodeName.For(typeof(WorktreeRowsLoaded)), TimeSpan.FromMilliseconds(610.6)))
+            .ShouldBe("stalled ui thread for 820 ms, longest marked work WorktreeRowsLoaded 610 ms");
+    }
+    [Fact]
     public void RenderACountWithItsWriteTimeAndTypicalFigures()
     {
         ProcessCounts counts = new();

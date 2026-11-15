@@ -1,10 +1,14 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.Application.Views;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 
 public sealed class HeartbeatShould
 {
+    private static readonly CodeName Rows = CodeName.For(typeof(WorktreeRowsLoaded));
+    private static readonly CodeName Key = CodeName.For(typeof(KeyPressed));
+
     private readonly FakeTimeProvider clock = new(new DateTimeOffset(2026, 11, 1, 10, 0, 0, TimeSpan.Zero));
     private readonly StallCounts stalls = new();
     private readonly DiagnosticLog log;
@@ -83,6 +87,18 @@ public sealed class HeartbeatShould
         TimeSpan stall = TimeSpan.FromMilliseconds(29750);
         stalls.Figures().ShouldBe(new DurationFigures(1, stall, stall, stall));
         log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalled(stall)]);
+    }
+
+    [Fact]
+    public void NameTheLongestMarkedWorkInAFreeze()
+    {
+        heartbeat.Beat();
+
+        heartbeat.Mark(Rows, () => clock.Advance(TimeSpan.FromMilliseconds(610)));
+        heartbeat.Mark(Key, () => clock.Advance(TimeSpan.FromMilliseconds(5)));
+        BeatAfter(455);
+
+        log.Snapshot().Select(timed => timed.Event).ShouldBe([new UiThreadStalledRunning(TimeSpan.FromMilliseconds(820), Rows, TimeSpan.FromMilliseconds(610))]);
     }
 
     private void BeatAfter(int milliseconds)
