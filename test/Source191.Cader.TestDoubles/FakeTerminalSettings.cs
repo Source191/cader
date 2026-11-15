@@ -14,23 +14,29 @@ public sealed class FakeTerminalSettings(TerminalProfileRecords records) : ITerm
 
     public string Location => @"C:\Users\me\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json";
 
-    /// <summary>Every call's entries, oldest first.</summary>
+    /// <summary>Every call's entries that were written, oldest first.</summary>
     public IReadOnlyList<IReadOnlyList<TerminalProfileEntry>> Added => added;
 
     /// <summary>When set, the next write throws it.</summary>
     public Exception? FailTheWriteWith { get; set; }
 
+    /// <summary>What a write answers; a refusal writes nothing.</summary>
+    public TerminalSettingsEdit Answer { get; set; } = new TerminalSettingsEdit.Written();
+
     public Task<TerminalProfileRecords> ReadAsync(CancellationToken cancellationToken) => Task.FromResult(records);
 
-    public Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    public Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
         if (FailTheWriteWith is not null)
         {
             throw FailTheWriteWith;
         }
 
-        added.Add(entries);
+        if (Answer is TerminalSettingsEdit.Written)
+        {
+            added.Add(entries);
+        }
 
-        return Task.CompletedTask;
+        return Task.FromResult(Answer);
     }
 }

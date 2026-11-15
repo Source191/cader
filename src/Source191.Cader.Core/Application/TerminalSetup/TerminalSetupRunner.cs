@@ -169,27 +169,22 @@ public sealed class TerminalSetupRunner(
             return Step.Skipped;
         }
 
-        Step step = await AddEntriesAsync(hidden, cancellationToken);
-        if (step == Step.Written)
-        {
-            await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location), cancellationToken);
-        }
-
-        return step;
+        return await TryWriteAsync(terminalSettings.Location, async () => await ReportEditAsync(await terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken), hidden, cancellationToken));
     }
 
-    /// <summary>A linked settings file is refused by the adapter; the user is given the entries to add by hand.</summary>
-    private async Task<Step> AddEntriesAsync(IReadOnlyList<TerminalProfileEntry> hidden, CancellationToken cancellationToken)
+    /// <summary>A written file is reported on the output; a refused one, which wrote nothing, on the error output with the entries to add by hand.</summary>
+    private async Task<Step> ReportEditAsync(TerminalSettingsEdit edit, IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
-        try
+        switch (edit)
         {
-            return await TryWriteAsync(terminalSettings.Location, () => terminalSettings.AddProfileEntriesAsync(hidden, cancellationToken));
-        }
-        catch (SettingsFileIsALinkException)
-        {
-            await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, hidden), cancellationToken);
-
-            return Step.Failed;
+            case TerminalSettingsEdit.Written:
+                await output.WriteLineAsync(Wording.HiddenProfilesShown(terminalSettings.Location), cancellationToken);
+                return Step.Written;
+            case TerminalSettingsEdit.IsALink:
+                await error.WriteLineAsync(Wording.TerminalSettingsLinked(terminalSettings.Location, entries), cancellationToken);
+                return Step.Failed;
+            default:
+                throw new UnreachableException();
         }
     }
     private async Task<Step> OfferBellAsync(TerminalSetupRequest request, CancellationToken cancellationToken)
@@ -226,13 +221,21 @@ public sealed class TerminalSetupRunner(
         return step;
     }
 
-    private async Task<Step> TryWriteAsync(string path, Func<Task> write)
+    private Task<Step> TryWriteAsync(string path, Func<Task> write)
     {
-        try
+        return TryWriteAsync(path, async () =>
         {
             await write();
 
             return Step.Written;
+        });
+    }
+
+    private async Task<Step> TryWriteAsync(string path, Func<Task<Step>> write)
+    {
+        try
+        {
+            return await write();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

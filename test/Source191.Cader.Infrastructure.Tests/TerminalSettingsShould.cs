@@ -357,7 +357,7 @@ public sealed class TerminalSettingsShould : IDisposable
             Assert.Skip("Windows refused a symbolic link: it needs Developer Mode or an administrator.");
         }
 
-        await Should.ThrowAsync<SettingsFileIsALinkException>(() => settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken));
+        (await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken)).ShouldBe(new TerminalSettingsEdit.IsALink());
 
         new FileInfo(settings.Location).LinkTarget.ShouldBe(target);
         (await File.ReadAllTextAsync(target, TestContext.Current.CancellationToken)).ShouldBe(original);

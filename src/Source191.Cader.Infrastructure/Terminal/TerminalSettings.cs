@@ -59,11 +59,11 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
     /// byte order mark included. Written beside the file and moved over it, so Terminal, which reloads the file when it
     /// changes, never reads half of it.
     /// </summary>
-    public async Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
+    public async Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken)
     {
         if (IsALink())
         {
-            throw new SettingsFileIsALinkException(Location);
+            return new TerminalSettingsEdit.IsALink();
         }
 
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
@@ -83,6 +83,8 @@ public sealed class TerminalSettings(string localStateFolder) : ITerminalSetting
         {
             File.Delete(temporary);
         }
+
+        return new TerminalSettingsEdit.Written();
     }
 
     /// <summary>A symbolic link or other reparse point, as a dotfiles set-up makes it: moving a file over it would replace the link.</summary>

@@ -487,7 +487,7 @@ public sealed class TerminalSetupRunnerShould : IDisposable
     public async Task GiveTheEntriesToAddByHandWhenTerminalsSettingsFileIsALink()
     {
         terminal = Hiding(SessionEntry);
-        terminal.FailTheWriteWith = new SettingsFileIsALinkException(terminal.Location);
+        terminal.Answer = new TerminalSettingsEdit.IsALink();
 
         int exitCode = await RunAsync(string.Empty, Defaults with { Yes = true });
 

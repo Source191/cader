@@ -13,9 +13,10 @@ public interface ITerminalSettings
     Task<TerminalProfileRecords> ReadAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Adds each entry to the settings file's profile list, by insertion, leaving every other character as it was.
-    /// Throws <see cref="IOException"/> or <see cref="UnauthorizedAccessException"/> when the file cannot be written, and
-    /// an <see cref="IOException"/> naming the reason when it no longer holds a readable profile list.
+    /// Adds each entry to the settings file's profile list, by insertion, leaving every other character as it was, or
+    /// answers why it wrote nothing. Throws <see cref="IOException"/> or <see cref="UnauthorizedAccessException"/> when
+    /// the file cannot be written, and an <see cref="IOException"/> naming the reason when it no longer holds a readable
+    /// profile list.
     /// </summary>
-    Task AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
+    Task<TerminalSettingsEdit> AddProfileEntriesAsync(IReadOnlyList<TerminalProfileEntry> entries, CancellationToken cancellationToken);
 }
