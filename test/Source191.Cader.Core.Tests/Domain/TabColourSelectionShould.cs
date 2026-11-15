@@ -78,4 +78,12 @@ public sealed class TabColourSelectionShould
 
         given.ShouldBe(["Red", "Blue", "Teal", "Pink", "Brown"]);
     }
+
+    [Fact]
+    public void RefuseAnEmptyPalette()
+    {
+        TabColourSelection none = new([]);
+
+        Should.Throw<InvalidOperationException>(() => none.Choose(inUse: []));
+    }
 }
