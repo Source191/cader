@@ -54,7 +54,7 @@ Every Claude Code session on the machine, whether it was started here or not.
 | NAME | The session name given at launch, or the folder name for an unnamed one |
 | TAB | A block in the tab's colour while a Cader tab shows the session; ▯ grey for a plain `claude` in its own terminal |
 | STATE | ◐ needs input (amber), ● working (cyan), ○ idle (white), ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey) |
-| REPOSITORY | The repository it runs in, or the folder's label outside a repository |
+| REPOSITORY | The repository it runs in, or the folder's label outside a repository, with folder gone: before the label when the folder no longer exists |
 | PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
 | AGE | Time since the session started |
 
@@ -88,6 +88,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 - **Stop:** `x` stops a session; it stays listed and can be resumed.
 - **Rename:** `r` gives a session a new name. It restarts under the new name and keeps its conversation.
 - **Delete:** `d` deletes a session, and its worktree too when no work would be lost: never one with uncommitted changes, unpushed commits, a lock or another live session.
+- **When its folder has gone:** a session whose folder was deleted reads folder gone: in REPOSITORY and in its detail pane, and resting the pointer on its row says so. Enter (on one without a process), `r` and `R` leave it alone, because a resume cannot land in a folder that no longer exists; `d` deletes it.
 - **Adopt:** `b` moves a plain `claude` started in its own tab under Cader's supervision, so it survives the tab closing.
 - **Close empty tabs:** `C` closes the tabs of terminal sessions that were never sent a message.
 - **From a folder you are already in:** `cader here [name] [--prompt <text>]` starts a supervised session there, on the current branch, in the same tab, and lists it on the Sessions tab. Ctrl+Z detaches; the session keeps running.
