@@ -1,4 +1,5 @@
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using static Source191.Cader.Application.Views.ViewUpdate<Source191.Cader.Application.Views.ConfigViewState>;
@@ -55,6 +56,7 @@ public static class ConfigView
             { Name: KeyName.Character, Character: '/' } => Unchanged(state with { List = state.List.StartFilter(), Message = StatusMessage.None }),
             { Name: KeyName.Character, Character: 'c' } => RowAction(state, row => WithPath(row, path => new CopyFolderPath(FolderPath.From(path)))),
             { Name: KeyName.Character, Character: 'f' } => RowAction(state, row => WithPath(row, path => OpenEffect(row, path))),
+            { Name: KeyName.Character, Character: 'd' } => RowAction(state, ClearLog),
             _ when SharedKeys.TryFor(key, out ViewEffect? shared) => Effect(state, shared),
             _ when TabKeys.TryFor(key, out ViewEffect? tab) => Effect(state, tab),
             _ => Unchanged(state),
@@ -86,6 +88,26 @@ public static class ConfigView
             ConfigRow.Setup setup => new RowDecision.Explain(new StatusMessage.SetupAdvice(setup.Item)),
             _ => new RowDecision.Act(new EditSetting(SettingsScope.For(row))),
         };
+    }
+
+    /// <summary>d asks to clear the log from either log file row, whatever the setting, once its files are read and one is there.</summary>
+    private static RowDecision ClearLog(ConfigRow row)
+    {
+        return row switch
+        {
+            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.LogFile file } => ClearLog(file.Files),
+            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.LogOff off } => ClearLog(off.Files),
+            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile, State: SetupState.OlderLog older } => ClearLog(older.Files),
+            ConfigRow.Setup { Item: SetupItem.DiagnosticLogFile or SetupItem.OlderDiagnosticLogFile } => new RowDecision.Explain(new StatusMessage.LogFilesNotRead()),
+            _ => new RowDecision.Explain(new StatusMessage.ClearsOnlyTheLog()),
+        };
+    }
+
+    private static RowDecision ClearLog(LogFiles files)
+    {
+        return files is { Current: LogFileOnDisc.Absent, Older: LogFileOnDisc.Absent }
+            ? new RowDecision.Explain(new StatusMessage.NoLogToClear())
+            : new RowDecision.Act(new ClearDiagnosticLog(files));
     }
 
     private static RowDecision WithPath(ConfigRow row, Func<string, ViewEffect> effect) => TryPathOf(row, out string? path) ? new RowDecision.Act(effect(path)) : new RowDecision.Explain(new StatusMessage.NoPathHere());

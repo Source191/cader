@@ -34,7 +34,7 @@ Each constructor change lands with every call site it breaks (`src`, `test` and 
 
 ## 6. The key
 
-- [ ] 6.1 **Red:** `ConfigViewShould` facts: `d` on the log row or the older row with a file `Written` raises `ClearDiagnosticLog` carrying the files; with both `Absent` it explains `NoLogToClear`; while `Reading` it explains `LogFilesNotRead`; on Worktree root and on Diagnostic log it explains `ClearsOnlyTheLog` and changes no setting. **Green:** the `d` case in `ConfigView.Act`, the three `StatusMessage` cases, their `Wording` words and `ToneOf` lines (Hint). **Verify:** the facts and `StatusTonesShould` pass.
+- [x] 6.1 **Red:** `ConfigViewShould` facts: `d` on the log row or the older row with a file `Written` raises `ClearDiagnosticLog` carrying the files; with both `Absent` it explains `NoLogToClear`; while `Reading` it explains `LogFilesNotRead`; on Worktree root and on Diagnostic log it explains `ClearsOnlyTheLog` and changes no setting. **Green:** the `d` case in `ConfigView.Act`, the three `StatusMessage` cases, their `Wording` words and `ToneOf` lines (Hint). **Verify:** the facts and `StatusTonesShould` pass.
 - [ ] 6.2 **Red:** `WordingOfScreensShould` fact that the Config bar's second row reads c, f, d, /, ?, !, q, with d labelled Clear log. **Green:** the `KeyHelp` line in `ConfigKeys` and `SecondBarRowForConfig`. **Verify:** the fact and `KeyHelpParityShould` (which presses `d` on a root row, answered by the explanation) pass.
 
 ## 7. Checks and docs
