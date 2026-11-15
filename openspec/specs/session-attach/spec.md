@@ -327,7 +327,7 @@ Outside a dialog, every title Cader writes for its own tab SHALL be the same tex
 - **THEN** the title is Cader each time
 
 ### Requirement: Resume every shown stopped or failed session in its own tab
-The resume-all key SHALL, without a dialog, resume every background session in the stopped or failed state that the table shows, in the table's order, and SHALL open a Cader tab for each one the CLI resumes. It SHALL remove each job before resuming it by session ID, since resuming a listed job starts a copy. A resume that fails after the removal SHALL get no tab and SHALL be reported with the command that resumes it. With none shown, the status line SHALL say there is nothing to resume.
+The resume-all key SHALL, without a dialog, resume every background session in the stopped or failed state that the table shows and whose folder still exists, in the table's order, and SHALL open a Cader tab for each one the CLI resumes. It SHALL remove each job before resuming it by session ID. A resume that fails after the removal SHALL get no tab and be reported with the command that resumes it. With none shown, the status line SHALL say there is nothing to resume.
 
 #### Scenario: Resume after restart
 - **WHEN** three sessions show failed after a reboot and the user presses resume-all
@@ -356,6 +356,10 @@ The resume-all key SHALL, without a dialog, resume every background session in t
 #### Scenario: A session never sent a message
 - **WHEN** the user presses resume-all while a stopped session named repos-f6 has no transcript
 - **THEN** its job is neither removed nor resumed, no tab opens for it, and the status line names repos-f6 and says there is nothing to resume
+
+#### Scenario: A session whose folder has gone
+- **WHEN** the user presses resume-all while two sessions show stopped and the folder of one of them, fix-123, has been deleted
+- **THEN** only the other is removed, resumed and given a tab, and fix-123's job is left listed as it was
 
 #### Scenario: Nothing to resume
 - **WHEN** no shown session is stopped or failed and the user presses resume-all
@@ -401,3 +405,22 @@ When the CLI's stop or remove command exits with an error, the key that ran it S
 #### Scenario: Delete cannot remove the job
 - **WHEN** the user confirms deleting fix-123, which lives in a Cader-created worktree and is shown in a Cader-opened tab, and the remove command exits with an error saying "Session 81cdb0f9 not found"
 - **THEN** the tab stays open, the worktree and its branch are untouched, the session stays listed, and the status line, as a failure, reads Could not delete fix-123: Session 81cdb0f9 not found
+
+### Requirement: A session whose folder has gone is not resumed
+A key that would resume a session whose working directory no longer exists SHALL be refused: the open-in-tab key for such a session without a process, on the Sessions tab and through a worktree's row alike, and the rename key for any such session. No tab SHALL be opened, nothing SHALL be removed or resumed, and the status line SHALL say that the session's folder no longer exists and that delete removes it. The key bar SHALL offer only delete for such a session without a process.
+
+#### Scenario: Enter on a stopped session whose folder has gone
+- **WHEN** the user presses Enter on the stopped session fix-123, whose folder C:\Users\me\source\worktrees\Northwind.Orders-fix-123 has been deleted
+- **THEN** no tab opens, the job is neither removed nor resumed, and the status line says fix-123's folder no longer exists and that d deletes it
+
+#### Scenario: Enter on a running session whose folder reads as gone
+- **WHEN** the session fix-123 is running with a live Cader tab and its folder, on a network drive that has gone offline, reads as gone
+- **THEN** Enter switches to its tab as for any running session
+
+#### Scenario: Rename a session whose folder has gone
+- **WHEN** the user presses r on the session fix-123, whose folder has been deleted
+- **THEN** no dialog opens, the job is neither removed nor resumed, and the status line says fix-123's folder no longer exists and that d deletes it
+
+#### Scenario: The key bar of a stopped session whose folder has gone
+- **WHEN** the selected row is the stopped session fix-123, whose folder has been deleted
+- **THEN** the key bar offers d Delete for the row, and neither Enter nor r

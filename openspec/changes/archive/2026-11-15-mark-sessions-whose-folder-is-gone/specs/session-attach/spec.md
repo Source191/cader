@@ -22,7 +22,7 @@ A key that would resume a session whose working directory no longer exists SHALL
 ## MODIFIED Requirements
 
 ### Requirement: Resume every shown stopped or failed session in its own tab
-The resume-all key SHALL, without a dialog, resume every background session in the stopped or failed state that the table shows and whose working directory still exists, in the table's order, and SHALL open a Cader tab for each one the CLI resumes. It SHALL remove each job before resuming it by session ID, since resuming a listed job starts a copy. A resume that fails after the removal SHALL get no tab and SHALL be reported with the command that resumes it. With none shown, the status line SHALL say there is nothing to resume.
+The resume-all key SHALL, without a dialog, resume every background session in the stopped or failed state that the table shows and whose folder still exists, in the table's order, and SHALL open a Cader tab for each one the CLI resumes. It SHALL remove each job before resuming it by session ID. A resume that fails after the removal SHALL get no tab and be reported with the command that resumes it. With none shown, the status line SHALL say there is nothing to resume.
 
 #### Scenario: Resume after restart
 - **WHEN** three sessions show failed after a reboot and the user presses resume-all
