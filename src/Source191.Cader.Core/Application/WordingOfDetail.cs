@@ -13,6 +13,12 @@ public static partial class Wording
     /// <summary>The rows every session's and worktree's facts take.</summary>
     public const int DetailFactRows = 4;
 
+    /// <summary>The rows a session's facts take.</summary>
+    public const int SessionFactRows = 5;
+
+    /// <summary>The rows a worktree's facts take.</summary>
+    public const int WorktreeFactRows = 4;
+
     /// <summary>The most commits or changed files a worktree's pane lists; a line beneath says how many more.</summary>
     public const int DetailListedItems = 5;
 
