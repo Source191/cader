@@ -33,7 +33,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 - No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
 - Mutation testing of Domain and Ports: facts now pin the mutants the weekly run left alive (equality of settings and editors, the wording of exceptions, the edges of fits and orderings), and the ones no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#282)
 - Mutation testing of the diagnostics and the worktree scan: facts now pin every word a child command may name, the edges of crash lines, heartbeat gaps, code names and process counts, and the scan of registered worktrees, leftovers and gitdir pointers, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#283)
-- Mutation testing of the rest of Application: facts now pin the help text and refusal layout of every command, the wording of the detail pane, the setup rows, the outcomes and the release notes, the edges of the key bar, the location cache and the memory figures, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes
+- Mutation testing of the rest of Application: facts now pin the help text and refusal layout of every command, the wording of the detail pane, the setup rows, the outcomes and the release notes, the edges of the key bar, the location cache and the memory figures, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#284)
 
 ## 0.21.1 - 2026-11-13
 
