@@ -126,6 +126,28 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
             : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
     }
 
+    /// <summary>Only a full ref name is given to git, so no revision can be read as one of rev-list's options.</summary>
+    public async Task<int?> CountCommitsAfterAsync(FolderPath repository, string revision, CommitId head, CancellationToken cancellationToken)
+    {
+        if (!revision.StartsWith("refs/", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        ProcessResult result = await RunAsync(repository.Value, ["rev-list", "--count", revision, "--not", head.Value], cancellationToken);
+
+        return result.ExitCode == 0 && int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count) ? count : null;
+    }
+
+    public async Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
+    {
+        ProcessResult result = await RunOrThrowAsync(repository.Value, ["rev-list", "--count", $"refs/heads/{branch.Value}", "--not", "--remotes"], cancellationToken);
+
+        return int.TryParse(result.StandardOutput.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int count)
+            ? count
+            : throw new GitException($"git rev-list --count gave '{result.StandardOutput.Trim()}', not a number", inUse: false);
+    }
+
     public async Task<IReadOnlyList<UnpushedCommit>> UnpushedCommitsAsync(string worktree, int limit, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(worktree, ["log", "-n", limit.ToString(CultureInfo.InvariantCulture), "--format=%h%x09%cI%x09%s", "HEAD", "--not", "--remotes"], cancellationToken);

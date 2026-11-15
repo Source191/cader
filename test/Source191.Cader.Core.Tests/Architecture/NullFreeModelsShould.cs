@@ -25,6 +25,7 @@ public sealed class NullFreeModelsShould
     /// </summary>
     private static readonly AllowedNullable[] Kept =
     [
+        new(typeof(IGit), "CountCommitsAfterAsync", "git answers nothing when it has not got the head or the revision is not a full ref name"),
         new(typeof(IGit), "LastCommitAtAsync", "git answers nothing when it fails or the worktree has no commits"),
         new(typeof(IGit), "DefaultRemoteBranchAsync", "git answers nothing when it fails or origin has no HEAD"),
         new(typeof(IGit), "CurrentBranchAsync", "git answers nothing when it fails or the head is detached"),

@@ -57,6 +57,16 @@ public interface IGit
     /// <summary>Commits on no remote branch. Throws <see cref="GitException"/> when git fails or its count is not a number.</summary>
     Task<int> CountUnpushedCommitsAsync(string worktree, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// How many commits <paramref name="revision"/>, a full ref name such as refs/heads/fix-123 or
+    /// refs/remotes/origin/fix-123, has that <paramref name="head"/> does not contain; null when git fails, as it does
+    /// for a head it has never fetched, or when the revision is not a full ref name.
+    /// </summary>
+    Task<int?> CountCommitsAfterAsync(FolderPath repository, string revision, CommitId head, CancellationToken cancellationToken);
+
+    /// <summary>The local branch's commits on no remote branch. Throws <see cref="GitException"/> when git fails or its count is not a number.</summary>
+    Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken);
+
     /// <summary>Null when git fails or there are no commits.</summary>
     Task<DateTimeOffset?> LastCommitAtAsync(string worktree, CancellationToken cancellationToken);
 
