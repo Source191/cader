@@ -22,9 +22,9 @@ public sealed class RemoveWorktreeHandler(IGit git, ICreatedWorktrees createdWor
             .FirstOrDefault(candidate => candidate.Path == row.Path);
         // Merge state needs a branch and a repository that still exists.
         bool merged = created is not null && row is { Head: Head.OnBranch { Branch: BranchName branch }, OwnerExists: true } && await inspector.IsMergedAsync(row.Repository, branch, cancellationToken);
-        RemovalDecision decision = RemovalDecision.For(row.Facts(branchCreatedHere: created is not null, branchMerged: merged), forced);
+        RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
 
-        return await remover.CarryOutAsync(row, decision, createdHere: created is not null, cancellationToken);
+        return await remover.CarryOutAsync(row, decision, createdHere: created is not null, merged, cancellationToken);
     }
 
     /// <summary>A leftover row with its folder's facts read again; a live worktree is git's to judge, through git worktree remove.</summary>

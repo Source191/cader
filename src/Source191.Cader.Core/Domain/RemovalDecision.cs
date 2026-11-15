@@ -13,8 +13,8 @@ public abstract record RemovalDecision
     /// </summary>
     public sealed record Refused(RemovalReason Reason, bool CanBeForced) : RemovalDecision;
 
-    /// <summary>The worktree goes through git, then its branch is dealt with as Branch says.</summary>
-    public sealed record RemoveWorktree(bool Forced, BranchAction Branch) : RemovalDecision;
+    /// <summary>The worktree goes through git, then its branch is dealt with as <see cref="BranchActionFor"/> says.</summary>
+    public sealed record RemoveWorktree(bool Forced) : RemovalDecision;
 
     /// <summary>Only the folder is deleted, because git no longer has the worktree; Prune also clears its registration.</summary>
     public sealed record DeleteFolder(bool Forced, bool Prune) : RemovalDecision;
@@ -32,9 +32,10 @@ public abstract record RemovalDecision
             { Health: WorktreeHealthKind.Orphan } => new DeleteFolder(forced, Prune: false),
             { DirtyFileCount: > 0 } when !forced => new Refused(new RemovalReason.ChangesWouldBeLost(facts.DirtyFileCount), CanBeForced: true),
             { UnpushedCommitCount: > 0 } when !forced => new Refused(new RemovalReason.UnpushedCommits(facts.Branch, facts.UnpushedCommitCount), CanBeForced: true),
-            _ => new RemoveWorktree(forced, BranchActionFor(facts)),
+            _ => new RemoveWorktree(forced),
         };
     }
 
-    private static BranchAction BranchActionFor(WorktreeRemovalFacts facts) => facts is { BranchCreatedHere: true, BranchMerged: true } ? BranchAction.Delete : BranchAction.Ask;
+    /// <summary>What happens to a removed worktree's branch: deleted without asking only when it was created here and is merged.</summary>
+    public static BranchAction BranchActionFor(bool createdHere, bool merged) => createdHere && merged ? BranchAction.Delete : BranchAction.Ask;
 }
