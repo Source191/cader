@@ -27,6 +27,17 @@ public sealed class ProcessCountsShould
     }
 
     [Fact]
+    public void ListTheExitCodesOfOneCommandInOrder()
+    {
+        ProcessCounts counts = new();
+
+        counts.Add(WorktreeList, 128, TimeSpan.FromMilliseconds(41));
+        counts.Add(WorktreeList, 0, TimeSpan.FromMilliseconds(41));
+
+        counts.Snapshot().Select(count => count.ExitCode).ShouldBe([0, 128]);
+    }
+
+    [Fact]
     public void HoldTheTypicalDurationsOfEachCommand()
     {
         ProcessCounts counts = new();
