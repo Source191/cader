@@ -246,6 +246,19 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     }
 
     [Fact]
+    public async Task NotListAWorktreeUnderClaudeWorktreesAsAnOrphanWhenGitRegistersIt()
+    {
+        string worktree = Path.Combine(Repository, ".claude", "worktrees", "fix-123");
+        folders.WithDirectory(worktree);
+        processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments[0] == "worktree", new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/repos/Northwind.Orders/.claude/worktrees/fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Path.Value.ShouldBe(worktree);
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Ok);
+    }
+
+    [Fact]
     public async Task ListOrphansInNameOrder()
     {
         string orphans = Path.Combine(Repository, ".claude", "worktrees");
