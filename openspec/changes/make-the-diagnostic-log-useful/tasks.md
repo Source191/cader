@@ -36,8 +36,8 @@ Each task is red, green, refactor, a commit per step; "verify" means the Core su
 
 ## 7. Release housekeeping
 
-- [ ] 7.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1`. Add a `## Unreleased` `### Changed` line to `CHANGELOG.md` saying the diagnostic log now names the process on every line, records a program that cannot start once per folder with Windows' error number, names the Terminal.Gui method behind a warning and the work behind a UI stall, and marks its counts as since start. Check that `docs\user-guide.md`'s privacy sentence ("numbers, durations, versions and names of its own") still holds, which it does because the process id is a number, and leave it unchanged. Verify that `.github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD` and the changelog check pass, and that `dotnet format --verify-no-changes` is clean.
-- [ ] 7.2 Run `openspec validate make-the-diagnostic-log-useful --strict` and verify it passes.
+- [x] 7.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` with `.github\scripts\Step-Version.ps1`. Add a `## Unreleased` `### Changed` line to `CHANGELOG.md` saying the diagnostic log now names the process on every line, records a program that cannot start once per folder with Windows' error number, names the Terminal.Gui method behind a warning and the work behind a UI stall, and marks its counts as since start. Check that `docs\user-guide.md`'s privacy sentence ("numbers, durations, versions and names of its own") still holds, which it does because the process id is a number, and leave it unchanged. Verify that `.github\scripts\Assert-VersionBumped.ps1 -Base main -Head HEAD` and the changelog check pass, and that `dotnet format --verify-no-changes` is clean.
+- [x] 7.2 Run `openspec validate make-the-diagnostic-log-useful --strict` and verify it passes.
 
 ## Workflow follow-up
 
