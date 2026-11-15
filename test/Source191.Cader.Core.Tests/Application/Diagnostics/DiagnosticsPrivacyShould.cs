@@ -25,6 +25,7 @@ public sealed class DiagnosticsPrivacyShould
     private const string Claude = @"C:\Users\me\.local\bin\claude.exe";
     private const string OwnExecutable = @"C:\Users\me\.dotnet\tools\cader.exe";
     private const string DiagnosticLogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
+    private const string RepositoryRoot = @"C:\Users\me\source\repos";
     private const string Repository = @"C:\Users\me\source\repos\Northwind.Orders";
     private const string WorktreeRoot = @"C:\Users\me\source\worktrees";
     private const string Worktree = @"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests";
@@ -125,6 +126,28 @@ public sealed class DiagnosticsPrivacyShould
         sink.Lines.ShouldContain(line => line.Contains("effect OpenReleasePage -> OpenReleasePageOutcome.Opened", StringComparison.Ordinal));
         string everything = string.Join('\n', sink.Lines);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void KeepTheWizardFilterOutOfTheLog()
+    {
+        FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git"));
+        WizardState opened = WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(RepositoryRoot)), [], folders, TestSettings.For(RepositoryRoot), new WizardOrigin.Anywhere());
+        WizardFilterWatch watch = WizardFilterWatch.Open(opened, log, clock);
+        watch.ListFilled();
+        const string typed = "Northwind.Orders";
+
+        for (int length = 1; length <= typed.Length; length++)
+        {
+            clock.Advance(TimeSpan.FromMilliseconds(90));
+            watch.FilterChanged(typed[..length]);
+        }
+
+        sink.Lines.ShouldContain(line => line.Contains("wizard opened offering 1 repository", StringComparison.Ordinal));
+        sink.Lines.ShouldContain(line => line.Contains("wizard filter first changed after 90 ms: LetterOrDigit, 1 character, list filled", StringComparison.Ordinal));
+        string everything = string.Join('\n', sink.Lines);
+        Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
+        everything.ShouldNotContain("orders", Case.Insensitive);
     }
 
     private static ReleaseVersion ReleaseVersion(string text)

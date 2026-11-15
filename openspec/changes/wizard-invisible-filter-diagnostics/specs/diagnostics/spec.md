@@ -21,8 +21,8 @@ Cader SHALL record the first change to the wizard's repository filter, once per 
 - **THEN** the log records a first filter change after 12 ms, of kind whitespace, holding 1 character, with the list filled, and no later change is recorded for that wizard
 
 #### Scenario: The user types a name
-- **WHEN** the user types "orders" into the filter, starting 1.8 seconds after the wizard opens
-- **THEN** the log records one first filter change after 1800 ms, of kind letter or digit, holding 1 character, and neither "o" nor "orders" appears in the log
+- **WHEN** the user types "Northwind.Orders" into the filter, starting 1.8 seconds after the wizard opens
+- **THEN** the log records one first filter change after 1800 ms, of kind letter or digit, holding 1 character, and neither "Northwind" nor "Orders" appears in the log
 
 #### Scenario: The filter is never changed
 - **WHEN** the user opens the wizard and closes it with Esc without typing
