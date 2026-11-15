@@ -1,7 +1,7 @@
 namespace Source191.Cader.Tui;
 
 /// <summary>What a dialog that asks for typed text answered: the text, or that it was cancelled.</summary>
-internal abstract record TypedAnswer
+internal closed record TypedAnswer
 {
     public sealed record Typed(string Text) : TypedAnswer;
 

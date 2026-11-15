@@ -2,8 +2,8 @@ namespace Source191.Cader.Ports;
 
 /// <summary>
 /// The <see href="https://learn.microsoft.com/windows/terminal/json-fragment-extensions">Windows Terminal JSON
-/// fragment</see> that carries the console's profiles: a file Windows Terminal reads at start-up and that the user's own
-/// settings file never sees. Implemented over System.IO at the boundary and faked in tests.
+/// fragment</see> that carries the console's profiles: a file Windows Terminal reads at start-up, beside the user's own
+/// settings file, which writing it never touches. Implemented over System.IO at the boundary and faked in tests.
 /// </summary>
 public interface ITerminalFragment
 {

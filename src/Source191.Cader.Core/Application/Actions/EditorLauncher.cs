@@ -1,0 +1,45 @@
+using Source191.Cader.Application.Effects;
+using Source191.Cader.Domain;
+using Source191.Cader.Ports;
+using System.Diagnostics;
+
+namespace Source191.Cader.Application.Actions;
+
+/// <summary>
+/// Starts the editor chosen in settings on a folder or a file, without waiting for it. An editor that is missing, or
+/// that Windows will not start, is an outcome with the program's words rather than an exception's message.
+/// </summary>
+public sealed class EditorLauncher(IEditorLocator locator, IDesktop desktop, IFolders folders, CurrentSettings settings)
+{
+    public async Task<Outcome> OpenAsync(FolderPath target, CancellationToken cancellationToken)
+    {
+        EditorChoice editor = settings.Value.Editor;
+        ProgramLocation location = editor.Preset == EditorPreset.Custom
+            ? CustomExecutable(editor)
+            : await locator.LocateAsync(editor.Preset, cancellationToken);
+
+        return location switch
+        {
+            ProgramLocation.Found found => await StartAsync(editor, found.Path, target, cancellationToken),
+            ProgramLocation.Missing => new OpenInEditorOutcome.EditorNotFound(editor),
+            _ => throw new UnreachableException(),
+        };
+    }
+
+    /// <summary>A Custom editor's executable is looked for as the key is pressed, since it may have gone since it was saved.</summary>
+    private ProgramLocation CustomExecutable(EditorChoice editor) => folders.FileExists(editor.Executable) ? new ProgramLocation.Found(editor.Executable) : new ProgramLocation.Missing();
+
+    private async Task<Outcome> StartAsync(EditorChoice editor, string executable, FolderPath target, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await desktop.StartAsync(EditorCommand.For(editor, executable, target), cancellationToken);
+        }
+        catch (ProgramNotStartedException refused)
+        {
+            return new OpenInEditorOutcome.EditorNotStarted(editor, refused.Reason);
+        }
+
+        return new OpenInEditorOutcome.Opened(target.Name, editor);
+    }
+}

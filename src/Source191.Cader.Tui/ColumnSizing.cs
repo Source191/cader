@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Views;
@@ -137,7 +136,6 @@ internal sealed class ColumnSizing<TRow>
             CellPaint.Text when onSelected => null,
             CellPaint.Text text => Palette.Plain(text.Foreground),
             CellPaint.None => null,
-            _ => throw new UnreachableException(),
         };
     }
 

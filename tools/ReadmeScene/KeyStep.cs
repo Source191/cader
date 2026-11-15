@@ -1,7 +1,7 @@
 namespace Source191.Cader.ReadmeScene;
 
 /// <summary>One step of a key script, taken after its delay.</summary>
-public abstract record KeyStep(TimeSpan Delay)
+public closed record KeyStep(TimeSpan Delay)
 {
     /// <summary>Types text a character at a time, <see cref="KeyScript.TypingInterval"/> apart.</summary>
     public sealed record Type(TimeSpan Delay, string Text) : KeyStep(Delay);

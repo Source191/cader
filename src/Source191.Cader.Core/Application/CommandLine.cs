@@ -17,7 +17,10 @@ public static class CommandLine
 {
     public static RootCommand Build(CommandActions actions)
     {
-        RootCommand root = new($"Every agent session in one tab, still there after a reboot.\n{Wording.SupportLine}") { Here(actions), SetupTerminal(actions), ClaimTab(actions) };
+        RootCommand root = new($"Every agent session in one tab, still there after a reboot.\n{Wording.SupportLine}")
+        {
+            Subcommands = { Here(actions), SetupTerminal(actions), ClaimTab(actions) },
+        };
         root.SetAction((_, cancellationToken) => actions.OpenConsole(cancellationToken));
 
         return root;
@@ -91,7 +94,7 @@ public static class CommandLine
         Option<string?> sessionSound = new("--session-sound") { HelpName = "wav", Description = "The bell sound of the Cader session profile." };
         Option<bool> yes = new("--yes") { Description = "Write without asking." };
         Option<bool> remove = new("--remove") { Description = "Remove the profiles." };
-        Command setup = new("setup-terminal", "Add the Cader and Cader session profiles to Windows Terminal, each with a bell that sounds and flashes, then offer to turn on Claude Code's terminal bell. Shows what it will write and asks first.") { sound, sessionSound, yes, remove };
+        Command setup = new("setup-terminal", "Add the Cader and Cader session profiles to Windows Terminal, each with a bell that sounds and flashes, offer to show again a profile Windows Terminal hides because it was deleted there, then offer to turn on Claude Code's terminal bell. Shows what it will write and asks first.") { sound, sessionSound, yes, remove };
         setup.SetAction((parsed, cancellationToken) => actions.SetUpTerminal(new TerminalSetupRequest(SoundOf(parsed.GetValue(sound)), SoundOf(parsed.GetValue(sessionSound)), parsed.GetValue(yes), parsed.GetValue(remove)), cancellationToken));
 
         return setup;

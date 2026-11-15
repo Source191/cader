@@ -11,13 +11,13 @@ namespace Source191.Cader.Infrastructure.Tests;
 /// </summary>
 public sealed class SourceConventionsShould
 {
+    private const string CoreFolder = @"src\Source191.Cader.Core\";
     private const string ApplicationFolder = @"src\Source191.Cader.Core\Application";
     private const string SharedSnapshotFile = @"src\Source191.Cader.Core\Application\SharedSnapshot.cs";
 
     private static readonly string[] ArgumentExceptionFiles =
     [
         @"src\Source191.Cader.Infrastructure\Claude\ClaudeSettings.cs",
-        @"src\Source191.Cader.Infrastructure\Processes\ProcessRegistry.cs",
     ];
 
     private static readonly string[] StateFileRecords = ["UserConfig", "EditorSetting", "TabFile", "UpdateCheckFile", "LastRunFile"];
@@ -103,6 +103,113 @@ public sealed class SourceConventionsShould
 
         return inApplication && (name == "CommandLine.cs" || name.StartsWith("Wording", StringComparison.Ordinal));
     }
+
+    /// <summary>
+    /// A hierarchy outside Core is a <c>closed</c> record, so its switches need no discard arm. Core is held at C# 14 until
+    /// Stryker compiles C# 15 (its README), and its hierarchies stay abstract until then.
+    /// </summary>
+    [Fact]
+    public void DeclareEveryHierarchyOutsideCoreClosed()
+    {
+        List<string> offenders = [.. Find(["src", "tools"], IsAbstractRecordOutsideCore).Select(found => $"{Describe(found)}: {found.Text.Split('\n')[0].Trim()}")];
+
+        offenders.ShouldBeEmpty($"{offenders.Count} abstract records outside Core:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private static bool IsAbstractRecordOutsideCore(SyntaxNodeOrToken item)
+    {
+        bool isAbstractRecord = item.AsNode() is RecordDeclarationSyntax record && record.Modifiers.Any(SyntaxKind.AbstractKeyword);
+        string file = item.SyntaxTree?.FilePath ?? string.Empty;
+
+        return isAbstractRecord && !file.StartsWith(CoreFolder, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FindAThrowingDiscardOnlyInASwitchOverAClosedType()
+    {
+        SyntaxTree probe = SourceFiles.Parse(ClosedSwitchProbe, "probe.cs");
+
+        ThrowingDiscardsOverClosedTypes([probe]).ShouldBe(["probe.cs(18)"]);
+    }
+
+    /// <summary>
+    /// The compiler knows every case of a closed type, so a switch expression over one needs no discard arm and a new case
+    /// fails the build with CS8509 where an arm that throws would hide it until run time. A switch statement is not checked
+    /// by the compiler, so it keeps its throwing default.
+    /// </summary>
+    [Fact]
+    public void KeepNoThrowingDiscardInASwitchOverAClosedType()
+    {
+        List<SyntaxTree> trees = [.. SourceFiles.Under("src", "tools").Select(relativePath => SourceFiles.Parse(SourceFiles.Read(relativePath), relativePath))];
+
+        List<string> offenders = [.. ThrowingDiscardsOverClosedTypes(trees)];
+
+        offenders.ShouldBeEmpty($"{offenders.Count} throwing discard arms over a closed type:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    private const string ClosedSwitchProbe = """
+        namespace Northwind.Probe;
+
+        public closed record Shape
+        {
+            public sealed record Circle : Shape;
+
+            public sealed record Square(int Side) : Shape;
+        }
+
+        public abstract record Open;
+
+        public static class Uses
+        {
+            public static int Sides(Shape shape) => shape switch
+            {
+                Shape.Circle => 0,
+                Shape.Square square => 4,
+                _ => throw new System.Diagnostics.UnreachableException(),
+            };
+
+            public static int Opened(Open open) => open switch
+            {
+                Open => 1,
+                _ => throw new System.Diagnostics.UnreachableException(),
+            };
+        }
+        """;
+
+    private static IEnumerable<string> ThrowingDiscardsOverClosedTypes(IReadOnlyList<SyntaxTree> trees)
+    {
+        HashSet<string> closed = [.. trees
+            .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+            .Where(type => type.Modifiers.Any(modifier => modifier.Text == "closed"))
+            .Select(type => type.Identifier.Text)];
+
+        return trees
+            .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<SwitchExpressionSyntax>())
+            .Where(switchExpression => switchExpression.Arms.Any(arm => NamesACaseOf(arm.Pattern, closed)))
+            .SelectMany(switchExpression => switchExpression.Arms.Where(IsThrowingDiscard))
+            .Select(arm => $"{arm.SyntaxTree.FilePath}({arm.GetLocation().GetLineSpan().StartLinePosition.Line + 1})");
+    }
+
+    private static bool IsThrowingDiscard(SwitchExpressionArmSyntax arm) => arm is { Pattern: DiscardPatternSyntax, WhenClause: null, Expression: ThrowExpressionSyntax };
+
+    // shortcut: a case named bare (a switch inside its own closed type) is not seen; none exists, so read the governing type with a semantic model once one does.
+    private static bool NamesACaseOf(PatternSyntax pattern, HashSet<string> closed) => pattern.DescendantNodesAndSelf().Select(Qualifier).Any(name => name is not null && closed.Contains(name));
+
+    /// <summary>The type a case is reached through: <c>Shape</c> in <c>Shape.Circle</c>, whether it is read as a type or a constant.</summary>
+    private static string? Qualifier(SyntaxNode node) => node switch
+    {
+        QualifiedNameSyntax qualified => LastName(qualified.Left),
+        MemberAccessExpressionSyntax access => LastName(access.Expression),
+        _ => null,
+    };
+
+    private static string? LastName(SyntaxNode node) => node switch
+    {
+        SimpleNameSyntax simple => simple.Identifier.Text,
+        QualifiedNameSyntax qualified => qualified.Right.Identifier.Text,
+        MemberAccessExpressionSyntax access => access.Name.Identifier.Text,
+        _ => null,
+    };
 
     private static string Describe(Found found) => $"{found.RelativePath}({found.Line})";
 

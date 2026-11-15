@@ -1,7 +1,7 @@
 namespace Source191.Cader.Tui;
 
 /// <summary>What the solution chooser answered: the file chosen, or that none was.</summary>
-internal abstract record SolutionChoice
+internal closed record SolutionChoice
 {
     public sealed record Chosen(string File) : SolutionChoice;
 

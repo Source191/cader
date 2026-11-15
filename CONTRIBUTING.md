@@ -34,7 +34,7 @@ It builds and runs on Windows 11 only. Install Claude Code as the README's [Inst
 ```powershell
 winget install --id Microsoft.WindowsTerminal --exact --source winget   # already part of Windows 11 22H2 and later
 winget install --id Microsoft.PowerShell --exact --source winget
-winget install --id Microsoft.DotNet.SDK.10 --exact --source winget
+winget install --id Microsoft.DotNet.SDK.11 --exact --source winget
 winget install --id Git.Git --exact --source winget
 npm install -g @fission-ai/openspec   # the OpenSpec CLI
 dotnet tool restore                   # dotnet-stryker, pinned in .config\dotnet-tools.json, for mutation testing (optional)
@@ -43,7 +43,7 @@ cd cader
 dotnet build -c Debug
 ```
 
-- **SDK:** `global.json` chooses the SDK (10.0.301, rolling forward to the latest minor) and Microsoft.Testing.Platform as the test runner.
+- **SDK:** `global.json` chooses the SDK (11.0.100, rolling forward to the latest minor) and Microsoft.Testing.Platform as the test runner.
 - **Claude Code:** the `/opsx:*` commands and the OpenSpec skills under `.claude\` work in any Claude Code session opened in the repository; the `openspec` CLI does the same work by hand. Trust the clone in Claude Code once (run `claude` in it and accept the prompt) if you will run the contract tests or the hand-off check.
 - **Your environment:** never start `cader`, or anything that opens tabs, from inside a Claude Code session without clearing `NO_COLOR`, `CLAUDECODE`, `CLAUDE_PID` and `CLAUDE_CODE_*`. Windows Terminal hands the caller's environment to new tabs, and everything in them then runs monochrome.
 
@@ -66,7 +66,7 @@ dotnet format --verify-no-changes
 
 - **The smoke check:** `dotnet run -- smoke <exe> <worktree-folder>` from the same folder opens and cancels every dialog and view of an installed tool, then quits; exit 0 passes. The worktree must be an idle linked worktree under a repository root holding two solutions. The tool's [README](tools/HeadlessTerminal/README.md) also covers `drive`, `grid` and `count`, for scripted keystrokes and reading a capture as a screen.
 - **Claude Code contract tests:** they start real sessions, so an ordinary `dotnet test` skips them. Run them from a trusted repository with `$env:CADER_CLAUDE_CONTRACT = 1; dotnet test --project test\Source191.Cader.Infrastructure.Tests -c Debug -- --filter-trait "Category=ClaudeContract"`.
-- **Mutation testing:** from `test\Source191.Cader.Core.Tests`, run `dotnet stryker --mutate "**/Domain/*.cs"`. `stryker-config.json` there sets the project, the `mtp` test runner (xunit.v3 scores 0 % under the VSTest bridge), the reporters and the thresholds, so add only `--mutate` globs like that one, never solution-relative paths, or `--since:<committish>` to mutate what changed. The reports are under `StrykerOutput` in that folder. `mutation.yml` also runs it after each release and every week; see [MAINTAINING.md](MAINTAINING.md).
+- **Mutation testing:** from `test\Source191.Cader.Core.Tests`, run `dotnet stryker --mutate "**/Domain/*.cs"`. `stryker-config.json` there sets the project, the `mtp` test runner (xunit.v3 scores 0 % under the VSTest bridge), the reporters and the thresholds, so add only `--mutate` globs like that one, never solution-relative paths, or `--since:<committish>` to mutate what changed. The reports are under `StrykerOutput` in that folder. A full local run scores lower than the runner's and moves by about 2 points between runs, because Stryker's `mtp` runner kills the string constants that no test covers unreliably on a developer machine, so trust a scoped run's covered mutants and take the score from `mutation.yml`; `Compare-MutationReports.ps1` in `.github\scripts` compares two reports (`.claude\rules\checks.md` has the measurements). `mutation.yml` also runs it after each release and every week; see [MAINTAINING.md](MAINTAINING.md).
 - **Performance:** [docs/performance-monitoring.md](docs/performance-monitoring.md) explains how to watch the console over a working day with the Diagnostic log setting, `dotnet-counters`, `dotnet-trace` and the Windows Performance Recorder, and how to read the results before changing anything for speed.
 
 ## Trying your build

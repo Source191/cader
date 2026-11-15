@@ -10,7 +10,7 @@ public sealed class FakeClaudeSettings(NotificationChannelState state) : IClaude
     {
     }
 
-    public string Location => @"C:\Users\me\.claude\settings.json";
+    public string Location { get; init; } = @"C:\Users\me\.claude\settings.json";
 
     public NotificationChannelState State { get; private set; } = state;
 

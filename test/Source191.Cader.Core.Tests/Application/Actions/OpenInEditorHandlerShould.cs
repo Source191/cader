@@ -19,7 +19,7 @@ public sealed class OpenInEditorHandlerShould
     [Fact]
     public async Task StartTheChosenEditorOnTheFolder()
     {
-        OpenInEditorHandler handler = new(locator, desktop, folders, CurrentWith(EditorChoice.VsCode));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(EditorChoice.VsCode)), folders);
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(Orders)), CancellationToken.None);
 
@@ -32,7 +32,7 @@ public sealed class OpenInEditorHandlerShould
     public async Task StartACustomEditorFromItsOwnExecutable()
     {
         EditorChoice custom = EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]);
-        OpenInEditorHandler handler = new(locator, desktop, folders.WithFile(@"C:\Tools\subl.exe"), CurrentWith(custom));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(custom)), folders.WithFile(@"C:\Tools\subl.exe"));
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(Orders)), CancellationToken.None);
 
@@ -45,7 +45,7 @@ public sealed class OpenInEditorHandlerShould
     public async Task ReportAnEditorThatIsNotInstalled()
     {
         EditorChoice visualStudio = EditorChoice.Of(EditorPreset.VisualStudio);
-        OpenInEditorHandler handler = new(locator, desktop, folders, CurrentWith(visualStudio));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(visualStudio)), folders);
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(Orders)), CancellationToken.None);
 
@@ -57,7 +57,7 @@ public sealed class OpenInEditorHandlerShould
     public async Task ReportACustomEditorWhoseExecutableIsMissing()
     {
         EditorChoice custom = EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]);
-        OpenInEditorHandler handler = new(locator, desktop, folders, CurrentWith(custom));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(custom)), folders);
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(Orders)), CancellationToken.None);
 
@@ -69,7 +69,7 @@ public sealed class OpenInEditorHandlerShould
     public async Task ReportAnEditorThatWouldNotStart()
     {
         desktop.StartFailure = new ProgramNotStartedException("Access is denied.");
-        OpenInEditorHandler handler = new(locator, desktop, folders, CurrentWith(EditorChoice.VsCode));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(EditorChoice.VsCode)), folders);
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(Orders)), CancellationToken.None);
 
@@ -79,7 +79,7 @@ public sealed class OpenInEditorHandlerShould
     [Fact]
     public async Task ReportAMissingFolder()
     {
-        OpenInEditorHandler handler = new(locator, desktop, folders, CurrentWith(EditorChoice.VsCode));
+        OpenInEditorHandler handler = new(new EditorLauncher(locator, desktop, folders, CurrentWith(EditorChoice.VsCode)), folders);
 
         Outcome outcome = await handler.HandleAsync(new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\source\repos\Northwind.Gone")), CancellationToken.None);
 

@@ -1,5 +1,7 @@
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.Application.TerminalSetup;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Diagnostics;
 
@@ -9,7 +11,7 @@ namespace Source191.Cader.Application;
 /// Reads the setup the Config tab shows, through the ports that already read it for <c>cader setup-terminal</c> and the
 /// update check; a piece whose read fails is unreadable on its own, and never stops the others.
 /// </summary>
-public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings claude, IUpdateCheckRecords updateChecks, string settingsFile, DiagnosticLog log)
+public sealed class SetupFactsReader(ITerminalFragment fragment, ITerminalSettings terminalSettings, IClaudeSettings claude, IUpdateCheckRecords updateChecks, IFolders folders, ClaudeFolder claudeFolder, string settingsFile, string diagnosticLogFile, DiagnosticLog log)
 {
     private static readonly CodeName This = CodeName.For(typeof(SetupFactsReader));
 
@@ -17,14 +19,26 @@ public sealed class SetupFactsReader(ITerminalFragment fragment, IClaudeSettings
     {
         return new SetupFacts(
             new SetupState.At(settingsFile),
-            await Guarded(() => Task.FromResult(TerminalProfiles())),
+            new SetupState.Folder(claudeFolder),
+            new SetupState.LogFile(diagnosticLogFile, folders.FileExists(diagnosticLogFile)),
+            await Guarded(() => TerminalProfilesAsync(cancellationToken)),
             await Guarded(() => ClaudeBellAsync(cancellationToken)),
             await Guarded(LastUpdateCheckAsync));
     }
 
     private Task<SetupState> Guarded(Func<Task<SetupState>> read) => Attempt.RunAsync(log, FailureSite.Load, This, read, exception => exception is IOException or UnauthorizedAccessException, _ => new SetupState.Unreadable());
 
-    private SetupState TerminalProfiles() => fragment.Exists ? new SetupState.At(fragment.Location) : new SetupState.NotSetUp();
+    private async Task<SetupState> TerminalProfilesAsync(CancellationToken cancellationToken)
+    {
+        if (!fragment.Exists)
+        {
+            return new SetupState.NotSetUp();
+        }
+
+        return HiddenTerminalProfiles.Of(await terminalSettings.ReadAsync(cancellationToken)).Count > 0
+            ? new SetupState.HiddenByTerminal(fragment.Location)
+            : new SetupState.At(fragment.Location);
+    }
 
     private async Task<SetupState> ClaudeBellAsync(CancellationToken cancellationToken)
     {

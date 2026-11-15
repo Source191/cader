@@ -41,6 +41,7 @@ Rewritten 2026-11-14 against `main` at 0.22.0-preview.4 (`a49f437e`), when A to 
 
 ## Not in this stack
 
+- **csharp15-in-core:** Core's C# 15 sweep, deferred by PR L of upgrade-to-net11 until a Stryker release compiles C# 15 (evidence in the archived upgrade-to-net11 design and in `.claude\rules\checks.md`); proposal, design and tasks only, no specs.
 - **accounts-in-the-console, set-up-an-account, accounts-in-the-config-tab:** each starts with a spike that needs a second, logged-in Claude account; the owner will take them in a session of their own.
 
 ## Owner gates

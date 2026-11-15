@@ -449,6 +449,8 @@ public sealed class WordingOfOutcomesShould
     public void SayTheFolderIsGone()
     {
         Wording.Describe(new OpenInEditorOutcome.FolderMissing("Northwind.Orders-fix-123")).ShouldBe("Northwind.Orders-fix-123 no longer exists, so nothing was opened.");
+        Wording.Describe(new OpenInEditorOutcome.FileMissing("cader.log")).ShouldBe("cader.log does not exist yet, so nothing was opened. Diagnostic log on the Config tab turns it on.");
+        Wording.Describe(new OpenInEditorOutcome.FileMissing("config.json")).ShouldBe("config.json does not exist yet, so nothing was opened.");
     }
 
     [Fact]

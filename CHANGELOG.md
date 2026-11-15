@@ -8,21 +8,28 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 - A Before branching setting on the Config tab, and a Before branching choice in the new-session wizard: Fetch origin, Pull default branch or Nothing, for what happens before a new worktree branches from origin's default branch (#273)
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
+- A Diagnostic log file row on the Config tab shows the full path of cader.log, which you can select and copy, and f on it or on Settings file opens the file in your editor; the help and user guide now say what a problem report holds and that cader.log is never attached to it (#274)
 - A Diagnostic log setting on the Config tab: Enter turns the log file on or off at once, and its tooltip names %LOCALAPPDATA%\Cader\cader.log, which becomes cader.log.1 at 10 MB so at most about 20 MB is kept (#254)
 
 ### Changed
 
+- Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#280)
 - A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set Before branching to Nothing for the old behaviour, or to Pull default branch to fast-forward your local default branch as well (#270, #273)
 - CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
 - A state file holding null where a value must be, leaving a value out or naming a key twice is now read as corrupt, as an unreadable file already is (#248)
 
 ### Fixed
 
+- Cader now follows CLAUDE_CONFIG_DIR: when it is set to a full path, adopt, rename, resume and Enter look for transcripts there, the Claude bell and cader setup-terminal use that folder's settings.json, and a new Claude folder row on the Config tab names the folder (a relative or ~ value is not used, and the row says so) (#276)
+- A Cader profile deleted in Windows Terminal's settings no longer stays hidden after cader setup-terminal: setup now shows the one entry Terminal needs to show it again and, if you agree, adds it to Terminal's settings file and changes nothing else there; a settings file that is a link, as a dotfiles set-up makes it, is never written and you are given the entry to add by hand; the Config tab's Windows Terminal profiles row says when Terminal is hiding one (#218, #275)
 - Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
 - Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds for it, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes (#261)
 
 ### Internal
 
+- Cader is built for .NET 11 and its SDK 11.0.100: every project targets net11.0, the CI jobs install that SDK, and the packages and breaking changes are checked, with the Microsoft.Extensions assemblies .NET 11 now carries left out of the build (#277)
+- .NET 11's process APIs are checked against how Cader starts, captures and ends programs: ending a session's or tab's process now looks it up with .NET 11's TryGetProcessById, and the rest are declined, with facts that show why, so nothing a user can see changes (#278)
+- C# 15 outside Core: every type hierarchy in the console's screen and the tools is a closed record, so a switch over one needs no fallback and a new case fails the build; Core stays on C# 14 until the mutation testing tool can compile C# 15, and the rest of the C# 15 and .NET 11 features are declined with the reasons recorded (#279)
 - No parameter has a default value any more, so every call states the values it passes, and a convention check fails for a new one (#267)
 
 ## 0.21.1 - 2026-11-13

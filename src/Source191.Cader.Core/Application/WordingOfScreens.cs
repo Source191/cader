@@ -12,6 +12,16 @@ public static partial class Wording
 
     private const string UpdateLine = "update in a new tab";
     private const string ReportLine = "report a problem on GitHub";
+    private const string ReportTip = "Preview the diagnostics (events, last crash, counts), then open a GitHub issue.";
+
+    /// <summary>What a problem report holds; the user guide says it in the same words.</summary>
+    public static string ReportHolds => "A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on), the last crash and the child program counts.";
+
+    /// <summary>That the long history stays on the machine unless the user hands it over.</summary>
+    public static string ReportNeverAttachesTheLog => "Cader never attaches cader.log to a report.";
+
+    /// <summary>Where the long history is and what to do with it.</summary>
+    public static string ReportLogFile => "cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log file row (Config tab), then give it to Claude or attach it to the issue by hand.";
 
     /// <summary>The title of the console's own tab outside a dialog; every writer of it uses this one value. The version is in the settings row.</summary>
     public static string TabTitle => "Cader";
@@ -108,7 +118,7 @@ public static partial class Wording
         new(Key.Of('p'), "Open PR", "open its pull request in the browser", Tip: "Open the row's pull request in your browser."),
         new(Key.Of('m'), "Memory", "what its memory is made of", Tip: "Show what the session's memory is made of; the detail pane shows the total."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
-        new(Key.Of('!'), "Report", ReportLine, Tip: "Report a problem: preview the diagnostics, then open a GitHub issue."),
+        new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
     ];
 
@@ -129,7 +139,7 @@ public static partial class Wording
         new(Key.Of('s'), "Open solution", "open its solution", Tip: "Open the row's Visual Studio solution, asking when there are several."),
         new(Key.Of('p'), "Open PR", "open its pull request in the browser", Tip: "Open the row's pull request in your browser."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
-        new(Key.Of('!'), "Report", ReportLine, Tip: "Report a problem: preview the diagnostics, then open a GitHub issue."),
+        new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
     ];
 
@@ -141,9 +151,9 @@ public static partial class Wording
         new(Key.Of('?'), "Help", "help", Tip: "Show every key and what each column means."),
         new(Key.Of('q'), "Quit", "quit", Tip: "Quit; your sessions keep running in the background."),
         new(Key.Of('c'), "Copy", "copy the path", Tip: "Copy the row's path to the clipboard."),
-        new(Key.Of('f'), "Open folder", "open the folder, or the one holding the file", Tip: "Open the row's folder, or the folder holding its file, in the editor chosen above."),
+        new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the row's folder, the settings or log file itself, or the folder holding another file, in the editor chosen above."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
-        new(Key.Of('!'), "Report", ReportLine, Tip: "Report a problem: preview the diagnostics, then open a GitHub issue."),
+        new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
     ];
 
@@ -300,7 +310,30 @@ public static partial class Wording
     {
         IEnumerable<string> paneSection = pane.Count == 0 ? [] : [string.Empty, "Pane", .. Explained(pane)];
 
-        return string.Join('\n', ["Keys", KeyColumns(keys), string.Empty, "Columns", .. Explained(columns), .. paneSection]);
+        return string.Join('\n', ["Keys", KeyColumns(keys), string.Empty, "Columns", .. Explained(columns), .. paneSection, string.Empty, "Report a problem (!)", .. ReportParagraphs.SelectMany(paragraph => Wrapped(paragraph, HelpWidth))]);
+    }
+
+    private const int HelpWidth = 100;
+
+    private static IEnumerable<string> ReportParagraphs => [ReportHolds, ReportNeverAttachesTheLog, ReportLogFile];
+
+    /// <summary>The help box does not wrap, so a paragraph is broken at spaces into lines of at most <paramref name="width"/>.</summary>
+    private static IEnumerable<string> Wrapped(string paragraph, int width)
+    {
+        List<string> lines = [];
+        string line = string.Empty;
+        foreach (string word in paragraph.Split(' '))
+        {
+            if (line.Length > 0 && line.Length + 1 + word.Length > width)
+            {
+                lines.Add(line);
+                line = string.Empty;
+            }
+
+            line = line.Length == 0 ? word : $"{line} {word}";
+        }
+
+        return [.. lines, line];
     }
 
     /// <summary>Each name padded to the longest, its meaning beside it and its further lines indented to match.</summary>

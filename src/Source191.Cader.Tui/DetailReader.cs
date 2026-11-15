@@ -1,7 +1,6 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Detail;
 using Source191.Cader.Application.Diagnostics;
-using System.Diagnostics;
 using Terminal.Gui.App;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -44,7 +43,6 @@ internal abstract class DetailReader<TRow>
     {
         TableDetail<TRow>.Pane pane => new Reading(pane.Source, table, app, log, host),
         TableDetail<TRow>.None => new None(),
-        _ => throw new UnreachableException(),
     };
 
     /// <summary>No pane: nothing is added under the table, which fills the tab.</summary>
