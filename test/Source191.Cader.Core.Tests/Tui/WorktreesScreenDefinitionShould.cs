@@ -59,6 +59,16 @@ public sealed class WorktreesScreenDefinitionShould
     }
 
     [Fact]
+    public void NameTheRepositoryAndTheBranchInTheWorktreeCellOfABranchRow()
+    {
+        WorktreeRow branch = Row(new LastCommit.Unknown()) with { Path = Repository, Head = new Head.OnBranch(BranchName.From("spike-refunds")), Health = WorktreeHealth.CheckedOutNowhere };
+        WorktreeRow origin = branch with { Head = new Head.OnBranch(BranchName.From("c-new-bug")), Health = WorktreeHealth.OnlyOnOrigin };
+
+        definition.Columns[0].Cell(branch, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › spike-refunds");
+        definition.Columns[0].Cell(origin, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › c-new-bug");
+    }
+
+    [Fact]
     public void ShowNoSessionAsNothing()
     {
         definition.Columns.Single(column => column.Help == Wording.SessionColumn).Cell(Row(new LastCommit.Unknown()), Fixtures.Noon, int.MaxValue).ShouldBeEmpty();
