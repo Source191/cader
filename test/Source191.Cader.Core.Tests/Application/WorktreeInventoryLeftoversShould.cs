@@ -419,6 +419,39 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
     }
 
+    [Fact]
+    public async Task ListTwoRepositoriesAtOnceAndKeepTheirOrder()
+    {
+        string billingWorktree = Path.Combine(Root, "Northwind.Billing-fix-123");
+        string ordersWorktree = Path.Combine(Root, "Northwind.Orders-fix-456");
+        folders.WithDirectory(Path.Combine(Billing, ".git", "objects")).WithDirectory(billingWorktree).WithDirectory(ordersWorktree);
+        processes.Answer(request => IsListingOf(request, Billing), new ProcessResult(0, Listing(Billing, billingWorktree), string.Empty));
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(0, Listing(Repository, ordersWorktree), string.Empty));
+        AnswerCounts(dirty: string.Empty, unpushed: "0\n");
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(2, "both repositories are listed at once");
+            runs.Open(Repository);
+            await runs.WhenStarted(request => request.Arguments[0] == "status" && request.WorkingDirectory == new WorkingFolder.At(ordersWorktree), 1).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+            runs.Open(Billing);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => row.Path.Value).ShouldBe([billingWorktree, ordersWorktree], "Orders answered first, but Billing's rows still come first");
+    }
+
+    private static bool IsListing(ProcessRequest request)
+    {
+        return request.Arguments[0] == "worktree";
+    }
+
     private static bool IsListingOf(ProcessRequest request, string repository)
     {
         return request.Arguments[0] == "worktree" && request.WorkingDirectory == new WorkingFolder.At(repository);
@@ -446,5 +479,93 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     public void Dispose()
     {
         catalogue.Dispose();
+    }
+
+    /// <summary>
+    /// Records every git run as it starts and holds the matching ones open, per folder, until the test opens them, so a
+    /// fact can count what has started at once without sleeping.
+    /// </summary>
+    private sealed class HeldRuns(Func<ProcessRequest, bool> held)
+    {
+        private readonly Lock gate = new();
+        private readonly List<ProcessRequest> started = [];
+        private readonly Dictionary<WorkingFolder, TaskCompletionSource> holds = [];
+        private readonly List<Waiter> waiters = [];
+        private bool allOpen;
+
+        public Task WhileRunning(ProcessRequest request)
+        {
+            lock (gate)
+            {
+                started.Add(request);
+                foreach (Waiter waiter in waiters.Where(waiter => started.Count(waiter.Matches) >= waiter.Count))
+                {
+                    waiter.Reached.TrySetResult();
+                }
+
+                return held(request) ? HoldOf(request.WorkingDirectory).Task : Task.CompletedTask;
+            }
+        }
+
+        public int CountStarted(Func<ProcessRequest, bool> matches)
+        {
+            lock (gate)
+            {
+                return started.Count(matches);
+            }
+        }
+
+        public Task WhenStarted(Func<ProcessRequest, bool> matches, int count)
+        {
+            lock (gate)
+            {
+                Waiter waiter = new(matches, count, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+                waiters.Add(waiter);
+                if (started.Count(matches) >= count)
+                {
+                    waiter.Reached.TrySetResult();
+                }
+
+                return waiter.Reached.Task;
+            }
+        }
+
+        public void Open(string folder)
+        {
+            lock (gate)
+            {
+                HoldOf(new WorkingFolder.At(folder)).TrySetResult();
+            }
+        }
+
+        public void OpenAll()
+        {
+            lock (gate)
+            {
+                allOpen = true;
+                foreach (TaskCompletionSource hold in holds.Values)
+                {
+                    hold.TrySetResult();
+                }
+            }
+        }
+
+        private TaskCompletionSource HoldOf(WorkingFolder folder)
+        {
+            if (!holds.TryGetValue(folder, out TaskCompletionSource? hold))
+            {
+                hold = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                holds[folder] = hold;
+            }
+
+            if (allOpen)
+            {
+                hold.TrySetResult();
+            }
+
+            return hold;
+        }
+
+        private sealed record Waiter(Func<ProcessRequest, bool> Matches, int Count, TaskCompletionSource Reached);
     }
 }
