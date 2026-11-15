@@ -3,7 +3,7 @@ using Terminal.Gui.Drawing;
 namespace Source191.Cader.Tui;
 
 /// <summary>A cell's own paint: none (the row's colour), a text colour off the selected row only, or a fill kept on the selected row too (the TAB block).</summary>
-internal abstract record CellPaint
+internal closed record CellPaint
 {
     /// <summary>The cell takes its row's colour, and the highlight on the selected row.</summary>
     public sealed record None : CellPaint;

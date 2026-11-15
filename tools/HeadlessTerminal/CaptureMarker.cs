@@ -8,7 +8,7 @@ namespace Source191.Cader.HeadlessTerminal;
 /// (<see href="https://learn.microsoft.com/windows/console/console-virtual-terminal-sequences">OSC 0 or OSC 2</see>, matched whole),
 /// text it drew (matched with the escape sequences between its characters stripped), or nothing.
 /// </summary>
-public abstract partial record CaptureMarker
+public closed partial record CaptureMarker
 {
     public static readonly CaptureMarker Nothing = new NothingAtAll();
 

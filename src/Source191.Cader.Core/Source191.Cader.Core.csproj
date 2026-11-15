@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Source191.Cader</RootNamespace>
     <IsPackable>false</IsPackable>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

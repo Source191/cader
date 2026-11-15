@@ -69,7 +69,6 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         {
             TypedAnswer.Typed typed => new RenameConfirmed(session, typed.Text),
             TypedAnswer.Cancelled => new RenameCancelled(session),
-            _ => throw new UnreachableException(),
         };
         context.Reduce(answered);
     }
@@ -99,7 +98,6 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         {
             TypedAnswer.Typed typed => new ForceConfirmed(confirm.Row, confirm.ConfirmationText, typed.Text),
             TypedAnswer.Cancelled => new ForceCancelled(confirm.Row),
-            _ => throw new UnreachableException(),
         };
         context.Reduce(answered);
     }
@@ -262,7 +260,6 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         {
             SolutionChoice.Chosen chosen => Open(context, chosen.File),
             SolutionChoice.NoneChosen => StatusMessage.None,
-            _ => throw new UnreachableException(),
         };
     }
 
