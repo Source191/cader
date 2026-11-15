@@ -9,12 +9,16 @@
     byte order mark and keeps its line endings. A prerelease label with no trailing number is refused, so nothing
     guesses. pipeline.yml runs it for Dependabot pull requests that touch the tool; it works by hand as well.
 
+    With -Preview, a stable version starts a preview of the next patch (0.21.1 becomes 0.21.2-preview.1), so a change
+    the owner has not chosen to release lands as a prerelease; a prerelease is raised exactly as without the switch.
+
 .EXAMPLE
     .github\scripts\Step-Version.ps1 -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
-    [string] $Csproj = 'src/Source191.Cader/Source191.Cader.csproj'
+    [string] $Csproj = 'src/Source191.Cader/Source191.Cader.csproj',
+    [switch] $Preview
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,6 +40,9 @@ $core = "$($parsed.Major).$($parsed.Minor).$($parsed.Patch)"
 $label = [regex]::Match([string] $parsed.PreReleaseLabel, '^(?<label>.*?)(?<number>\d+)$')
 if ([string]::IsNullOrEmpty($parsed.PreReleaseLabel)) {
     $next = "$($parsed.Major).$($parsed.Minor).$($parsed.Patch + 1)"
+    if ($Preview) {
+        $next += '-preview.1'
+    }
 }
 elseif ($label.Success) {
     $next = "$core-$($label.Groups['label'].Value)$([int] $label.Groups['number'].Value + 1)"

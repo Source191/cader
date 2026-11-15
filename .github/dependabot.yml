@@ -1,11 +1,18 @@
 # Weekly updates for the NuGet packages and the actions the workflows use. Each pull request
-# runs `check`; one that changes the packaged tool has its version raised by the Dependabot step in pipeline.yml (see MAINTAINING.md, Dependabot and the version bump token).
+# runs `check`; one that changes the packaged tool has its version raised by the Dependabot step in pipeline.yml, as a preview of the next patch when Version is stable (see MAINTAINING.md, Dependabot and the version bump token). Comment @dependabot recreate on a pull request that is stuck.
 version: 2
 updates:
   - package-ecosystem: nuget
     directory: /
     schedule:
       interval: weekly
+    # One pull request a week for the version updates, so a week's updates need one version bump and make one release.
+    # Security updates are not grouped: they still arrive one at a time and at once.
+    groups:
+      nuget:
+        applies-to: version-updates
+        patterns:
+          - "*"
   - package-ecosystem: github-actions
     directory: /
     schedule:
