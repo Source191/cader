@@ -122,6 +122,42 @@ public sealed class RecordedProcessRunnerShould
     }
 
     [Fact]
+    public async Task RecordAgainAfterTheCommandStartedThere()
+    {
+        bool gone = true;
+        processes.Throw(_ => gone, new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        gone = false;
+        await runner.RunAsync(RevParse, CancellationToken.None);
+        gone = true;
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+
+        log.Snapshot().Select(timed => timed.Event).OfType<ProcessFailedToStart>().Count().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task RecordAgainAfterTheCommandStartedThereAndTimedOut()
+    {
+        bool gone = true;
+        bool slow = false;
+        processes.Throw(_ => gone, new Win32Exception(267));
+        processes.Throw(_ => slow, new ProcessTimedOutException("git.exe", TimeSpan.FromSeconds(60)));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        (gone, slow) = (false, true);
+        await Should.ThrowAsync<ProcessTimedOutException>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        (gone, slow) = (true, false);
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+
+        IEnumerable<DiagnosticEvent> events = log.Snapshot().Select(timed => timed.Event);
+        events.OfType<ProcessFailedToStart>().Count().ShouldBe(2);
+        events.OfType<ProcessTimedOut>().ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public async Task RecordARunThatTimedOutAndRethrow()
     {
         ProcessTimedOutException timedOut = new("claude.exe", TimeSpan.FromSeconds(60));
