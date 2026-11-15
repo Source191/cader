@@ -90,8 +90,8 @@ jobs:
           dotnet --version
           dotnet tool restore
 
-      # The settings are in stryker-config.json, so a local run is the same run. Its break score (86, decided by the
-      # owner on 14 November 2026 from the runner baseline of 91.22 %) fails only a full run. A release run's score
+      # The settings are in stryker-config.json, so a local run is the same run. Its break score (ratcheted by the batches of
+      # close-mutation-gaps, from the 86 the owner decided on 14 November 2026; the current value is in the config) fails only a full run. A release run's score
       # covers just the mutants tested, so one survivor in a small release could fail it; it reports its survivors on
       # the mutation issue and never fails on score, so it overrides the break score with 0.
       - name: Mutate
