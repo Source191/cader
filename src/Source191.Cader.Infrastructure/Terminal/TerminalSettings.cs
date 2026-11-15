@@ -74,6 +74,10 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         string indent = place.Empty ? new string(' ', 12) : LineIndent(bytes, start + place.First);
         byte[] insertion = Encoding.UTF8.GetBytes(Insertion(entries, place, indent, NewLine(bytes)));
         byte[] written = [.. bytes.AsSpan(0, start + place.InsertAt), .. insertion, .. bytes.AsSpan(start + place.InsertAt)];
+        if (!Holds(written, [.. ListOf(bytes), .. entries.Select(entry => JsonElement.Parse(entry.Json))]))
+        {
+            return new TerminalSettingsEdit.NotVerified();
+        }
 
         string backup = Location + time.GetUtcNow().ToString(".yyyy-MM-ddTHH-mm-ss'.cader.backup'", CultureInfo.InvariantCulture);
         string temporary = Location + ".cader-tmp";
@@ -94,6 +98,29 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
         }
 
         return new TerminalSettingsEdit.Written(backup);
+    }
+
+    /// <summary>Whether the new bytes, read as Terminal reads them, hold exactly the expected profile list, element for element.</summary>
+    private static bool Holds(byte[] written, JsonElement[] expected)
+    {
+        try
+        {
+            JsonElement[] list = ListOf(written);
+
+            return list.Length == expected.Length && list.Zip(expected).All(pair => JsonElement.DeepEquals(pair.First, pair.Second));
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The profile list's elements, kept once the document is gone.</summary>
+    private static JsonElement[] ListOf(byte[] bytes)
+    {
+        using JsonDocument document = Parse(bytes);
+
+        return [.. ProfileList(document.RootElement).EnumerateArray().Select(element => element.Clone())];
     }
 
     /// <summary>A symbolic link or other reparse point, as a dotfiles set-up makes it: moving a file over it would replace the link.</summary>

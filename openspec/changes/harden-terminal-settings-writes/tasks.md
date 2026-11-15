@@ -16,7 +16,7 @@ Every fact runs over a temporary folder or the fakes, never Windows Terminal's r
 
 ## 4. Verify the output (gap 3)
 
-- [ ] 4.1 **Red:** `TerminalSettingsShould.WriteNothingWhenTheNewFileWouldNotHoldTheListExpected` (a file naming `profiles` twice); runner and `Wording` facts for `NotVerified`. **Green:** parse the new bytes and compare the list with `JsonElement.DeepEquals`. **Verify:** the facts pass.
+- [x] 4.1 **Red:** `TerminalSettingsShould.WriteNothingWhenTheNewFileWouldNotHoldTheListExpected` (a file naming `profiles` twice); runner and `Wording` facts for `NotVerified`. **Green:** parse the new bytes and compare the list with `JsonElement.DeepEquals`. **Verify:** the facts pass.
 
 ## 5. Read-only file (gap 4)
 

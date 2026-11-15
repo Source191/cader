@@ -186,6 +186,9 @@ public sealed class TerminalSetupRunner(
             case TerminalSettingsEdit.ChangedMeanwhile:
                 await error.WriteLineAsync(Wording.TerminalSettingsChanged(terminalSettings.Location), cancellationToken);
                 return Step.Failed;
+            case TerminalSettingsEdit.NotVerified:
+                await error.WriteLineAsync(Wording.TerminalSettingsNotVerified(terminalSettings.Location), cancellationToken);
+                return Step.Failed;
             default:
                 throw new UnreachableException();
         }
