@@ -402,4 +402,23 @@ public sealed class WizardViewShould
     }
 
     private static WizardState Reduce(WizardState state, WizardInput input) => WizardView.Reduce(state, input).State;
+
+    [Fact]
+    public void KeepTheSelectionWhenAnArrowMovesInAnEmptyList()
+    {
+        WizardState nothingShown = Opened with { Filter = "nothing matches" };
+
+        Reduce(nothingShown, new WizardInput.ListMoved(1)).SelectedIndex.ShouldBe(0);
+    }
+
+    [Fact]
+    public void SelectTheFirstChoiceAndRefuseOneBeyondTheLast()
+    {
+        WizardState onTheLast = Reduce(Opened, new WizardInput.ListMoved(2));
+        WizardState first = Reduce(onTheLast, new WizardInput.ChoiceSelected(0));
+        WizardState beyond = Reduce(Opened, new WizardInput.ChoiceSelected(Opened.Choices.Count));
+
+        first.SelectedIndex.ShouldBe(0);
+        beyond.SelectedIndex.ShouldBe(0);
+    }
 }
