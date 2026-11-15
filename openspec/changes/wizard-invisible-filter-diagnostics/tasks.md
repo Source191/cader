@@ -2,8 +2,8 @@
 
 ## 1. Character kinds (Domain)
 
-- [ ] 1.1 Red `CharacterKindsShould.ClassifyEachKind` (letter, digit, space, tab, U+200B, U+001B, U+00A0, `-`, an emoji outside the basic plane as one `Other`), then green `Domain\CharacterKind` and `Domain\CharacterKinds.Of(Rune)` and `First(string)`; verify with the Core suite.
-- [ ] 1.2 Red `CharacterKindsShould.CallATextInvisibleOnlyWhenEveryCharacterIs` (empty is false, " " and "​" are true, " o" is false), then green `AllInvisible(string)`; verify with the Core suite.
+- [x] 1.1 Red `CharacterKindsShould.ClassifyEachKind` (letter, digit, space, tab, U+200B, U+001B, U+00A0, `-`, an emoji outside the basic plane as one `Other`), then green `Domain\CharacterKind` and `Domain\CharacterKinds.Of(Rune)` and `First(string)`; verify with the Core suite.
+- [x] 1.2 Red `CharacterKindsShould.CallATextInvisibleOnlyWhenEveryCharacterIs` (empty is false, a space and U+200B are true, " o" is false), then green `AllInvisible(string)`; verify with the Core suite.
 
 ## 2. The wizard's problem line (Application)
 
