@@ -493,7 +493,13 @@ jobs:
               "enabled=true" >> $env:GITHUB_OUTPUT
           }
 
-      # The runner image's SDK, chosen by global.json, as in the build-test-pack action.
+      # The SDK global.json names, installed as in the build-test-pack action, which says why.
+      - name: Install the .NET SDK
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
       - name: Show the .NET SDK
         if: steps.gate.outputs.enabled == 'true'
         shell: pwsh
@@ -512,7 +518,7 @@ jobs:
           "pid=$($process.Id)" >> $env:GITHUB_OUTPUT
           Write-Host "Claude Code install started as process $($process.Id), logging to $log."
 
-      # Only the tool: the hand-off check runs bin\Release\net10.0\cader.exe, and dotnet run builds
+      # Only the tool: the hand-off check runs bin\Release\net11.0\cader.exe, and dotnet run builds
       # tools\HeadlessTerminal itself. The test projects are built and run by check.
       - name: Build the tool (Release)
         if: steps.gate.outputs.enabled == 'true'

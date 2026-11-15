@@ -1,6 +1,6 @@
 name: Build, test and pack
 description: >-
-  Builds the solution in Release (warnings are errors) with the runner's .NET SDK, runs every test
+  Builds the solution in Release (warnings are errors) with the .NET SDK global.json names, runs every test
   project against that build (unless run-tests is false), checks whitespace formatting, then publishes the self-contained winget
   build for the runtime identifier and zips it. Run by pipeline.yml's check job, whose zip on a release is the one the release job
   publishes, so the release never ships a build that the check did not see.
@@ -36,9 +36,16 @@ outputs:
 runs:
   using: composite
   steps:
-    # The runner image carries the .NET SDKs, and global.json (10.0.301, latestMinor) picks one, so nothing is
-    # downloaded; an image without a suitable SDK fails here with the SDK's own message. The line records which
-    # SDK built this run (https://learn.microsoft.com/dotnet/core/tools/global-json).
+    # global.json (11.0.100, latestMinor) names the SDK. The windows-latest image of 14 November 2026
+    # (windows-2025-vs2026 20261103.298.1) carries SDKs up to 10.0.403 and no 11.0, so the SDK global.json names is
+    # installed from global.json itself, rollForward included (https://github.com/actions/setup-dotnet#using-the-global-json-file-input).
+    # The step can go once both runner images carry an 11.0 SDK.
+    - name: Install the .NET SDK
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: global.json
+
+    # The line records which SDK built this run (https://learn.microsoft.com/dotnet/core/tools/global-json).
     - name: Show the .NET SDK
       shell: pwsh
       run: dotnet --version

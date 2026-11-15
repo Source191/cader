@@ -9,6 +9,7 @@ paths:
 
 # Terminal.Gui 2.5.0 facts
 
+- **On .NET 11 (14 November 2026, runtime 11.0.0, SDK 11.0.100):** Terminal.Gui 2.5.0 ships only a `net10.0` library and runs on `net11.0` unchanged: the full test suite passed, and CI's smoke check opened and closed every screen and dialog on both architectures and the hand-off check attached and detached (run 43638076129). The facts below keep the dates they were observed on; none was re-observed by hand on .NET 11.
 - Instance API: `Application.Create().Init()`, `app.Run(window)`, `app.RequestStop`, `app.Invoke`, `app.AddTimeout`; set `app.Driver.Force16Colors = false` or the palette collapses to 16 colours.
 - Never block the UI thread on an awaited call (`GetResult()`): Terminal.Gui installs a synchronisation context and the continuation deadlocks. It showed only after an attach-and-return, which the console no longer does (a session opens in its own tab); the hand-off check was built because of it.
 - Focus roles: a scheme with Focus equal to Normal hides focus everywhere; ListView draws the selected row with Focus when focused and Active otherwise; a TextField needs its own background or it is invisible when empty, and a read-only TextField is drawn with the ReadOnly role once it loses focus.
