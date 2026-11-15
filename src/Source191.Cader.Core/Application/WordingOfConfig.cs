@@ -60,7 +60,7 @@ public static partial class Wording
         ConfigRow.BeforeBranching => "What happens before a new worktree branches from origin: fetch it, fetch and fast-forward, or nothing.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
-        ConfigRow.DiagnosticLog log => $"Writes the diagnostic log to {log.File}; Enter turns it on or off.",
+        ConfigRow.DiagnosticLog => "Writes the diagnostic log to a file, named on the Diagnostic log file row below; Enter turns it on or off.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
         _ => string.Empty,
     };
@@ -136,6 +136,7 @@ public static partial class Wording
         return item switch
         {
             SetupItem.SettingsFile => "This tab writes the settings file: edit a setting above to change it.",
+            SetupItem.DiagnosticLogFile => "Turn the log on or off with Diagnostic log above; f opens this file and c copies its path.",
             SetupItem.TerminalProfiles => "Run cader setup-terminal, then restart Windows Terminal, to add the profiles.",
             SetupItem.ClaudeBell => "Run cader setup-terminal to make Claude ring the terminal bell when a session needs you.",
             SetupItem.LastUpdateCheck => "The winget community repository is asked at most once a day; turn the check on or off with Check for updates.",
@@ -146,7 +147,8 @@ public static partial class Wording
     {
         return item switch
         {
-            SetupItem.SettingsFile => "The file the settings above are kept in; f opens the folder holding it.",
+            SetupItem.SettingsFile => "The file the settings above are kept in; f opens it in your editor.",
+            SetupItem.DiagnosticLogFile => "Where the diagnostic log is written; it rolls at 10 MiB. f opens it in your editor, c copies its path.",
             SetupItem.TerminalProfiles => "Windows Terminal profiles that give the console's tabs a bell and the icon.",
             SetupItem.ClaudeBell => "Claude's terminal bell, which rings when a session finishes or needs permission while you are away.",
             SetupItem.LastUpdateCheck => "When the winget community repository was last asked for a newer release, and the newest it found.",
@@ -158,6 +160,7 @@ public static partial class Wording
         return item switch
         {
             SetupItem.SettingsFile => "Settings file",
+            SetupItem.DiagnosticLogFile => "Diagnostic log file",
             SetupItem.TerminalProfiles => "Windows Terminal profiles",
             SetupItem.ClaudeBell => "Claude bell",
             SetupItem.LastUpdateCheck => "Last update check",
@@ -173,6 +176,9 @@ public static partial class Wording
             (SetupItem.TerminalProfiles, SetupState.At at) => $"installed, {at.Path}",
             (SetupItem.TerminalProfiles, SetupState.NotSetUp) => $"not set up, {SetupTerminal}",
             (_, SetupState.NotSetUp) => $"not set, {SetupTerminal}",
+            (_, SetupState.LogOff off) => $"off, {off.Path}",
+            (_, SetupState.LogFile { Exists: true } file) => $"on, {file.Path}",
+            (_, SetupState.LogFile file) => $"on, not written yet, {file.Path}",
             (_, SetupState.At at) => at.Path,
             (_, SetupState.Enabled) => "on",
             (_, SetupState.OtherChannel other) => $"{other.Channel}, not the terminal bell",

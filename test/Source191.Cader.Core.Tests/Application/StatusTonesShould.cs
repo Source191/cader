@@ -83,6 +83,7 @@ public sealed class StatusTonesShould
         [typeof(OpenInEditorOutcome.EditorNotFound)] = StatusTone.Failure,
         [typeof(OpenInEditorOutcome.EditorNotStarted)] = StatusTone.Failure,
         [typeof(OpenInEditorOutcome.FolderMissing)] = StatusTone.Notice,
+        [typeof(OpenInEditorOutcome.FileMissing)] = StatusTone.Notice,
         [typeof(OpenTabOutcome.Opened)] = StatusTone.Notice,
         [typeof(OpenTabOutcome.SwitchedTo)] = StatusTone.Success,
         [typeof(OpenTabOutcome.NotFound)] = StatusTone.Notice,

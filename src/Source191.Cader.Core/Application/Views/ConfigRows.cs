@@ -5,9 +5,9 @@ namespace Source191.Cader.Application.Views;
 /// <summary>The Config tab's rows: the settings in the order the tab lists them, then the Setup heading and the setup, read or still being read.</summary>
 public static class ConfigRows
 {
-    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts, string diagnosticLogFile) => [.. SettingRows(settings, diagnosticLogFile), new ConfigRow.Heading(), .. SetupRows(settings, facts)];
+    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts) => [.. SettingRows(settings), new ConfigRow.Heading(), .. SetupRows(settings, facts)];
 
-    private static IEnumerable<ConfigRow> SettingRows(Settings settings, string diagnosticLogFile)
+    private static IEnumerable<ConfigRow> SettingRows(Settings settings)
     {
         return
         [
@@ -18,7 +18,7 @@ public static class ConfigRows
             new ConfigRow.BeforeBranching(settings.BeforeBranching),
             new ConfigRow.DefaultPlace(settings.DefaultPlace),
             new ConfigRow.CheckForUpdates(settings.CheckForUpdates),
-            new ConfigRow.DiagnosticLog(settings.DiagnosticLog, diagnosticLogFile),
+            new ConfigRow.DiagnosticLog(settings.DiagnosticLog),
         ];
     }
 
@@ -28,9 +28,13 @@ public static class ConfigRows
         return
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, facts.SettingsFile),
+            new ConfigRow.Setup(SetupItem.DiagnosticLogFile, LogFileAs(settings, facts.DiagnosticLogFile)),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, facts.TerminalProfiles),
             new ConfigRow.Setup(SetupItem.ClaudeBell, facts.ClaudeBell),
             new ConfigRow.Setup(SetupItem.LastUpdateCheck, settings.CheckForUpdates ? facts.LastUpdateCheck : new SetupState.Disabled()),
         ];
     }
+
+    /// <summary>Whether the log is on comes from the settings, so the row is right the moment a save toggles it.</summary>
+    private static SetupState LogFileAs(Settings settings, SetupState read) => read is SetupState.LogFile file && !settings.DiagnosticLog ? new SetupState.LogOff(file.Path) : read;
 }

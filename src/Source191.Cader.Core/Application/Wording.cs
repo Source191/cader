@@ -270,6 +270,7 @@ public static partial class Wording
             StartSession start => $"Starting {start.Plan.Name.Value}...",
             CopyFolderPath => "Copying...",
             OpenFolderInEditor open => $"Opening {open.Folder.Name} in the editor...",
+            OpenFileInEditor file => $"Opening {file.File.Name} in the editor...",
             FindSolution find => $"Looking for a solution in {find.Folder.Name}...",
             ShowMemory show => $"Measuring {Name(show.Session.Name)}...",
             OpenSolution solution => $"Opening {Path.GetFileName(solution.File)}...",

@@ -152,10 +152,10 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void CountTheSettingsAndTheSetupLeftToDo()
     {
-        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
+        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.LogFile(@"C:\Users\me\AppData\Local\Cader\cader.log", Exists: true), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
 
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts, TestSettings.DiagnosticLogFile)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() }, TestSettings.DiagnosticLogFile)).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
     }
 
     [Fact]

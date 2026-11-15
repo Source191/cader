@@ -4,6 +4,7 @@ namespace Source191.Cader.Application.Views;
 public enum SetupItem
 {
     SettingsFile,
+    DiagnosticLogFile,
     TerminalProfiles,
     ClaudeBell,
     LastUpdateCheck,

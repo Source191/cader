@@ -27,9 +27,12 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.DefaultPlace(LaunchMode.CurrentBranch), "Default place", "Current branch" },
         { new ConfigRow.CheckForUpdates(On: true), "Check for updates", "on" },
         { new ConfigRow.CheckForUpdates(On: false), "Check for updates", "off" },
-        { new ConfigRow.DiagnosticLog(On: true, File: LogFile), "Diagnostic log", "on" },
-        { new ConfigRow.DiagnosticLog(On: false, File: LogFile), "Diagnostic log", "off" },
+        { new ConfigRow.DiagnosticLog(On: true), "Diagnostic log", "on" },
+        { new ConfigRow.DiagnosticLog(On: false), "Diagnostic log", "off" },
         { new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json")), "Settings file", @"C:\Users\me\AppData\Local\Cader\config.json" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogOff(LogFile)), "Diagnostic log file", $"off, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(LogFile, Exists: false)), "Diagnostic log file", $"on, not written yet, {LogFile}" },
+        { new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.LogFile(LogFile, Exists: true)), "Diagnostic log file", $"on, {LogFile}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.At(Fragment)), "Windows Terminal profiles", $"installed, {Fragment}" },
         { new ConfigRow.Setup(SetupItem.TerminalProfiles, new SetupState.NotSetUp()), "Windows Terminal profiles", "not set up, run cader setup-terminal" },
         { new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled()), "Claude bell", "on" },
@@ -55,7 +58,7 @@ public sealed class WordingOfConfigShould
             new ConfigRow.BeforeBranching(BeforeBranching.Fetch),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
             new ConfigRow.CheckForUpdates(On: true),
-            new ConfigRow.DiagnosticLog(On: true, File: LogFile),
+            new ConfigRow.DiagnosticLog(On: true),
             .. Enum.GetValues<SetupItem>().Select(item => new ConfigRow.Setup(item, new SetupState.Reading())),
         ];
 
@@ -66,27 +69,26 @@ public sealed class WordingOfConfigShould
     }
 
     [Fact]
-    public void NameTheLogFileInTheTooltipWhetherTheSettingIsOnOrOff()
+    public void PointTheLogTooltipAtTheLogFileRowWithoutAPath()
     {
-        string expected = $"Writes the diagnostic log to {LogFile}; Enter turns it on or off.";
+        string expected = "Writes the diagnostic log to a file, named on the Diagnostic log file row below; Enter turns it on or off.";
 
-        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: true, File: LogFile)).ShouldBe(expected);
-        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: LogFile)).ShouldBe(expected);
+        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: true)).ShouldBe(expected);
+        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false)).ShouldBe(expected);
+        expected.ShouldNotContain(@"\");
     }
 
     [Fact]
-    public void KeepTheLogTooltipWithinTheLimitForARealisticUserProfile()
+    public void SayWhatTheLogFileRowOffersInItsTooltip()
     {
-        string longerPath = @"C:\Users\anna.lewis\AppData\Local\Cader\cader.log";
-
-        Wording.ConfigDescription(new ConfigRow.DiagnosticLog(On: false, File: longerPath)).Length.ShouldBeLessThanOrEqualTo(110);
+        Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.DiagnosticLogFile, new SetupState.Reading())).ShouldBe("Where the diagnostic log is written; it rolls at 10 MiB. f opens it in your editor, c copies its path.");
     }
 
     [Fact]
     public void KeepThePathOutOfTheDiagnosticLogValue()
     {
-        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: true, File: LogFile), Now, TimeZoneInfo.Utc).ShouldBe("on");
-        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: false, File: LogFile), Now, TimeZoneInfo.Utc).ShouldBe("off");
+        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: true), Now, TimeZoneInfo.Utc).ShouldBe("on");
+        Wording.ConfigValue(new ConfigRow.DiagnosticLog(On: false), Now, TimeZoneInfo.Utc).ShouldBe("off");
     }
 
     [Fact]
