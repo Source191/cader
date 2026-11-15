@@ -86,11 +86,12 @@ public static class SessionsView
     }
     /// <summary>
     /// Every stopped or failed job the table shows, in its order, so a filter narrows what R brings back; a session
-    /// stopped on purpose and not wanted is deleted with d instead.
+    /// stopped on purpose and not wanted is deleted with d instead. A session whose folder has gone is left listed as it is.
     /// </summary>
     private static ViewUpdate<SessionsViewState> ResumeAll(SessionsViewState state)
     {
         Session.Background[] sessions = [.. state.VisibleRows
+            .Where(row => row.Location is not SessionLocation.FolderGone)
             .Select(row => row.Session)
             .OfType<Session.Background>()
             .Where(session => session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed)];
