@@ -385,6 +385,20 @@ public sealed class TerminalSettingsShould : IDisposable
         Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
     }
 
+    /// <summary>The text goes into the first "profiles", but a parser, Terminal's included, reads the last one.</summary>
+    [Fact]
+    public async Task WriteNothingWhenTheNewFileWouldNotHoldTheListExpected()
+    {
+        string original = $$"""{ "profiles": { "list": [ { "guid": "{{PowerShellId}}" } ] }, "profiles": [] }""";
+        Given(settings.Location, original);
+
+        TerminalSettingsEdit edit = await settings.AddProfileEntriesAsync(TerminalProfiles.Entries, TestContext.Current.CancellationToken);
+
+        edit.ShouldBe(new TerminalSettingsEdit.NotVerified());
+        ShouldHold(original, at: string.Empty, inserted: string.Empty, withByteOrderMark: false);
+        Directory.EnumerateFiles(root).Select(Path.GetFileName).ShouldBe(["settings.json"]);
+    }
+
     [Theory]
     [InlineData("{ \"theme\": \"dark\" } // no profiles")]
     [InlineData("{ \"profiles\": [ ")]

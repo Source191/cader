@@ -446,6 +446,8 @@ public static partial class Wording
 
     public static string TerminalSettingsChanged(string settingsPath) => $"{settingsPath} changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.";
 
+    public static string TerminalSettingsNotVerified(string settingsPath) => string.Empty;
+
     public static string TerminalSettingsUnreadable(string settingsPath, string reason) => $"Could not read Windows Terminal's settings or state ({reason}), so {settingsPath} was left alone.";
 
     public static string ProfilesRemoved(string fragmentPath) => $"Removed {fragmentPath}. Restart Windows Terminal to drop the profiles.";
