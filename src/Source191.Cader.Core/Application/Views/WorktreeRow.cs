@@ -45,6 +45,13 @@ public sealed record WorktreeRow(
 
     public string FolderName => Path.Name;
 
+    /// <summary>What the title, the pane and a message call the row: its folder, or the branch of a row with no folder of its own.</summary>
+    public string Name => (Placement, Head) switch
+    {
+        (Placement.NoFolder, Head.OnBranch on) => on.Branch.Value,
+        _ => FolderName,
+    };
+
     /// <summary>The removal facts as far as the scan knows them; the branch flags are settled by the action. The folder name is only the label a refusal's words use when the head names no branch; no branch is ever acted on by it.</summary>
     public WorktreeRemovalFacts Facts() => new(Health.Kind, Head is Head.OnBranch on ? on.Branch.Value : FolderName, DirtyFiles, UnpushedCommits, Session, LeftoverFileCount);
 }

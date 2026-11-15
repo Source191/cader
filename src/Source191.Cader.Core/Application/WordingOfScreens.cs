@@ -82,12 +82,27 @@ public static partial class Wording
 
         if (string.IsNullOrWhiteSpace(title.Filter))
         {
-            return $"{Count(title.Shown, title.Noun)}{selection}";
+            return $"{Counted(title)}{selection}";
         }
 
         string verb = title.Total == 1 ? "matches" : "match";
 
-        return $"{title.Shown} of {Count(title.Total, title.Noun)} {verb} \"{title.Filter}\"{selection}";
+        return $"{title.Shown} of {Counted(title)} {verb} \"{title.Filter}\"{selection}";
+    }
+
+    /// <summary>The rows by kind, leaving out a kind with none: "10 worktrees, 3 branches", "3 branches", or "0 worktrees" when there is nothing.</summary>
+    private static string Counted(TableTitle title)
+    {
+        TitleCount apart = title.Apart;
+        int first = title.Total - apart.Count;
+        string apartWords = apart.Count == 1 ? $"1 {apart.One}" : $"{apart.Count} {apart.Many}";
+
+        return (first, apart.Count) switch
+        {
+            (_, 0) => Count(title.Total, title.Noun),
+            (0, _) => apartWords,
+            _ => $"{Count(first, title.Noun)}, {apartWords}",
+        };
     }
 
     /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>

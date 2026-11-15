@@ -130,15 +130,8 @@ public static class WorktreesView
     private static RowDecision PullRequestOf(WorktreeRow row) => row.PullRequest switch
     {
         PullRequestLookup.Found found => new RowDecision.Act(new OpenPullRequest(found.PullRequest)),
-        PullRequestLookup.Missing missing => new RowDecision.Explain(new StatusMessage.NoPullRequest(NameOf(row), missing.Gap, missing.Host)),
+        PullRequestLookup.Missing missing => new RowDecision.Explain(new StatusMessage.NoPullRequest(row.Name, missing.Gap, missing.Host)),
         _ => throw new UnreachableException(),
-    };
-
-    /// <summary>What a message calls the row: its folder, or the branch of a row with no folder of its own.</summary>
-    private static string NameOf(WorktreeRow row) => (row.Placement, row.Head) switch
-    {
-        (Placement.NoFolder, Head.OnBranch on) => on.Branch.Value,
-        _ => row.FolderName,
     };
 
     private static RowDecision Prune(WorktreeRow row)
