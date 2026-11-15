@@ -58,7 +58,7 @@ Every Claude Code session on the machine, whether it was started here or not.
 | PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
 | AGE | Time since the session started |
 
-The detail pane shows what the session is waiting for, when it started and was last prompted, its folder, session id, worktree, branch, tab, changes (changed files, unpushed commits, the last commit) and memory (`m` for the breakdown).
+The detail pane shows, in its left column, what the session is waiting for, its folder, worktree, branch and changes (changed files, unpushed commits, the last commit), and in its right column when it started and was last prompted, its session id, its tab and its memory (`m` for the breakdown).
 
 ### The Worktrees tab
 
