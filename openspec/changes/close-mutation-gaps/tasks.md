@@ -34,14 +34,14 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 
 ## 4. Batch 3: Application\Diagnostics (34)
 
-- [ ] 4.1 File cycle, `ChildCommandWords` (24), facts in `ChildCommandWordsShould` (a table of words: each word pinned by a fact with a made-up command; diagnostic code is not Accepted by default). `DiagnosticsPrivacyShould` and `DiagnosticEventsShould` still pass.
-- [ ] 4.2 File cycle, `ChildCommand` (4), facts in `ChildCommandShould`.
-- [ ] 4.3 File cycle, `ExceptionSummary` (3), facts in `ExceptionSummaryShould`; then the tail (3 mutants in 3 files), a file cycle each.
+- [x] 4.1 File cycle, `ChildCommandWords` (24), facts in `ChildCommandWordsShould` (a table of words: each word pinned by a fact with a made-up command; diagnostic code is not Accepted by default). `DiagnosticsPrivacyShould` and `DiagnosticEventsShould` still pass.
+- [x] 4.2 File cycle, `ChildCommand` (4), facts in `ChildCommandShould`.
+- [x] 4.3 File cycle, `ExceptionSummary` (3), facts in `ExceptionSummaryShould`; then the tail (3 mutants in 3 files), a file cycle each.
 - [ ] 4.4 Record and ratchet, as 2.7.
 
 ## 5. Batch 4: WorktreeInventory (30)
 
-- [ ] 5.1 File cycle, `WorktreeInventory` (30, of which 4 have no covering test: start with those), facts in `WorktreeInventoryShould` and `WorktreeInventoryLeftoversShould`, with `Northwind.*` names, `C:\Users\me` paths and the existing fake git.
+- [x] 5.1 File cycle, `WorktreeInventory` (30, of which 4 have no covering test: start with those), facts in `WorktreeInventoryShould` and `WorktreeInventoryLeftoversShould`, with `Northwind.*` names, `C:\Users\me` paths and the existing fake git.
 - [ ] 5.2 Record and ratchet, as 2.7.
 
 ## 6. Batch 5: the rest of Application (56)
