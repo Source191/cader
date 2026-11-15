@@ -45,6 +45,8 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     }
     public Color RowColour(SessionRow row) => Palette.ForState(row.Session.State.Kind);
 
+    public string RowTip(SessionRow row) => Wording.SessionRowTip(row);
+
     public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.List.Rows, state.AutomatedRuns);
 
     public KeyBar Bar(SessionsViewState state, bool updateKnown) => Wording.SessionsBar(state, updateKnown);

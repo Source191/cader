@@ -28,7 +28,7 @@ No new effect or handler: every refusal answers from the reducer.
 ## 4. The Sessions tab (Tui)
 
 - [x] 4.1 Red `SessionsScreenDefinitionShould.MarkTheRepositoryCellOfASessionWhoseFolderHasGone` (the cell reads `folder gone: ` and the label, and at a narrow width keeps the prefix and cuts the label's end), then green the `FolderGone` arm in `SessionsScreenDefinition.Repository`; verify.
-- [ ] 4.2 Red `SessionsScreenDefinitionShould.AnswerARowTipOnlyForASessionWhoseFolderHasGone`, then green `RowTip` returning `Wording.SessionRowTip(row)`; verify, then run the full `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`.
+- [x] 4.2 Red `SessionsScreenDefinitionShould.AnswerARowTipOnlyForASessionWhoseFolderHasGone`, then green `RowTip` returning `Wording.SessionRowTip(row)`; verify, then run the full `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`.
 - [ ] 4.3 Check by hand with `tools\install-local.ps1`, started from a terminal with `NO_COLOR`, `CLAUDECODE`, `CLAUDE_PID` and `CLAUDE_CODE_*` cleared, and the Diagnostic log on. Start a session in a new throwaway worktree of a repository you already trust, send it one message, stop it with `x`, then remove the worktree's folder outside Cader. Verify these, then delete the session with `d`:
   - **The row:** it reads `folder gone:`, and the key bar offers only `d` for it.
   - **The tips:** hovering the row shows its tip, and the REPOSITORY header's tooltip names the mark.
