@@ -23,12 +23,17 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public IReadOnlyList<TableColumn<WorktreeRow>> Columns { get; } =
     [
-        // The branch and changes are the pane's, so the WORKTREE cell names the repository and the folder's slug only; a row with no folder names its branch in the slug's place.
+        // The WORKTREE cell names the repository and the folder's slug, or a row with no folder's branch in the slug's place; BRANCH flags the branch, and the pane names it and gives the flag's reason.
         TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereOf(folders, row).Fit(width), new ColumnFit.Elastic()),
         TableColumn<WorktreeRow>.Plain(Wording.HealthColumn, (row, _, _) => Wording.HealthCell(row.Health.Kind), new ColumnFit.Natural()),
+        new(Wording.BranchColumn, (row, _, _) => Wording.BranchCell(row.Flag), new ColumnFit.Natural(), FlagPaint),
         TableColumn<WorktreeRow>.Plain(Wording.LastCommitColumn, (row, now, _) => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-", new ColumnFit.RightAligned()),
         TableColumn<WorktreeRow>.Plain(Wording.SessionColumn, (row, _, _) => row.Session is WorktreeSession.Running running ? Wording.Name(running.Name) : string.Empty, new ColumnFit.Natural()),
     ];
+
+    /// <summary>A flag keeps its own colour off the selected row; a blank cell takes the row's.</summary>
+    private static CellPaint FlagPaint(WorktreeRow row) => row.Flag is BranchFlagKind.None ? new CellPaint.None() : new CellPaint.Text(Palette.ForTone(Wording.ToneOf(row.Flag)));
+
     private static WhereLabel WhereOf(FolderLabels folders, WorktreeRow row) => (row.Placement, row.Head) switch
     {
         (Placement.NoFolder, Head.OnBranch on) => new WhereLabel.Inside(row.RepositoryName, on.Branch.Value),

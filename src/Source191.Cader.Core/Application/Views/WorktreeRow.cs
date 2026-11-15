@@ -28,6 +28,9 @@ public sealed record WorktreeRow(
     /// <summary>The most urgent flag on the branch the row names; none on a row that names no branch, or before the lookup lands.</summary>
     public BranchFlagKind Flag { get; init; } = BranchFlagKind.None;
 
+    /// <summary>The branch's commits that its merged pull request's head does not contain, as the left behind flag counted them; zero when not counted.</summary>
+    public int CommitsAfterMerge { get; init; }
+
     /// <summary>A branch or origin row's folder is its repository's, so only the health says it has none of its own.</summary>
     public Placement Placement => Health.Kind is WorktreeHealthKind.Branch or WorktreeHealthKind.Origin ? Placement.NoFolder : Placement.Folder;
 

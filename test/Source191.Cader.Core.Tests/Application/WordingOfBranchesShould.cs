@@ -64,7 +64,7 @@ public sealed class WordingOfBranchesShould
         new(new PullRequest(host, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, Fixtures.Noon, new HeadCommit.NotRecorded()));
 
     private static WorktreeRow Row(BranchFlagKind flag, PullRequestLookup lookup) =>
-        new WorktreeRow(Repository, Repository, new Head.OnBranch(BranchName.From("c-new-bug")), WorktreeHealth.OnlyOnOrigin, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true)
+        new(Repository, Repository, new Head.OnBranch(BranchName.From("c-new-bug")), WorktreeHealth.OnlyOnOrigin, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true)
         {
             PullRequest = lookup,
             Flag = flag,

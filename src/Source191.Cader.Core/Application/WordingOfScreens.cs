@@ -249,6 +249,9 @@ public static partial class Wording
 
     public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots),\n⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason");
 
+    // Beside HealthColumn, because WorktreesColumns below reads it as the type initialises, in this file's order.
+    public static ColumnHelp BranchColumn { get; } = new("BRANCH", "▲ left behind (commits after its pull request merged), ✗ gone (deleted on origin),\n✗ closed (its pull request closed unmerged), · no PR (none on its host);\nblank when none applies or not yet known; the pane gives the reason");
+
     public static ColumnHelp LastCommitColumn { get; } = new("LAST COMMIT", "time since the last commit");
 
     public static ColumnHelp SettingColumn { get; } = new("SETTING", "a setting kept in config.json, or, under the Setup heading, setup it reads but does not change");
@@ -259,7 +262,7 @@ public static partial class Wording
 
     public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
 
-    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, LastCommitColumn, SessionColumn];
+    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, BranchColumn, LastCommitColumn, SessionColumn];
 
     public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } = [SettingColumn, ValueColumn];
 
