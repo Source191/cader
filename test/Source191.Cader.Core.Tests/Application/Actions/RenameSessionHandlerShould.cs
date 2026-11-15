@@ -132,4 +132,52 @@ public sealed class RenameSessionHandlerShould
         terminal.Opened.ShouldBeEmpty();
         message.ShouldBe(new RenameSessionOutcome.NotRemoved(Listed.As("fix-123"), "Session 81cdb0f9 not found"));
     }
+
+    [Fact]
+    public async Task ReopenTheTabWithAFreshColourWhenItsRegistrationAppearedAfterTheFirstLook()
+    {
+        processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(0, "backgrounded · 81cdb0f9 · fix-124", string.Empty));
+        transcripts.WithMessages(SessionId.From("sess-1"));
+        await LiveTabAsync(store, registry, shell: 4000, colour: TabPalette.Default[3]);
+        OpenTabHandler openTab = new(store, registry, terminal, new FakeTimeProvider(Fixtures.Noon), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"));
+        RenameSessionHandler handler = new(new ClaudeCli(processes, Claude), transcripts, new EmptyOnTheFirstRead(store), new SessionTabs(store, registry), openTab);
+
+        Outcome message = await handler.HandleAsync(Rename, CancellationToken.None);
+
+        message.ShouldBe(new RenameSessionOutcome.Renamed(Listed.As("fix-123"), SessionName.From("fix-124"), TabMoved: true));
+        terminal.Opened.ShouldHaveSingleItem().Colour.ShouldBe(TabPalette.Default[0]);
+    }
+
+    [Fact]
+    public async Task LeaveTheSessionUnsupervisedWhenEvenTheOldNameCannotBeResumed()
+    {
+        processes.Answer(request => request.Arguments.Contains("--resume"), new ProcessResult(1, string.Empty, "boom"));
+        transcripts.WithMessages(SessionId.From("sess-1"));
+
+        Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
+
+        message.ShouldBe(new RenameSessionOutcome.Unsupervised(Listed.As("fix-123"), "boom", SessionId.From("sess-1"), "boom"));
+    }
+
+    /// <summary>A registry whose first read finds nothing, as when a tab registers between the look and the closing.</summary>
+    private sealed class EmptyOnTheFirstRead(ITabRegistry inner) : ITabRegistry
+    {
+        private bool looked;
+
+        public Task<IReadOnlyList<TabRegistration>> ReadTabsAsync()
+        {
+            if (looked)
+            {
+                return inner.ReadTabsAsync();
+            }
+
+            looked = true;
+
+            return Task.FromResult<IReadOnlyList<TabRegistration>>([]);
+        }
+
+        public Task WriteTabAsync(TabRegistration registration) => inner.WriteTabAsync(registration);
+
+        public Task RemoveTabAsync(Guid id) => inner.RemoveTabAsync(id);
+    }
 }

@@ -5,6 +5,7 @@ public static class Durations
 {
     public static string Age(TimeSpan elapsed)
     {
+        // Stryker disable once Equality : Equivalent: at exactly zero the clamp assigns zero to zero (the other Equality mutant of this line is killed by FormatAges)
         if (elapsed < TimeSpan.Zero)
         {
             elapsed = TimeSpan.Zero;

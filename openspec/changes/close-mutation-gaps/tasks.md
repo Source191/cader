@@ -53,18 +53,18 @@ The tail of a batch (a few mutants per file in many files) is one checklist task
 
 ## 7. Batch 6: Views, Detail and Reporting (51)
 
-- [ ] 7.1 File cycle, `DetailLayout` (10), facts in `DetailLayoutShould`.
-- [ ] 7.2 File cycle, `ProblemReports` (10), facts in `ProblemReportsShould`; nothing personal in any fixture.
-- [ ] 7.3 File cycle, `StatusLayout` (5), facts in `StatusLayoutShould`.
-- [ ] 7.4 File cycle, `WizardState` (4) in a new `WizardStateShould` and `WizardView` (4) in `WizardViewShould`: two files, a commit each.
-- [ ] 7.5 File cycle, `ListSelection` (4), facts in `ListSelectionShould`, and `DetailLoader` (3), facts in `DetailLoaderShould`: two files, a commit each; then the tail (11 mutants in about 9 files, among them `Durations` and `ConfigViewState`), a file cycle each.
-- [ ] 7.6 Record and ratchet, as 2.7.
+- [x] 7.1 File cycle, `DetailLayout` (10), facts in `DetailLayoutShould`.
+- [x] 7.2 File cycle, `ProblemReports` (10), facts in `ProblemReportsShould`; nothing personal in any fixture.
+- [x] 7.3 File cycle, `StatusLayout` (5), facts in `StatusLayoutShould`.
+- [x] 7.4 File cycle, `WizardState` (4) in a new `WizardStateShould` and `WizardView` (4) in `WizardViewShould`: two files, a commit each.
+- [x] 7.5 File cycle, `ListSelection` (4), facts in `ListSelectionShould`, and `DetailLoader` (3), facts in `DetailLoaderShould`: two files, a commit each; then the tail (11 mutants in about 9 files, among them `Durations` and `ConfigViewState`), a file cycle each.
+- [x] 7.6 Record and ratchet, as 2.7.
 
 ## 8. Batch 7: Actions, Launch and TerminalSetup (18)
 
-- [ ] 8.1 File cycle, `OpenProblemReportHandler` (4), facts in `OpenProblemReportHandlerShould` (assert the outcome record), and `TabClaimer` (3), facts in a new `TabClaimerShould`: two files, a commit each.
-- [ ] 8.2 The tail (11 mutants in about 8 files, among them `DeleteSessionHandler`, `RenameSessionHandler`, `HereCommandRunner` and `TerminalSetupRunner`), a file cycle each.
-- [ ] 8.3 Record and ratchet, as 2.7.
+- [x] 8.1 File cycle, `OpenProblemReportHandler` (4), facts in `OpenProblemReportHandlerShould` (assert the outcome record), and `TabClaimer` (3), facts in a new `TabClaimerShould`: two files, a commit each.
+- [x] 8.2 The tail (11 mutants in about 8 files, among them `DeleteSessionHandler`, `RenameSessionHandler`, `HereCommandRunner` and `TerminalSetupRunner`), a file cycle each.
+- [x] 8.3 Record and ratchet, as 2.7.
 
 ## 9. Strict release runs
 

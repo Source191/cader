@@ -202,4 +202,49 @@ public sealed class ListSelectionShould
         HeadedLoaded.Title("item", row => row).ShouldBe(new TableTitle("item", Shown: 3, Total: 3, Filter: string.Empty, Selected: "apple"));
         HeadedLoaded.StartFilter().EditFilter(Key.Of('a')).Title("item", row => row).ShouldBe(new TableTitle("item", Shown: 2, Total: 3, Filter: "a", Selected: "apple"));
     }
+
+    [Fact]
+    public void StartWithNoFilterBeingEdited()
+    {
+        Alphabetical.EmptyList().FilterEditing.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AskForALabelOnlyWhenARowIsSelected()
+    {
+        int asked = 0;
+
+        Alphabetical.EmptyList().Load([]).Title("fruit", row =>
+        {
+            asked++;
+
+            return row;
+        });
+
+        asked.ShouldBe(0);
+    }
+
+    [Fact]
+    public void KeepAFilterThatStillShowsTheKeyBeingSelected()
+    {
+        ListSelection<string> filtering = Loaded.StartFilter().EditFilter(Key.Of('p'));
+
+        ListSelection<string> selected = filtering.Select("pear");
+
+        selected.Selected.ShouldBe("pear");
+        selected.Filter.Text.ShouldBe("p");
+        selected.FilterEditing.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void StopEditingTheFilterItClearsToShowTheKey()
+    {
+        ListSelection<string> filtering = Loaded.StartFilter().EditFilter(Key.Of('f'));
+
+        ListSelection<string> selected = filtering.Select("pear");
+
+        selected.Selected.ShouldBe("pear");
+        selected.Filter.Text.ShouldBeEmpty();
+        selected.FilterEditing.ShouldBeFalse();
+    }
 }

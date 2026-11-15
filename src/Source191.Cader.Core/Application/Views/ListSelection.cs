@@ -105,6 +105,7 @@ public sealed record ListSelection<TRow>(
             : selected;
     }
 
+    // Stryker disable once Conditional : Equivalent: Load of rows that still hold the selected key only sets Loaded, which the mutant restores, so it returns the same selection (the mutant that always keeps the selection is killed by FilterCaseInsensitivelyAndReselect)
     private ListSelection<TRow> Reselect() => Selected is not null ? this : Load(Rows) with { Loaded = Loaded };
 
     private int IndexOfSelected() => Math.Max(Visible.ToList().FindIndex(IsSelected), 0);

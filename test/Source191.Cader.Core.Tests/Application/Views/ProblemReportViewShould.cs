@@ -77,4 +77,18 @@ public sealed class ProblemReportViewShould
     {
         ProblemReportView.Reduce(Opened, new ProblemReportInput.Cancel()).Effect.ShouldBe(new ProblemReportEffect.Close());
     }
+
+    [Fact]
+    public void OpenWithNothingTyped()
+    {
+        ProblemReportState.Open(Default).TitleText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AcceptATitleOfExactlyTheLongestLength()
+    {
+        ProblemReportState state = ProblemReportView.Reduce(Opened, new ProblemReportInput.TitleChanged(new string('a', ReportTitle.MostCharacters))).State;
+
+        state.Problem.ShouldBe(new ReportTitleProblemLine.None());
+    }
 }

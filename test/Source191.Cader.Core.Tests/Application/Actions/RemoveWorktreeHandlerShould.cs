@@ -308,4 +308,45 @@ public sealed class RemoveWorktreeHandlerShould
 
         return await removal;
     }
+
+    [Fact]
+    public async Task TouchNothingWhenGitCannotSayWhetherItStillListsTheWorktree()
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+        folders.WithFile(Path.Combine(Worktree, "Program.cs"));
+
+        RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
+
+        outcome.ShouldBe(new RemoveWorktreeOutcome.InUse("Northwind.Orders-fix-123"));
+        folders.FileExists(Path.Combine(Worktree, "Program.cs")).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task WaitAQuarterOfASecondBetweenTriesAtAHeldFolder()
+    {
+        processes.Answer(request => request.Arguments.Contains("remove"), FolderInUse);
+        folders.WithDirectory(Worktree).HeldOpenFor(Worktree, attempts: 1);
+
+        Task<RemoveWorktreeOutcome> removal = Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        removal.IsCompleted.ShouldBeFalse("the second try waits for the clock");
+        folders.DirectoryExists(Worktree).ShouldBeTrue();
+        clock.Advance(TimeSpan.FromMilliseconds(250));
+        await removal.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+        folders.DirectoryExists(Worktree).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task NotReadTheFilesOfAWorktreeGitStillKnows()
+    {
+        folders.WithFile(Path.Combine(Worktree, "Program.cs"));
+        FoldersThatCountWalks counting = new(folders);
+        RemoveWorktreeHandler handler = new(new GitCli(processes, "git"), store, counting, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
+
+        await handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        counting.Walks.ShouldBe(0);
+    }
 }

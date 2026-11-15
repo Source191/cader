@@ -71,6 +71,7 @@ public static class WizardView
     {
         return state.Focus switch
         {
+            // Stryker disable once Conditional : Equivalent: the name field of a fixed folder starts the session before Next is asked, so ShowsChooser is always true here (the mutant that is always Name is killed by NextFieldMovesNameToMode)
             WizardField.Name => state.ShowsChooser ? WizardField.Mode : WizardField.Name,
             WizardField.RepositoryFilter => WizardField.RepositoryFilter,
             WizardField.RepositoryList => WizardField.RepositoryList,

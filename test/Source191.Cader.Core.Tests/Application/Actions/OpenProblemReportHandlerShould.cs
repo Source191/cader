@@ -68,4 +68,37 @@ public sealed class OpenProblemReportHandlerShould
     {
         return new ProblemReports(log, new ProcessCounts(), crashFile, Start, TestSettings.Current(@"C:\Users\me\source\repos"), new FakeTimeProvider(Fixtures.Noon)).BuildAsync();
     }
+
+    [Fact]
+    public async Task KeepTheFittedTextWhenTheTitleLeavesRoomForMore()
+    {
+        ProblemReport report = await ReportOfManyEvents();
+
+        await new OpenProblemReportHandler(desktop, crashFile).HandleAsync(new OpenProblemReport(Title, report), CancellationToken.None);
+
+        report.FitWithin(Title, ProblemReport.AddressLimit).ShouldNotBe(report.Fitted, "a short title would keep more lines if the text were fitted again");
+        desktop.Opened.ShouldBe([ProblemReportAddress.For(Title, report.Fitted).AbsoluteUri]);
+    }
+
+    [Fact]
+    public async Task FitTheTextAgainForATitleThatEscapesLongerThanTheRoomLeftForIt()
+    {
+        ReportTitle wide = ReportTitle.From(new string('€', ReportTitle.MostCharacters));
+        ProblemReport report = await ReportOfManyEvents();
+
+        await new OpenProblemReportHandler(desktop, crashFile).HandleAsync(new OpenProblemReport(wide, report), CancellationToken.None);
+
+        ProblemReportAddress.Length(wide, report.Fitted).ShouldBeGreaterThan(ProblemReport.AddressLimit);
+        desktop.Opened.ShouldBe([ProblemReportAddress.For(wide, report.FitWithin(wide, ProblemReport.AddressLimit)).AbsoluteUri]);
+    }
+
+    private async Task<ProblemReport> ReportOfManyEvents()
+    {
+        foreach (int index in Enumerable.Range(0, 500))
+        {
+            log.Record(new ViewShown(ViewKind.Sessions));
+        }
+
+        return await Report();
+    }
 }

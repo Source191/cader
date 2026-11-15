@@ -60,6 +60,7 @@ public static class StatusLayout
         }
 
         string rest = word;
+        // Stryker disable once Equality : Equivalent: a rest exactly one row wide is a row either way: broken off now, or closed when the next word does not fit (a space and a word always overflow it), or at the end (the mutant that breaks only a rest shorter than a row is killed by BreakAWordWiderThanARowAtItsEnd)
         while (rest.Length > width)
         {
             rows.Add(rest[..width]);
