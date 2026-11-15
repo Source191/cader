@@ -444,7 +444,15 @@ public static partial class Wording
         ]);
     }
 
-    public static string TerminalSettingsReadOnly(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries) => string.Empty;
+    /// <summary>Why nothing was written to a read-only settings file, and the entries to add by hand.</summary>
+    public static string TerminalSettingsReadOnly(string settingsPath, IReadOnlyList<TerminalProfileEntry> entries)
+    {
+        return string.Join(Environment.NewLine, [
+            $"Could not add the entries: {settingsPath} is read-only, so nothing was written.",
+            "Add each of these to its profile list by hand, or clear its read-only attribute and run the command again:",
+            .. entries.Select(entry => $"  {entry.Json}"),
+        ]);
+    }
 
     public static string TerminalSettingsChanged(string settingsPath) => $"{settingsPath} changed while setup was writing it, most likely saved by Windows Terminal, so nothing was written. Run the command again.";
 

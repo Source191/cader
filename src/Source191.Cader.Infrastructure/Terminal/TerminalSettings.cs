@@ -68,6 +68,11 @@ public sealed class TerminalSettings(string localStateFolder, TimeProvider time)
             return new TerminalSettingsEdit.IsALink();
         }
 
+        if (File.GetAttributes(Location).HasFlag(FileAttributes.ReadOnly))
+        {
+            return new TerminalSettingsEdit.IsReadOnly();
+        }
+
         byte[] bytes = await File.ReadAllBytesAsync(Location, cancellationToken);
         int start = ByteOrderMarkLength(bytes);
         ListPlace place = PlaceOfTheList(bytes, start);
