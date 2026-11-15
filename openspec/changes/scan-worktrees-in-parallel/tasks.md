@@ -1,6 +1,6 @@
 ## 1. The fake can hold a git read open
 
-- [ ] 1.1 Add `WhileRunning` (`Func<ProcessRequest, Task>`, default `Task.CompletedTask`) to `test\Source191.Cader.TestDoubles\FakeProcessRunner.cs`, called first in `RunAsync`, before its yield, and awaited there, with a summary line saying a hook's synchronous part runs on the caller's path so a test can count starts and hold runs open (design decision 5). Verify `dotnet build -c Debug` and `dotnet test test\Source191.Cader.Core.Tests -c Debug --no-build` pass unchanged.
+- [x] 1.1 Add `WhileRunning` (`Func<ProcessRequest, Task>`, default `Task.CompletedTask`) to `test\Source191.Cader.TestDoubles\FakeProcessRunner.cs`, called first in `RunAsync`, before its yield, and awaited there, with a summary line saying a hook's synchronous part runs on the caller's path so a test can count starts and hold runs open (design decision 5). Verify `dotnet build -c Debug` and `dotnet test test\Source191.Cader.Core.Tests -c Debug --no-build` pass unchanged.
 
 ## 2. Pin today's rows before anything moves
 
