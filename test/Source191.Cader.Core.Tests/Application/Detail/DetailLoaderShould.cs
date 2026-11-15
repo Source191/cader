@@ -170,4 +170,32 @@ public sealed class DetailLoaderShould
 
         public int GetHashCode(DetailFact<IReadOnlyList<string>> obj) => 0;
     }
+
+    [Fact]
+    public async Task ReadNoChangedFilesWhenNothingHasChanged()
+    {
+        WorktreeDetail detail = await Loader().WorktreeAsync(WorktreeRowOf(unpushed: 0, dirty: 0), listRows: 4, CancellationToken.None);
+
+        detail.ChangedFiles.ShouldBeOfType<DetailFact<IReadOnlyList<string>>.NotApplicable>();
+        processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("status"));
+    }
+
+    [Fact]
+    public async Task ListTheUnpushedCommitsAloneWhenThereAreChangedFilesToo()
+    {
+        WorktreeDetail detail = await Loader().WorktreeAsync(WorktreeRowOf(unpushed: 2, dirty: 3), listRows: 4, CancellationToken.None);
+
+        detail.Commits.ShouldBeOfType<DetailFact<IReadOnlyList<UnpushedCommit>>.Known>();
+        detail.ChangedFiles.ShouldBeOfType<DetailFact<IReadOnlyList<string>>.NotApplicable>();
+        processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("status"));
+    }
+
+    [Fact]
+    public async Task RecordNoFailureForAWorktreeNobodyCreatedHere()
+    {
+        WorktreeDetail detail = await Loader().WorktreeAsync(WorktreeRowOf(unpushed: 0, dirty: 0), listRows: 4, CancellationToken.None);
+
+        detail.Created.ShouldBe(new WorktreeOrigin.NotCreatedHere());
+        log.Snapshot().ShouldBeEmpty();
+    }
 }
