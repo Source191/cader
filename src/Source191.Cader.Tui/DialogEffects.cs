@@ -103,7 +103,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         TypedAnswer answer = TypedConfirmationDialog.Show(
             context.App,
             context.Diagnostics,
-            DialogName.ForceRemove,
+            confirm.Row.Placement switch { Placement.Folder => DialogName.ForceRemove, Placement.NoFolder => DialogName.ForceDeleteBranch },
             Wording.ForceTitle(confirm.Row.Placement),
             Wording.ForceWarning(confirm.Row.Placement),
             confirm.ConfirmationText);

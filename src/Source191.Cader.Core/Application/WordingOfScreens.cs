@@ -41,6 +41,7 @@ public static partial class Wording
         DialogName.DeleteBranch => "Delete branch",
         DialogName.CloseEmpty => "Close empty",
         DialogName.ForceRemove => "Force remove",
+        DialogName.ForceDeleteBranch => "Force delete",
         DialogName.OpenSolution => "Open solution",
         DialogName.WhatsNew => "What's new",
         DialogName.Memory => "Memory",
@@ -299,11 +300,12 @@ public static partial class Wording
     /// <summary>The worktrees pane's lines, for the help.</summary>
     public static IReadOnlyList<ColumnHelp> WorktreesPane { get; } =
     [
-        new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots); then the reason in full"),
-        new("Branch", "the branch checked out there, and whether it is merged into origin's default branch"),
+        new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots);\nbranch (checked out in no worktree); origin (only on origin); then the reason in full"),
+        new("Branch", "the branch, whether a worktree's is merged into origin's default branch,\nthen the BRANCH flag's reason in full"),
         new("PR", "its pull request, as the sessions table shows it, or none; p opens it"),
         new("Folder", "the worktree's folder"),
         new("Created", "when Cader created it, or not by Cader"),
+        new("Repository", "a branch or origin row's repository, in place of Folder and Created"),
         new("Changes", "changed or untracked files, and commits on its branch that no remote has"),
         new("Unpushed", "the newest five unpushed commits, or the changed files when none, and how many more"),
     ];

@@ -13,6 +13,7 @@ public enum DialogName
     DeleteBranch,
     CloseEmpty,
     ForceRemove,
+    ForceDeleteBranch,
     OpenSolution,
     WhatsNew,
     Memory,
