@@ -46,18 +46,40 @@ public static partial class Wording
     public static DetailContent Detail(WorktreeDetail detail, DateTimeOffset now, TimeZoneInfo zone)
     {
         WorktreeRow row = detail.Row;
-        IReadOnlyList<IReadOnlyList<DetailLine>> facts =
-        [
-            [new("Health", HealthLine(row.Health), ToneOf(row.Health.Kind), Span: 3)],
-            [new("Branch", BranchLine(row.Head, detail.Merge), TextTone.Plain, Span: 2), new("PR", PullRequestLine(row.PullRequest), TextTone.Plain, Span: 1)],
+        IReadOnlyList<DetailLine> health = [new("Health", HealthLine(row.Health), ToneOf(row.Health.Kind), Span: 3)];
+        IReadOnlyList<DetailLine> branch = [new("Branch", WithReason(BranchLine(row.Head, detail.Merge), row), TextTone.Plain, Span: 2), new("PR", PullRequestLine(row.PullRequest), TextTone.Plain, Span: 1)];
+        IReadOnlyList<IReadOnlyList<DetailLine>> facts = row.Placement switch
+        {
+            Placement.Folder =>
             [
-                new("Folder", row.Path.Value, TextTone.Plain, Span: 2),
-                new("Created", detail.Created is WorktreeOrigin.CreatedHere created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader", TextTone.Plain, Span: 1),
+                health,
+                branch,
+                [
+                    new("Folder", row.Path.Value, TextTone.Plain, Span: 2),
+                    new("Created", detail.Created is WorktreeOrigin.CreatedHere created ? $"by Cader, {DayAndTime(created.Record.CreatedAt, now, zone)}" : "not by Cader", TextTone.Plain, Span: 1),
+                ],
+                [new("Changes", $"{Count(row.DirtyFiles, "changed file")} · {Count(row.UnpushedCommits, "unpushed commit")}", row.DirtyFiles + row.UnpushedCommits > 0 ? TextTone.Amber : TextTone.Plain, Span: 3)],
             ],
-            [new("Changes", $"{Count(row.DirtyFiles, "changed file")} · {Count(row.UnpushedCommits, "unpushed commit")}", row.DirtyFiles + row.UnpushedCommits > 0 ? TextTone.Amber : TextTone.Plain, Span: 3)],
-        ];
+            Placement.NoFolder => [health, branch, [new("Repository", row.Repository.Value, TextTone.Plain, Span: 3)], [NoFolderChanges(row)]],
+        };
 
-        return new DetailContent(row.FolderName, facts, Listing(detail, now));
+        return new DetailContent(row.Name, facts, row.Placement is Placement.Folder ? Listing(detail, now) : []);
+    }
+
+    /// <summary>A branch row's commits at risk, which d and D weigh; an origin row has no local branch to lose anything from.</summary>
+    private static DetailLine NoFolderChanges(WorktreeRow row) => row switch
+    {
+        { Health.Kind: WorktreeHealthKind.Origin } => new("Changes", "no local branch", TextTone.Plain, Span: 3),
+        { UnpushedCommits: > 0 } => new("Changes", Count(row.UnpushedCommits, "unpushed commit"), TextTone.Amber, Span: 3),
+        _ => new("Changes", Count(row.UnpushedCommits, "unpushed commit"), TextTone.Plain, Span: 3),
+    };
+
+    /// <summary>The branch, then its flag's reason when it is flagged: "c-new-bug · 1 commit after #298 merged".</summary>
+    private static string WithReason(string branch, WorktreeRow row)
+    {
+        string reason = BranchReason(row);
+
+        return reason.Length == 0 ? branch : $"{branch} · {reason}";
     }
 
     /// <summary>The listing's reason, a first prompt for a session that needs input and has never had one, or nothing.</summary>
