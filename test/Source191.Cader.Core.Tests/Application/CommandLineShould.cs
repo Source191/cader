@@ -1,3 +1,5 @@
+using System.CommandLine;
+using System.Text.RegularExpressions;
 using Source191.Cader.Application;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.TerminalSetup;
@@ -248,6 +250,54 @@ public sealed class CommandLineShould : IDisposable
         error.ToString().ShouldContain(mistyped);
         output.ToString().ShouldContain(suggestion);
     }
+
+    [Fact]
+    public async Task DescribeTheHereCommandAndItsNameInTheHelp()
+    {
+        await InvokeAsync("--help");
+        string root = Collapsed(output);
+        output.GetStringBuilder().Clear();
+        await InvokeAsync("here", "--help");
+        string here = Collapsed(output);
+
+        root.ShouldContain("Start a supervised Claude Code session in this folder, on its current branch, and attach to it in this tab. Ctrl+Z detaches; the session keeps running.");
+        here.ShouldContain("Start a supervised Claude Code session in this folder, on its current branch, and attach to it in this tab. Ctrl+Z detaches; the session keeps running.");
+        here.ShouldContain("The session's name; the folder's name when left out.");
+    }
+
+    [Fact]
+    public async Task DescribeSetupTerminalAndEachOfItsOptionsInTheHelp()
+    {
+        await InvokeAsync("setup-terminal", "--help");
+
+        string help = Collapsed(output);
+        help.ShouldContain("Add the Cader and Cader session profiles to Windows Terminal, each with a bell that sounds and flashes, offer to show again a profile Windows Terminal hides because it was deleted there, then offer to turn on Claude Code's terminal bell. Shows what it will write and asks first.");
+        help.ShouldContain("--sound <wav>");
+        help.ShouldContain("The bell sound of the Cader profile.");
+        help.ShouldContain("--session-sound <wav>");
+        help.ShouldContain("The bell sound of the Cader session profile.");
+        help.ShouldContain("Write without asking.");
+        help.ShouldContain("Remove the profiles.");
+    }
+
+    [Fact]
+    public void DescribeTheHiddenClaimTabCommandForMaintainers()
+    {
+        Command claim = CommandLine.Build(new CommandActions(_ => Task.FromResult(0), (_, _, _) => Task.FromResult(0), (_, _) => Task.FromResult(0), (_, _, _) => Task.FromResult(0))).Subcommands.Single(command => command.Name == "claim-tab");
+
+        claim.Description.ShouldBe("Run by the shell inside a tab the console opened, to claim that tab.");
+        claim.Hidden.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task LeaveABlankLineBetweenTheRefusalAndTheHelp()
+    {
+        await InvokeAsync("here", "-x");
+
+        error.ToString().ShouldBe(Wording.NameLooksLikeAnOption("-x") + Environment.NewLine + Environment.NewLine);
+    }
+
+    private static string Collapsed(StringWriter writer) => Regex.Replace(writer.ToString(), @"\s+", " ");
 
     private Task<int> InvokeAsync(params string[] arguments)
     {
