@@ -147,5 +147,15 @@ public sealed class DetailLayoutShould
         DetailLayout.Rows(content, width: 60, height: 1).Count.ShouldBe(1);
     }
 
+    [Fact]
+    public void WidenNoColumnForASpanTheFactsBelowItAlreadyMakeRoomFor()
+    {
+        DetailContent content = new("fix-123", [[Fact("W", 20, span: 2), Fact("C", 3)], [Fact("A", 15), Fact("B", 3), Fact("C", 3)]], Below: []);
+
+        string second = Text(DetailLayout.Rows(content, width: 40, height: 5))[1];
+
+        second.IndexOf("C x", StringComparison.Ordinal).ShouldBe(26, "the span fits the first two columns as the facts below size them");
+    }
+
     private static DetailLine Fact(string label, int length, int span = 1) => new(label, new string('x', length), TextTone.Plain, span);
 }

@@ -35,6 +35,6 @@ public sealed class TextFitShould
     [Fact]
     public void RefuseANegativeWidth()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => TextFit.ElideMiddle("Northwind", -1));
+        Should.Throw<ArgumentOutOfRangeException>(() => TextFit.ElideMiddle("Northwind", -1)).ParamName.ShouldBe("width");
     }
 }

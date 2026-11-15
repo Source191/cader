@@ -28,6 +28,14 @@ public static class StatusLayout
 
     public static IReadOnlyList<string> Lines(string words, int width)
     {
+        IReadOnlyList<string> rows = Rows(words, width);
+
+        return rows.Count <= MostRows ? rows : [.. rows.Take(MostRows - 1), Shortened(rows[MostRows - 1], width)];
+    }
+
+    /// <summary>The words in as many rows of at most <paramref name="width"/> as they need, broken at spaces, and a word wider than a row at its end.</summary>
+    public static IReadOnlyList<string> Rows(string words, int width)
+    {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
 
         List<string> rows = [];
@@ -42,7 +50,7 @@ public static class StatusLayout
             rows.Add(current);
         }
 
-        return rows.Count <= MostRows ? rows : [.. rows.Take(MostRows - 1), Shortened(rows[MostRows - 1], width)];
+        return rows;
     }
 
     /// <summary>Adds the word to the row being built, or closes that row and starts the next with it; answers the row being built.</summary>
@@ -59,15 +67,11 @@ public static class StatusLayout
             rows.Add(current);
         }
 
-        string rest = word;
-        // Stryker disable once Equality : Equivalent: a rest exactly one row wide is a row either way: broken off now, or closed when the next word does not fit (a space and a word always overflow it), or at the end (the mutant that breaks only a rest shorter than a row is killed by BreakAWordWiderThanARowAtItsEnd)
-        while (rest.Length > width)
-        {
-            rows.Add(rest[..width]);
-            rest = rest[width..];
-        }
+        // A word wider than a row is broken at each row's end; its last piece starts the next row.
+        string[] pieces = [.. word.Chunk(width).Select(piece => new string(piece))];
+        rows.AddRange(pieces[..^1]);
 
-        return rest;
+        return pieces[^1];
     }
 
     /// <summary>The last row shown when more was left: an ellipsis after it, or in place of its last cell when it is full.</summary>

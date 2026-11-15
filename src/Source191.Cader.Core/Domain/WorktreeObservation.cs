@@ -14,7 +14,6 @@ public abstract record WorktreeObservation
 
     /// <summary>A folder that exists on disc and that git's listing omits.</summary>
     /// <param name="GitFile">What its .git file points at.</param>
-    /// <param name="UnderClaudeWorktrees">The folder sits under a repository's .claude\worktrees directory.</param>
-    /// <param name="EmptyLeftover">The folder is an empty leftover such as a .worktrees folder.</param>
-    public sealed record Unregistered(GitPointer GitFile, bool UnderClaudeWorktrees, bool EmptyLeftover) : WorktreeObservation;
+    /// <param name="Folder">What kind of folder it is, which matters only when the .git file does not decide.</param>
+    public sealed record Unregistered(GitPointer GitFile, UnregisteredFolder Folder) : WorktreeObservation;
 }

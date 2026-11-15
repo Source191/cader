@@ -68,13 +68,16 @@ public static class WizardView
             : state with { Problem = new WizardProblem.None(), Focus = WizardField.Name };
     }
 
-    /// <summary>Enter moves through the form in its order: the name to the Where choice when it shows, Where to the base, the base to Before branching, that to the prompt; the prompt keeps it.</summary>
+    /// <summary>
+    /// Enter moves through the form in its order: the name to the Where choice, Where to the base, the base to Before
+    /// branching, that to the prompt; the prompt keeps it. Enter on the name of a fixed folder, with no Where choice,
+    /// starts the session before this is asked.
+    /// </summary>
     private static WizardField Next(WizardState state)
     {
         return state.Focus switch
         {
-            // Stryker disable once Conditional : Equivalent: the name field of a fixed folder starts the session before Next is asked, so ShowsChooser is always true here (the mutant that is always Name is killed by NextFieldMovesNameToMode)
-            WizardField.Name => state.ShowsChooser ? WizardField.Mode : WizardField.Name,
+            WizardField.Name => WizardField.Mode,
             WizardField.RepositoryFilter => WizardField.RepositoryFilter,
             WizardField.RepositoryList => WizardField.RepositoryList,
             WizardField.Mode => WizardField.Base,

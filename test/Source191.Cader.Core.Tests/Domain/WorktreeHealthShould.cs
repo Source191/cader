@@ -11,8 +11,7 @@ public sealed class WorktreeHealthShould
 
     private static readonly WorktreeObservation.Unregistered NotListed = new(
         GitFile: new GitPointer.NoGitFile(),
-        UnderClaudeWorktrees: false,
-        EmptyLeftover: false);
+        Folder: UnregisteredFolder.Other);
 
     [Fact]
     public void BeOkForARegisteredWorktreeWhoseFolderExistsWithNothingToExplain()
@@ -78,7 +77,7 @@ public sealed class WorktreeHealthShould
     [Fact]
     public void BeOrphanForAFolderUnderClaudeWorktreesThatGitNoLongerLists()
     {
-        WorktreeHealth health = WorktreeHealth.From(NotListed with { UnderClaudeWorktrees = true });
+        WorktreeHealth health = WorktreeHealth.From(NotListed with { Folder = UnregisteredFolder.UnderClaudeWorktrees });
 
         health.Kind.ShouldBe(WorktreeHealthKind.Orphan);
         health.Reason.ShouldBe(new HealthReason.UnderClaudeWorktrees());
@@ -87,7 +86,7 @@ public sealed class WorktreeHealthShould
     [Fact]
     public void BeEmptyForALeftoverFolderWithNothingInIt()
     {
-        WorktreeHealth health = WorktreeHealth.From(NotListed with { EmptyLeftover = true });
+        WorktreeHealth health = WorktreeHealth.From(NotListed with { Folder = UnregisteredFolder.EmptyLeftover });
 
         health.Kind.ShouldBe(WorktreeHealthKind.Empty);
         health.Reason.ShouldBe(new HealthReason.EmptyLeftover());
@@ -107,7 +106,7 @@ public sealed class WorktreeHealthShould
     [Fact]
     public void KeepAnOrphanWhosePointerTargetExistsAnOrphan()
     {
-        WorktreeHealth health = WorktreeHealth.From(NotListed with { GitFile = new GitPointer.TargetExists(), UnderClaudeWorktrees = true });
+        WorktreeHealth health = WorktreeHealth.From(NotListed with { GitFile = new GitPointer.TargetExists(), Folder = UnregisteredFolder.UnderClaudeWorktrees });
 
         health.Kind.ShouldBe(WorktreeHealthKind.Orphan);
         health.Reason.ShouldBe(new HealthReason.UnderClaudeWorktrees());

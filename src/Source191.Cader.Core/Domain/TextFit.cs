@@ -14,7 +14,6 @@ public static class TextFit
     /// </summary>
     public static string ElideMiddle(string text, int width)
     {
-        // Stryker disable once Statement : Equivalent: a negative width still throws ArgumentOutOfRangeException from the slice that follows
         ArgumentOutOfRangeException.ThrowIfNegative(width);
 
         if (text.Length <= width)

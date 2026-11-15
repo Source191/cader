@@ -17,7 +17,6 @@ public sealed class HereCommandRunnerShould : IDisposable
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
         .AnswerAll(new ProcessResult(0, "[]", string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty));
-    private readonly FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Directory, ".git"));
     private readonly FakeTerminalConsole console = new();
     private readonly StringWriter output = new();
     private readonly StringWriter error = new();
@@ -31,7 +30,7 @@ public sealed class HereCommandRunnerShould : IDisposable
             InMemoryState state = new();
             LaunchService launches = new(claude, git, new BaseUpdater(git), state, state, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
 
-            return new HereCommandRunner(folders, launches, new TerminalEffects(claude, console), console, output, error);
+            return new HereCommandRunner(launches, new TerminalEffects(claude, console), console, output, error);
         }
     }
 

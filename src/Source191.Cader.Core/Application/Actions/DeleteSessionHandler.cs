@@ -45,20 +45,20 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         }
 
         WorktreeRow row;
-        RemovalDecision decision;
+        bool merged;
         try
         {
             row = await RowAsync(created, cancellationToken);
-            bool merged = await inspector.IsMergedAsync(created.Repository, created.Branch, cancellationToken);
-            decision = RemovalDecision.For(row.Facts(branchCreatedHere: true, branchMerged: merged), forced);
+            merged = await inspector.IsMergedAsync(created.Repository, created.Branch, cancellationToken);
         }
         catch (GitException failure)
         {
             return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.GitFailed(failure.Message), tabClosed);
         }
 
-        // Stryker disable once Boolean : Equivalent: createdHere only reaches the BranchKept outcome, which is answered below as BranchNotMerged without it
-        return await remover.CarryOutAsync(row, decision, createdHere: true, cancellationToken) switch
+        RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
+
+        return await remover.CarryOutAsync(row, decision, createdHere: true, merged, cancellationToken) switch
         {
             RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason, tabClosed),
             RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch, tabClosed, removed.FolderLeft),

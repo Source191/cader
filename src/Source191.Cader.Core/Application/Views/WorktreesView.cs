@@ -69,8 +69,7 @@ public static class WorktreesView
 
     private static RowDecision Remove(WorktreeRow row, bool forced)
     {
-        // Stryker disable once Boolean : Equivalent: the facts only decide which branch action a removal would take, and this decision is read only for a refusal
-        RemovalDecision decision = RemovalDecision.For(row.Facts(branchCreatedHere: false, branchMerged: false), forced);
+        RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
         if (decision is RemovalDecision.Refused refused)
         {
             return new RowDecision.Explain(new StatusMessage.NotRemoved(refused.Reason, OfferForce: !forced && refused.CanBeForced));

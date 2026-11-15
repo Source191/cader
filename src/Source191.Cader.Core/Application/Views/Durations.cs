@@ -5,15 +5,10 @@ public static class Durations
 {
     public static string Age(TimeSpan elapsed)
     {
-        // Stryker disable once Equality : Equivalent: at exactly zero the clamp assigns zero to zero (the other Equality mutant of this line is killed by FormatAges)
-        if (elapsed < TimeSpan.Zero)
-        {
-            elapsed = TimeSpan.Zero;
-        }
-
         return elapsed.TotalHours switch
         {
-            < 1 => $"{(int)elapsed.TotalMinutes}m",
+            // A negative age, from a clock that moved back, shows as none.
+            < 1 => $"{Math.Max((int)elapsed.TotalMinutes, 0)}m",
             < 24 => $"{(int)elapsed.TotalHours}h{elapsed.Minutes:00}m",
             _ => $"{(int)elapsed.TotalDays}d{elapsed.Hours}h",
         };

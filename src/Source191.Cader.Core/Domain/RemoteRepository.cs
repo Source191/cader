@@ -31,8 +31,13 @@ public abstract partial record RemoteRepository
 
     public static bool TryParse(string? url, [MaybeNullWhen(false)] out RemoteRepository repository)
     {
-        // Stryker disable once String : Equivalent: any other text matches no host either, so a null url fails to parse the same way
-        string text = url?.Trim() ?? string.Empty;
+        if (url is null)
+        {
+            repository = null;
+            return false;
+        }
+
+        string text = url.Trim();
         Match gitHub = GitHubUrl().Match(text);
         if (gitHub.Success)
         {

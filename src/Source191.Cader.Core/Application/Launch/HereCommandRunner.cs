@@ -10,11 +10,11 @@ namespace Source191.Cader.Application.Launch;
 /// <c>cader here</c> from start to finish: plan from the name and prompt the command line parsed, start the supervised session in the folder,
 /// attach in this tab, and exit 0 after a detach, 1 when the start failed, 2 for a refused name or prompt (any <see cref="LaunchProblem"/>).
 /// </summary>
-public sealed class HereCommandRunner(IFolders folders, LaunchService launches, TerminalEffects effects, ITerminalConsole console, TextWriter output, TextWriter error)
+public sealed class HereCommandRunner(LaunchService launches, TerminalEffects effects, ITerminalConsole console, TextWriter output, TextWriter error)
 {
     public async Task<int> RunAsync(string directory, HereName name, string prompt, CancellationToken cancellationToken)
     {
-        return HereCommand.Plan(directory, name, prompt, IsRepository) switch
+        return HereCommand.Plan(directory, name, prompt) switch
         {
             LaunchPlanResult.Planned planned => await LaunchAsync(planned.Plan, directory, cancellationToken),
             LaunchPlanResult.Refused refused => await RefuseAsync(refused.Problem),
@@ -62,13 +62,5 @@ public sealed class HereCommandRunner(IFolders folders, LaunchService launches, 
     {
         await error.WriteLineAsync(Wording.Describe(problem));
         return 2;
-    }
-
-    // Stryker disable once Block, String, Logical : Equivalent: the plan only carries whether the folder is a repository, and a plan for the current branch never reads it, so no outcome of the command depends on it
-    private bool IsRepository(string path)
-    {
-        string git = Path.Combine(path, ".git");
-
-        return folders.DirectoryExists(git) || folders.FileExists(git);
     }
 }

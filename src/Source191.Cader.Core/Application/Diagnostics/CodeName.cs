@@ -43,9 +43,9 @@ public sealed record CodeName
 
     private static string Unmangled(string name)
     {
-        int end = name.IndexOf('>', StringComparison.Ordinal);
+        // The text between a generated name's < and its first >, which is empty for a closure class such as <>c.
+        int length = name.IndexOf('>', StringComparison.Ordinal) - 1;
 
-        // Stryker disable once Equality : Equivalent: a name that starts with < has its > after the first character, never at 0
-        return IsGenerated(name) && end > 0 ? name[1..end] : name;
+        return IsGenerated(name) && length >= 0 ? name.Substring(1, length) : name;
     }
 }

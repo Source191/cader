@@ -22,7 +22,7 @@ public static class TabShade
             return colour.Hex;
         }
 
-        // Stryker disable once Bitwise : Equivalent: for the value of six hex digits, never negative, >> and >>> agree (the line's other shifts are ignored with it, and TabShadeShould pins every shade)
+        // Stryker disable once Bitwise : Equivalent: for the value of six hex digits, never negative, >> and >>> agree, and reading each channel apart would only move the shift (the line's other shifts are ignored with it, and TabShadeShould pins every shade)
         return $"#{Blend(value >> 16):X2}{Blend(value >> 8):X2}{Blend(value):X2}";
     }
 

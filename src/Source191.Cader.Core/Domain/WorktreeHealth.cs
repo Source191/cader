@@ -31,8 +31,8 @@ public sealed record WorktreeHealth(WorktreeHealthKind Kind, HealthReason Reason
         {
             { GitFile: GitPointer.RegisteredElsewhere elsewhere } => new(WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(elsewhere.Owner)),
             { GitFile: GitPointer.TargetGone } => new(WorktreeHealthKind.Broken, new HealthReason.RegistrationGone()),
-            { UnderClaudeWorktrees: true } => new(WorktreeHealthKind.Orphan, new HealthReason.UnderClaudeWorktrees()),
-            { EmptyLeftover: true } => new(WorktreeHealthKind.Empty, new HealthReason.EmptyLeftover()),
+            { Folder: UnregisteredFolder.UnderClaudeWorktrees } => new(WorktreeHealthKind.Orphan, new HealthReason.UnderClaudeWorktrees()),
+            { Folder: UnregisteredFolder.EmptyLeftover } => new(WorktreeHealthKind.Empty, new HealthReason.EmptyLeftover()),
             _ => new(WorktreeHealthKind.Orphan, new HealthReason.NotRegistered()),
         };
     }

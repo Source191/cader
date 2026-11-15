@@ -11,8 +11,6 @@ public sealed record WorktreeRemovalFacts(
     int DirtyFileCount,
     int UnpushedCommitCount,
     WorktreeSession Session,
-    bool BranchCreatedHere,
-    bool BranchMerged,
     int LeftoverFileCount)
 {
     public const int LeftoverFileLimit = 1000;
