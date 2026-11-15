@@ -55,6 +55,20 @@ public sealed class WordingOfKeyBarShould
     }
 
     [Fact]
+    public void OfferOnlyDeleteForAStoppedSessionWhoseFolderHasGone()
+    {
+        SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");
+        SessionRow stoppedGone = Stopped with { Location = gone };
+        SessionRow runningGone = Running with { Location = gone };
+
+        KeyBar onStopped = Wording.SessionsBar(Selecting([stoppedGone], stoppedGone), updateKnown: false);
+        KeyBar onRunning = Wording.SessionsBar(Selecting([runningGone], runningGone), updateKnown: false);
+
+        Texts(onStopped.First).ShouldBe(["d Delete", "R Resume", "n New session"]);
+        Texts(onRunning.First).ShouldBe(["Enter Open", "x Stop", "d Delete", "r Rename", "m Memory", "n New session"]);
+    }
+
+    [Fact]
     public void EndTheFirstRowWithUpdateOnlyWhenAReleaseIsKnown()
     {
         Wording.SessionsBar(Selecting([Running], Running), updateKnown: true).First[^1].ShouldBe(Wording.SessionsBar(Selecting([Running], Running), updateKnown: true).First.Single(item => item.Key == "U"));
