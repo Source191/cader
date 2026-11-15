@@ -62,16 +62,22 @@ The detail pane shows what the session is waiting for, when it started and was l
 
 ### The Worktrees tab
 
-Every git worktree under your repository roots, with or without a session.
+Every git worktree under your repository roots, with or without a session, then each repository's branches that have no worktree:
+
+- **Branch rows (⑂ branch):** a local branch checked out neither in the main checkout nor in any worktree, except the one that tracks origin's default branch.
+- **Origin rows (○ origin):** a branch only on origin, with no local branch of its name, whose newest commit is yours (by your git `user.email`) and which is flagged left behind or closed. It appears a scan after its pull request has been looked up.
 
 | Column | What it shows |
 | --- | --- |
-| WORKTREE | The owning repository › the folder's slug, or its label when not named after it |
-| HEALTH | ✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten), ✗ broken (registration or owner gone), □ empty (a leftover folder), ↗ elsewhere (a worktree of a repository outside the roots) |
+| WORKTREE | The owning repository › the folder's slug, or its label when not named after it; on a branch or origin row, the repository › the branch |
+| HEALTH | ✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten), ✗ broken (registration or owner gone), □ empty (a leftover folder), ↗ elsewhere (a worktree of a repository outside the roots), ⑂ branch (no worktree), ○ origin (only on origin) |
+| BRANCH | The branch's most urgent flag: ▲ left behind (red: commits after its pull request merged), ✗ gone (amber: deleted on origin), ✗ closed (amber: its pull request closed without merging), · no PR (grey: none on its host); blank when none applies or the pull request is not yet known |
 | LAST COMMIT | Time since the last commit |
 | SESSION | The session running in it, if any |
 
-The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch, the pull request, the folder and when Cader created it.
+Gone and origin rows are as of your last `git fetch --prune`: Cader never fetches, so a branch deleted on GitHub since then is not yet gone. A branch is left behind only when its shown pull request has merged and the branch has commits that the pull request's head commit does not contain, so a squash merge is judged correctly. Nothing reads · no PR or ✗ closed while the pull request cannot be looked up (no origin, the CLI missing or signed out).
+
+The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch, then the BRANCH flag's reason (such as `1 commit after #298 merged`), the pull request, the folder and when Cader created it. For a branch or origin row it gives the repository instead of the folder, and the branch's unpushed commits.
 
 ### The Config tab
 
@@ -95,6 +101,8 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 ## Worktrees
 
 - **Remove:** `d` removes a worktree, refused when it holds work that would be lost. `D` removes it whatever it holds, after you type its name.
+- **Delete a branch row's branch:** `d` asks before deleting the local branch when every commit on it is on a remote branch or inside its merged pull request, and otherwise says how many commits would be lost. `D` deletes it whatever it holds, after you type the branch's name. Neither ever deletes a branch on origin, so both refuse on an origin row.
+- **Keys on a branch or origin row:** `p` opens its pull request, `c` copies the repository's folder and `P` prunes the repository, as on any row; `n`, `o`, `f`, `s` and Enter only say the branch has no worktree.
 - **Folder in use:** when a tab or program still has the worktree's folder open, Cader waits a few seconds for it, then removes the worktree and deals with its branch anyway. A folder still held is left behind, empty, and listed as □ empty, so `d` deletes it once that tab or program is closed.
 - **Prune:** `P` prunes the stale worktree registrations of the row's repository.
 - **New session here:** `n` starts a session in the worktree, on the branch checked out there.
