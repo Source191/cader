@@ -1,4 +1,5 @@
 using Source191.Cader.Application.Launch;
+using Source191.Cader.Domain;
 using System.Diagnostics;
 
 namespace Source191.Cader.Application.Views;
@@ -43,7 +44,8 @@ public static class WizardView
             return state with { Focus = WizardField.RepositoryFilter };
         }
 
-        WizardState filtered = state with { Filter = text, Focus = WizardField.RepositoryFilter };
+        WizardProblem problem = CharacterKinds.AllInvisible(text) ? new WizardProblem.InvisibleFilter() : state.Problem;
+        WizardState filtered = state with { Filter = text, Focus = WizardField.RepositoryFilter, Problem = problem };
 
         return filtered with { SelectedIndex = filtered.Choices.Count > 0 ? 0 : null };
     }
