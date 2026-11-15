@@ -3,10 +3,16 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.TestDoubles;
 
 /// <summary>Keeps the diagnostic log's two files as sizes in memory instead of <c>%LOCALAPPDATA%\Cader\cader.log</c> and <c>cader.log.1</c>; a file held open is kept by a clear.</summary>
-public sealed class FakeDiagnosticLogFiles : IDiagnosticLogFiles
+public sealed class FakeDiagnosticLogFiles(string path) : IDiagnosticLogFiles
 {
-    private readonly FakeLogFile current = new(TestSettings.DiagnosticLogFile);
-    private readonly FakeLogFile older = new(TestSettings.DiagnosticLogFile + ".1");
+    private readonly FakeLogFile current = new(path);
+    private readonly FakeLogFile older = new(path + ".1");
+
+    /// <summary>The log at the tests' made-up state folder, <see cref="TestSettings.DiagnosticLogFile"/>.</summary>
+    public FakeDiagnosticLogFiles()
+        : this(TestSettings.DiagnosticLogFile)
+    {
+    }
 
     /// <summary>How many times <see cref="Clear"/> ran.</summary>
     public int Clears { get; private set; }
