@@ -69,6 +69,20 @@ public sealed class WizardViewShould
     }
 
     [Fact]
+    public void ClearTheInvisibleFilterProblemOnlyWhenTheFilterShowsSomething()
+    {
+        WizardState invisible = Reduce(Opened, new WizardInput.FilterChanged(" "));
+        WizardState refused = Reduce(Reduce(Opened, new WizardInput.FilterChanged("zzz")), new WizardInput.ConfirmRepository());
+
+        Reduce(invisible, new WizardInput.FilterChanged(string.Empty)).ShouldSatisfyAllConditions(
+            cleared => cleared.Problem.ShouldBe(new WizardProblem.None(), "Backspace to an empty filter clears it"),
+            cleared => cleared.Choices.Count.ShouldBe(3));
+        Reduce(invisible, new WizardInput.FilterChanged(" o")).Problem.ShouldBe(new WizardProblem.None(), "a visible character clears it");
+        Reduce(Opened, new WizardInput.FilterChanged("zzz")).Problem.ShouldBe(new WizardProblem.None(), "a visible filter that matches nothing is not invisible");
+        Reduce(refused, new WizardInput.FilterChanged("zz")).Problem.ShouldBe(new WizardProblem.NoRepository(), "another problem is kept by a filter change, as before");
+    }
+
+    [Fact]
     public void MoveAndPageTheListWithinBounds()
     {
         Reduce(Opened, new WizardInput.ListMoved(1)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Agents");
