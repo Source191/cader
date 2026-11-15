@@ -21,8 +21,8 @@ public sealed class ProcessCountsShould
         counts.Add(WorktreeList, 0, TimeSpan.FromMilliseconds(12));
 
         DiagnosticLine.Render(counts, Written).ShouldBe([
-            "2026-11-01T10:00:00.000Z counts git worktree list exit 0: 3 runs, median 41 ms, p95 90 ms, longest 90 ms",
-            "2026-11-01T10:00:00.000Z counts git worktree remove exit 128: 1 run, median 220 ms, p95 220 ms, longest 220 ms",
+            $"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts git worktree list exit 0: 3 runs, median 41 ms, p95 90 ms, longest 90 ms",
+            $"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts git worktree remove exit 128: 1 run, median 220 ms, p95 220 ms, longest 220 ms",
         ]);
     }
 
@@ -72,6 +72,6 @@ public sealed class ProcessCountsShould
             }
         })));
 
-        DiagnosticLine.Render(counts, Written).ShouldBe(["2026-11-01T10:00:00.000Z counts git worktree list exit 0: 400 runs, median 24 ms, p95 47 ms, longest 49 ms"]);
+        DiagnosticLine.Render(counts, Written).ShouldBe([$"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts git worktree list exit 0: 400 runs, median 24 ms, p95 47 ms, longest 49 ms"]);
     }
 }

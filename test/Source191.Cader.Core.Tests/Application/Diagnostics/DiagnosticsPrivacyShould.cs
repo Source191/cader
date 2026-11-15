@@ -78,7 +78,7 @@ public sealed class DiagnosticsPrivacyShould
         lines.ShouldContain(line => line.Contains("failed Load SessionsViewState: InvalidOperationException", StringComparison.Ordinal));
         lines.Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         lines.ShouldContain(line => line.Contains("slow refresh worktrees scan in ", StringComparison.Ordinal));
-        DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain("2026-10-23T12:00:00.000Z counts git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
+        DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain($"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
         string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts()), Fixtures.Noon)]);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }

@@ -74,7 +74,10 @@ public static class DiagnosticLine
         RefreshPart.PullRequestRefresh => "pull-request refresh",
     };
 
-    private static string Stamp(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture);
+    /// <summary>The UTC time and Cader's own process id, so the lines of several processes sharing one file can be told apart.</summary>
+    private static string Stamp(DateTimeOffset at) => $"{at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture)} [{ProcessId}]";
+
+    private static string ProcessId => System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>The number of runs, then the typical and longest durations when there were any.</summary>
     private static string Figures(DurationFigures figures, string one, string many)

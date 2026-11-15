@@ -17,7 +17,7 @@ public sealed class TerminalGuiBridgeShould
         bridge.Log(LogLevel.Warning, new EventId(3), @"InputProcessorImpl ignored unrecognized response 'secret prompt C:\Users\me'", null, (state, _) => state);
 
         log.Snapshot().Single().Event.ShouldBe(new TerminalGuiReported(DiagnosticLevel.Warning, null));
-        DiagnosticLine.Render(log.Snapshot().Single()).ShouldBe("2026-10-29T12:00:00.000Z terminal.gui Warning");
+        DiagnosticLine.Render(log.Snapshot().Single()).ShouldBe($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] terminal.gui Warning");
     }
 
     [Fact]

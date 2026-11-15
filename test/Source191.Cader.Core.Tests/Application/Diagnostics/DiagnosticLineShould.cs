@@ -19,7 +19,7 @@ public sealed class DiagnosticLineShould
     {
         DateTimeOffset local = new(2026, 10, 29, 15, 3, 12, 345, TimeSpan.FromHours(1));
 
-        DiagnosticLine.Render(new TimedEvent(local, new ViewShown(ViewKind.Sessions))).ShouldBe("2026-10-29T14:03:12.345Z view Sessions");
+        DiagnosticLine.Render(new TimedEvent(local, new ViewShown(ViewKind.Sessions))).ShouldBe($"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] view Sessions");
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public sealed class DiagnosticLineShould
 
         counts.Add(agents, 0, TimeSpan.FromMilliseconds(4900));
 
-        DiagnosticLine.Render(counts, At).ShouldBe(["2026-10-29T14:03:12.345Z counts claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] counts claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
     }
 
     [Fact]
@@ -196,8 +196,8 @@ public sealed class DiagnosticLineShould
             stalls.Add(TimeSpan.FromMilliseconds(milliseconds));
         }
 
-        none.ShouldBe(["2026-10-29T14:03:12.345Z stalls ui thread: 0 stalls"]);
-        DiagnosticLine.Render(counts, At).ShouldBe(["2026-10-29T14:03:12.345Z stalls ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
+        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls ui thread: 0 stalls"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
     }
 
     public static TheoryData<Type> EventTypes => DiagnosticEventsShould.EventTypes;
@@ -249,6 +249,6 @@ public sealed class DiagnosticLineShould
 
     private static string Body(DiagnosticEvent diagnostic)
     {
-        return DiagnosticLine.Render(new TimedEvent(At, diagnostic))["2026-10-29T14:03:12.345Z ".Length..];
+        return DiagnosticLine.Render(new TimedEvent(At, diagnostic))[$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] ".Length..];
     }
 }

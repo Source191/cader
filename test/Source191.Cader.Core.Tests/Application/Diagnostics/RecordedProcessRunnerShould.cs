@@ -56,7 +56,7 @@ public sealed class RecordedProcessRunnerShould
         ProcessResult result = await runner.RunAsync(WorktreeList, CancellationToken.None);
 
         result.StandardOutput.ShouldBe("worktree C:/Users/me");
-        DiagnosticLine.Render(counts, Written).ShouldBe(["2026-11-01T10:00:00.000Z counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
+        DiagnosticLine.Render(counts, Written).ShouldBe([$"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
@@ -122,7 +122,7 @@ public sealed class RecordedProcessRunnerShould
         int exitCode = await runner.RunInteractiveAsync(new ProcessRequest("claude", ["attach", "81cdb0f9"], WorkingFolder.Inherit), CancellationToken.None);
 
         exitCode.ShouldBe(130);
-        DiagnosticLine.Render(counts, Written).ShouldBe(["2026-11-01T10:00:00.000Z counts claude attach exit 130: 1 run, median 7200000 ms, p95 7200000 ms, longest 7200000 ms"]);
+        DiagnosticLine.Render(counts, Written).ShouldBe([$"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts claude attach exit 130: 1 run, median 7200000 ms, p95 7200000 ms, longest 7200000 ms"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
