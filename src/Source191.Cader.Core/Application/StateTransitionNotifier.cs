@@ -11,6 +11,7 @@ public sealed class StateTransitionNotifier(TextWriter terminal)
 {
     public void Observe(IReadOnlyList<SessionRow> previous, IReadOnlyList<SessionRow> current)
     {
+        // Stryker disable once Block, Statement : Equivalent: with no previous rows nothing is found in the map built below, so no bell rings either way
         if (previous.Count == 0)
         {
             return;
