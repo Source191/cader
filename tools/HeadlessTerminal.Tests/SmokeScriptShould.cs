@@ -41,19 +41,20 @@ public sealed class SmokeScriptShould
         string[] worktrees = [.. Wording.WorktreesColumns.Select(column => column.Name)];
         string[] texts = [.. Steps.Select(step => step.Marker).OfType<CaptureMarker.ScreenText>().Select(text => text.Text)];
 
-        texts.Length.ShouldBe(10);
+        texts.Length.ShouldBe(11);
         texts[0].ShouldBeOneOf(sessions);
         texts[0].ShouldNotBeOneOf(worktrees);
         texts[1].ShouldBe(Wording.WizardBeforeBranchingCaption, "the wizard's Before branching choice must fit the dialog");
         texts[2].ShouldBe("Nothing", "its last choice is the bottom of the selector");
-        texts[3].ShouldBe("SETTING", "the Config tab is recognised by a column neither other view has");
-        texts[4].ShouldBe(Wording.BeforeBranchingCaption);
-        texts[5].ShouldBe("Nothing");
-        texts[6].ShouldBeOneOf(worktrees);
-        texts[6].ShouldNotBeOneOf(sessions);
-        texts[7].ShouldBe(", selected: ", "the scan has finished once the table's title names a selection; the WORKTREE cell no longer shows the folder name");
-        texts[8].ShouldBe($"New session in {Worktree}", "the fixed-folder wizard is recognised by its own title");
-        texts[9].ShouldBe(texts[0]);
+        texts[3].ShouldBe(Wording.Describe(new WizardProblem.InvisibleFilter()), "a space typed in the wizard's filter reaches it and is explained on the problem line");
+        texts[4].ShouldBe("SETTING", "the Config tab is recognised by a column neither other view has");
+        texts[5].ShouldBe(Wording.BeforeBranchingCaption);
+        texts[6].ShouldBe("Nothing");
+        texts[7].ShouldBeOneOf(worktrees);
+        texts[7].ShouldNotBeOneOf(sessions);
+        texts[8].ShouldBe(", selected: ", "the scan has finished once the table's title names a selection; the WORKTREE cell no longer shows the folder name");
+        texts[9].ShouldBe($"New session in {Worktree}", "the fixed-folder wizard is recognised by its own title");
+        texts[10].ShouldBe(texts[0]);
     }
 
     [Fact]
@@ -64,7 +65,7 @@ public sealed class SmokeScriptShould
         keys.ShouldBe(
         [
             Key(Wording.SessionsKeys, "Help"), Escape,
-            Key(Wording.SessionsKeys, "New session"), string.Empty, string.Empty, Escape,
+            Key(Wording.SessionsKeys, "New session"), string.Empty, string.Empty, " ", Escape,
             Key(Wording.SessionsKeys, "Report"), Escape,
             Right + Right, Key(Wording.ConfigKeys, "Edit"), F3, Escape, Escape,
             Key(Wording.ConfigKeys, "Filter") + "with", "\r", Key(Wording.ConfigKeys, "Edit"), Down + Down + Down + Down + " " + F3, Escape, Escape,
