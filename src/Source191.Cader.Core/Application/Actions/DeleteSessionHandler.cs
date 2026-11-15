@@ -57,6 +57,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
             return new DeleteSessionOutcome.KeptWorktree(name, new RemovalReason.GitFailed(failure.Message), tabClosed);
         }
 
+        // Stryker disable once Boolean : Equivalent: createdHere only reaches the BranchKept outcome, which is answered below as BranchNotMerged without it
         return await remover.CarryOutAsync(row, decision, createdHere: true, cancellationToken) switch
         {
             RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason, tabClosed),

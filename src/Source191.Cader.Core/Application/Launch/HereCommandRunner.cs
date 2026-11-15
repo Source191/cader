@@ -66,8 +66,10 @@ public sealed class HereCommandRunner(IFolders folders, LaunchService launches, 
 
     private bool IsRepository(string path)
     {
+        // Stryker disable once String : Equivalent: the plan only carries whether the folder is a repository, and a plan for the current branch never reads it, so no outcome of the command depends on it
         string git = Path.Combine(path, ".git");
 
+        // Stryker disable once Logical : Equivalent: the plan only carries whether the folder is a repository, and a plan for the current branch never reads it, so no outcome of the command depends on it
         return folders.DirectoryExists(git) || folders.FileExists(git);
     }
 }

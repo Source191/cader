@@ -18,6 +18,7 @@ public static class HereCommand
         LaunchRequest request = new(repository, NameText(name, path), LaunchMode.CurrentBranch, WorktreeBase.RemoteDefault, prompt, BeforeBranching.None);
 
         // On the current branch no worktree is placed, so the folder itself stands in for the worktree root.
+        // Stryker disable once Boolean : Equivalent: a plan for the current branch returns before the worktree folder is asked about, so this answer is never read
         return LaunchPlanBuilder.Build(request, worktreeRoot: path, _ => false);
     }
 
