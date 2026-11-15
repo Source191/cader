@@ -159,8 +159,8 @@ The key bar shows the keys for the selected row. Left and Right switch tabs on e
 | n | New session | New session in this worktree | |
 | r | Rename (restarts the session) | | |
 | x | Stop | | |
-| d | Delete, and its worktree if nothing is lost | Remove (refused when work would be lost) | |
-| D | | Force remove after typing its name | |
+| d | Delete, and its worktree if nothing is lost | Remove, or delete a branch row's branch (refused when work would be lost) | |
+| D | | Force remove, or delete a branch row's branch, after typing its name | |
 | R | Resume every stopped or failed session shown | | |
 | P | | Prune stale registrations | |
 | C | Close tabs of unused terminal sessions | | |
