@@ -6,7 +6,7 @@ Lets the user work inside a session from the console, in a Windows Terminal tab 
 ## Requirements
 
 ### Requirement: Open a session in its own Windows Terminal tab
-Enter on a background session is the open-in-tab key. It SHALL open a new tab in the current Windows Terminal window that runs the attach command for the session, titled with the session name, with application title changes suppressed, starting in the session's working directory, coloured from the palette, and in the "Cader session" profile when Cader's Windows Terminal fragment is installed, otherwise in the default profile.
+Enter on a background session is the open-in-tab key. It SHALL open a new tab in the current Windows Terminal window that runs the attach command for the session, titled with the session name, with application title changes suppressed (Claude Code may still put a status glyph and a space before the title while the session works), starting in the session's working directory, coloured from the palette, and in the "Cader session" profile when Cader's Windows Terminal fragment is installed, otherwise in the default profile.
 
 #### Scenario: Tab opened
 - **WHEN** the user presses Enter on a background session
@@ -24,8 +24,16 @@ Enter on a background session is the open-in-tab key. It SHALL open a new tab in
 - **WHEN** a Cader-opened tab for that session is still alive and the user presses Enter on it
 - **THEN** no second tab is opened, the Windows Terminal tab titled with the session name is selected in the window that owns it, and the status line says Cader switched to it
 
+#### Scenario: Tab already live while the session works
+- **WHEN** a Cader-opened tab for the working session fix-123 is still alive, Claude Code has titled it ◐ fix-123, and the user presses Enter on the session
+- **THEN** no second tab is opened, that tab is selected, and the status line says Cader switched to it
+
+#### Scenario: Another tab merely containing the name
+- **WHEN** a Cader-opened tab for fix-123 is recorded as alive but the only tabs in its window are titled fix-1234, notes on fix-123 and ◐◑ fix-123
+- **THEN** none of them is selected, no tab is opened, and the status line says the tab is open but could not be found
+
 #### Scenario: Live tab cannot be found
-- **WHEN** a Cader-opened tab for that session is recorded as alive but no tab item with the session's name can be found in its Windows Terminal window
+- **WHEN** a Cader-opened tab for that session is recorded as alive but no tab in its Windows Terminal window is titled with the session's name, alone or after one status glyph and a space
 - **THEN** no tab is opened and the status line says the tab is open but could not be found
 
 #### Scenario: Tab closed by hand

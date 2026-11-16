@@ -10,7 +10,7 @@
 ## 2. The switch
 
 - [x] 2.1 `UiAutomationTabs.SelectIn` lists each owned window's tab items with the cached tab-item condition, keeps every element in the call's `ComObjects`, and selects the first whose `CurrentName` `TabTitle.Shows` the title (decision 2). Verify `UiAutomationTabsShould` passes, then temporarily release the cached tab-item condition and verify it fails, as in dispose-tidy, before reverting. Commit.
-- [ ] 2.2 Manual: in a Cader built from this branch, with the Claude Code variables cleared (CLAUDE.md), Enter on a working session whose tab is open (title `◐ <name>` or similar) switches to that tab, and Enter on an idle session's open tab still does. Record the result and date in `windows.md`'s UI Automation line.
+- [x] 2.2 Manual: in a Cader built from this branch, with the Claude Code variables cleared (CLAUDE.md), Enter on a working session whose tab is open (title `◐ <name>` or similar) switches to that tab, and Enter on an idle session's open tab still does. Record the result and date in `windows.md`'s UI Automation line.
 
 ## 3. Facts and release
 
