@@ -2,7 +2,7 @@
 
 ## 1. The rule
 
-- [ ] 1.1 Red: `TabTitleShould` in `test\Source191.Cader.Core.Tests\Domain` states the exact-name fact (design decision 3); add `Domain\TabTitle.Shows` answering false, and verify the fact fails for that reason. Commit.
+- [x] 1.1 Red: `TabTitleShould` in `test\Source191.Cader.Core.Tests\Domain` states the exact-name fact (design decision 3); add `Domain\TabTitle.Shows` answering false, and verify the fact fails for that reason. Commit.
 - [ ] 1.2 Green: `Shows` answers true for an ordinal match. Verify the fact passes. Commit.
 - [ ] 1.3 Red then green, one fact at a time: each of ◐ ◓ ◑ ◒ ✳ and a glyph outside the Basic Multilingual Plane before the name; then the refusals (another name, `fix-1234`, `notes on fix-123`, two glyphs, a letter or a digit as the glyph, no space, two spaces, a blank title) (decision 1). Verify each fails before its code and `TabTitleShould` passes after. Commit per step.
 - [ ] 1.4 Refactor: `Shows` reads clearly and keeps to the house idioms (pattern matching, `Rune`, no `else`). Verify `dotnet test test\Source191.Cader.Core.Tests` passes. Commit.
