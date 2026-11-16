@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Sessions with nothing to resume are refused
-Open-in-tab, rename and resume SHALL be refused for a session that has no process and no transcript with a message in it, because Claude writes a session's messages only from its first message, and the status line SHALL say that delete removes it. A transcript holding only the session's title and name is not one with a message. The transcript SHALL be looked for in the Claude folder Cader is using: the folder `CLAUDE_CONFIG_DIR` named when Cader started, or `%USERPROFILE%\.claude` when it was not set.
+Open-in-tab, rename and resume SHALL be refused for a session that has no process and no transcript with a message in it, because Claude writes a session's messages only from its first message, and the status line SHALL say that delete removes it. The transcript SHALL be looked for in the Claude folder Cader is using: the folder `CLAUDE_CONFIG_DIR` named when Cader started, or `%USERPROFILE%\.claude` when it was not set.
 
 #### Scenario: Stub session
 - **WHEN** the user presses Enter on a failed session whose transcript does not exist
