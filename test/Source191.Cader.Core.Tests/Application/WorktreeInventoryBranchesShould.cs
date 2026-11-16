@@ -56,6 +56,8 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         branch.Head.ShouldBe(new Head.OnBranch(BranchName.From("spike-refunds")));
         branch.Path.ShouldBe(FolderPath.From(Repository));
         branch.Repository.ShouldBe(FolderPath.From(Repository));
+        branch.OwnerExists.ShouldBeTrue();
+        branch.FolderExists.ShouldBeTrue();
         branch.Key.ShouldBe($@"{FolderPath.From(Repository).Key}|branch|spike-refunds");
         branch.LastCommitAt.ShouldBe(new LastCommit.Made(DateTimeOffset.Parse(TipAt, System.Globalization.CultureInfo.InvariantCulture)));
         branch.Session.ShouldBe(new WorktreeSession.None());
@@ -128,6 +130,8 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         row.Flag.ShouldBe(BranchFlagKind.LeftBehind);
         row.CommitsAfterMerge.ShouldBe(1);
         row.UnpushedCommits.ShouldBe(0);
+        row.OwnerExists.ShouldBeTrue();
+        row.FolderExists.ShouldBeTrue();
     }
 
     [Fact]

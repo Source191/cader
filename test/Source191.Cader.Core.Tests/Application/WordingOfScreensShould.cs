@@ -125,6 +125,16 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
+    public void CountOneRowOfTheSecondKindInTheSingular()
+    {
+        TableTitle onlyBranch = new("worktree", 1, 1, string.Empty, null) { Apart = new TitleCount(1, "branch", "branches") };
+        TableTitle oneOfEach = new("worktree", 2, 2, string.Empty, null) { Apart = new TitleCount(1, "branch", "branches") };
+
+        Wording.Describe(onlyBranch).ShouldBe("1 branch");
+        Wording.Describe(oneOfEach).ShouldBe("1 worktree, 1 branch");
+    }
+
+    [Fact]
     public void RoundMemoryToTheNearestMegabyte()
     {
         Wording.Memory(MemorySize.FromBytes(29 * MemorySize.BytesPerMegabyte + 600_000)).ShouldBe("30 MB");
