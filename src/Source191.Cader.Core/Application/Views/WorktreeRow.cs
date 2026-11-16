@@ -25,6 +25,19 @@ public sealed record WorktreeRow(
     /// <summary>The branch's pull request, or why there is none; a leftover has no branch to look up.</summary>
     public PullRequestLookup PullRequest { get; init; } = new PullRequestLookup.Missing(PullRequestGap.NoBranch);
 
+    /// <summary>The most urgent flag on the branch the row names; none on a row that names no branch, or before the lookup lands.</summary>
+    public BranchFlagKind Flag { get; init; } = BranchFlagKind.None;
+
+    /// <summary>A branch or origin row's folder is its repository's, so only the health says it has none of its own.</summary>
+    public Placement Placement => Health.Kind is WorktreeHealthKind.Branch or WorktreeHealthKind.Origin ? Placement.NoFolder : Placement.Folder;
+
+    /// <summary>The row's identity: its folder, or for a row with no folder its repository and branch, so two branch rows of one repository never share a selection or a pane answer.</summary>
+    public string Key => (Placement, Head) switch
+    {
+        (Placement.NoFolder, Head.OnBranch on) => $"{Repository.Key}|branch|{on.Branch.Value}",
+        _ => Path.Key,
+    };
+
     public string RepositoryName => Repository.Name;
 
     public string FolderName => Path.Name;

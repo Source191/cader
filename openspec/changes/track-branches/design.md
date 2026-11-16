@@ -67,6 +67,24 @@ Azure DevOps documents a pull request's `lastMergeSourceCommit` as "the commit a
 
 `⑂` (U+2442) and `○` (U+25CB) for the two healths, `▲`, `✗` and `·` for the flags: all single-cell, none with emoji presentation. A task checks `⑂` in Windows Terminal with Cascadia Mono at 120 x 36; if it falls back to a wide glyph, `⎇` (U+2387) replaces it in the spec before the change completes.
 
+### 9. Choices made while building the rows and keys
+
+- **`Placement` is read from the health:** `Branch` and `Origin` are `NoFolder`, every other health `Folder`, so the two can never disagree. `Key` is `Path.Key` for a folder row and `<repository key>|branch|<name>` otherwise; a repository's folder rows come before its branch and origin rows, so the tab still opens on a worktree, and rows of one folder are ordered by the key after the folder name. A message about a row with no folder, such as p's missing pull request, names its branch.
+- **The WORKTREE cell names the branch:** a row with no folder shows `Northwind.Orders › spike-refunds` in the slug's place. It is built with the rows rather than with group 5, because without it two branch rows of one repository read the same.
+- **A scan never guesses that nothing is at risk:**
+  - When git cannot list a repository's worktrees, it gets no branch rows, because nothing says which branches are free.
+  - A branch row whose commits on no remote cannot be counted is left out of that scan.
+  - `UnpushedCommits` drops to zero only when `CountCommitsAfterAsync` answers exactly 0 for the head `BranchFlags.TryMergedHead` gives. That is the one test of a merged, recorded head, which `BranchFlags.Of` uses too.
+- **Origin's default is asked for only when needed:** that is when a repository has a free local branch or an origin candidate. It is one `symbolic-ref` beside the listing.
+- **No session on a branch row:** sessions are matched to rows by folder, and a branch row's folder is its repository, so a session there is skipped.
+- **`d` and `D` reuse what exists:**
+  - `d` with commits at risk answers `StatusMessage.NotRemoved` with `RemovalReason.UnpushedCommits` and offers `D`.
+  - `D` raises the existing `ConfirmForceRemove` with the branch name as the text to type. The dialog takes its title and warning from `Wording.ForceTitle` and `ForceWarning` by placement.
+  - `ForceConfirmed` on a branch row raises `DeleteBranch`, never `RemoveWorktree`.
+  - Keep on the branch question shows `Kept.`, as closing empty tabs does.
+  - `Wording.NothingTypedYet` now says "the name to type", as the same dialog asks for a branch.
+- **The dialog flow has no behavioural fact:** `DialogEffects` flows run Terminal.Gui dialogs and have no test harness. `DialogEffectsShould` holds only that `ConfirmDeleteBranch` has a flow, and task 6.3's manual check sees `d` ask and delete.
+
 ## Risks / Trade-offs
 
 - [Gone and origin rows are as stale as the last fetch] → the pane says so; the console never fetches. A user who never fetches sees no `gone`.

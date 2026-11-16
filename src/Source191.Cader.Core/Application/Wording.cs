@@ -36,8 +36,24 @@ public static partial class Wording
 
     public static string ForceRemoveWarning => "This deletes the folder below and everything in it that is not committed and pushed.\nTo confirm, give its name:";
 
-    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the force-remove dialog asks for the worktree's folder name.</summary>
-    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the folder name is {expected}.";
+    /// <summary>The typed confirmation's title: a row with a folder is removed, a branch row's local branch is deleted.</summary>
+    public static string ForceTitle(Placement placement) => placement switch
+    {
+        Placement.Folder => ForceRemoveTitle,
+        Placement.NoFolder => "Force delete branch",
+    };
+
+    public static string ForceWarning(Placement placement) => placement switch
+    {
+        Placement.Folder => ForceRemoveWarning,
+        Placement.NoFolder => "This deletes the local branch below and every commit on it that is on no remote branch.\nTo confirm, give its name:",
+    };
+
+    /// <summary>d on a branch row with nothing at risk: the reducer has already found every commit on a remote branch or inside the merged head.</summary>
+    public static string DeleteBranchRowQuestion(string branch) => $"Delete the local branch {branch}?\nEvery commit on it is on a remote branch or inside its merged pull request.";
+
+    /// <summary>The typed-confirmation dialog's line when Enter is pressed on an empty box: the worktree's folder name, or a branch row's branch.</summary>
+    public static string NothingTypedYet(string expected) => $"Nothing typed yet; the name to type is {expected}.";
 
     /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
     public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
@@ -542,6 +558,8 @@ public static partial class Wording
             StatusMessage.NothingToPrune prune => $"Nothing to prune: the repository {prune.RepositoryName} no longer exists.",
             StatusMessage.LeftoverFolder leftover => $"{leftover.FolderName} is a leftover folder, not a worktree.",
             StatusMessage.NoSessionIn none => $"No session is running in {none.FolderName}.",
+            StatusMessage.NoWorktree none => $"{none.Branch} has no worktree; nothing to open or start there.",
+            StatusMessage.NotDeletedOnOrigin origin => $"{origin.Branch} is only on origin, and Cader never deletes a branch on origin.",
             StatusMessage.SessionNotListed gone => $"{Name(gone.Name)} is not in the sessions list any more; it may have ended. Try again after the next refresh.",
             StatusMessage.NoSolution none => $"No solution found in {none.FolderName} or its src folder.",
             StatusMessage.NothingToMeasure stopped => $"{Name(stopped.Name)} has no process to measure; it is stopped.",

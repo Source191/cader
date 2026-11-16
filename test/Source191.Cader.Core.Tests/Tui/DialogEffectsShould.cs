@@ -20,6 +20,12 @@ public sealed class DialogEffectsShould
     }
 
     [Fact]
+    public void AskTheBranchQuestionForABranchRow()
+    {
+        DialogEffects.Handles(typeof(ConfirmDeleteBranch)).ShouldBeTrue();
+    }
+
+    [Fact]
     public void NotClaimABackgroundEffect()
     {
         DialogEffects.Handles(typeof(StopSession)).ShouldBeFalse();

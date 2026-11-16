@@ -112,6 +112,18 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
+    public void SayDAndCapitalDDeleteABranchRowsBranch()
+    {
+        KeyHelp remove = Wording.WorktreesKeys.Single(help => help.Press == Key.Of('d'));
+        KeyHelp force = Wording.WorktreesKeys.Single(help => help.Press == Key.Of('D'));
+
+        remove.Line.ShouldBe("remove or delete (refused if work is lost)");
+        remove.Tip.ShouldBe("Remove this worktree or delete a branch row's branch; refused if work is lost.");
+        force.Line.ShouldBe("force remove or delete after typing its name");
+        force.Tip.ShouldBe("Remove this worktree or delete a branch row's branch, whatever it holds.");
+    }
+
+    [Fact]
     public void RoundMemoryToTheNearestMegabyte()
     {
         Wording.Memory(MemorySize.FromBytes(29 * MemorySize.BytesPerMegabyte + 600_000)).ShouldBe("30 MB");

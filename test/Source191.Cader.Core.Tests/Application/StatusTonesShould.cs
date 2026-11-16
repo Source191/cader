@@ -234,6 +234,8 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.NothingToPrune)] = StatusTone.Notice,
         [typeof(StatusMessage.LeftoverFolder)] = StatusTone.Notice,
         [typeof(StatusMessage.NoSessionIn)] = StatusTone.Notice,
+        [typeof(StatusMessage.NoWorktree)] = StatusTone.Notice,
+        [typeof(StatusMessage.NotDeletedOnOrigin)] = StatusTone.Notice,
         [typeof(StatusMessage.SessionNotListed)] = StatusTone.Notice,
         [typeof(StatusMessage.NoPullRequest)] = StatusTone.Notice,
         [typeof(StatusMessage.NothingToMeasure)] = StatusTone.Notice,

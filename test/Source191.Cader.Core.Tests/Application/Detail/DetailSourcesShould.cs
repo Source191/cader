@@ -44,10 +44,21 @@ public sealed class DetailSourcesShould
         DetailContent content = await source.ReadAsync(row, CancellationToken.None);
 
         source.Rows.ShouldBe(Wording.WorktreeFactRows + Wording.DetailListedItems + 1);
-        source.KeyOf(row).ShouldBe(Worktree);
+        source.KeyOf(row).ShouldBe(Worktree.Key);
         content.Title.ShouldBe("Northwind.Billing-invoice-pdf");
         content.Facts[0][0].Text.ShouldBe("ok");
         processes.CapturedRequests.ShouldContain(request => request.Arguments.Count > 2 && request.Arguments[0] == "log" && request.Arguments[2] == $"{Wording.DetailListedItems}");
+    }
+
+    [Fact]
+    public void KeyTwoBranchRowsOfOneRepositoryApart()
+    {
+        WorktreeDetails source = new(Loader(), clock);
+        WorktreeRow spike = new(Repository, Repository, new Head.OnBranch(BranchName.From("spike-refunds")), WorktreeHealth.CheckedOutNowhere, 0, 0, new LastCommit.Made(Fixtures.Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
+        WorktreeRow oldIdea = spike with { Head = new Head.OnBranch(BranchName.From("old-idea")) };
+
+        source.KeyOf(oldIdea).ShouldBe(oldIdea.Key);
+        source.KeyOf(oldIdea).ShouldNotBe(source.KeyOf(spike));
     }
 
     [Fact]
