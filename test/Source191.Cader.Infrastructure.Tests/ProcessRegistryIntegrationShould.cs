@@ -172,7 +172,7 @@ public sealed class ProcessRegistryIntegrationShould
     [Fact]
     public void EndAProcessCleanlySoItsExitCodeIsZero()
     {
-        using Process child = StartSleeper();
+        using Process child = StartWaiter();
 
         registry.EndCleanly(Confirmed(child));
 
@@ -219,6 +219,14 @@ public sealed class ProcessRegistryIntegrationShould
     }
 
     private static ConfirmedProcess Confirmed(Process process) => TestProcesses.Confirmed(process.Id, new DateTimeOffset(process.StartTime.ToUniversalTime()));
+
+    /// <summary>A process with no child: ending only it, as a clean end does, leaves no ping running for the collection's checks.</summary>
+    private static Process StartWaiter()
+    {
+        ProcessStartInfo start = new(Path.Combine(Environment.SystemDirectory, "waitfor.exe"), ["/t", "30", "CaderTest" + Guid.NewGuid().ToString("N")]) { UseShellExecute = false, CreateNoWindow = true };
+
+        return Process.Start(start) ?? throw new InvalidOperationException("waitfor did not start");
+    }
 
     private static Process StartSleeper()
     {

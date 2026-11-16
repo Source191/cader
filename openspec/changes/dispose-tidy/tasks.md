@@ -13,7 +13,7 @@
 
 ## 3. Tests and tools
 
-- [x] 3.1 `ProcessRunnerIntegrationShould.PingsStartedSince` disposes every `Process` it does not return, and its three callers dispose what it returns (decision 6). Verify the class passes. Commit.
+- [x] 3.1 `ProcessRunnerIntegrationShould.PingsStartedSince` answers ids and disposes every `Process` it reads (decision 6). Verify the class passes. Commit.
 - [x] 3.2 `ProcessApisShould.FindAProtectedProcessButNotOneThatHasGone` declares the `TryOpen` handle in a `using`, and `tools\ReadmeScene\FrameRecorder` starts each save without the token (decision 6). Verify `ProcessApisShould` passes and `tools\ReadmeScene` builds. Commit.
 
 ## 4. The analysers
