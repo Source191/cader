@@ -87,7 +87,7 @@ public sealed class ProcessRunnerIntegrationShould
 
             // The pending reads end only after the orphan exits, so they are given a moment to end before the settle.
             await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.Current.CancellationToken);
-            SettledHandleCount();
+            HandleCounts.Settled();
         }
         finally
         {
@@ -103,26 +103,14 @@ public sealed class ProcessRunnerIntegrationShould
     {
         ProcessRequest request = new("cmd.exe", ["/c", "echo handles"], WorkingFolder.Inherit);
         await runner.RunAsync(request, TestContext.Current.CancellationToken);
-        int before = SettledHandleCount();
+        int before = HandleCounts.Settled();
 
         for (int run = 0; run < 50; run++)
         {
             await runner.RunAsync(request, TestContext.Current.CancellationToken);
         }
 
-        (SettledHandleCount() - before).ShouldBeLessThan(25);
-    }
-
-    private static int SettledHandleCount()
-    {
-#pragma warning disable S1215 // The count must not include handles a collection would reclaim.
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-#pragma warning restore S1215
-        using Process current = Process.GetCurrentProcess();
-
-        return current.HandleCount;
+        (HandleCounts.Settled() - before).ShouldBeLessThan(25);
     }
 
     private static List<Process> PingsStartedSince(DateTime began)

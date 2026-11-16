@@ -6,6 +6,7 @@ using System.Diagnostics;
 namespace Source191.Cader.Infrastructure.Tests;
 
 [Trait("Category", "Integration")]
+[Collection("Machine-wide pings")]
 public sealed class ProcessRegistryIntegrationShould
 {
     private readonly ProcessRegistry registry = new();
@@ -13,7 +14,8 @@ public sealed class ProcessRegistryIntegrationShould
     [Fact]
     public void ReportTheStartTimeOfARunningProcessInUtc()
     {
-        DateTimeOffset expected = Process.GetCurrentProcess().StartTime.ToUniversalTime();
+        using Process current = Process.GetCurrentProcess();
+        DateTimeOffset expected = current.StartTime.ToUniversalTime();
 
         DateTimeOffset? actual = registry.StartTimeOf(Environment.ProcessId);
 
@@ -66,6 +68,7 @@ public sealed class ProcessRegistryIntegrationShould
     [Fact]
     public void NameThisProcessAsTheParentOfAChildItStarted()
     {
+        using Process current = Process.GetCurrentProcess();
         using Process child = StartSleeper();
         try
         {
@@ -73,7 +76,7 @@ public sealed class ProcessRegistryIntegrationShould
 
             parent.ShouldNotBeNull();
             parent.ProcessId.ShouldBe(Environment.ProcessId);
-            parent.Name.ShouldBe(Process.GetCurrentProcess().ProcessName);
+            parent.Name.ShouldBe(current.ProcessName);
         }
         finally
         {
@@ -84,13 +87,14 @@ public sealed class ProcessRegistryIntegrationShould
     [Fact]
     public void ListThisProcessAndAChildItStartedInTheSnapshot()
     {
+        using Process current = Process.GetCurrentProcess();
         using Process child = StartSleeper();
         try
         {
             IReadOnlyList<ProcessFacts> snapshot = registry.Snapshot();
 
             ProcessFacts self = snapshot.Single(process => process.ProcessId == Environment.ProcessId);
-            self.Name.ShouldBe(Process.GetCurrentProcess().ProcessName);
+            self.Name.ShouldBe(current.ProcessName);
             ProcessFacts sleeper = snapshot.Single(process => process.ProcessId == child.Id);
             sleeper.ParentId.ShouldBe(Environment.ProcessId);
             sleeper.Name.ShouldBe("cmd");
@@ -135,14 +139,34 @@ public sealed class ProcessRegistryIntegrationShould
         clock.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
     }
 
+    /// <summary>Every read opens a handle of its own, so a refresh that measures a few hundred processes must close each one it opens.</summary>
+    [Fact]
+    public void CloseEveryHandleItOpens()
+    {
+        registry.UsageOf(Environment.ProcessId).ShouldNotBeNull();
+        int before = HandleCounts.Settled();
+
+        for (int round = 0; round < 200; round++)
+        {
+            registry.StartTimeOf(Environment.ProcessId).ShouldNotBeNull();
+            registry.ParentOf(Environment.ProcessId).ShouldNotBeNull();
+            registry.UsageOf(Environment.ProcessId).ShouldNotBeNull();
+        }
+
+        registry.Snapshot().ShouldNotBeEmpty();
+
+        (HandleCounts.Settled() - before).ShouldBeLessThan(25);
+    }
+
     [Fact]
     public void MeasureThisProcessBelowItsWorkingSet()
     {
+        using Process current = Process.GetCurrentProcess();
         ProcessUsage? usage = registry.UsageOf(Environment.ProcessId);
 
         usage.ShouldNotBeNull();
         usage.PrivateMemory.Bytes.ShouldBeGreaterThan(0);
-        usage.PrivateMemory.Bytes.ShouldBeLessThan(Process.GetCurrentProcess().WorkingSet64);
+        usage.PrivateMemory.Bytes.ShouldBeLessThan(current.WorkingSet64);
     }
 
     [Fact]
