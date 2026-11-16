@@ -8,8 +8,8 @@
 
 ## 2. Recorded facts and release
 
-- [ ] 2.1 Record the `/bg` stub transcript fact (2026-11-16, CLI 2.1.325) in `.claude\rules\claude-code.md`, and allow reading a transcript line's `type` in `openspec\config.yaml`'s context. Verify by reading both.
-- [ ] 2.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj`. Verify with `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate fix-stub-transcript-check`.
+- [x] 2.1 Record the `/bg` stub transcript fact (2026-11-16, CLI 2.1.325) in `.claude\rules\claude-code.md`, and allow reading a transcript line's `type` in `openspec\config.yaml`'s context. Verify by reading both.
+- [x] 2.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj`. Verify with `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate fix-stub-transcript-check`.
 
 ## Workflow follow-up
 
