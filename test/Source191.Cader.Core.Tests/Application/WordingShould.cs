@@ -403,7 +403,7 @@ public sealed class WordingShould
     [Fact]
     public void GiveEveryKeyATip()
     {
-        foreach (KeyHelp key in Wording.SessionsKeys.Concat(Wording.WorktreesKeys))
+        foreach (KeyHelp key in Wording.SessionsKeys.Concat(Wording.WorktreesKeys).Concat(Wording.ConfigKeys))
         {
             key.Tip.ShouldNotBeNullOrWhiteSpace($"{key.Key} has no tip");
             key.Tip.Length.ShouldBeLessThanOrEqualTo(80, $"{key.Key}'s tip is too long");
