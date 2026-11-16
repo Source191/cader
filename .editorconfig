@@ -20,6 +20,15 @@ insert_final_newline = false
 # Marker records (view effects such as Quit) are deliberately empty.
 dotnet_diagnostic.S2094.severity = none
 
+# A disposable created and not disposed, or a disposable field its owner never disposes, fails the build (the Tui is
+# excepted at the end of this file). An object passed to a constructor belongs to the new object, as HttpClient owns its
+# handler and FileStream its SafeFileHandle; ownership passed to any other method is not assumed, since that would hide
+# the leaks the rule is for. Neither rule follows a disposable a property getter hands out (Process.StandardOutput was
+# one, closed-output-pipes), which the handle-count tests in Infrastructure.Tests guard instead.
+dotnet_diagnostic.CA2000.severity = warning
+dotnet_diagnostic.CA2213.severity = warning
+dotnet_code_quality.CA2000.dispose_ownership_transfer_at_constructor = true
+
 # Organize usings
 dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = false
@@ -296,3 +305,9 @@ tab_width = 4
 indent_size = 4
 end_of_line = crlf
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
+
+# Terminal.Gui disposes a view's subviews with the view, which neither rule can see, so in the Tui every view added to
+# a superview, and every view field a window holds, would be a false alarm.
+[src/Source191.Cader.Tui/**.cs]
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2213.severity = none

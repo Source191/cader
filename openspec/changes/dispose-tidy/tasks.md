@@ -18,7 +18,7 @@
 
 ## 4. The analysers
 
-- [ ] 4.1 Add CA2000 and CA2213 at `warning`, `dotnet_code_quality.CA2000.dispose_ownership_transfer_at_constructor = true`, and the `[src/Source191.Cader.Tui/**.cs]` section turning both off with its reason, to the root `.editorconfig` (decision 1). Verify `dotnet build -c Debug` passes with no CA2000 or CA2213 suppressed in place. Commit.
+- [x] 4.1 Add CA2000 and CA2213 at `warning`, `dotnet_code_quality.CA2000.dispose_ownership_transfer_at_constructor = true`, and the `[src/Source191.Cader.Tui/**.cs]` section turning both off with its reason, to the root `.editorconfig` (decision 1). Verify `dotnet build -c Debug` passes with no CA2000 or CA2213 suppressed in place. Commit.
 - [ ] 4.2 Record the reasons as comments beside the settings in `.editorconfig` (why the Tui is excepted; that neither rule tracks a disposable from a property getter, which the handle-count tests guard), and add one line to `CLAUDE.md`'s C# idioms saying CA2000 and CA2213 fail the build outside the Tui. Verify both read clearly and `openspec validate` still passes. Commit.
 
 ## 5. Release
