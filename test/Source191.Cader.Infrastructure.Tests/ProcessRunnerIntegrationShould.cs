@@ -77,12 +77,11 @@ public sealed class ProcessRunnerIntegrationShould
             await Should.ThrowAsync<ProcessTimedOutException>(() => limited.RunAsync(request, TestContext.Current.CancellationToken));
 
             watch.Elapsed.ShouldBeInRange(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(7.5), "the five-second wait for the pipes timed out, and disposing the readers did not wait for the orphan");
-            List<Process> orphans = PingsStartedSince(began);
+            List<int> orphans = PingsStartedSince(began);
             orphans.ShouldNotBeEmpty("the orphan still holds the pipe as the run returns");
-            foreach (Process orphan in orphans)
+            foreach (int orphan in orphans)
             {
-                await orphan.WaitForExitAsync(TestContext.Current.CancellationToken);
-                orphan.Dispose();
+                await WaitForExitAsync(orphan);
             }
 
             // The pending reads end only after the orphan exits, so they are given a moment to end before the settle.
@@ -113,11 +112,37 @@ public sealed class ProcessRunnerIntegrationShould
         (HandleCounts.Settled() - before).ShouldBeLessThan(25);
     }
 
-    private static List<Process> PingsStartedSince(DateTime began)
+    /// <summary>Waits for a process to end; one that has already gone has nothing to wait for.</summary>
+    private static async Task WaitForExitAsync(int processId)
+    {
+        if (!Process.TryGetProcessById(processId, out Process? running))
+        {
+            return;
+        }
+
+        using (running)
+        {
+            await running.WaitForExitAsync(TestContext.Current.CancellationToken);
+        }
+    }
+
+    /// <summary>The ids of the pings started since <paramref name="began"/>; every process read to find them is disposed here.</summary>
+    private static List<int> PingsStartedSince(DateTime began)
     {
         Thread.Sleep(500);
+        List<int> started = [];
+        foreach (Process ping in Process.GetProcessesByName("ping"))
+        {
+            using (ping)
+            {
+                if (ping.StartTime >= began)
+                {
+                    started.Add(ping.Id);
+                }
+            }
+        }
 
-        return [.. Process.GetProcessesByName("ping").Where(ping => ping.StartTime >= began)];
+        return started;
     }
 
     [Fact]
