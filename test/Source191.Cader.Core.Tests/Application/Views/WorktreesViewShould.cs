@@ -19,6 +19,8 @@ public sealed class WorktreesViewShould
     private static readonly WorktreeRow Busy = Row(@"C:\repos\Northwind.Orders-fix-3", On("fix-3"), WorktreeHealthKind.Ok) with { Session = new WorktreeSession.Running(SessionId.From("sess-fix-3"), Listed.As("fix-the-tests")) };
     private static readonly WorktreeRow Elsewhere = Row(@"C:\Users\me\source\worktrees\Northwind.Ledger-fix", On("fix"), WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(FolderPath.From(@"D:\other\Northwind.Ledger"))) with { Repository = FolderPath.From(@"D:\other\Northwind.Ledger"), DirtyFiles = 3 };
 
+    private static readonly TitleCount NoBranches = new(0, "branch", "branches");
+
     private static readonly WorktreesViewState Loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Gone, Busy, Empty, Orphan, Locked, Dirty, Clean]));
 
     [Fact]
@@ -34,7 +36,7 @@ public sealed class WorktreesViewShould
     {
         Loaded.VisibleRows.Select(row => row.FolderName).ShouldBe(["Northwind.Orders.worktrees", "fix-service-tests", "Northwind.Orders-fix-1", "Northwind.Orders-fix-2", "Northwind.Orders-fix-3", "Northwind.Orders-locked", "Northwind.Retired-republish"]);
         Loaded.Selected.ShouldBe(Empty);
-        Loaded.Title.ShouldBe(new TableTitle("worktree", Shown: 7, Total: 7, Filter: string.Empty, Selected: "Northwind.Orders.worktrees"));
+        Loaded.Title.ShouldBe(new TableTitle("worktree", Shown: 7, Total: 7, Filter: string.Empty, Selected: "Northwind.Orders.worktrees") with { Apart = NoBranches });
     }
 
     [Fact]
@@ -76,6 +78,34 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void CountWorktreesAndBranchesApartAndNameASelectedBranchRowByItsBranch()
+    {
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Clean, Dirty, BranchRow("spike-refunds"), BranchRow("old-idea"), OriginRow("c-new-bug")]));
+
+        Wording.Describe(loaded.Title).ShouldBe("2 worktrees, 3 branches, selected: Northwind.Orders-fix-1");
+        Wording.Describe(Press(loaded, Key.Down, Key.Down, Key.Down, Key.Down).Title).ShouldBe("2 worktrees, 3 branches, selected: spike-refunds");
+    }
+
+    [Fact]
+    public void LeaveOutACountOfNone()
+    {
+        WorktreesViewState branches = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([BranchRow("spike-refunds"), BranchRow("old-idea")]));
+
+        Wording.Describe(branches.Title).ShouldBe("2 branches, selected: old-idea");
+        Wording.Describe(Loaded.Title).ShouldBe("7 worktrees, selected: Northwind.Orders.worktrees");
+        Wording.Describe(WorktreesViewState.Empty.Title).ShouldBe("0 worktrees");
+    }
+
+    [Fact]
+    public void CountWorktreesAndBranchesApartUnderAFilter()
+    {
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Clean, Dirty, BranchRow("spike-refunds"), BranchRow("old-idea"), OriginRow("c-new-bug")]));
+
+        WorktreesViewState filtered = Press(loaded, Key.Slash, Key.Of('s'), Key.Of('p'), Key.Of('i'), Key.Of('k'), Key.Enter);
+
+        Wording.Describe(filtered.Title).ShouldBe("1 of 2 worktrees, 3 branches match \"spik\", selected: spike-refunds");
+    }
+    [Fact]
     public void KeepTheSelectionOnOneOfTwoBranchRowsOfARepositoryAcrossAReload()
     {
         WorktreeRow spike = BranchRow("spike-refunds");
@@ -105,7 +135,7 @@ public sealed class WorktreesViewShould
         WorktreesViewState filtered = Press(Loaded, Key.Slash, Key.Of('o'), Key.Of('r'), Key.Of('p'), Key.Enter);
 
         filtered.VisibleRows.ShouldBe([Orphan]);
-        filtered.Title.ShouldBe(new TableTitle("worktree", Shown: 1, Total: 7, Filter: "orp", Selected: "fix-service-tests"));
+        filtered.Title.ShouldBe(new TableTitle("worktree", Shown: 1, Total: 7, Filter: "orp", Selected: "fix-service-tests") with { Apart = NoBranches });
         Press(filtered, Key.Escape).VisibleRows.Count.ShouldBe(7);
     }
 

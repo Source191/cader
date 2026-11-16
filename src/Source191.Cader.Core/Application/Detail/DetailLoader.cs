@@ -29,6 +29,11 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
     /// <param name="cancellationToken">Cancels the git reads still running.</param>
     public async Task<WorktreeDetail> WorktreeAsync(WorktreeRow row, int listRows, CancellationToken cancellationToken)
     {
+        if (row.Placement is Placement.NoFolder)
+        {
+            // A branch or origin row's folder is its repository's main checkout, whose commits and changes are not the branch's.
+            return new WorktreeDetail(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+        }
         WorktreeOrigin origin = await OriginAsync(row);
         DetailFact<MergeState> merge = row.Head is Head.OnBranch { Branch: BranchName branch } && row.OwnerExists
             ? await Read(row.Path, () => inspector.MergeStateAsync(row.Repository, branch, cancellationToken))

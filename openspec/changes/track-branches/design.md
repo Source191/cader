@@ -85,6 +85,17 @@ Azure DevOps documents a pull request's `lastMergeSourceCommit` as "the commit a
   - `Wording.NothingTypedYet` now says "the name to type", as the same dialog asks for a branch.
 - **The dialog flow has no behavioural fact:** `DialogEffects` flows run Terminal.Gui dialogs and have no test harness. `DialogEffectsShould` holds only that `ConfirmDeleteBranch` has a flow, and task 6.3's manual check sees `d` ask and delete.
 
+### 10. Choices made while building the column, the pane and the title
+
+- **BRANCH sits after HEALTH:** both describe the row, and LAST COMMIT and SESSION stay at the right. It is `ColumnFit.Natural`, so it is as wide as `▲ left behind` when a row reads that and no wider when none does; a blank cell takes the row's colour, a flag its own through `CellPaint.Text`.
+- **The left behind count rides on the row:** `WorktreeRow.CommitsAfterMerge` keeps the count the scan already made, so the pane's `1 commit after #298 merged` costs no second git call.
+- **The pane's reasons:** left behind `N commits after #298 merged` (or `!12 completed` on Azure DevOps), gone `origin no longer has it, as of the last fetch`, closed `#301 closed without merging`, no PR `no pull request on its host`. A flagged branch's reason takes the merge words' place after ` · ` (`fix-123 · origin no longer has it, as of the last fetch`): beside a found pull request at 120 columns both would not fit, the cut would fall on the reason, and after a squash merge the merge words say "not merged" anyway.
+- **A row with no folder reads no git for its pane:** its `Path` is the main checkout, whose changes and unpushed commits are not the branch's, and an origin row has no local ref to judge a merge on. Its four fact rows are Health, Branch with the reason and PR, Repository in place of Folder and Created, and Changes: the commits at risk that `d` weighs on a branch row, `no local branch` on an origin row. It lists nothing beneath, and its title is the branch.
+- **One name per row:** `WorktreeRow.Name` (the folder, or a row with no folder's branch) is what the table title, the pane's title and p's message use.
+- **The title counts branches apart:** `TableTitle.Apart`, an init-only `TitleCount` that is `None` for the other tables, so their titles and facts are unchanged. Branch and origin rows are both counted as branches. A count of none is left out (`2 branches`), except that an empty table still reads `0 worktrees`. Under a filter the matches are one number over both counts: `1 of 10 worktrees, 3 branches match "spik"`.
+- **A forced branch deletion names its own dialog:** `DialogName.ForceDeleteBranch` (`Cader (Force delete)` in the tab title), chosen by placement beside `Wording.ForceTitle`, so diagnostics and the tab title no longer call it a removal. The smoke script still opens only `ForceRemove`, on a worktree row.
+- **The README scene is unchanged:** its images show the Sessions tab and the new-session wizard, never the Worktrees tab, so a branch row in `scene.json` would show nowhere and would need the scene script to make a branch.
+
 ## Risks / Trade-offs
 
 - [Gone and origin rows are as stale as the last fetch] → the pane says so; the console never fetches. A user who never fetches sees no `gone`.

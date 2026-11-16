@@ -126,6 +126,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         row.Head.ShouldBe(new Head.OnBranch(BranchName.From("c-new-bug")));
         row.Key.ShouldBe($"{FolderPath.From(Repository).Key}|branch|c-new-bug");
         row.Flag.ShouldBe(BranchFlagKind.LeftBehind);
+        row.CommitsAfterMerge.ShouldBe(1);
         row.UnpushedCommits.ShouldBe(0);
     }
 

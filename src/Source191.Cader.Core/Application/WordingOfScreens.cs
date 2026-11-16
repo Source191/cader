@@ -41,6 +41,7 @@ public static partial class Wording
         DialogName.DeleteBranch => "Delete branch",
         DialogName.CloseEmpty => "Close empty",
         DialogName.ForceRemove => "Force remove",
+        DialogName.ForceDeleteBranch => "Force delete",
         DialogName.OpenSolution => "Open solution",
         DialogName.WhatsNew => "What's new",
         DialogName.Memory => "Memory",
@@ -94,12 +95,27 @@ public static partial class Wording
 
         if (string.IsNullOrWhiteSpace(title.Filter))
         {
-            return $"{Count(title.Shown, title.Noun)}{selection}";
+            return $"{Counted(title)}{selection}";
         }
 
         string verb = title.Total == 1 ? "matches" : "match";
 
-        return $"{title.Shown} of {Count(title.Total, title.Noun)} {verb} \"{title.Filter}\"{selection}";
+        return $"{title.Shown} of {Counted(title)} {verb} \"{title.Filter}\"{selection}";
+    }
+
+    /// <summary>The rows by kind, leaving out a kind with none: "10 worktrees, 3 branches", "3 branches", or "0 worktrees" when there is nothing.</summary>
+    private static string Counted(TableTitle title)
+    {
+        TitleCount apart = title.Apart;
+        int first = title.Total - apart.Count;
+        string apartWords = apart.Count == 1 ? $"1 {apart.One}" : $"{apart.Count} {apart.Many}";
+
+        return (first, apart.Count) switch
+        {
+            (_, 0) => Count(title.Total, title.Noun),
+            (0, _) => apartWords,
+            _ => $"{Count(first, title.Noun)}, {apartWords}",
+        };
     }
 
     /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>
@@ -273,6 +289,9 @@ public static partial class Wording
 
     public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots),\n⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason");
 
+    // Beside HealthColumn, because WorktreesColumns below reads it as the type initialises, in this file's order.
+    public static ColumnHelp BranchColumn { get; } = new("BRANCH", "▲ left behind (commits after its pull request merged), ✗ gone (deleted on origin),\n✗ closed (its pull request closed unmerged), · no PR (none on its host);\nblank when none applies or not yet known; the pane gives the reason");
+
     public static ColumnHelp LastCommitColumn { get; } = new("LAST COMMIT", "time since the last commit");
 
     public static ColumnHelp SettingColumn { get; } = new("SETTING", "a setting kept in config.json, or, under the Setup heading, setup it reads but does not change");
@@ -283,7 +302,7 @@ public static partial class Wording
 
     public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
 
-    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, LastCommitColumn, SessionColumn];
+    public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, BranchColumn, LastCommitColumn, SessionColumn];
 
     public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } = [SettingColumn, ValueColumn];
 
@@ -305,11 +324,12 @@ public static partial class Wording
     /// <summary>The worktrees pane's lines, for the help.</summary>
     public static IReadOnlyList<ColumnHelp> WorktreesPane { get; } =
     [
-        new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots); then the reason in full"),
-        new("Branch", "the branch checked out there, and whether it is merged into origin's default branch"),
+        new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots);\nbranch (checked out in no worktree); origin (only on origin); then the reason in full"),
+        new("Branch", "the branch and whether a worktree's is merged into origin's default branch,\nor, when BRANCH flags it, the flag's reason in full"),
         new("PR", "its pull request, as the sessions table shows it, or none; p opens it"),
         new("Folder", "the worktree's folder"),
         new("Created", "when Cader created it, or not by Cader"),
+        new("Repository", "a branch or origin row's repository, in place of Folder and Created"),
         new("Changes", "changed or untracked files, and commits on its branch that no remote has"),
         new("Unpushed", "the newest five unpushed commits, or the changed files when none, and how many more"),
     ];

@@ -11,7 +11,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void NameEachColumnOnce()
     {
         ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AgeColumn];
-        ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.LastCommitColumn, Wording.SessionColumn];
+        ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.BranchColumn, Wording.LastCommitColumn, Wording.SessionColumn];
         ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
 
         AreTheSameInstances(Wording.SessionsColumns, sessions);
@@ -84,7 +84,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void ExplainEveryColumnOfEachView()
     {
         Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "REPOSITORY", "PR", "AGE"]);
-        Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "LAST COMMIT", "SESSION"]);
+        Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "BRANCH", "LAST COMMIT", "SESSION"]);
         Wording.ConfigColumns.Select(column => column.Name).ShouldBe(["SETTING", "VALUE"]);
         Wording.SessionsColumns.Concat(Wording.WorktreesColumns).ShouldAllBe(column => column.Meaning.Length > 0);
     }
@@ -127,7 +127,7 @@ public sealed class WordingOfKeysAndColumnsShould
     public void ExplainEveryLineOfEachPane()
     {
         Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory"]);
-        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Changes", "Unpushed"]);
+        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Repository", "Changes", "Unpushed"]);
         Wording.SessionsPane.Concat(Wording.WorktreesPane).ShouldAllBe(line => line.Meaning.Length > 0);
     }
 
@@ -205,19 +205,25 @@ public sealed class WordingOfKeysAndColumnsShould
                          ✗ broken (registration or owner gone), □ empty (a leftover folder),
                          ↗ elsewhere (a worktree of a repository outside the roots),
                          ⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason
+            BRANCH       ▲ left behind (commits after its pull request merged), ✗ gone (deleted on origin),
+                         ✗ closed (its pull request closed unmerged), · no PR (none on its host);
+                         blank when none applies or not yet known; the pane gives the reason
             LAST COMMIT  time since the last commit
             SESSION      the session running in it, if any
 
             Pane
-            Health    ok; locked (by another tool); orphan (a folder git has forgotten);
-                      broken (registration or owner gone); empty (a leftover folder);
-                      elsewhere (a worktree of a repository outside the roots); then the reason in full
-            Branch    the branch checked out there, and whether it is merged into origin's default branch
-            PR        its pull request, as the sessions table shows it, or none; p opens it
-            Folder    the worktree's folder
-            Created   when Cader created it, or not by Cader
-            Changes   changed or untracked files, and commits on its branch that no remote has
-            Unpushed  the newest five unpushed commits, or the changed files when none, and how many more
+            Health      ok; locked (by another tool); orphan (a folder git has forgotten);
+                        broken (registration or owner gone); empty (a leftover folder);
+                        elsewhere (a worktree of a repository outside the roots);
+                        branch (checked out in no worktree); origin (only on origin); then the reason in full
+            Branch      the branch and whether a worktree's is merged into origin's default branch,
+                        or, when BRANCH flags it, the flag's reason in full
+            PR          its pull request, as the sessions table shows it, or none; p opens it
+            Folder      the worktree's folder
+            Created     when Cader created it, or not by Cader
+            Repository  a branch or origin row's repository, in place of Folder and Created
+            Changes     changed or untracked files, and commits on its branch that no remote has
+            Unpushed    the newest five unpushed commits, or the changed files when none, and how many more
 
             Report a problem (!)
             A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),

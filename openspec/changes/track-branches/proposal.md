@@ -40,6 +40,7 @@ The Worktrees tab only sees a branch while a worktree has it checked out, so the
 
 - `worktree-management`: the Worktrees tab lists branch rows and flagged origin rows beside the worktrees, shows a BRANCH column of flags, explains the flag in the pane, deletes a branch row by the work-at-risk rules, and counts worktrees and branches apart in its title; the health glyph list gains `⑂ branch` and `○ origin`.
 - `pull-requests`: a lookup records the pull request's head commit.
+- `detail-pane`: a flagged branch's reason takes the merge state's place on the Branch line, and a branch or origin row's pane is titled with the branch, reads no git and shows its repository in place of the folder.
 
 ## Impact
 

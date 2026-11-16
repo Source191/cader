@@ -28,6 +28,9 @@ public sealed record WorktreeRow(
     /// <summary>The most urgent flag on the branch the row names; none on a row that names no branch, or before the lookup lands.</summary>
     public BranchFlagKind Flag { get; init; } = BranchFlagKind.None;
 
+    /// <summary>The branch's commits that its merged pull request's head does not contain, as the left behind flag counted them; zero when not counted.</summary>
+    public int CommitsAfterMerge { get; init; }
+
     /// <summary>A branch or origin row's folder is its repository's, so only the health says it has none of its own.</summary>
     public Placement Placement => Health.Kind is WorktreeHealthKind.Branch or WorktreeHealthKind.Origin ? Placement.NoFolder : Placement.Folder;
 
@@ -41,6 +44,13 @@ public sealed record WorktreeRow(
     public string RepositoryName => Repository.Name;
 
     public string FolderName => Path.Name;
+
+    /// <summary>What the title, the pane and a message call the row: its folder, or the branch of a row with no folder of its own.</summary>
+    public string Name => (Placement, Head) switch
+    {
+        (Placement.NoFolder, Head.OnBranch on) => on.Branch.Value,
+        _ => FolderName,
+    };
 
     /// <summary>The removal facts as far as the scan knows them; the branch flags are settled by the action. The folder name is only the label a refusal's words use when the head names no branch; no branch is ever acted on by it.</summary>
     public WorktreeRemovalFacts Facts() => new(Health.Kind, Head is Head.OnBranch on ? on.Branch.Value : FolderName, DirtyFiles, UnpushedCommits, Session, LeftoverFileCount);

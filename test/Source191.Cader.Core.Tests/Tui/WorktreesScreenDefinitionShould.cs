@@ -53,6 +53,7 @@ public sealed class WorktreesScreenDefinitionShould
         [
             @"Northwind.Billing › ~\source\worktrees\Northwind.Billing-invoice-pdf",
             Wording.HealthCell(WorktreeHealthKind.Ok),
+            string.Empty,
             "2h00m",
             "invoice-pdf",
         ]);
@@ -66,6 +67,38 @@ public sealed class WorktreesScreenDefinitionShould
 
         definition.Columns[0].Cell(branch, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › spike-refunds");
         definition.Columns[0].Cell(origin, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › c-new-bug");
+    }
+
+    [Theory]
+    [InlineData(BranchFlagKind.LeftBehind, "▲ left behind", TextTone.Red)]
+    [InlineData(BranchFlagKind.Gone, "✗ gone", TextTone.Amber)]
+    [InlineData(BranchFlagKind.Closed, "✗ closed", TextTone.Amber)]
+    [InlineData(BranchFlagKind.NoPullRequest, "· no PR", TextTone.Grey)]
+    public void ShowTheBranchFlagInItsTone(BranchFlagKind flag, string cell, TextTone tone)
+    {
+        TableColumn<WorktreeRow> branch = definition.Columns.Single(column => column.Help == Wording.BranchColumn);
+        WorktreeRow row = Row(new LastCommit.Unknown()) with { Flag = flag };
+
+        branch.Cell(row, Fixtures.Noon, int.MaxValue).ShouldBe(cell);
+        branch.Paint(row).ShouldBe(new CellPaint.Text(Palette.ForTone(tone)));
+    }
+
+    [Fact]
+    public void LeaveTheBranchCellBlankInTheRowsColourWhenNothingIsFlagged()
+    {
+        TableColumn<WorktreeRow> branch = definition.Columns.Single(column => column.Help == Wording.BranchColumn);
+
+        branch.Cell(Row(new LastCommit.Unknown()), Fixtures.Noon, int.MaxValue).ShouldBeEmpty();
+        branch.Paint(Row(new LastCommit.Unknown())).ShouldBe(new CellPaint.None());
+    }
+
+    [Fact]
+    public void FitTheBranchColumnToItsWidestFlag()
+    {
+        TableColumn<WorktreeRow> branch = definition.Columns.Single(column => column.Help == Wording.BranchColumn);
+
+        branch.Fit.ShouldBe(new ColumnFit.Natural());
+        Enum.GetValues<BranchFlagKind>().Max(flag => branch.Cell(Row(new LastCommit.Unknown()) with { Flag = flag }, Fixtures.Noon, int.MaxValue).Length).ShouldBe("▲ left behind".Length);
     }
 
     [Fact]

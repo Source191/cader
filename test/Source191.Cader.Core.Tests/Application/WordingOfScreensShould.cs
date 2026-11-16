@@ -25,6 +25,7 @@ public sealed class WordingOfScreensShould
     [InlineData(DialogName.DeleteBranch, "Cader (Delete branch)")]
     [InlineData(DialogName.CloseEmpty, "Cader (Close empty)")]
     [InlineData(DialogName.ForceRemove, "Cader (Force remove)")]
+    [InlineData(DialogName.ForceDeleteBranch, "Cader (Force delete)")]
     [InlineData(DialogName.OpenSolution, "Cader (Open solution)")]
     [InlineData(DialogName.WhatsNew, "Cader (What's new)")]
     [InlineData(DialogName.Memory, "Cader (Memory)")]
@@ -87,7 +88,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void HaveATabTitleForEveryDialog()
     {
-        Enum.GetValues<DialogName>().Length.ShouldBe(15, "a new dialog needs its own NameEachDialogInTheTabTitle case");
+        Enum.GetValues<DialogName>().Length.ShouldBe(16, "a new dialog needs its own NameEachDialogInTheTabTitle case");
     }
 
     [Theory]

@@ -193,6 +193,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         return row with
         {
             Flag = BranchFlags.Of(row.PullRequest, upstream, after),
+            CommitsAfterMerge = after ?? 0,
             UnpushedCommits = row.Health.Kind is WorktreeHealthKind.Branch && after == 0 ? 0 : row.UnpushedCommits,
         };
     }

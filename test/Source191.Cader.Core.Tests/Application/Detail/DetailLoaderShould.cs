@@ -154,6 +154,23 @@ public sealed class DetailLoaderShould
     }
 
     [Fact]
+    public async Task ReadNoGitForARowWithNoFolderOfItsOwn()
+    {
+        foreach (WorktreeHealth health in new[] { WorktreeHealth.CheckedOutNowhere, WorktreeHealth.OnlyOnOrigin })
+        {
+            WorktreeRow row = WorktreeRowOf(unpushed: 2, dirty: 0) with { Path = Repository, Health = health };
+
+            WorktreeDetail detail = await Loader().WorktreeAsync(row, listRows: 4, CancellationToken.None);
+
+            detail.Merge.ShouldBeOfType<DetailFact<MergeState>.NotApplicable>();
+            detail.Commits.ShouldBeOfType<DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable>();
+            detail.ChangedFiles.ShouldBeOfType<DetailFact<IReadOnlyList<string>>.NotApplicable>();
+        }
+
+        processes.CapturedRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task AskForNoMergeStateOfAWorktreeOnADetachedHead()
     {
         WorktreeRow detached = WorktreeRowOf(unpushed: 0, dirty: 0) with { Head = new Head.Detached() };

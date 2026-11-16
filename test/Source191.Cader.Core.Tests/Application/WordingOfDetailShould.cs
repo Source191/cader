@@ -255,6 +255,65 @@ public sealed class WordingOfDetailShould
     }
 
     [Fact]
+    public void DescribeAnOriginRowByItsBranchAndFlagWithNoFolderLines()
+    {
+        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded()));
+        WorktreeRow row = NoFolderRowOf(WorktreeHealth.OnlyOnOrigin, "c-new-bug") with { Flag = BranchFlagKind.LeftBehind, CommitsAfterMerge = 1, PullRequest = merged };
+
+        DetailContent content = Wording.Detail(NothingRead(row), Now, TimeZoneInfo.Utc);
+
+        content.Title.ShouldBe("c-new-bug");
+        Rows(content).ShouldBe(
+        [
+            [$"Health origin: {Wording.Describe(new HealthReason.OnlyOnOrigin())}"],
+            ["Branch c-new-bug · 1 commit after #298 merged", "PR #298 merged (p opens it)"],
+            [@"Repository C:\Users\me\source\repos\Northwind.Orders"],
+            ["Changes no local branch"],
+        ]);
+        content.Below.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CountABranchRowsCommitsAtRisk()
+    {
+        WorktreeRow row = NoFolderRowOf(WorktreeHealth.CheckedOutNowhere, "spike-refunds") with { UnpushedCommits = 2, Flag = BranchFlagKind.NoPullRequest, PullRequest = new PullRequestLookup.Missing(PullRequestGap.NoPullRequest) };
+
+        DetailContent content = Wording.Detail(NothingRead(row), Now, TimeZoneInfo.Utc);
+
+        content.Title.ShouldBe("spike-refunds");
+        Rows(content).ShouldBe(
+        [
+            [$"Health branch: {Wording.Describe(new HealthReason.CheckedOutNowhere())}"],
+            ["Branch spike-refunds · no pull request on its host", "PR none"],
+            [@"Repository C:\Users\me\source\repos\Northwind.Orders"],
+            ["Changes 2 unpushed commits"],
+        ]);
+        content.Facts[3][0].Tone.ShouldBe(TextTone.Amber);
+        content.Below.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FollowAWorktreesBranchWithItsFlagsReason()
+    {
+        WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Flag = BranchFlagKind.Gone };
+        WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1].ShouldBe(["Branch fix-123 · origin no longer has it, as of the last fetch", "PR none"]);
+    }
+
+    [Fact]
+    public void FitAFlagsReasonInFullBesideAPullRequestAt120Columns()
+    {
+        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded()));
+        WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Head = new Head.OnBranch(BranchName.From("fix-invoice-rounding")), Flag = BranchFlagKind.Gone, PullRequest = merged };
+        WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+        IReadOnlyList<IReadOnlyList<TextPart>> laid = DetailLayout.Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc), width: 118, height: Wording.WorktreeFactRows);
+
+        string.Concat(laid[1].Select(part => part.Text)).ShouldContain("fix-invoice-rounding · origin no longer has it, as of the last fetch");
+    }
+
+    [Fact]
     public void KeepEveryDetailToItsFactRows()
     {
         WorktreeDetail worktree = new(WorktreeRowOf(unpushed: 0, dirty: 0), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
@@ -312,6 +371,12 @@ public sealed class WordingOfDetailShould
 
         return new SessionRow(session, new SessionLocation.InRepository("Northwind.Orders", Repository), new Head.OnBranch(BranchName.From("fix-123")), new LiveTab.None(), HasTranscript: true);
     }
+
+    private static WorktreeDetail NothingRead(WorktreeRow row) =>
+        new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
+
+    private static WorktreeRow NoFolderRowOf(WorktreeHealth health, string branch) =>
+        new(Repository, Repository, new Head.OnBranch(BranchName.From(branch)), health, 0, 0, new LastCommit.Made(Now), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
 
     private static WorktreeRow WorktreeRowOf(int unpushed, int dirty) =>
         new(Repository, Worktree, new Head.OnBranch(BranchName.From("fix-123")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), dirty, unpushed, new LastCommit.Made(Now), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
