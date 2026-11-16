@@ -23,7 +23,7 @@ Each task is red, green, refactor with a commit per step. "Verify" means `dotnet
 ## 4. Integration
 
 - [x] 4.1 Run `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate --all`. **Verify:** each exits 0.
-- [ ] 4.2 **Check (owner):** install with `tools\install-local.ps1` and open the Worktrees tab over this repository: `c-mem-leak` (on `c-dispose-tidy`) reads at most `1 commit after #320 merged`, `c-multi-account` is not left behind, and the gone, closed and no PR flags read as before. **Verify:** by eye.
+- [x] 4.2 **Check (owner):** install with `tools\install-local.ps1` and open the Worktrees tab over this repository: `c-mem-leak` (on `c-dispose-tidy`) reads at most `1 commit after #320 merged`, `c-multi-account` is not left behind, and the gone, closed and no PR flags read as before. **Verify:** by eye.
 
 ## Workflow follow-up
 
