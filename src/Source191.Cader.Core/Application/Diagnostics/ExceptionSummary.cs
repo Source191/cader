@@ -1,11 +1,13 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 
 namespace Source191.Cader.Application.Diagnostics;
 
 /// <summary>
 /// What a failure looked like without anything it said: the type of the exception and of up to three inner exceptions,
-/// each with up to twenty stack frames as method names and the source file's name and line. The message, the data and
+/// Windows' error number for a Windows error, each with up to twenty stack frames as method names and the source file's name and line. The message, the data and
 /// the folders of source paths are never read, because they can hold paths, names and program output.
 /// </summary>
 public sealed record ExceptionSummary
@@ -34,10 +36,18 @@ public sealed record ExceptionSummary
 
     private static string Part(Exception exception)
     {
-        string type = CodeName.For(exception.GetType()).ToString();
+        string type = Type(exception);
         List<string> frames = [.. Frames(exception).Take(MostFrames)];
 
         return frames.Count == 0 ? type : $"{type} at {string.Join(" < ", frames)}";
+    }
+
+    /// <summary>The exception's type, with Windows' error number for a Windows error: a number, never Windows' sentence for it.</summary>
+    private static string Type(Exception exception)
+    {
+        string type = CodeName.For(exception.GetType()).ToString();
+
+        return exception is Win32Exception windows ? $"{type} (error {windows.NativeErrorCode.ToString(CultureInfo.InvariantCulture)})" : type;
     }
 
     /// <summary>A frame without metadata (trimmed or native code) has no method, and is skipped.</summary>

@@ -18,4 +18,5 @@ public enum DialogName
     WhatsNew,
     Memory,
     ProblemReport,
+    ClearLog,
 }

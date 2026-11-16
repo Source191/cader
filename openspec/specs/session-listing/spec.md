@@ -68,7 +68,7 @@ For each session Cader SHALL derive the repository, the checked-out branch and t
 
 #### Scenario: Session whose folder no longer exists
 - **WHEN** a session's working directory has been deleted
-- **THEN** the listing still succeeds, and its REPOSITORY cell reads the folder's label
+- **THEN** the listing still succeeds, its REPOSITORY cell reads folder gone: and the folder's label, and the pane reads Worktree folder gone
 
 #### Scenario: Folder inside the repository
 - **WHEN** a session runs in C:\Users\me\source\repos\Northwind.Orders\src\Api on branch main
@@ -264,7 +264,7 @@ Each item of the key bar SHALL show a tooltip while the mouse pointer rests on i
 - **THEN** the tooltip is one sentence of at most 80 characters saying what the key does on a setting, the roots or a setup row
 
 ### Requirement: Column headers explain themselves on hover
-A table column header SHALL show what the column shows as a tooltip while the mouse pointer rests on it, using the same words as the help key and keeping the help's line breaks so the tooltip never runs off the screen, drawn just under the header over the table's rows and never over the detail pane, and SHALL show nothing while the pointer rests on a row.
+A table column header SHALL show what the column shows as a tooltip while the mouse pointer rests on it, using the same words as the help key and keeping the help's line breaks so the tooltip never runs off the screen, drawn just under the header over the table's rows and never over the detail pane, and SHALL show no column tooltip while the pointer rests on a row; on the sessions view the only row with a tooltip of its own SHALL be a session whose folder has gone.
 
 #### Scenario: Hover over a column header
 - **WHEN** the mouse pointer rests on the STATE header in the sessions view
@@ -275,8 +275,12 @@ A table column header SHALL show what the column shows as a tooltip while the mo
 - **THEN** the tooltip shows the column's meaning on two lines, each within the terminal's width, on the rows just under the header, and the pane is not covered
 
 #### Scenario: Hover over a row
-- **WHEN** the mouse pointer rests on a row of the table
-- **THEN** no column tooltip is shown
+- **WHEN** the mouse pointer rests on a row of the table whose session's folder exists
+- **THEN** no tooltip is shown
+
+#### Scenario: The REPOSITORY header names the mark
+- **WHEN** the mouse pointer rests on the REPOSITORY header in the sessions view
+- **THEN** the tooltip says the column shows the repository, the folder's label outside a repository, or folder gone before the label when the folder no longer exists
 
 ### Requirement: Rows show the session's memory
 The memory used by a running session's process tree, the session's process and every process it started, SHALL be shown in the detail pane's Memory line for the selected row, in whole megabytes below 1,000 MB and in gigabytes to one decimal place from there, refreshed with the rows. A session without a process SHALL read nothing to measure. The sessions table SHALL have no MEM column, and the help SHALL say the pane and the m key show memory.
@@ -531,3 +535,30 @@ How a sessions column fits SHALL be a property of that column and never decided 
 #### Scenario: A reworded header
 - **WHEN** the AGE header is reworded in a later version
 - **THEN** that column's cells are still right-aligned and NAME is still cut at 28 cells
+
+### Requirement: A session whose folder has gone is marked and starts no git
+Before asking git about a session's working directory, Cader SHALL check that the folder exists, on every refresh and whenever the detail pane reads the session. For a folder that does not exist it SHALL start no git process, SHALL mark the row in its REPOSITORY cell, its detail pane and a row tooltip, and SHALL keep listing the session. A folder that exists again on a later refresh SHALL be read as usual.
+
+#### Scenario: The row is marked
+- **WHEN** a stopped session's working directory C:\Users\me\source\worktrees\Northwind.Orders-fix-123 has been deleted
+- **THEN** its REPOSITORY cell reads folder gone: followed by the folder's label ~\source\worktrees\Northwind.Orders-fix-123, cut at its end when the column is narrow, and the pane reads Worktree folder gone and Changes folder gone
+
+#### Scenario: No git process is started
+- **WHEN** a session's working directory has been deleted and the console refreshes for ten minutes with that row selected
+- **THEN** no git process is started in that folder, and the diagnostic log holds no line about starting git there
+
+#### Scenario: A folder deleted while the console runs
+- **WHEN** a session's row was read in its repository and its folder is deleted before the next refresh
+- **THEN** the next refresh marks the row as folder gone, without waiting for git's answer to expire
+
+#### Scenario: A folder that comes back
+- **WHEN** a marked session's folder is created again
+- **THEN** the next refresh reads the folder with git as usual and the mark goes
+
+#### Scenario: Hover over a marked row
+- **WHEN** the mouse pointer rests on the row of a background session whose folder has gone
+- **THEN** a tooltip says the session's folder no longer exists and that d deletes the session
+
+#### Scenario: The filter still finds it
+- **WHEN** the user filters by fix-123 and a session's deleted folder is named Northwind.Orders-fix-123
+- **THEN** that session's row stays in the table

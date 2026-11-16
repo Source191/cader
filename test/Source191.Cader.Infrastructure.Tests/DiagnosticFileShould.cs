@@ -169,7 +169,7 @@ public sealed class DiagnosticFileShould : IDisposable
         on = false;
         log.Record(new ViewShown(ViewKind.Worktrees));
 
-        File.ReadAllLines(path).ShouldBe(["2026-11-01T09:00:00.000Z view Config"]);
+        File.ReadAllLines(path).ShouldBe([$"2026-11-01T09:00:00.000Z [{Environment.ProcessId}] view Config"]);
         log.Snapshot().Count.ShouldBe(3);
     }
 
@@ -186,7 +186,7 @@ public sealed class DiagnosticFileShould : IDisposable
         on = true;
         clock.Advance(TimeSpan.FromMinutes(5));
 
-        File.ReadAllLines(path).ShouldBe(["2026-11-01T09:30:00.000Z stalls ui thread: 0 stalls"]);
+        File.ReadAllLines(path).ShouldBe([$"2026-11-01T09:30:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
     }
 
     private static int NewLineBytes => Environment.NewLine.Length;

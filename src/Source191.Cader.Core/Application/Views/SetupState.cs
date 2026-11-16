@@ -1,4 +1,5 @@
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 
 namespace Source191.Cader.Application.Views;
 
@@ -16,11 +17,14 @@ public abstract record SetupState
     /// <summary>The Claude folder Cader reads, and where its choice came from.</summary>
     public sealed record Folder(ClaudeFolder Claude) : SetupState;
 
-    /// <summary>The diagnostic log file with the setting on: its path, and whether anything has been written to it yet.</summary>
-    public sealed record LogFile(string Path, bool Exists) : SetupState;
+    /// <summary>The diagnostic log's files with the setting on: <c>cader.log</c> and the older <c>cader.log.1</c>, each with its size or absent.</summary>
+    public sealed record LogFile(LogFiles Files) : SetupState;
 
-    /// <summary>The diagnostic log file with the setting off: its path only.</summary>
-    public sealed record LogOff(string Path) : SetupState;
+    /// <summary>The diagnostic log's files with the setting off, which may still hold what was written while it was on.</summary>
+    public sealed record LogOff(LogFiles Files) : SetupState;
+
+    /// <summary>The older diagnostic log file, <c>cader.log.1</c>, which a rollover left; its row is shown only while it is there.</summary>
+    public sealed record OlderLog(LogFiles Files) : SetupState;
 
     /// <summary>The fragment is at this path, but Windows Terminal hides a Cader profile as deleted.</summary>
     public sealed record HiddenByTerminal(string Path) : SetupState;

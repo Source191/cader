@@ -19,7 +19,37 @@ public sealed class DiagnosticLineShould
     {
         DateTimeOffset local = new(2026, 10, 29, 15, 3, 12, 345, TimeSpan.FromHours(1));
 
-        DiagnosticLine.Render(new TimedEvent(local, new ViewShown(ViewKind.Sessions))).ShouldBe("2026-10-29T14:03:12.345Z view Sessions");
+        DiagnosticLine.Render(new TimedEvent(local, new ViewShown(ViewKind.Sessions))).ShouldBe($"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] view Sessions");
+    }
+
+    [Fact]
+    public void PutTheProcessIdAfterTheTime()
+    {
+        ProcessCounts counts = new();
+        counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
+        string process = $"[{Environment.ProcessId}]";
+
+        DiagnosticLine.Render(new TimedEvent(At, new ViewShown(ViewKind.Sessions))).ShouldBe($"2026-10-29T14:03:12.345Z {process} view Sessions");
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z {process} counts since start git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
+    }
+
+    [Fact]
+    public void SayCountsAreSinceStart()
+    {
+        FakeTimeProvider clock = new(Fixtures.Noon);
+        RefreshCounts refreshes = new(clock, new DiagnosticLog(clock, []));
+        PerformanceCounts counts = new(new ProcessCounts(), refreshes, new StallCounts());
+        counts.Processes.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
+        refreshes.Add(RefreshPart.WorktreesScan, TimeSpan.FromMilliseconds(800));
+
+        string[] bodies = [.. DiagnosticLine.Render(counts, At).Select(line => line[$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] ".Length..])];
+
+        bodies.ShouldBe(
+        [
+            "counts since start git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms",
+            "refreshes since start worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
+            "stalls since start ui thread: 0 stalls",
+        ]);
     }
 
     [Fact]
@@ -48,6 +78,13 @@ public sealed class DiagnosticLineShould
     public void RenderPackagedNotesThatCouldNotBeRead()
     {
         Body(new PackagedNotesUnreadable(new ToolVersion("0.21.0"))).ShouldBe("no readable release notes in the package of 0.21.0");
+    }
+
+    [Fact]
+    public void RenderAClearedLogInNumbersOnly()
+    {
+        Body(new DiagnosticLogCleared(2, 13_002_282, 0)).ShouldBe("diagnostic log cleared: 2 files, 13002282 bytes, 0 kept");
+        Body(new DiagnosticLogCleared(1, 300, 1)).ShouldBe("diagnostic log cleared: 1 file, 300 bytes, 1 kept");
     }
 
     [Fact]
@@ -123,15 +160,22 @@ public sealed class DiagnosticLineShould
     [Fact]
     public void RenderATerminalGuiReport()
     {
-        Body(new TerminalGuiReported(DiagnosticLevel.Warning, null)).ShouldBe("terminal.gui Warning");
+        Body(new TerminalGuiReported(DiagnosticLevel.Warning, CodeName.For(typeof(ScreenLoop)), null)).ShouldBe("terminal.gui Warning from ScreenLoop");
     }
 
     [Fact]
     public void RenderATerminalGuiReportWithItsException()
     {
-        TerminalGuiReported reported = new(DiagnosticLevel.Error, ExceptionSummary.From(new GitException("x", inUse: false)));
+        TerminalGuiReported reported = new(DiagnosticLevel.Error, CodeName.For(typeof(ScreenLoop)), ExceptionSummary.From(new GitException("x", inUse: false)));
 
-        Body(reported).ShouldBe("terminal.gui Error: GitException");
+        Body(reported).ShouldBe("terminal.gui Error from ScreenLoop: GitException");
+    }
+
+    [Fact]
+    public void RenderATerminalGuiReportWhoseRaiserIsUnknown()
+    {
+        Body(new TerminalGuiReported(DiagnosticLevel.Warning, null, null)).ShouldBe("terminal.gui Warning");
+        Body(new TerminalGuiReported(DiagnosticLevel.Error, null, ExceptionSummary.From(new GitException("x", inUse: false)))).ShouldBe("terminal.gui Error: GitException");
     }
 
     [Theory]
@@ -153,11 +197,17 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
-    public void RenderAStall()
+    public void RenderAStallWithNoMarkedWork()
     {
-        Body(new UiThreadStalled(TimeSpan.FromMilliseconds(820))).ShouldBe("stalled ui thread for 820 ms");
+        Body(new UiThreadStalled(TimeSpan.FromMilliseconds(700))).ShouldBe("stalled ui thread for 700 ms, no marked work");
     }
 
+    [Fact]
+    public void RenderAStallWithTheLongestMarkedWork()
+    {
+        Body(new UiThreadStalledRunning(TimeSpan.FromMilliseconds(820), CodeName.For(typeof(WorktreeRowsLoaded)), TimeSpan.FromMilliseconds(610.6)))
+            .ShouldBe("stalled ui thread for 820 ms, longest marked work WorktreeRowsLoaded 610 ms");
+    }
     [Fact]
     public void RenderACountWithItsWriteTimeAndTypicalFigures()
     {
@@ -170,7 +220,7 @@ public sealed class DiagnosticLineShould
 
         counts.Add(agents, 0, TimeSpan.FromMilliseconds(4900));
 
-        DiagnosticLine.Render(counts, At).ShouldBe(["2026-10-29T14:03:12.345Z counts claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] counts since start claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms"]);
     }
 
     [Fact]
@@ -185,8 +235,8 @@ public sealed class DiagnosticLineShould
             stalls.Add(TimeSpan.FromMilliseconds(milliseconds));
         }
 
-        none.ShouldBe(["2026-10-29T14:03:12.345Z stalls ui thread: 0 stalls"]);
-        DiagnosticLine.Render(counts, At).ShouldBe(["2026-10-29T14:03:12.345Z stalls ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
+        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
     }
 
     public static TheoryData<Type> EventTypes => DiagnosticEventsShould.EventTypes;
@@ -238,6 +288,6 @@ public sealed class DiagnosticLineShould
 
     private static string Body(DiagnosticEvent diagnostic)
     {
-        return DiagnosticLine.Render(new TimedEvent(At, diagnostic))["2026-10-29T14:03:12.345Z ".Length..];
+        return DiagnosticLine.Render(new TimedEvent(At, diagnostic))[$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] ".Length..];
     }
 }

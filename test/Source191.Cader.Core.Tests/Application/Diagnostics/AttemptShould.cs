@@ -28,7 +28,7 @@ public sealed class AttemptShould
         Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
         failed.Site.ShouldBe(FailureSite.Load);
         failed.What.ShouldBe(CodeName.For(typeof(SessionsViewState)));
-        DiagnosticLine.Render(log.Snapshot().Single()).ShouldStartWith("2026-10-29T12:00:00.000Z failed Load SessionsViewState: GitException at AttemptShould.");
+        DiagnosticLine.Render(log.Snapshot().Single()).ShouldStartWith($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] failed Load SessionsViewState: GitException at AttemptShould.");
         DiagnosticLine.Render(log.Snapshot().Single()).ShouldNotContain(@"C:\Users\me");
     }
 

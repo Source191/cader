@@ -17,7 +17,7 @@ public sealed class DetailLoader(IGit git, ICreatedWorktrees created, SessionAct
 
     public async Task<SessionDetail> SessionAsync(SessionRow row, CancellationToken cancellationToken)
     {
-        DetailFact<WorktreeCounts> counts = row.Location is SessionLocation.Outside
+        DetailFact<WorktreeCounts> counts = row.Location is SessionLocation.Outside or SessionLocation.FolderGone
             ? new DetailFact<WorktreeCounts>.NotApplicable()
             : await Read(row.Session.WorkingDirectory, () => inspector.CountAsync(row.Session.WorkingDirectory, cancellationToken));
 

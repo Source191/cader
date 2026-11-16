@@ -14,7 +14,10 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 {
     private const string Root = @"C:\Users\me\source\repos";
     private const string Repository = @"C:\Users\me\source\repos\Northwind.Orders";
+    private const string Billing = @"C:\Users\me\source\repos\Northwind.Billing";
     private const string WorktreeRoot = @"C:\Users\me\source\worktrees";
+
+    private static readonly string[] TenNames = ["Billing", "Customers", "Inventory", "Ledger", "Orders", "Payroll", "Products", "Shipping", "Suppliers", "Warehouse"];
 
     private readonly FakeFolders folders = new FakeFolders().WithDirectory(Path.Combine(Repository, ".git", "objects"));
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
@@ -400,6 +403,168 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         row.Repository.Value.ShouldBe(@"C:\other\Northwind.Ledger");
     }
 
+    [Fact]
+    public async Task StillListTheOtherRepositoryWhenOneIsUnreadable()
+    {
+        string worktree = Path.Combine(Root, "Northwind.Billing-fix-123");
+        folders.WithDirectory(Path.Combine(Billing, ".git", "objects")).WithDirectory(worktree);
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(128, string.Empty, "fatal: not a git repository"));
+        processes.Answer(request => IsListingOf(request, Billing), new ProcessResult(0, Listing(Billing, worktree), string.Empty));
+        AnswerCounts(dirty: " M Program.cs\n", unpushed: "3\n");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Path.Value.ShouldBe(worktree);
+        row.Repository.Value.ShouldBe(Billing);
+        row.DirtyFiles.ShouldBe(1);
+        row.UnpushedCommits.ShouldBe(3);
+        log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+    }
+
+    [Fact]
+    public async Task ListTwoRepositoriesAtOnceAndKeepTheirOrder()
+    {
+        string billingWorktree = Path.Combine(Root, "Northwind.Billing-fix-123");
+        string ordersWorktree = Path.Combine(Root, "Northwind.Orders-fix-456");
+        folders.WithDirectory(Path.Combine(Billing, ".git", "objects")).WithDirectory(billingWorktree).WithDirectory(ordersWorktree);
+        processes.Answer(request => IsListingOf(request, Billing), new ProcessResult(0, Listing(Billing, billingWorktree), string.Empty));
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(0, Listing(Repository, ordersWorktree), string.Empty));
+        AnswerCounts(dirty: string.Empty, unpushed: "0\n");
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(2, "both repositories are listed at once");
+            runs.Open(Repository);
+            await runs.WhenStarted(request => request.Arguments[0] == "status" && request.WorkingDirectory == new WorkingFolder.At(ordersWorktree), 1).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+            runs.Open(Billing);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => row.Path.Value).ShouldBe([billingWorktree, ordersWorktree], "Orders answered first, but Billing's rows still come first");
+    }
+
+    [Fact]
+    public async Task InspectThreeWorktreesOfOneRepositoryAtOnce()
+    {
+        string[] worktrees = [Path.Combine(Root, "Northwind.Orders-fix-c"), Path.Combine(Root, "Northwind.Orders-fix-a"), Path.Combine(Root, "Northwind.Orders-fix-b")];
+        processes.Answer(request => IsListingOf(request, Repository), new ProcessResult(0, Listing(Repository, worktrees), string.Empty));
+        AnswerCounts(dirty: string.Empty, unpushed: "0\n");
+        for (int index = 0; index < worktrees.Length; index++)
+        {
+            string worktree = worktrees[index];
+            folders.WithDirectory(worktree);
+            processes.Answer(request => IsStatus(request) && request.WorkingDirectory == new WorkingFolder.At(worktree), new ProcessResult(0, string.Concat(Enumerable.Repeat("?? notes.txt\n", index + 1)), string.Empty));
+        }
+
+        HeldRuns runs = new(IsStatus);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            await runs.WhenStarted(IsStatus, 3).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => (row.Path.Value, row.DirtyFiles)).ShouldBe([(worktrees[0], 1), (worktrees[1], 2), (worktrees[2], 3)], "each row keeps its own counts, in git's listing order");
+    }
+
+    [Fact]
+    public async Task StartAtMostEightGitReadsAtOnce()
+    {
+        string[] repositories = TenRepositories();
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], CancellationToken.None);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(8);
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        (await scan).Select(row => row.Repository.Value).ShouldBe(repositories, "every repository is still listed, in name order");
+    }
+
+    [Fact]
+    public async Task StartNoGitReadOnceTheScanIsCancelled()
+    {
+        string[] repositories = TenRepositories();
+        HeldRuns runs = new(IsListing);
+        processes.WhileRunning = runs.WhileRunning;
+        using CancellationTokenSource cancellation = new();
+
+        Task<IReadOnlyList<WorktreeRow>> scan = Inventory.ScanAsync([], cancellation.Token);
+        try
+        {
+            runs.CountStarted(IsListing).ShouldBe(8);
+            await cancellation.CancelAsync();
+        }
+        finally
+        {
+            runs.OpenAll();
+        }
+
+        Exception? thrown = await Record.ExceptionAsync(() => scan);
+
+        runs.CountStarted(request => request.WorkingDirectory == new WorkingFolder.At(repositories[8]) || request.WorkingDirectory == new WorkingFolder.At(repositories[9])).ShouldBe(0, "the ninth and tenth repositories were still waiting for a slot");
+        thrown.ShouldBeAssignableTo<OperationCanceledException>();
+    }
+
+    /// <summary>Ten repositories under the root, each listing one worktree whose folder is gone, so each gives one row and no read beyond its listing.</summary>
+    private string[] TenRepositories()
+    {
+        string[] repositories = [.. TenNames.Select(name => Path.Combine(Root, $"Northwind.{name}"))];
+        foreach (string repository in repositories)
+        {
+            folders.WithDirectory(Path.Combine(repository, ".git", "objects"));
+            processes.Answer(request => IsListingOf(request, repository), new ProcessResult(0, Listing(repository, $"{repository}-gone"), string.Empty));
+        }
+
+        return repositories;
+    }
+
+    private static bool IsStatus(ProcessRequest request)
+    {
+        return request.Arguments[0] == "status";
+    }
+
+    private static bool IsListing(ProcessRequest request)
+    {
+        return request.Arguments[0] == "worktree";
+    }
+
+    private static bool IsListingOf(ProcessRequest request, string repository)
+    {
+        return request.Arguments[0] == "worktree" && request.WorkingDirectory == new WorkingFolder.At(repository);
+    }
+
+    /// <summary>Git's porcelain listing of a repository and its linked worktrees, each on its own branch.</summary>
+    private static string Listing(string repository, params string[] worktrees)
+    {
+        IEnumerable<string> linked = worktrees.Select(worktree => $"worktree {worktree.Replace('\\', '/')}\nHEAD b\nbranch refs/heads/{Path.GetFileName(worktree)}\n");
+
+        return string.Join("\n", [$"worktree {repository.Replace('\\', '/')}\nHEAD a\nbranch refs/heads/main\n", .. linked]);
+    }
+
+    private void AnswerCounts(string dirty, string unpushed)
+    {
+        processes.Answer(request => request.Arguments[0] == "status", new ProcessResult(0, dirty, string.Empty));
+        processes.Answer(request => request.Arguments[0] == "rev-list", new ProcessResult(0, unpushed, string.Empty));
+    }
+
     private void AnswerListingWithOneWorktree()
     {
         processes.Answer(request => request.Arguments.Contains("--porcelain") && request.Arguments[0] == "worktree", new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n\nworktree C:/Users/me/source/repos/Northwind.Orders-fix-123\nHEAD b\nbranch refs/heads/fix-123\n", string.Empty));
@@ -408,5 +573,93 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     public void Dispose()
     {
         catalogue.Dispose();
+    }
+
+    /// <summary>
+    /// Records every git run as it starts and holds the matching ones open, per folder, until the test opens them, so a
+    /// fact can count what has started at once without sleeping.
+    /// </summary>
+    private sealed class HeldRuns(Func<ProcessRequest, bool> held)
+    {
+        private readonly Lock gate = new();
+        private readonly List<ProcessRequest> started = [];
+        private readonly Dictionary<WorkingFolder, TaskCompletionSource> holds = [];
+        private readonly List<Waiter> waiters = [];
+        private bool allOpen;
+
+        public Task WhileRunning(ProcessRequest request)
+        {
+            lock (gate)
+            {
+                started.Add(request);
+                foreach (Waiter waiter in waiters.Where(waiter => started.Count(waiter.Matches) >= waiter.Count))
+                {
+                    waiter.Reached.TrySetResult();
+                }
+
+                return held(request) ? HoldOf(request.WorkingDirectory).Task : Task.CompletedTask;
+            }
+        }
+
+        public int CountStarted(Func<ProcessRequest, bool> matches)
+        {
+            lock (gate)
+            {
+                return started.Count(matches);
+            }
+        }
+
+        public Task WhenStarted(Func<ProcessRequest, bool> matches, int count)
+        {
+            lock (gate)
+            {
+                Waiter waiter = new(matches, count, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+                waiters.Add(waiter);
+                if (started.Count(matches) >= count)
+                {
+                    waiter.Reached.TrySetResult();
+                }
+
+                return waiter.Reached.Task;
+            }
+        }
+
+        public void Open(string folder)
+        {
+            lock (gate)
+            {
+                HoldOf(new WorkingFolder.At(folder)).TrySetResult();
+            }
+        }
+
+        public void OpenAll()
+        {
+            lock (gate)
+            {
+                allOpen = true;
+                foreach (TaskCompletionSource hold in holds.Values)
+                {
+                    hold.TrySetResult();
+                }
+            }
+        }
+
+        private TaskCompletionSource HoldOf(WorkingFolder folder)
+        {
+            if (!holds.TryGetValue(folder, out TaskCompletionSource? hold))
+            {
+                hold = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                holds[folder] = hold;
+            }
+
+            if (allOpen)
+            {
+                hold.TrySetResult();
+            }
+
+            return hold;
+        }
+
+        private sealed record Waiter(Func<ProcessRequest, bool> Matches, int Count, TaskCompletionSource Reached);
     }
 }

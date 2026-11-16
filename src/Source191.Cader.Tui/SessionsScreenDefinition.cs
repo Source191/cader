@@ -45,6 +45,8 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
     }
     public Color RowColour(SessionRow row) => Palette.ForState(row.Session.State.Kind);
 
+    public string RowTip(SessionRow row) => Wording.SessionRowTip(row);
+
     public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.List.Rows, state.AutomatedRuns);
 
     public KeyBar Bar(SessionsViewState state, bool updateKnown) => Wording.SessionsBar(state, updateKnown);
@@ -62,11 +64,12 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
         }
     }
 
-    /// <summary>The repository alone, its middle elided when too long; outside a repository the folder's label, cut at its end. The place and branch are the pane's.</summary>
+    /// <summary>The repository alone, its middle elided when too long; outside a repository the folder's label, cut at its end, and after the folder gone mark once the folder has gone. The place and branch are the pane's.</summary>
     private static WhereLabel Repository(SessionRow row, FolderLabels folders) => row.Location switch
     {
         SessionLocation.Outside => new WhereLabel.Outside(folders.For(row.Session.WorkingDirectory)),
         SessionLocation.InRepository inRepository => new WhereLabel.Inside(inRepository.Name, string.Empty),
+        SessionLocation.FolderGone => new WhereLabel.Outside(Wording.FolderGone(folders.For(row.Session.WorkingDirectory))),
         _ => throw new UnreachableException(),
     };
 

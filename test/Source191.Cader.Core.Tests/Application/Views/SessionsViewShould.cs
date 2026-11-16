@@ -116,6 +116,17 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void FilterASessionWhoseFolderHasGoneByItsFolderName()
+    {
+        SessionRow gone = Row("broken-build", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([gone, Working]));
+
+        SessionsViewState filtered = Press(loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'), Key.Of('-'), Key.Of('1'), Key.Of('2'), Key.Of('3'), Key.Enter);
+
+        filtered.VisibleRows.ShouldBe([gone]);
+    }
+
+    [Fact]
     public void CommitTheFilterWithEnterAndClearItWithEscape()
     {
         SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
@@ -231,6 +242,48 @@ public sealed class SessionsViewShould
         }
 
         SessionsView.Reduce(withStub, new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new DeleteSession(stubJob)]);
+    }
+
+    [Fact]
+    public void RefuseToOpenAStoppedSessionWhoseFolderHasGone()
+    {
+        SessionRow gone = Row("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Enter));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.FolderGone(Listed.As("fix-123")));
+    }
+
+    [Fact]
+    public void OpenARunningSessionWhoseFolderReadsAsGone()
+    {
+        Session.Background running = Job("fix-123", DisplayState.Idle, "Northwind.Orders-fix-123", "dddd4444") with { Process = new JobProcess.Running(4242) };
+        SessionRow gone = Row(running) with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123"), Tab = new LiveTab.Open(TabPalette.Green) };
+        SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Enter));
+
+        update.Effects.ShouldBe([new OpenTabForSession(running, new LiveTab.Open(TabPalette.Green))]);
+    }
+
+    [Fact]
+    public void RefuseToRenameASessionWhoseFolderHasGone()
+    {
+        Session.Background stopped = Job("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", "dddd4444");
+        Session.Background running = stopped with { State = DisplayState.Idle, Process = new JobProcess.Running(4242) };
+        SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");
+
+        foreach (Session.Background session in new[] { stopped, running })
+        {
+            SessionsViewState onGone = Reduce(SessionsViewState.Empty, new RowsLoaded([Row(session) with { Location = gone }]));
+
+            ViewUpdate<SessionsViewState> update = SessionsView.Reduce(onGone, new KeyPressed(Key.Of('r')));
+
+            update.Effects.ShouldBeEmpty();
+            update.State.Message.ShouldBe(new StatusMessage.FolderGone(Listed.As("fix-123")));
+        }
     }
 
     [Fact]
@@ -492,6 +545,21 @@ public sealed class SessionsViewShould
         ViewUpdate<SessionsViewState> update = SessionsView.Reduce(filtered, new KeyPressed(Key.Of('R')));
 
         update.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(Session.Background)Stopped.Session]);
+    }
+
+    [Fact]
+    public void LeaveSessionsWhoseFolderHasGoneOutOfResumeAll()
+    {
+        SessionRow gone = Row("fix-123", DisplayState.Stopped, "Northwind.Orders-fix-123", jobId: "dddd4444") with { Location = new SessionLocation.FolderGone("Northwind.Orders-fix-123") };
+        SessionsViewState both = Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, gone]));
+        SessionsViewState onlyGone = Reduce(SessionsViewState.Empty, new RowsLoaded([gone]));
+
+        ViewUpdate<SessionsViewState> resumed = SessionsView.Reduce(both, new KeyPressed(Key.Of('R')));
+        ViewUpdate<SessionsViewState> nothing = SessionsView.Reduce(onlyGone, new KeyPressed(Key.Of('R')));
+
+        resumed.Effects.Single().ShouldBeOfType<ResumeSessions>().Sessions.ShouldBe([(Session.Background)Stopped.Session]);
+        nothing.Effects.ShouldBeEmpty();
+        nothing.State.Message.ShouldBe(new StatusMessage.NothingToResume());
     }
 
     [Fact]
