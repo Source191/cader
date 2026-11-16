@@ -1,5 +1,6 @@
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Ports;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
@@ -69,6 +70,17 @@ public sealed class ExceptionSummaryShould
     public void SummariseAnExceptionThatWasNeverThrown()
     {
         ExceptionSummary.From(new GitException(Folder, inUse: false)).ToString().ShouldBe("GitException");
+    }
+
+    [Fact]
+    public void NameAWindowsErrorByItsNumber()
+    {
+        Win32Exception missing = new(2);
+
+        string text = ExceptionSummary.From(new InvalidOperationException($"Could not start git in {Folder}", missing)).ToString();
+
+        text.ShouldBe("InvalidOperationException; inner Win32Exception (error 2)");
+        text.ShouldNotContain(missing.Message);
     }
 
     private static Exception Caught(Action action)

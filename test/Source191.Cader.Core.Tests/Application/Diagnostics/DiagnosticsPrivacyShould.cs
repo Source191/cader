@@ -11,6 +11,7 @@ using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.ComponentModel;
 using System.Web;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
@@ -78,7 +79,7 @@ public sealed class DiagnosticsPrivacyShould
         lines.ShouldContain(line => line.Contains("failed Load SessionsViewState: InvalidOperationException", StringComparison.Ordinal));
         lines.Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         lines.ShouldContain(line => line.Contains("slow refresh worktrees scan in ", StringComparison.Ordinal));
-        DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain("2026-10-23T12:00:00.000Z counts git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
+        DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain($"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts since start git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
         string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts()), Fixtures.Noon)]);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
@@ -148,6 +149,22 @@ public sealed class DiagnosticsPrivacyShould
         string everything = string.Join('\n', sink.Lines);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
         everything.ShouldNotContain("orders", Case.Insensitive);
+    }
+
+    [Fact]
+    public async Task KeepAFailedStartsFolderOutOfTheLog()
+    {
+        children.Throw(request => request.WorkingDirectory == new WorkingFolder.At(Worktree), new Win32Exception(267, $"The directory name {Worktree} is invalid"));
+        GitCli git = new(processes, "git");
+
+        foreach (int _ in Enumerable.Range(0, 2))
+        {
+            (await git.RepositoryRootAsync(Worktree, CancellationToken.None)).ShouldBeNull();
+        }
+
+        sink.Lines.ShouldHaveSingleItem().ShouldContain("not started git rev-parse: Win32Exception (error 267)");
+        string everything = string.Join('\n', sink.Lines);
+        Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
     private static ReleaseVersion ReleaseVersion(string text)

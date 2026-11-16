@@ -17,14 +17,14 @@ public static class DiagnosticLine
     public static string Render(TimedEvent timed) => $"{Stamp(timed.At)} {Body(timed.Event)}";
 
     /// <summary>The child program counts, one line per program, subcommand and exit code, each with the time it was written.</summary>
-    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at) => [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
+    public static IReadOnlyList<string> Render(ProcessCounts counts, DateTimeOffset at) => [.. counts.Snapshot().Select(count => $"{Stamp(at)} counts since start {count.Command} exit {count.ExitCode}: {Figures(count.Durations, "run", "runs")}")];
 
     /// <summary>Every count, each line with the time it was written: the child programs, each refresh part that has run, and the UI thread's stalls even with none, so a file shows the heartbeat ran.</summary>
     public static IReadOnlyList<string> Render(PerformanceCounts counts, DateTimeOffset at)
     {
-        IEnumerable<string> refreshes = counts.Refreshes.Snapshot().Select(count => $"{Stamp(at)} refreshes {Name(count.Part)}: {Figures(count.Durations, "run", "runs")}");
+        IEnumerable<string> refreshes = counts.Refreshes.Snapshot().Select(count => $"{Stamp(at)} refreshes since start {Name(count.Part)}: {Figures(count.Durations, "run", "runs")}");
 
-        string stalls = $"{Stamp(at)} stalls ui thread: {Figures(counts.Stalls.Figures(), "stall", "stalls")}";
+        string stalls = $"{Stamp(at)} stalls since start ui thread: {Figures(counts.Stalls.Figures(), "stall", "stalls")}";
 
         return [.. Render(counts.Processes, at), .. refreshes, stalls];
     }
@@ -58,11 +58,12 @@ public static class DiagnosticLine
 
         ProcessSlow slow => $"slow {slow.Command} exit {slow.ExitCode} in {Milliseconds(slow.Duration)}",
         RefreshSlow slow => $"slow refresh {Name(slow.Part)} in {Milliseconds(slow.Duration)}",
-        UiThreadStalled stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}",
+        UiThreadStalled stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}, no marked work",
+        UiThreadStalledRunning stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}, longest marked work {stalled.Work} {Milliseconds(stalled.Took)}",
         ProcessTimedOut timedOut => $"timed out {timedOut.Command} after {Milliseconds(timedOut.Limit)}",
         ProcessFailedToStart failed => $"not started {failed.Command}: {failed.Failure}",
         Failed failed => failed.What is null ? $"{FailedWord} {failed.Site}: {failed.Failure}" : $"{FailedWord} {failed.Site} {failed.What}: {failed.Failure}",
-        TerminalGuiReported reported => reported.Failure is null ? $"terminal.gui {reported.Level}" : $"terminal.gui {reported.Level}: {reported.Failure}",
+        TerminalGuiReported reported => $"terminal.gui {reported.Level}{(reported.Raiser is null ? string.Empty : $" from {reported.Raiser}")}{(reported.Failure is null ? string.Empty : $": {reported.Failure}")}",
         _ => throw new UnreachableException(),
     };
 
@@ -74,7 +75,10 @@ public static class DiagnosticLine
         RefreshPart.PullRequestRefresh => "pull-request refresh",
     };
 
-    private static string Stamp(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture);
+    /// <summary>The UTC time and Cader's own process id, so the lines of several processes sharing one file can be told apart.</summary>
+    private static string Stamp(DateTimeOffset at) => $"{at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture)} [{ProcessId}]";
+
+    private static string ProcessId => System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>The number of runs, then the typical and longest durations when there were any.</summary>
     private static string Figures(DurationFigures figures, string one, string many)

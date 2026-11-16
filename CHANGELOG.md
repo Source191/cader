@@ -14,6 +14,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
+- The diagnostic log now names the Cader process on every line, so two consoles writing to cader.log can be told apart; records a program that cannot start once per folder, with Windows' error number, instead of on every refresh; names the Terminal.Gui method behind a warning and the work behind a frozen screen; and its counts say they are since start (#303)
 - The Sessions tab's detail pane sets a session's facts in two columns of five rows, so related facts line up: Waiting, Folder, Worktree, Branch and Changes on the left, Started, Prompted, Session, Tab and Memory on the right; the pane is one row taller (#311)
 - The Config tab's Enter and f tooltips are shorter, one sentence each like every other key's: Enter edits the setting (all roots, one per line) or says how to change the setup, and f opens the folder, or the settings or log file, in your editor (#307)
 - Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#280)
