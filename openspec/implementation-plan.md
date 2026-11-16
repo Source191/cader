@@ -46,7 +46,7 @@ Built on 15 November 2026, so the stack is complete (#271 to #285 and 16's pull 
 ## Not in this stack
 
 - **csharp15-in-core:** Core's C# 15 sweep, deferred by PR L of upgrade-to-net11 until a Stryker release compiles C# 15 (evidence in the archived upgrade-to-net11 design and in `.claude\rules\checks.md`); proposal, design and tasks only, no specs.
-- **accounts-in-the-console, set-up-an-account, accounts-in-the-config-tab:** each starts with a spike that needs a second, logged-in Claude account; the owner will take them in a session of their own.
+- **Several Claude accounts:** the three proposed changes were removed and their plan folded into issue #203; each part starts with a spike that needs a second, logged-in Claude account, and is proposed again from the issue when the owner takes it.
 
 ## Owner gates
 
