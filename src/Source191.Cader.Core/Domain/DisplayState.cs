@@ -16,7 +16,6 @@ public abstract record DisplayState(DisplayStateKind Kind)
         internal Known(DisplayStateKind kind)
             : base(kind)
         {
-            ArgumentOutOfRangeException.ThrowIfEqual(kind, DisplayStateKind.Unknown);
         }
     }
 
