@@ -1,5 +1,6 @@
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using System.Text.Json;
 namespace Source191.Cader.Adapters.Claude;
 
 /// <summary>
@@ -17,6 +18,17 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
         }
 
         return Directory.EnumerateDirectories(projects)
-            .Any(project => File.Exists(Path.Combine(project, $"{sessionId.Value}.jsonl")));
+            .Select(project => Path.Combine(project, $"{sessionId.Value}.jsonl"))
+            .Where(File.Exists)
+            .Any(HoldsAMessage);
+    }
+
+    private static bool HoldsAMessage(string transcript) => File.ReadLines(transcript).Any(IsMessage);
+
+    private static bool IsMessage(string line)
+    {
+        using JsonDocument document = JsonDocument.Parse(line);
+
+        return document.RootElement.GetProperty("type").GetString() is "user" or "assistant";
     }
 }

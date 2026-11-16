@@ -5,6 +5,13 @@ namespace Source191.Cader.Infrastructure.Tests;
 
 public sealed class ClaudeTranscriptsShould : IDisposable
 {
+    private const string UserLine = """{"type":"user","message":{"role":"user","content":"Add the Northwind orders export"},"sessionId":"5a4a7350-31ac-49b6-899f-c7d832d8ef63"}""";
+    private const string TitleAndName = """
+        {"type":"ai-title","aiTitle":"Northwind orders export","sessionId":"5a4a7350-31ac-49b6-899f-c7d832d8ef63"}
+        {"type":"agent-name","agentName":"Northwind orders export","sessionId":"5a4a7350-31ac-49b6-899f-c7d832d8ef63"}
+
+        """;
+
     private readonly string home = Path.Combine(Path.GetTempPath(), "test-transcripts-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -12,7 +19,7 @@ public sealed class ClaudeTranscriptsShould : IDisposable
     {
         string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
         Directory.CreateDirectory(project);
-        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), UserLine + "\n");
         ClaudeTranscripts transcripts = new(home);
 
         transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeTrue();
@@ -26,11 +33,22 @@ public sealed class ClaudeTranscriptsShould : IDisposable
         string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
         Directory.CreateDirectory(project);
         Directory.CreateDirectory(other);
-        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), "{}\n");
+        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), UserLine + "\n");
         SessionId session = SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63");
 
         new ClaudeTranscripts(home).HasMessages(session).ShouldBeTrue();
         new ClaudeTranscripts(other).HasMessages(session).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TreatATranscriptWithOnlyATitleAndANameAsNoMessages()
+    {
+        string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
+        Directory.CreateDirectory(project);
+        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), TitleAndName);
+        ClaudeTranscripts transcripts = new(home);
+
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeFalse();
     }
 
     [Fact]
