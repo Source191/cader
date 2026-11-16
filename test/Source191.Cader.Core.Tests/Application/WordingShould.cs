@@ -244,8 +244,8 @@ public sealed class WordingShould
     public void SayThePullRequestCell()
     {
         DateTimeOffset at = new(2026, 10, 20, 9, 0, 0, TimeSpan.Zero);
-        PullRequest gitHub = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, at);
-        PullRequest azure = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Draft, at);
+        PullRequest gitHub = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, at, new HeadCommit.NotRecorded());
+        PullRequest azure = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Draft, at, new HeadCommit.NotRecorded());
 
         Wording.PullRequestCell(new PullRequestLookup.Found(gitHub)).ShouldBe("#123 open");
         Wording.PullRequestCell(new PullRequestLookup.Found(gitHub with { Number = 88, State = PullRequestState.Merged })).ShouldBe("#88 merged");
@@ -283,7 +283,7 @@ public sealed class WordingShould
     [Fact]
     public void SayAPullRequestIsOpening()
     {
-        PullRequest azure = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Active, DateTimeOffset.UnixEpoch);
+        PullRequest azure = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Active, DateTimeOffset.UnixEpoch, new HeadCommit.NotRecorded());
 
         Wording.Working(new OpenPullRequest(azure)).ShouldBe("Opening !4521...");
     }
@@ -640,6 +640,18 @@ public sealed class WordingShould
     public void SayAFolderIsNotRegistered()
     {
         Wording.Describe(new HealthReason.NotRegistered()).ShouldBe("folder is not registered with git");
+    }
+
+    [Fact]
+    public void SayABranchIsCheckedOutInNoWorktree()
+    {
+        Wording.Describe(new HealthReason.CheckedOutNowhere()).ShouldBe("checked out in no worktree");
+    }
+
+    [Fact]
+    public void SayABranchIsOnlyOnOriginAsOfTheLastFetch()
+    {
+        Wording.Describe(new HealthReason.OnlyOnOrigin()).ShouldBe("only on origin, as of the last fetch");
     }
 
     [Fact]

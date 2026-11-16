@@ -42,7 +42,7 @@ Alternative considered: a separate `BranchRow` in a `closed` row hierarchy. It i
 
 ### 4. The flag is a pure Domain rule
 
-`Domain\BranchFlag` (`LeftBehind`, `Gone`, `Closed`, `NoPullRequest`, `None`) and `BranchFlags.Of(PullRequestLookup, Upstream, int? commitsAfterMergedHead)` decide it in the spec's order: left behind, gone, closed, no PR. Only `PullRequestGap.NoPullRequest` gives `NoPullRequest`; every other gap gives neither `Closed` nor `NoPullRequest`, so a signed-out CLI or a repository with no origin never paints rows `· no PR`. Each flag's glyph, word, tone and pane reason live in `Wording` (`WordingOfBranches`).
+`Domain\BranchFlagKind` (`LeftBehind`, `Gone`, `Closed`, `NoPullRequest`, `None`) and `BranchFlags.Of(PullRequestLookup, Upstream, int? commitsAfterMergedHead)` decide it in the spec's order: left behind, gone, closed, no PR. Only `PullRequestGap.NoPullRequest` gives `NoPullRequest`; every other gap gives neither `Closed` nor `NoPullRequest`, so a signed-out CLI or a repository with no origin never paints rows `· no PR`. Each flag's glyph, word, tone and pane reason live in `Wording` (`WordingOfBranches`).
 
 ### 5. Origin rows need a lookup first, so they appear a scan later
 

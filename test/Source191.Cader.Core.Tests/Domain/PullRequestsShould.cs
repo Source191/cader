@@ -47,6 +47,17 @@ public sealed class PullRequestsShould
         state.IsOpen().ShouldBe(open);
     }
 
-    private static PullRequest GitHub(int number, PullRequestState state, DateTimeOffset createdAt) =>
-        new(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, createdAt);
+    [Fact]
+    public void CarryTheHeadCommitTheHostRecordedOrSayItRecordedNone()
+    {
+        CommitId head = CommitId.From("afdacd8b1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f60");
+
+        GitHub(298, PullRequestState.Merged, Monday, new HeadCommit.Known(head)).Head.ShouldBe(new HeadCommit.Known(head));
+        GitHub(299, PullRequestState.Open, Monday, new HeadCommit.NotRecorded()).Head.ShouldBe(new HeadCommit.NotRecorded());
+    }
+
+    private static PullRequest GitHub(int number, PullRequestState state, DateTimeOffset createdAt) => GitHub(number, state, createdAt, new HeadCommit.NotRecorded());
+
+    private static PullRequest GitHub(int number, PullRequestState state, DateTimeOffset createdAt, HeadCommit head) =>
+        new(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, createdAt, head);
 }

@@ -142,6 +142,8 @@ public static partial class Wording
         WorktreeHealthKind.Broken => TextTone.Red,
         WorktreeHealthKind.Empty => TextTone.Grey,
         WorktreeHealthKind.Elsewhere => TextTone.Amber,
+        WorktreeHealthKind.Branch => TextTone.Grey,
+        WorktreeHealthKind.Origin => TextTone.Amber,
     };
 
     /// <summary>The items of one bar row, each placed two cells after the last; a word given for a key overrides its hint and tip.</summary>

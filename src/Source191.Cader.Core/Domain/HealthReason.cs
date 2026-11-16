@@ -29,4 +29,10 @@ public abstract record HealthReason
 
     /// <summary>A live worktree whose repository was not scanned because it is not under the roots.</summary>
     public sealed record RepositoryOutsideRoots(FolderPath Repository) : HealthReason;
+
+    /// <summary>A local branch that neither the main checkout nor any linked worktree has checked out.</summary>
+    public sealed record CheckedOutNowhere : HealthReason;
+
+    /// <summary>A branch origin has, as of the last fetch, with no local branch of its name.</summary>
+    public sealed record OnlyOnOrigin : HealthReason;
 }

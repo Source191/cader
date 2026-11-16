@@ -120,4 +120,16 @@ public sealed class WorktreeHealthShould
         health.Kind.ShouldBe(WorktreeHealthKind.Orphan);
         health.Reason.ShouldBe(new HealthReason.NotRegistered());
     }
+
+    [Fact]
+    public void BeBranchForABranchCheckedOutInNoWorktree()
+    {
+        WorktreeHealth.CheckedOutNowhere.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Branch, new HealthReason.CheckedOutNowhere()));
+    }
+
+    [Fact]
+    public void BeOriginForABranchOnlyOnOrigin()
+    {
+        WorktreeHealth.OnlyOnOrigin.ShouldBe(new WorktreeHealth(WorktreeHealthKind.Origin, new HealthReason.OnlyOnOrigin()));
+    }
 }

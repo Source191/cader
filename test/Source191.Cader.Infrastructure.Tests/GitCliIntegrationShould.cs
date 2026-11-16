@@ -292,6 +292,117 @@ public sealed class GitCliIntegrationShould : IDisposable
         (await git.DefaultRemoteBranchAsync(Repository, TestContext.Current.CancellationToken)).ShouldBe("origin/main");
     }
 
+    [Fact]
+    public async Task ListEveryLocalBranchWithItsUpstreamAndEachBranchOnlyOnOrigin()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "tracked");
+        await CommitInAsync(Repository, "Tracked.cs", "class Tracked;");
+        await RunGitAsync("push", "-q", "-u", "origin", "tracked");
+        await RunGitAsync("switch", "-q", "-c", "gone");
+        await RunGitAsync("push", "-q", "-u", "origin", "gone");
+        await RunGitAsync("push", "-q", "origin", "--delete", "gone");
+        await RunGitAsync("switch", "-q", "-c", "unpushed");
+        await CommitInAsync(Repository, "Unpushed.cs", "class Unpushed;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "HEAD");
+        await PushABranchFromElsewhereAsync("c-new-bug", "TESTS@example.test");
+        await PushABranchFromElsewhereAsync("dependabot-bump", "bot@example.test");
+        await RunGitAsync("fetch", "-q", "--prune");
+
+        IReadOnlyList<GitBranch> branches = await git.ListBranchesAsync(FolderPath.From(Repository), TestContext.Current.CancellationToken);
+
+        branches.ShouldAllBe(branch => branch.TipAt > DateTimeOffset.UnixEpoch);
+        branches.Select(branch => branch with { TipAt = DateTimeOffset.UnixEpoch }).ShouldBe(
+        [
+            Local("-x", new Upstream.None()),
+            Local("gone", new Upstream.Gone()),
+            Local("main", new Upstream.Tracking(RemoteBranch.From("origin/main"))),
+            Local("tracked", new Upstream.Tracking(RemoteBranch.From("origin/tracked"))),
+            Local("unpushed", new Upstream.None()),
+            new GitBranch.OriginOnly(BranchName.From("c-new-bug"), DateTimeOffset.UnixEpoch, Mine: true),
+            new GitBranch.OriginOnly(BranchName.From("dependabot-bump"), DateTimeOffset.UnixEpoch, Mine: false),
+        ],
+        ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task ReadAnUpstreamThatIsALocalBranchAsNoneEvenOnceItIsDeleted()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("branch", "-q", "feature/x", "main");
+        await RunGitAsync("branch", "-q", "local-up", "main");
+        await RunGitAsync("branch", "-q", "--set-upstream-to=feature/x", "local-up");
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken)).OfType<GitBranch.Local>().Single(branch => branch.Name == BranchName.From("local-up")).Upstream.ShouldBe(new Upstream.None());
+
+        await RunGitAsync("branch", "-q", "-D", "feature/x");
+
+        (await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken)).OfType<GitBranch.Local>().Single(branch => branch.Name == BranchName.From("local-up")).Upstream.ShouldBe(new Upstream.None());
+    }
+
+    [Fact]
+    public async Task CountTheCommitsABranchHasAfterAPullRequestsHead()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "fix-88");
+        await CommitInAsync(Repository, "Fix.cs", "class Fix;");
+        CommitId head = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/fix-88", head, TestContext.Current.CancellationToken)).ShouldBe(0);
+
+        await CommitInAsync(Repository, "After.cs", "class After;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "refs/heads/fix-88");
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/fix-88", head, TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/-x", head, TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await git.CountCommitsAfterAsync(repository, "refs/remotes/origin/main", head, TestContext.Current.CancellationToken)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task AnswerNoCountForAHeadGitHasNotGotOrARevisionThatIsNotARef()
+    {
+        await CloneABareOriginAsync();
+        FolderPath repository = FolderPath.From(Repository);
+        CommitId head = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        CommitId unknown = CommitId.From("0123456789abcdef0123456789abcdef01234567");
+
+        (await git.CountCommitsAfterAsync(repository, "refs/heads/main", unknown, TestContext.Current.CancellationToken)).ShouldBeNull();
+        (await git.CountCommitsAfterAsync(repository, "main", head, TestContext.Current.CancellationToken)).ShouldBeNull();
+        (await git.CountCommitsAfterAsync(repository, "--all", head, TestContext.Current.CancellationToken)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CountTheCommitsOfABranchCheckedOutNowhereThatAreOnNoRemote()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "spike-refunds");
+        await CommitInAsync(Repository, "Refunds.cs", "class Refunds;");
+        await CommitInAsync(Repository, "Retry.cs", "class Retry;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("update-ref", "refs/heads/-x", "refs/heads/spike-refunds");
+        FolderPath repository = FolderPath.From(Repository);
+
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("spike-refunds"), TestContext.Current.CancellationToken)).ShouldBe(2);
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("-x"), TestContext.Current.CancellationToken)).ShouldBe(2);
+        (await git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("main"), TestContext.Current.CancellationToken)).ShouldBe(0);
+        await Should.ThrowAsync<GitException>(() => git.CountCommitsOnNoRemoteAsync(repository, BranchName.From("no-such-branch"), TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task DeleteABranchWhoseNameStartsWithAHyphen()
+    {
+        await CreateRepositoryWithOneCommitAsync();
+        await RunGitAsync("update-ref", "refs/heads/-x", "HEAD");
+
+        await git.DeleteBranchAsync(Repository, "-x", force: true, TestContext.Current.CancellationToken);
+
+        (await git.BranchExistsAsync(FolderPath.From(Repository), BranchName.From("-x"), TestContext.Current.CancellationToken)).ShouldBeFalse();
+    }
+
     public void Dispose()
     {
         if (!Directory.Exists(root))
@@ -348,6 +459,18 @@ public sealed class GitCliIntegrationShould : IDisposable
 
         return await OutputOfGitAsync(Elsewhere, "rev-parse", "HEAD");
     }
+
+    /// <summary>Pushes a new branch to origin from the other checkout, its one commit authored with the email given.</summary>
+    private async Task PushABranchFromElsewhereAsync(string branch, string email)
+    {
+        await OutputOfGitAsync(Elsewhere, "switch", "-q", "-c", branch, "main");
+        await File.WriteAllTextAsync(Path.Combine(Elsewhere, $"{branch}.txt"), branch, TestContext.Current.CancellationToken);
+        await OutputOfGitAsync(Elsewhere, "add", "-A");
+        await OutputOfGitAsync(Elsewhere, "-c", $"user.email={email}", "commit", "-q", "-m", $"Add {branch}");
+        await OutputOfGitAsync(Elsewhere, "push", "-q", "origin", branch);
+    }
+
+    private static GitBranch.Local Local(string branch, Upstream upstream) => new(BranchName.From(branch), upstream, DateTimeOffset.UnixEpoch, Mine: true);
 
     private static async Task CommitInAsync(string folder, string file, string content)
     {

@@ -43,7 +43,7 @@ The Worktrees tab only sees a branch while a worktree has it checked out, so the
 
 ## Impact
 
-- **Domain:** `WorktreeHealthKind` gains `Branch` and `Origin`; new `BranchFlag` and its rule; new `CommitId` text value; `PullRequest` gains its head commit.
+- **Domain:** `WorktreeHealthKind` gains `Branch` and `Origin`; new `BranchFlagKind` and its rule; new `CommitId` text value; `PullRequest` gains its head commit.
 - **Ports:** `IGit` gains a branch listing (local and origin branches, each upstream's state, whether the tip is yours), a count of a branch's commits after a given commit, and a count of a branch's commits on no remote branch.
 - **Adapters:** `GitCli` for the three queries and `--` before branch names; `GitHubPullRequests` and `AzureDevOpsPullRequests` read the head commit.
 - **Application:** `WorktreeRow` gains its own key, placement and flag; `WorktreeInventory` adds branch and origin rows; `WorktreesView` routes `d` and `D` on a branch row to the existing branch question and `DeleteBranch` handler; `Wording` gains the BRANCH column, the flag words and the title count.

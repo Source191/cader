@@ -35,6 +35,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
+- The first part of tracking branches with no worktree, which nothing shows yet: the pull request lookups now record each pull request's head commit (gh's headRefOid, az's last merge source commit), git can list every branch with its upstream and whether its tip is yours, and count a branch's commits after a merged head or on no remote, and deleting a branch passes its name after --, so one named like a switch is still a name (#309)
 - A release's mutation run leaves static mutants, which Stryker's test runner cannot judge in a short run, to the weekly full run and says how many it set aside, so the mutation issue lists only real gaps; three values no test read are now pinned, and the wizard filter's diagnostic reads a broken first character instead of tripping a mutant (#305)
 - The mutation testing marks that called a mutant equivalent are mostly gone: the code they pointed at is simpler or a test now tells the mutant apart, and only true equivalents keep a mark (#296)
 - Cader is built for .NET 11 and its SDK 11.0.100: every project targets net11.0, the CI jobs install that SDK, and the packages and breaking changes are checked, with the Microsoft.Extensions assemblies .NET 11 now carries left out of the build (#277)
