@@ -23,7 +23,7 @@
 
 ## 5. Release
 
-- [ ] 5.1 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
+- [x] 5.1 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
 
