@@ -61,14 +61,31 @@ internal static class UiAutomationTabs
     {
         using ComObjects held = new();
         IUIAutomationCondition ownedWindow = held.Keep(automation.Client.CreatePropertyCondition(UIA_PropertyIds.UIA_ProcessIdPropertyId, processId));
-        IUIAutomationCondition named = held.Keep(automation.Client.CreatePropertyCondition(UIA_PropertyIds.UIA_NamePropertyId, title));
-        IUIAutomationCondition titledTab = held.Keep(automation.Client.CreateAndCondition(automation.TabItem, named));
         IUIAutomationElementArray windows = held.Keep(automation.Desktop.FindAll(TreeScope.TreeScope_Children, ownedWindow));
         for (int index = 0; index < windows.Length; index++)
         {
             IUIAutomationElement owned = held.Keep(windows.GetElement(index));
-            IUIAutomationElement? tab = held.Keep(owned.FindFirst(TreeScope.TreeScope_Descendants, titledTab));
-            if (held.Keep(tab?.GetCurrentPattern(UIA_PatternIds.UIA_SelectionItemPatternId)) is IUIAutomationSelectionItemPattern selection)
+            IUIAutomationElementArray tabs = held.Keep(owned.FindAll(TreeScope.TreeScope_Descendants, automation.TabItem));
+            if (SelectShowing(tabs, title, held))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Selects the first tab whose title shows the session's name. UI Automation matches only a whole name, and Claude
+    /// Code may have put a glyph before it, so every tab is read and <see cref="TabTitle"/> decides.
+    /// </summary>
+    private static bool SelectShowing(IUIAutomationElementArray tabs, string title, ComObjects held)
+    {
+        for (int index = 0; index < tabs.Length; index++)
+        {
+            IUIAutomationElement tab = held.Keep(tabs.GetElement(index));
+            if (TabTitle.Shows(tab.CurrentName ?? string.Empty, title)
+                && held.Keep(tab.GetCurrentPattern(UIA_PatternIds.UIA_SelectionItemPatternId)) is IUIAutomationSelectionItemPattern selection)
             {
                 selection.Select();
                 return true;
