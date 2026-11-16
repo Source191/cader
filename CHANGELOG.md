@@ -28,6 +28,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- Enter on a working session whose tab is open switches to that tab again, instead of saying the tab could not be found: Claude Code puts a spinning glyph before a working session's tab title, and Cader now finds the tab with or without it (#326)
 - A branch whose pull request was rebased before it merged, or that was moved forward to main and used again after its merge, no longer reads ▲ left behind on the Worktrees tab: only commits after the merge whose changes main lacks now count, and merge commits never do (#325)
 - A console left open no longer grows in handles and memory: each git and claude command Cader ran left its two output pipes open, so one open for 16 hours held over 100,000 handles and twice its usual memory (#318)
 - A session whose folder has been deleted now reads folder gone: in its REPOSITORY cell and detail pane, with a tooltip saying d deletes it; Enter, rename and resume-all leave it alone, and Cader no longer starts git in that folder every 30 seconds, which filled the diagnostic log (#301)
