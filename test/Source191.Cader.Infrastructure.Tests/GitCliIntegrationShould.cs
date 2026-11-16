@@ -363,6 +363,25 @@ public sealed class GitCliIntegrationShould : IDisposable
     }
 
     [Fact]
+    public async Task CountNoCommitsRebasedOntoMainBeforeTheMerge()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "fix-90");
+        await CommitInAsync(Repository, "Refund.cs", "class Refund;");
+        await CommitInAsync(Repository, "Retry.cs", "class Retry;");
+        await PushFromElsewhereAsync("Tax.cs", "class Tax;");
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("pull", "-q", "--ff-only");
+        await RunGitAsync("cherry-pick", "main..fix-90");
+        await RunGitAsync("push", "-q", "origin", "main");
+        CommitId mergedHead = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+
+        int? count = await git.CountCommitsAfterAsync(FolderPath.From(Repository), "refs/heads/fix-90", mergedHead, TestContext.Current.CancellationToken);
+
+        count.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task AnswerNoCountForAHeadGitHasNotGotOrARevisionThatIsNotARef()
     {
         await CloneABareOriginAsync();
