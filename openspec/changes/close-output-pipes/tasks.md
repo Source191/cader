@@ -7,7 +7,7 @@
 
 ## 2. The time-limit path
 
-- [ ] 2.1 Red: `ProcessRunnerIntegrationShould.LeaveNoUnobservedFaultWhenAnOrphanHoldsAPipePastTheLimit`. The child starts an orphan ping that holds stdout for about eight seconds (an inner `cmd` that starts it with `start /b` and exits at once), then pings for 30 seconds under a 1-second limit. The test asserts `ProcessTimedOutException` within the existing bound, waits for the orphan to end, settles the GC and asserts that `TaskScheduler.UnobservedTaskException` saw nothing. If it passes without a code change, add no code; record in 3.1 that disposing a reader with a read pending did not fault it (design decision 2). Commit.
+- [x] 2.1 Red: `ProcessRunnerIntegrationShould.LeaveNoUnobservedFaultWhenAnOrphanHoldsAPipePastTheLimit`. The child starts an orphan ping that holds stdout for about eight seconds (an inner `cmd` that starts it with `start /b` and exits at once), then pings for 30 seconds under a 1-second limit. The test asserts `ProcessTimedOutException` within the existing bound, waits for the orphan to end, settles the GC and asserts that `TaskScheduler.UnobservedTaskException` saw nothing. If it passes without a code change, add no code; record in 3.1 that disposing a reader with a read pending did not fault it (design decision 2). Commit.
 - [ ] 2.2 Green (only if 2.1 failed for the unobserved fault): `EndAsync` keeps the reads' `Task.WhenAll` and, after the five-second wait times out, attaches an `OnlyOnFaulted` continuation that reads the fault. Verify 2.1 and the existing time-limit and cancellation tests pass. Commit.
 
 ## 3. Record and release
