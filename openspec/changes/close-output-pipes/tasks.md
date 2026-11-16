@@ -2,7 +2,7 @@
 
 ## 1. Close the readers
 
-- [ ] 1.1 Red: `ProcessRunnerIntegrationShould.CloseTheOutputPipesOfEveryCapturedRun` (design decision 3) fails, showing about 100 extra handles after 50 runs, not some other error. Add the handle-count reason to `MachineWidePingsDefinition`'s summary. Commit.
+- [x] 1.1 Red: `ProcessRunnerIntegrationShould.CloseTheOutputPipesOfEveryCapturedRun` (design decision 3) fails, showing about 100 extra handles after 50 runs, not some other error. Add the handle-count reason to `MachineWidePingsDefinition`'s summary. Commit.
 - [ ] 1.2 Green: declare both readers with `using` straight after `Start` in `ProcessRunner.RunAsync` (design decision 1). Verify the new test and every existing `ProcessRunnerIntegrationShould` test pass. Commit.
 
 ## 2. The time-limit path

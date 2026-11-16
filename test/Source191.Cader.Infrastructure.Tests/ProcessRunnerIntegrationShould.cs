@@ -57,6 +57,34 @@ public sealed class ProcessRunnerIntegrationShould
         PingsStartedSince(began).ShouldBeEmpty();
     }
 
+    /// <summary>The leak left both output pipes of each run open, about 100 handles over 50 runs; a fixed runner leaves none a collection does not reclaim.</summary>
+    [Fact]
+    public async Task CloseTheOutputPipesOfEveryCapturedRun()
+    {
+        ProcessRequest request = new("cmd.exe", ["/c", "echo handles"], WorkingFolder.Inherit);
+        await runner.RunAsync(request, TestContext.Current.CancellationToken);
+        int before = SettledHandleCount();
+
+        for (int run = 0; run < 50; run++)
+        {
+            await runner.RunAsync(request, TestContext.Current.CancellationToken);
+        }
+
+        (SettledHandleCount() - before).ShouldBeLessThan(25);
+    }
+
+    private static int SettledHandleCount()
+    {
+#pragma warning disable S1215 // The count must not include handles a collection would reclaim.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+#pragma warning restore S1215
+        using Process current = Process.GetCurrentProcess();
+
+        return current.HandleCount;
+    }
+
     private static List<Process> PingsStartedSince(DateTime began)
     {
         Thread.Sleep(500);
