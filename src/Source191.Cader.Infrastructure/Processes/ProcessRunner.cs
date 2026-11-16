@@ -17,10 +17,15 @@ public sealed class ProcessRunner(TimeSpan limit) : IProcessRunner
         process.StartInfo = StartInfo(request, capture: true);
         process.Start();
 
+        // Disposing the Process leaves a stream the caller has read open, so the readers are disposed here
+        // (https://learn.microsoft.com/dotnet/api/system.diagnostics.process.close).
+        using StreamReader outputReader = process.StandardOutput;
+        using StreamReader errorReader = process.StandardError;
+
         // The reads ignore the caller's token on purpose: cancelling them would fault them while the child still runs.
         // The wait below honours the token, kills the child, and the pipes then close so the reads end.
-        Task<string> standardOutput = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
-        Task<string> standardError = process.StandardError.ReadToEndAsync(CancellationToken.None);
+        Task<string> standardOutput = outputReader.ReadToEndAsync(CancellationToken.None);
+        Task<string> standardError = errorReader.ReadToEndAsync(CancellationToken.None);
         using CancellationTokenSource timeout = new(limit);
         using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
