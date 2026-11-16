@@ -10,8 +10,11 @@ namespace Source191.Cader.Application;
 /// <summary>The detail pane's words: what the selected session's or worktree's row does not show.</summary>
 public static partial class Wording
 {
-    /// <summary>The rows every session's and worktree's facts take.</summary>
-    public const int DetailFactRows = 4;
+    /// <summary>The rows a session's facts take.</summary>
+    public const int SessionFactRows = 5;
+
+    /// <summary>The rows a worktree's facts take.</summary>
+    public const int WorktreeFactRows = 4;
 
     /// <summary>The most commits or changed files a worktree's pane lists; a line beneath says how many more.</summary>
     public const int DetailListedItems = 5;
@@ -19,24 +22,21 @@ public static partial class Wording
     private const string Unavailable = "unavailable";
     private const string NotInARepository = "not in a repository";
 
-    /// <summary>A session's facts in four rows, the folder and its changes two columns wide; its state and pull request are in the row.</summary>
+    /// <summary>A session's facts in five rows of two columns, the left one two of the pane's columns wide; its state and pull request are in the row.</summary>
     public static DetailContent Detail(SessionDetail detail, DateTimeOffset now, TimeZoneInfo zone)
     {
         SessionRow row = detail.Row;
         Session session = row.Session;
         IReadOnlyList<IReadOnlyList<DetailLine>> facts =
         [
+            [WaitingLine(WaitingFor(row)), new("Started", TimeAgo(session.StartedAt, now, zone), TextTone.Plain, Span: 1)],
             [
-                WaitingLine(WaitingFor(row)),
-                new("Started", TimeAgo(session.StartedAt, now, zone), TextTone.Plain, Span: 1),
+                new("Folder", session.WorkingDirectory.Value, TextTone.Plain, Span: 2),
                 new("Prompted", detail.LastPromptedAt is LastPrompt.Seen prompted ? TimeAgo(prompted.At, now, zone) : "not seen since the console started", TextTone.Plain, Span: 1),
             ],
-            [new("Folder", session.WorkingDirectory.Value, TextTone.Plain, Span: 2), new("Session", session.SessionId.Value, TextTone.Plain, Span: 1)],
-            [new("Worktree", PlaceOf(row), TextTone.Plain, Span: 1), new("Branch", HeadLine(row.Head), TextTone.Plain, Span: 1), new("Tab", TabLine(row), TextTone.Plain, Span: 1)],
-            [
-                new("Changes", CountsLine(detail.Counts, now), TextTone.Plain, Span: 2),
-                new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1),
-            ],
+            [new("Worktree", PlaceOf(row), TextTone.Plain, Span: 2), new("Session", session.SessionId.Value, TextTone.Plain, Span: 1)],
+            [new("Branch", HeadLine(row.Head), TextTone.Plain, Span: 2), new("Tab", TabLine(row), TextTone.Plain, Span: 1)],
+            [new("Changes", CountsLine(detail.Counts, now), TextTone.Plain, Span: 2), new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1)],
         ];
 
         return new DetailContent(Name(session.Name), facts, []);
@@ -70,8 +70,8 @@ public static partial class Wording
 
     private static DetailLine WaitingLine(WaitingReason reason) => reason switch
     {
-        WaitingReason.Given given => new("Waiting", given.Text, TextTone.Amber, Span: 1),
-        WaitingReason.None => new("Waiting", "nothing", TextTone.Plain, Span: 1),
+        WaitingReason.Given given => new("Waiting", given.Text, TextTone.Amber, Span: 2),
+        WaitingReason.None => new("Waiting", "nothing", TextTone.Plain, Span: 2),
         _ => throw new UnreachableException(),
     };
 

@@ -15,6 +15,8 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
+- The Sessions tab's detail pane sets a session's facts in two columns of five rows, so related facts line up: Waiting, Folder, Worktree, Branch and Changes on the left, Started, Prompted, Session, Tab and Memory on the right; the pane is one row taller (#311)
+- The Config tab's Enter and f tooltips are shorter, one sentence each like every other key's: Enter edits the setting (all roots, one per line) or says how to change the setup, and f opens the folder, or the settings or log file, in your editor (#307)
 - Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#280)
 - A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set Before branching to Nothing for the old behaviour, or to Pull default branch to fast-forward your local default branch as well (#270, #273)
 - CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
