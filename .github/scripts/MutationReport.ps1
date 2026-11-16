@@ -11,6 +11,10 @@
 
     The score is Stryker's own: detected (Killed and Timeout) over detected plus undetected (Survived and
     NoCoverage); Ignored, CompileError and RuntimeError mutants count for nothing. A file with none is $null.
+
+    A mutant Stryker ran inside a static initialiser carries static: true. Its value is built once per test process,
+    and Stryker's MTP runner switches mutants without restarting the process (stryker-mutator/stryker-net#3742), so a
+    short run cannot judge it; Get-UndetectedMutants says which are static and each caller decides.
 #>
 
 function Read-MutationReport([string] $path) {
@@ -50,6 +54,7 @@ function Get-UndetectedMutants($report) {
                 Status      = $mutant.status
                 Mutator     = $mutant.mutatorName
                 Replacement = $mutant.replacement
+                Static      = $mutant.static -eq $true
             }
         }
     }

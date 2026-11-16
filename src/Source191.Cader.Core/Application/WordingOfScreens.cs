@@ -157,14 +157,14 @@ public static partial class Wording
 
     public static IReadOnlyList<KeyHelp> ConfigKeys { get; } =
     [
-        new(Key.Enter, "Edit", "edit the setting, or say how to set up", Tip: "Edit this setting; on a repository root, every root one per line; on a setup row, say how that setup is changed."),
+        new(Key.Enter, "Edit", "edit the setting, or say how to set up", Tip: "Edit the setting (all roots, one per line), or say how to change the setup."),
         new(Key.Escape, "Sessions", "back to sessions (clears a filter first)", Tip: "Clear the filter, or go back to the sessions view when there is none."),
         new(Key.Of('/'), "Filter", "filter", Tip: "Type to show only the rows that match; Esc clears the filter."),
         new(Key.Of('?'), "Help", "help", Tip: "Show every key and what each column means."),
         new(Key.Of('q'), "Quit", "quit", Tip: "Quit; your sessions keep running in the background."),
         new(Key.Of('c'), "Copy", "copy the path", Tip: "Copy the row's path to the clipboard."),
-        new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the row's folder, the settings or log file itself, or the folder holding another file, in the editor chosen above."),
-        new(Key.Of('d'), "Clear log", "clear the diagnostic log, after asking", Tip: "On a diagnostic log file row, delete cader.log and cader.log.1 after asking; the report's events stay."),
+        new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the folder, or the settings or log file, in the editor chosen above."),
+        new(Key.Of('d'), "Clear log", "clear the diagnostic log, after asking", Tip: "Delete cader.log and cader.log.1 after asking; the report's events stay."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
