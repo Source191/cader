@@ -52,7 +52,7 @@ The pane's Prompted line SHALL show the most recent time, while this Cader ran, 
 - **THEN** its Prompted line reads not seen since the console started
 
 ### Requirement: The pane shows the selected worktree
-On the Worktrees tab the pane SHALL show, for the selected row and titled with its folder's name: the health with its reason in full, the branch and its merge state against origin's default branch, the pull request, the full folder, whether and when Cader created it, its changed files and unpushed commits, and beneath them its unpushed commits as far as five, or its changed files when none are unpushed, then how many more.
+On the Worktrees tab the pane SHALL show, for the selected row and titled with its folder's name: the health with its reason in full, the branch and its merge state against origin's default branch, or the branch's flag's reason in place of the merge state when the branch is flagged, the pull request, the full folder, whether and when Cader created it, its changed files and unpushed commits, and beneath them its unpushed commits as far as five, or its changed files when none are unpushed, then how many more. For a branch row or an origin row the pane SHALL be titled with the branch, SHALL read no git, and SHALL show the health with its reason, the branch with its flag's reason, the pull request, the repository's folder in place of the folder and Created, and the branch's unpushed commits (or that an origin row has no local branch), with nothing listed beneath.
 
 #### Scenario: A worktree with unpushed commits
 - **WHEN** Northwind.Billing-invoice-pdf, created by Cader on 23 October, with twelve unpushed commits on invoice-pdf, is selected
@@ -69,6 +69,14 @@ On the Worktrees tab the pane SHALL show, for the selected row and titled with i
 #### Scenario: A locked worktree
 - **WHEN** a worktree git reports as locked with a reason is selected
 - **THEN** the pane's Health line reads locked and the reason
+
+#### Scenario: A flagged worktree
+- **WHEN** the worktree Northwind.Orders-fix-123, whose branch's upstream is gone, is selected
+- **THEN** the pane reads Branch fix-123 · origin no longer has it, as of the last fetch
+
+#### Scenario: A branch row
+- **WHEN** the branch row spike-refunds of Northwind.Orders, with two commits on no remote branch and no pull request, is selected
+- **THEN** the pane is titled spike-refunds and reads Branch spike-refunds · no pull request on its host, Repository C:\Users\me\source\repos\Northwind.Orders and Changes 2 unpushed commits, and lists no commits or changed files of the main checkout
 
 ### Requirement: The pane fits its facts
 The pane SHALL sit under the table, behind a divider titled with the selected row's name, and SHALL be exactly as tall as its tab's facts can be: five rows on the Sessions tab and eleven on the Worktrees tab, whatever row is selected, so the table's height never changes with the selection. The Config tab SHALL have no pane. The spinner shown while a table waits for its first rows SHALL sit in the table, above the pane.
