@@ -59,8 +59,10 @@ public interface IGit
 
     /// <summary>
     /// How many commits <paramref name="revision"/>, a full ref name such as refs/heads/fix-123 or
-    /// refs/remotes/origin/fix-123, has that <paramref name="head"/> does not contain; null when git fails, as it does
-    /// for a head it has never fetched, or when the revision is not a full ref name.
+    /// refs/remotes/origin/fix-123, has that <paramref name="head"/> does not contain and whose changes origin's default
+    /// branch lacks: a merge commit, a commit on that branch or one whose changes match one there is not counted, unless
+    /// the repository records no default branch for origin, when every such commit counts. Null when git fails, as it
+    /// does for a head it has never fetched, or when the revision is not a full ref name.
     /// </summary>
     Task<int?> CountCommitsAfterAsync(FolderPath repository, string revision, CommitId head, CancellationToken cancellationToken);
 
