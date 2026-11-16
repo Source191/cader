@@ -3,7 +3,7 @@
 ## 1. Process handles in ProcessRegistry
 
 - [x] 1.1 Guard: `ProcessRegistryIntegrationShould.CloseEveryHandleItOpens` (design decision 5) passes on today's code, and the class joins the "Machine-wide pings" collection. In the same class, hold each `Process.GetCurrentProcess()` in a `using` declaration (decision 6). Verify the whole class passes. Commit.
-- [ ] 1.2 Refactor: `ProcessSnapshotHandle` in its own file, `OpenProcess` returning `SafeProcessHandle`, `CreateToolhelp32Snapshot` returning `ProcessSnapshotHandle`, every query taking the `SafeHandle`, `Opened<T>` and `Snapshot` using `using` declarations, and the `CloseHandle` import removed from `ProcessRegistryNative` (decision 2). Verify `ProcessRegistryIntegrationShould`, `ProcessRegistryShould` (if present) and `OneTypePerFileShould` pass. Commit.
+- [x] 1.2 Refactor: `ProcessSnapshotHandle` in its own file, `OpenProcess` returning `SafeProcessHandle`, `CreateToolhelp32Snapshot` returning `ProcessSnapshotHandle`, every query taking the `SafeHandle`, `Opened<T>` and `Snapshot` using `using` declarations, and the `CloseHandle` import removed from `ProcessRegistryNative` (decision 2). Verify `ProcessRegistryIntegrationShould`, `ProcessRegistryShould` (if present) and `OneTypePerFileShould` pass. Commit.
 
 ## 2. UI Automation objects
 
