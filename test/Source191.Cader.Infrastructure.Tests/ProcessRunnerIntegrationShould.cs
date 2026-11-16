@@ -57,6 +57,74 @@ public sealed class ProcessRunnerIntegrationShould
         PingsStartedSince(began).ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// The inner cmd starts a ping with <c>start /b</c> and exits at once, so the tree kill cannot reach that orphan and it
+    /// holds the output pipe past the five-second wait; the readers are then disposed with their reads still pending.
+    /// </summary>
+    [Fact]
+    public async Task LeaveNoUnobservedFaultWhenAnOrphanHoldsAPipePastTheLimit()
+    {
+        ProcessRunner limited = new(TimeSpan.FromSeconds(1));
+        DateTime began = DateTime.Now.AddSeconds(-1);
+        ProcessRequest request = new("cmd.exe", ["/c", "cmd /c start /b ping -n 9 127.0.0.1 & ping -n 30 127.0.0.1"], WorkingFolder.Inherit);
+        List<Exception> unobserved = [];
+        EventHandler<UnobservedTaskExceptionEventArgs> record = (_, arguments) => unobserved.Add(arguments.Exception);
+        TaskScheduler.UnobservedTaskException += record;
+        try
+        {
+            Stopwatch watch = Stopwatch.StartNew();
+
+            await Should.ThrowAsync<ProcessTimedOutException>(() => limited.RunAsync(request, TestContext.Current.CancellationToken));
+
+            watch.Elapsed.ShouldBeInRange(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(7.5), "the five-second wait for the pipes timed out, and disposing the readers did not wait for the orphan");
+            List<Process> orphans = PingsStartedSince(began);
+            orphans.ShouldNotBeEmpty("the orphan still holds the pipe as the run returns");
+            foreach (Process orphan in orphans)
+            {
+                await orphan.WaitForExitAsync(TestContext.Current.CancellationToken);
+                orphan.Dispose();
+            }
+
+            // The pending reads end only after the orphan exits, so they are given a moment to end before the settle.
+            await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.Current.CancellationToken);
+            SettledHandleCount();
+        }
+        finally
+        {
+            TaskScheduler.UnobservedTaskException -= record;
+        }
+
+        unobserved.ShouldBeEmpty();
+    }
+
+    /// <summary>The leak left both output pipes of each run open, about 100 handles over 50 runs; a fixed runner leaves none a collection does not reclaim.</summary>
+    [Fact]
+    public async Task CloseTheOutputPipesOfEveryCapturedRun()
+    {
+        ProcessRequest request = new("cmd.exe", ["/c", "echo handles"], WorkingFolder.Inherit);
+        await runner.RunAsync(request, TestContext.Current.CancellationToken);
+        int before = SettledHandleCount();
+
+        for (int run = 0; run < 50; run++)
+        {
+            await runner.RunAsync(request, TestContext.Current.CancellationToken);
+        }
+
+        (SettledHandleCount() - before).ShouldBeLessThan(25);
+    }
+
+    private static int SettledHandleCount()
+    {
+#pragma warning disable S1215 // The count must not include handles a collection would reclaim.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+#pragma warning restore S1215
+        using Process current = Process.GetCurrentProcess();
+
+        return current.HandleCount;
+    }
+
     private static List<Process> PingsStartedSince(DateTime began)
     {
         Thread.Sleep(500);
