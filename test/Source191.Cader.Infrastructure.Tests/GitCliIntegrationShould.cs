@@ -382,6 +382,34 @@ public sealed class GitCliIntegrationShould : IDisposable
     }
 
     [Fact]
+    public async Task CountNoCommitsOfABranchMovedForwardToMainAfterItsMerge()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "fix-91");
+        await CommitInAsync(Repository, "Refund.cs", "class Refund;");
+        CommitId mergedHead = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        await RunGitAsync("switch", "-q", "main");
+        await RunGitAsync("merge", "-q", "--ff-only", "fix-91");
+        await CommitInAsync(Repository, "Tax.cs", "class Tax;");
+        await RunGitAsync("push", "-q", "origin", "main");
+        await RunGitAsync("branch", "-f", "fix-91", "origin/main");
+
+        int? count = await git.CountCommitsAfterAsync(FolderPath.From(Repository), "refs/heads/fix-91", mergedHead, TestContext.Current.CancellationToken);
+
+        count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task CountOnlyTheWorkAfterTheMergeThatMainLacks()
+    {
+        CommitId mergedHead = await BranchWithMainMergedInAndOneCommitAfterItsHeadAsync();
+
+        int? count = await git.CountCommitsAfterAsync(FolderPath.From(Repository), "refs/heads/fix-92", mergedHead, TestContext.Current.CancellationToken);
+
+        count.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task AnswerNoCountForAHeadGitHasNotGotOrARevisionThatIsNotARef()
     {
         await CloneABareOriginAsync();
@@ -468,6 +496,24 @@ public sealed class GitCliIntegrationShould : IDisposable
         await OutputOfGitAsync(Elsewhere, "push", "-q", "origin", "main");
         await OutputOfGitAsync(root, "clone", "-q", Origin, Repository);
         await IdentifyAsync(Repository);
+    }
+
+    /// <summary>
+    /// fix-92 with one commit at its merged head, then main's newer commit merged into it and one more commit of its own:
+    /// three commits after the head, of which only the last is work main lacks. Answers the merged head.
+    /// </summary>
+    private async Task<CommitId> BranchWithMainMergedInAndOneCommitAfterItsHeadAsync()
+    {
+        await CloneABareOriginAsync();
+        await RunGitAsync("switch", "-q", "-c", "fix-92");
+        await CommitInAsync(Repository, "Refund.cs", "class Refund;");
+        CommitId mergedHead = CommitId.From(await OutputOfGitAsync(Repository, "rev-parse", "HEAD"));
+        await PushFromElsewhereAsync("Tax.cs", "class Tax;");
+        await RunGitAsync("fetch", "-q");
+        await RunGitAsync("merge", "-q", "--no-edit", "origin/main");
+        await CommitInAsync(Repository, "Retry.cs", "class Retry;");
+
+        return mergedHead;
     }
 
     /// <summary>Commits one file in the other checkout and pushes it to origin; answers the new commit.</summary>
