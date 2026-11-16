@@ -143,9 +143,10 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
             return 0;
         }
 
+        // Without origin/HEAD nothing says what main is, so every commit after the head counts.
         ProcessResult lacking = await RunAsync(repository.Value, ["rev-list", "--no-merges", "--cherry-pick", "--right-only", $"refs/remotes/origin/HEAD...{revision}"], cancellationToken);
 
-        return afterHead.Intersect(Lines(lacking.StandardOutput), StringComparer.Ordinal).Count();
+        return lacking.ExitCode == 0 ? afterHead.Intersect(Lines(lacking.StandardOutput), StringComparer.Ordinal).Count() : afterHead.Count;
     }
 
     public async Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
