@@ -68,6 +68,7 @@ public sealed class NullFreeModelsShould
         new(typeof(WizardState), "SelectedIndex", "bound to Terminal.Gui's ListView.SelectedItem, which is null with no row"),
         new(typeof(Started), "ClaudeCode", "Claude Code's version could not be read"),
         new(typeof(Failed), "What", "a failure outside an effect has no code name"),
+        new(typeof(TerminalGuiReported), "Raiser", "no frame is left to name when the stack holds only trimmed or native frames"),
         new(typeof(TerminalGuiReported), "Failure", "Terminal.Gui reports some events without an exception"),
         new(typeof(TerminalGuiBridge), "BeginScope", "ILogger's signature, from Microsoft.Extensions.Logging"),
         new(typeof(TerminalGuiBridge), "Log(exception)", "ILogger's signature, from Microsoft.Extensions.Logging"),

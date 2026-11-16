@@ -34,6 +34,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         [typeof(SelfUpdate)] = (self, context, _) => self.ConfirmUpdate(context),
         [typeof(ShowProblemReport)] = (self, context, effect) => self.ReportProblem(context, (ShowProblemReport)effect),
         [typeof(ShowMemory)] = (self, context, effect) => self.ShowMemoryOf(context, (ShowMemory)effect),
+        [typeof(ClearDiagnosticLog)] = (_, context, effect) => ConfirmClearLog(context, (ClearDiagnosticLog)effect),
     }.ToFrozenDictionary();
 
     /// <summary>Whether an effect of this type has a dialog flow.</summary>
@@ -96,6 +97,18 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         }
 
         context.Dispatch(close);
+    }
+
+    /// <summary>The question names the files as the tab last read them; the handler deletes whatever is there when Delete is chosen.</summary>
+    private static void ConfirmClearLog(IEffectContext context, ClearDiagnosticLog clear)
+    {
+        if (!Confirm.Ask(context.App, context.Diagnostics, DialogName.ClearLog, Wording.ClearLogTitle, Wording.ClearLogQuestion(clear.Files), [.. Wording.DeleteButtons]))
+        {
+            context.ShowMessage(new StatusMessage.Kept());
+            return;
+        }
+
+        context.Dispatch(clear);
     }
 
     private static void ConfirmForce(IEffectContext context, ConfirmForceRemove confirm)

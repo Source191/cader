@@ -38,6 +38,7 @@ public static class Composition
             .Register(new SaveSettingsHandler(settings))
             .Register(new ToggleUpdateCheckHandler(settings))
             .Register(new ToggleDiagnosticLogHandler(settings, diagnosticLogFile))
+            .Register(new ClearDiagnosticLogHandler(ports.LogFiles, log))
             .Register(new StartUpdateHandler(ports.Terminal, scripts, own));
     }
 }

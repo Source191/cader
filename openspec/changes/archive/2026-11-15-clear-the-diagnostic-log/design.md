@@ -69,3 +69,16 @@ A rollover in another Cader moves `cader.log` over `cader.log.1`. Deleting `cade
 - [With the log on, `cader.log` comes back at once] → the spec and the question say so; the new file starts with the clear's own line, which is the point.
 - [The parallel change `make-the-diagnostic-log-useful` changes the line format and may touch `DiagnosticFile` and `DiagnosticLine`] → whichever merges second rebases; the new event's arm follows whatever format is on `main`.
 - [The accounts changes add Config rows and `ConfigRows` cases] → a textual merge in `ConfigRows`, `ConfigView` and `WordingOfConfig`; no requirement overlaps.
+
+## Deviations in implementation
+
+- **Checked against the diagnostic log change (#303), which merged first:** `DiagnosticFile` still appends with `File.AppendAllText` and rolls to `path + ".1"`, now named once by `DiagnosticFile.OlderPath`; every `DiagnosticLine` now starts with the UTC time and `[pid]`, so the clear's line reads `<time> [pid] diagnostic log cleared: 2 files, 13002282 bytes, 0 kept`, its body as designed, and `DiagnosticEventsShould` already allows `long`. The diagnostics spec delta needed no change.
+- **Tones:** there is no Warning tone. `PartlyCleared` and `NoneCleared` are Notice (the orange `!`), the tone of every other refused or partial outcome; `Cleared` is Success and `NothingToClear` Hint. The three new status messages (`NoLogToClear`, `LogFilesNotRead`, `ClearsOnlyTheLog`) are Hint.
+- **`LogFileOnDisc(string Path)`:** the path is on the base record, so `Files.Current.Path` and `Files.Older.Path` read for either case.
+- **The port grew in two steps:** `Read` in 2.1 and `Clear` in 2.2, so no commit carried a stub.
+- **`FakeDiagnosticLogFiles(string path)`:** the fake takes the log's path (the parameterless one uses `TestSettings.DiagnosticLogFile`), so the privacy flow in 4.3 clears a log under a Northwind folder; `Fixtures.Placeholder` gained a `long`.
+- **Red before Green across 4.1 and 4.2:** both Red commits came first and one Green followed, because `WordingOfOutcomesShould` and `StatusTonesShould` fail for any outcome case without words and a tone.
+- **The reading fact:** `ConfigRowsShould.ShowTheSetupAsReadingBeforeItIsRead` now expects every setup item but the older log row, which never shows while the setup is read.
+- **Left as it was:** the help's Report a problem section and the user guide still say `cader.log` rolls at 10 MiB, as the problem report text does; only the Config tab's tooltip moved to 10 MB. `Wording.Working` has no arm for the clear, which reads Working... for the moment the delete takes.
+- **Spec:** the setup requirement's Diagnostic log file clause was shortened so the requirement stays under openspec's 500-character warning.
+- **Version and checks:** 0.22.0-preview.22 to 0.22.0-preview.23, and both release asserts run against `logs-2-useful-diagnostic-log`, the branch this stacks on.

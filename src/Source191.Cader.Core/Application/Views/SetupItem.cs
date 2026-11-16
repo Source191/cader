@@ -6,6 +6,7 @@ public enum SetupItem
     SettingsFile,
     ClaudeFolder,
     DiagnosticLogFile,
+    OlderDiagnosticLogFile,
     TerminalProfiles,
     ClaudeBell,
     LastUpdateCheck,

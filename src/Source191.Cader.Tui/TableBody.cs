@@ -71,7 +71,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         table.SetScheme(Palette.Plain(Palette.Grey));
         sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, app);
         TableToolTips<TRow> toolTips = new(table, app, [.. definition.Columns.Select(column => column.Help)], definition.RowTip);
-        detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, host);
+        detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, context.Heartbeat, host);
 
         // In the middle of the table, whatever the pane under it takes, so the spinner never lands in the pane.
         waiting = new WaitingIndicator(definition.WaitingText) { Y = Pos.Func(_ => table.Frame.Y + (table.Frame.Height / 2), table) };
@@ -188,14 +188,14 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
                 },
                 exception => () => new StatusMessage.Failed(exception.Message));
 
-            app.Invoke(() =>
+            app.Invoke(() => context.Heartbeat.Mark(Attempt.What(working), () =>
             {
                 inFlight--;
                 StatusMessage settled = settle();
                 State = definition.WithMessage(State, settled);
                 Redraw();
                 TriggerLoad();
-            });
+            }));
         }, CancellationToken.None);
     }
 
@@ -233,7 +233,10 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     private void AskForDetail(bool refreshed) => detail.AskFor(State.List.Selected, isShown, refreshed);
 
-    private void Apply(ViewInput input)
+    /// <summary>Every input the reducer takes (a refresh's rows, a key, a dialog's answer) runs as marked UI-thread work, which a freeze can name.</summary>
+    private void Apply(ViewInput input) => context.Heartbeat.Mark(CodeName.For(input.GetType()), () => Applying(input));
+
+    private void Applying(ViewInput input)
     {
         definition.OnInput(State, input);
         ViewUpdate<TState> update = definition.Reduce(State, input);

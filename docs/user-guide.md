@@ -54,7 +54,7 @@ Every Claude Code session on the machine, whether it was started here or not.
 | NAME | The session name given at launch, or the folder name for an unnamed one |
 | TAB | A block in the tab's colour while a Cader tab shows the session; ▯ grey for a plain `claude` in its own terminal |
 | STATE | ◐ needs input (amber), ● working (cyan), ○ idle (white), ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey) |
-| REPOSITORY | The repository it runs in, or the folder's label outside a repository |
+| REPOSITORY | The repository it runs in, or the folder's label outside a repository, with folder gone: before the label when the folder no longer exists |
 | PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
 | AGE | Time since the session started |
 
@@ -88,6 +88,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 - **Stop:** `x` stops a session; it stays listed and can be resumed.
 - **Rename:** `r` gives a session a new name. It restarts under the new name and keeps its conversation.
 - **Delete:** `d` deletes a session, and its worktree too when no work would be lost: never one with uncommitted changes, unpushed commits, a lock or another live session.
+- **When its folder has gone:** a session whose folder was deleted reads folder gone: in REPOSITORY and in its detail pane, and resting the pointer on its row says so. Enter (on one without a process), `r` and `R` leave it alone, because a resume cannot land in a folder that no longer exists; `d` deletes it.
 - **Adopt:** `b` moves a plain `claude` started in its own tab under Cader's supervision, so it survives the tab closing.
 - **Close empty tabs:** `C` closes the tabs of terminal sessions that were never sent a message.
 - **From a folder you are already in:** `cader here [name] [--prompt <text>]` starts a supervised session there, on the current branch, in the same tab, and lists it on the Sessions tab. Ctrl+Z detaches; the session keeps running.
@@ -118,7 +119,7 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
 - **Check for updates:** whether to ask the winget community repository once a day for a newer release.
 - **Diagnostic log:** whether Cader also writes its diagnostic log to a file, named on the Diagnostic log file row; Enter turns it on or off at once. It is off until you turn it on.
 
-Under the Setup heading the grey rows are read, not edited. **Claude folder** names the folder Cader reads Claude Code's transcripts and settings from, `~\.claude` unless Cader was started with `CLAUDE_CONFIG_DIR` set to a full path (the row says when it came from there, and when the value was not a full path, such as a relative or `~` one, and so was not used); the Claude bell row and `cader setup-terminal` read and write that folder's `settings.json`. **Settings file** and **Diagnostic log file** show the full path of `config.json` and of `%LOCALAPPDATA%\Cader\cader.log` as plain text you can select and copy from the terminal; the log row also says whether the log is on or off, and whether anything has been written to it yet. Every row answers `c` (copy the path) and `f`: on the Settings file and Diagnostic log file rows `f` opens the file itself in the editor chosen above (a log that does not exist yet is reported, and Diagnostic log turns it on), and on any other row it opens the folder.
+Under the Setup heading the grey rows are read, not edited. **Claude folder** names the folder Cader reads Claude Code's transcripts and settings from, `~\.claude` unless Cader was started with `CLAUDE_CONFIG_DIR` set to a full path (the row says when it came from there, and when the value was not a full path, such as a relative or `~` one, and so was not used); the Claude bell row and `cader setup-terminal` read and write that folder's `settings.json`. **Settings file** and **Diagnostic log file** show the full path of `config.json` and of `%LOCALAPPDATA%\Cader\cader.log` as plain text you can select and copy from the terminal; the log row also says whether the log is on or off and the file's size (KB below 1 MB, then MB to one decimal), or that nothing has been written to it yet. When `cader.log` reaches 10 MB it becomes `cader.log.1` and a new one starts; while that older file exists a **Diagnostic log file (older)** row after the log row shows its size and path. Every row answers `c` (copy the path) and `f`: on the Settings file and both diagnostic log file rows `f` opens the file itself in the editor chosen above (a log that does not exist yet is reported, and Diagnostic log turns it on), and on any other row it opens the folder. `d` on either diagnostic log file row clears the log: it asks first, naming each file and its size, then deletes `cader.log` and `cader.log.1` and says how much went. The events a problem report carries are kept, and while Diagnostic log is on a new `cader.log` starts with the next event; a file another program has open is kept, and the status line says to try again.
 
 ## Notifications and profiles
 
@@ -176,7 +177,7 @@ It sends nothing but a daily, anonymous check of the winget community repository
 
 - **Report a problem:** `!` previews the diagnostics it would send, then opens a GitHub issue with them filled in; nothing is sent until you submit it. A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on), the last crash and the child program counts. Cader never attaches cader.log to a report. cader.log is a separate, longer history that rolls at 10 MiB: open it with f on the Diagnostic log file row (Config tab), then give it to Claude or attach it to the issue by hand.
 - **After a crash:** `%LOCALAPPDATA%\Cader\last-crash.log` is written; the next problem report includes it.
-- **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`; the Diagnostic log file row shows its path and `f` opens it.
+- **A diagnostic log:** turn on Diagnostic log on the Config tab to keep one in `%LOCALAPPDATA%\Cader\cader.log`; the Diagnostic log file row shows its path and size, `f` opens it, and `d` clears it and `cader.log.1` when you want a log that holds only the problem you are about to reproduce.
 - **The Cader profiles do not appear after `cader setup-terminal`:** they were deleted in Windows Terminal's settings, and Terminal keeps a deleted profile hidden. The Config tab's Windows Terminal profiles row says so; run `cader setup-terminal` again and it offers to show them.
 - **Monochrome tabs:** Cader was started inside a Claude Code session; start it from an ordinary tab.
 - **"Workspace not trusted":** Claude Code asks for trust once per repository; Cader opens a tab in that folder so you can accept it, then start the session again.

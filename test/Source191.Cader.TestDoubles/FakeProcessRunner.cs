@@ -45,6 +45,12 @@ public sealed class FakeProcessRunner : IProcessRunner
     /// <summary>Called as each captured run starts, so a test can make it take time on a fake clock.</summary>
     public Action<ProcessRequest> OnRun { get; set; } = _ => { };
 
+    /// <summary>
+    /// Awaited first as each captured run starts, before it yields: its synchronous part runs on the caller's path, so a
+    /// test can count the runs started the moment the caller returns its task, and hold a run open until it says.
+    /// </summary>
+    public Func<ProcessRequest, Task> WhileRunning { get; set; } = _ => Task.CompletedTask;
+
     public FakeProcessRunner Answer(Func<ProcessRequest, bool> matches, ProcessResult result)
     {
         rules.Insert(0, new Rule(matches, new Queue<ProcessResult>([result])));
@@ -79,6 +85,7 @@ public sealed class FakeProcessRunner : IProcessRunner
 
     public async Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
+        await WhileRunning(request);
         await Task.Yield();
         OnRun(request);
         lock (gate)

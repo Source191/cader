@@ -8,9 +8,9 @@ namespace Source191.Cader.Application;
 
 /// <summary>
 /// Turns listed sessions into table rows by asking git about each working directory (cached, because that is
-/// three processes per directory) and checking for live tabs.
+/// three processes per directory) and checking for live tabs. A directory that no longer exists is never asked of git.
 /// </summary>
-public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock, ITranscripts transcripts, PullRequestCatalogue pullRequests)
+public sealed class SessionRowEnricher(IGit git, IFolders folders, ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock, ITranscripts transcripts, PullRequestCatalogue pullRequests)
 {
     private static readonly TimeSpan CacheWindow = TimeSpan.FromSeconds(30);
 
@@ -95,6 +95,12 @@ public sealed class SessionRowEnricher(IGit git, ITabRegistry tabs, IProcessRegi
 
     private async Task<Located> LocateAsync(FolderPath directory, CancellationToken cancellationToken)
     {
+        // Asked on every refresh and never cached, so a folder deleted inside the window, or created again, is seen at once.
+        if (!folders.DirectoryExists(directory.Value))
+        {
+            return new Located(new SessionLocation.FolderGone(directory.Name), new Head.Unknown());
+        }
+
         DateTimeOffset now = clock.GetUtcNow();
         if (locations.TryGetValue(directory, out (DateTimeOffset CachedAt, Located Located) cached) && now - cached.CachedAt < CacheWindow)
         {
