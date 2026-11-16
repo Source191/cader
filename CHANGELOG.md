@@ -28,6 +28,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- Renaming a session just moved to the background with /bg no longer loses it: Claude Code gives such a session a transcript with no messages until its next turn, so rename now says it has no messages yet and to send it something first, instead of removing it and starting a copy that fails with "source session not found" (#327)
 - Enter on a working session whose tab is open switches to that tab again, instead of saying the tab could not be found: Claude Code puts a spinning glyph before a working session's tab title, and Cader now finds the tab with or without it (#326)
 - A branch whose pull request was rebased before it merged, or that was moved forward to main and used again after its merge, no longer reads ▲ left behind on the Worktrees tab: only commits after the merge whose changes main lacks now count, and merge commits never do (#325)
 - A console left open no longer grows in handles and memory: each git and claude command Cader ran left its two output pipes open, so one open for 16 hours held over 100,000 handles and twice its usual memory (#318)
