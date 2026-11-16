@@ -29,7 +29,7 @@ public sealed class DetailSourcesShould
 
         DetailContent content = await source.ReadAsync(row, CancellationToken.None);
 
-        source.Rows.ShouldBe(Wording.DetailFactRows);
+        source.Rows.ShouldBe(Wording.SessionFactRows);
         source.KeyOf(row).ShouldBe(session.SessionId);
         content.Title.ShouldBe("invoice-pdf");
         content.Facts[0][1].Text.ShouldBe("11:55 (5m ago)");
@@ -43,7 +43,7 @@ public sealed class DetailSourcesShould
 
         DetailContent content = await source.ReadAsync(row, CancellationToken.None);
 
-        source.Rows.ShouldBe(Wording.DetailFactRows + Wording.DetailListedItems + 1);
+        source.Rows.ShouldBe(Wording.WorktreeFactRows + Wording.DetailListedItems + 1);
         source.KeyOf(row).ShouldBe(Worktree.Key);
         content.Title.ShouldBe("Northwind.Billing-invoice-pdf");
         content.Facts[0][0].Text.ShouldBe("ok");

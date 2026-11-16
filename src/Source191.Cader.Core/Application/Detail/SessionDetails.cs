@@ -5,7 +5,7 @@ namespace Source191.Cader.Application.Detail;
 /// <summary>The Sessions tab's pane: a session's facts, keyed by the session's id.</summary>
 public sealed class SessionDetails(DetailLoader loader, TimeProvider clock) : IDetailSource<SessionRow>
 {
-    public int Rows => Wording.DetailFactRows;
+    public int Rows => Wording.SessionFactRows;
 
     public object KeyOf(SessionRow row) => row.Session.SessionId;
 
