@@ -82,8 +82,11 @@ public sealed class ProcessRunnerIntegrationShould
             foreach (Process orphan in orphans)
             {
                 await orphan.WaitForExitAsync(TestContext.Current.CancellationToken);
+                orphan.Dispose();
             }
 
+            // The pending reads end only after the orphan exits, so they are given a moment to end before the settle.
+            await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.Current.CancellationToken);
             SettledHandleCount();
         }
         finally
