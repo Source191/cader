@@ -293,6 +293,28 @@ public sealed class WordingOfDetailShould
     }
 
     [Fact]
+    public void ListNothingBeneathABranchRowWhateverWasRead()
+    {
+        WorktreeRow row = NoFolderRowOf(WorktreeHealth.CheckedOutNowhere, "spike-refunds") with { UnpushedCommits = 1 };
+        WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.Known([new UnpushedCommit("abc1234", Now, "Refund spike")]), new DetailFact<IReadOnlyList<string>>.Known(["src\\Refunds.cs"]));
+
+        Wording.Detail(detail, Now, TimeZoneInfo.Utc).Below.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0, TextTone.Plain, "0 unpushed commits")]
+    [InlineData(1, TextTone.Amber, "1 unpushed commit")]
+    public void ToneABranchRowsChangesOnlyWhenCommitsAreAtRisk(int unpushed, TextTone tone, string text)
+    {
+        WorktreeRow row = NoFolderRowOf(WorktreeHealth.CheckedOutNowhere, "spike-refunds") with { UnpushedCommits = unpushed };
+
+        DetailLine changes = Wording.Detail(NothingRead(row), Now, TimeZoneInfo.Utc).Facts[3][0];
+
+        changes.Text.ShouldBe(text);
+        changes.Tone.ShouldBe(tone);
+    }
+
+    [Fact]
     public void FollowAWorktreesBranchWithItsFlagsReason()
     {
         WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Flag = BranchFlagKind.Gone };

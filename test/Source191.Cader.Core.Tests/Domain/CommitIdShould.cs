@@ -31,6 +31,14 @@ public sealed class CommitIdShould
     }
 
     [Fact]
+    public void SayWhatItRefusedAndWhatItNeeds()
+    {
+        ArgumentException refused = Should.Throw<ArgumentException>(() => CommitId.From("afdacd8b"));
+
+        refused.Message.ShouldStartWith("'afdacd8b' is not a commit id: it needs 40 or 64 hex digits.");
+    }
+
+    [Fact]
     public void AnswerFalseForNull()
     {
         CommitId.TryParse(null, out CommitId? parsed).ShouldBeFalse();

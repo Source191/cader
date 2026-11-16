@@ -49,6 +49,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 - Mutation testing of the rest of Application: facts now pin the help text and refusal layout of every command, the wording of the detail pane, the setup rows, the outcomes and the release notes, the edges of the key bar, the location cache and the memory figures, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#284)
 - Mutation testing of the console's views, the detail pane, the problem report and the actions: facts now pin the edges of lists, rows and ages, the wizard's opening state, the detail pane's columns and spans, the order a problem report leaves lines out, and the folder, tab and session actions' guards, and the mutants no test can tell apart carry a Stryker comment with the reason, so nothing a user can see changes (#285)
 - Strict mutation runs after a release: a release whose run counts 20 or more mutants and leaves one alive now fails that run and says so on the mutation issue, and the static word lists of the diagnostics, which the mutation tool cannot test, carry a Stryker comment with the reason, so nothing a user can see changes (#286)
+- The keys in the help dialog are laid out two to a line without a separate case for a last key on its own, which no help has and which the mutation run could not reach; the help reads the same (#315)
 
 ## 0.21.1 - 2026-11-13
 

@@ -349,7 +349,7 @@ public static partial class Wording
         static string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
         int width = keys.Where((_, index) => index % 2 == 0).Max(key => Entry(key).Length) + 3;
 
-        return string.Join('\n', keys.Chunk(2).Select(pair => pair.Length == 1 ? Entry(pair[0]) : Entry(pair[0]).PadRight(width) + Entry(pair[1])));
+        return string.Join('\n', keys.Chunk(2).Select(pair => Entry(pair[0]).PadRight(width) + string.Concat(pair.Skip(1).Select(Entry))));
     }
 
     /// <summary>The keys, the columns, and the pane's lines when the view has a pane.</summary>
