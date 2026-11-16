@@ -45,6 +45,7 @@ public static partial class Wording
         DialogName.WhatsNew => "What's new",
         DialogName.Memory => "Memory",
         DialogName.ProblemReport => ProblemReportDialogTitle,
+        DialogName.ClearLog => "Clear log",
     };
 
     /// <summary>An amount of memory as the settings row, the detail pane and the breakdown write it: whole megabytes below 1,000 MB, gigabytes to one decimal from there.</summary>
@@ -54,6 +55,17 @@ public static partial class Wording
         long whole = (long)Math.Round(megabytes);
 
         return whole < 1000 ? $"{whole} MB" : $"{(megabytes / 1024).ToString("F1", CultureInfo.InvariantCulture)} GB";
+    }
+
+    /// <summary>A file's size as the Config tab's log rows write it: whole kilobytes rounded up below a megabyte, as Explorer shows them, then megabytes to one decimal.</summary>
+    public static string FileSize(long bytes)
+    {
+        const long kilobyte = 1024;
+        const long megabyte = kilobyte * kilobyte;
+
+        return bytes < megabyte
+            ? $"{((bytes + kilobyte - 1) / kilobyte).ToString(CultureInfo.InvariantCulture)} KB"
+            : $"{((double)bytes / megabyte).ToString("F1", CultureInfo.InvariantCulture)} MB";
     }
 
     /// <summary>The settings row's Claude Code value: the version as the CLI printed it, and the minimum with a prompt to update when it is older.</summary>
@@ -152,6 +164,7 @@ public static partial class Wording
         new(Key.Of('q'), "Quit", "quit", Tip: "Quit; your sessions keep running in the background."),
         new(Key.Of('c'), "Copy", "copy the path", Tip: "Copy the row's path to the clipboard."),
         new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the folder, or the settings or log file, in the editor chosen above."),
+        new(Key.Of('d'), "Clear log", "clear the diagnostic log, after asking", Tip: "Delete cader.log and cader.log.1 after asking; the report's events stay."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
@@ -237,7 +250,18 @@ public static partial class Wording
 
     public static ColumnHelp StateColumn { get; } = new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
 
-    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", "the repository it runs in, or the folder's label outside a repository");
+    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", $"the repository it runs in, or the folder's label outside a repository,\nwith {FolderGoneWords}: before the label when the folder no longer exists");
+
+    /// <summary>The REPOSITORY cell of a session whose folder has gone: the mark first, so a narrow column cuts the label and keeps it.</summary>
+    public static string FolderGone(string label) => $"{FolderGoneWords}: {label}";
+
+    /// <summary>A Sessions row's hover tip: only a session whose folder has gone has one, and only a background one can be deleted with d.</summary>
+    public static string SessionRowTip(SessionRow row) => row switch
+    {
+        { Location: SessionLocation.FolderGone, Session: Session.Background } => "This session's folder no longer exists; d deletes the session.",
+        { Location: SessionLocation.FolderGone } => "This session's folder no longer exists.",
+        _ => string.Empty,
+    };
 
     public static ColumnHelp PullRequestColumn { get; } = new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
 

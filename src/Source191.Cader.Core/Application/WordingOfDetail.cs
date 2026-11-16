@@ -21,6 +21,7 @@ public static partial class Wording
 
     private const string Unavailable = "unavailable";
     private const string NotInARepository = "not in a repository";
+    private const string FolderGoneWords = "folder gone";
 
     /// <summary>A session's facts in five rows of two columns, the left one two of the pane's columns wide; its state and pull request are in the row.</summary>
     public static DetailContent Detail(SessionDetail detail, DateTimeOffset now, TimeZoneInfo zone)
@@ -36,7 +37,7 @@ public static partial class Wording
             ],
             [new("Worktree", PlaceOf(row), TextTone.Plain, Span: 2), new("Session", session.SessionId.Value, TextTone.Plain, Span: 1)],
             [new("Branch", HeadLine(row.Head), TextTone.Plain, Span: 2), new("Tab", TabLine(row), TextTone.Plain, Span: 1)],
-            [new("Changes", CountsLine(detail.Counts, now), TextTone.Plain, Span: 2), new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1)],
+            [new("Changes", CountsLine(detail.Counts, row, now), TextTone.Plain, Span: 2), new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1)],
         ];
 
         return new DetailContent(Name(session.Name), facts, []);
@@ -87,6 +88,7 @@ public static partial class Wording
     {
         SessionLocation.InRepository inRepository => PlaceIn(inRepository, row.Session.WorkingDirectory),
         SessionLocation.Outside => NotInARepository,
+        SessionLocation.FolderGone => FolderGoneWords,
         _ => throw new UnreachableException(),
     };
 
@@ -125,9 +127,11 @@ public static partial class Wording
 
     private static string PullRequestLine(PullRequestLookup lookup) => lookup is PullRequestLookup.Found ? $"{PullRequestCell(lookup)} (p opens it)" : "none";
 
-    private static string CountsLine(DetailFact<WorktreeCounts> counts, DateTimeOffset now) => counts switch
+    /// <summary>The counts git gave, or why none were read: outside a repository, or a folder that has gone.</summary>
+    private static string CountsLine(DetailFact<WorktreeCounts> counts, SessionRow row, DateTimeOffset now) => counts switch
     {
         DetailFact<WorktreeCounts>.Known known => CountsText(known.Value, now),
+        DetailFact<WorktreeCounts>.NotApplicable when row.Location is SessionLocation.FolderGone => FolderGoneWords,
         DetailFact<WorktreeCounts>.NotApplicable => NotInARepository,
         _ => Unavailable,
     };

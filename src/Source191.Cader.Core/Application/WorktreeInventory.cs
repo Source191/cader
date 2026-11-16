@@ -21,6 +21,9 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
 
     private const string GitDirPrefix = "gitdir:";
 
+    // A git read is mostly process start-up (about 80 ms); eight at once brings a scan of about 120 reads under the 3-second slow line without crowding the machine.
+    private const int ScanSlots = 8;
+
     /// <summary>What a child of a repository root is: a repository, a worktree whose registration may be gone, an empty folder a tool left behind, or none of these.</summary>
     private enum FolderKind
     {
@@ -34,7 +37,6 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     {
         Settings snapshot = settings.Value;
         List<WorktreeRow> rows = [];
-        HashSet<FolderPath> registered = [];
         List<FolderPath> repositories = [];
         List<FolderPath> candidates = [];
 
@@ -62,9 +64,14 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
         candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
-        foreach (FolderPath repository in repositories)
+        // Read together, merged in name order: a repository's orphans are judged against its own registrations and those before it, as a serial scan judged them.
+        using SemaphoreSlim slots = new(ScanSlots);
+        Registrations[] found = await Task.WhenAll(repositories.Select(repository => RegisteredRowsAsync(repository, slots, cancellationToken)));
+        HashSet<FolderPath> registered = [];
+        foreach ((FolderPath repository, Registrations registrations) in repositories.Zip(found))
         {
-            rows.AddRange(await RegisteredRowsAsync(repository, registered, cancellationToken));
+            registered.UnionWith(registrations.Folders);
+            rows.AddRange(registrations.Rows);
             rows.AddRange(OrphanRows(repository, registered));
         }
 
@@ -132,12 +139,13 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private WorktreeRow EmptyLeftover(FolderPath root, FolderPath folder) =>
         Leftover(root, folder, new WorktreeObservation.Unregistered(new GitPointer.NoGitFile(), UnregisteredFolder.EmptyLeftover), ownerExists: false);
 
-    private async Task<IReadOnlyList<WorktreeRow>> RegisteredRowsAsync(FolderPath repository, HashSet<FolderPath> registered, CancellationToken cancellationToken)
+    private async Task<Registrations> RegisteredRowsAsync(FolderPath repository, SemaphoreSlim slots, CancellationToken cancellationToken)
     {
         // One unusable folder must not blank the whole view.
-        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => git.ListWorktreesAsync(repository.Value, cancellationToken), IsGitFailure, _ => []);
+        IReadOnlyList<GitWorktreeEntry> entries = await unreadableRepositories.RunAsync<IReadOnlyList<GitWorktreeEntry>>(repository, () => InSlotAsync(slots, () => git.ListWorktreesAsync(repository.Value, cancellationToken), cancellationToken), IsGitFailure, _ => []);
 
-        List<WorktreeRow> rows = [];
+        List<FolderPath> paths = [];
+        List<Task<WorktreeRow>> rows = [];
         foreach (GitWorktreeEntry entry in entries.Where(entry => !entry.IsMain))
         {
             if (!FolderPath.TryParse(entry.Path, out FolderPath? path))
@@ -145,26 +153,32 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
                 continue;
             }
 
-            registered.Add(path);
-            // The disc decides whether the folder exists; git's prunable says only that its .git file is gone, and such a
-            // folder may still hold work, so it is counted like any leftover.
-            bool folderExists = folders.DirectoryExists(path.Value);
-            WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable));
-            rows.Add(folderExists && !entry.IsPrunable
-                ? await InspectedAsync(repository, path, entry, health, cancellationToken)
-                : new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), CountLeftoverFiles(path), OwnerExists: true, FolderExists: folderExists));
+            paths.Add(path);
+            rows.Add(RegisteredRowAsync(repository, path, entry, slots, cancellationToken));
         }
 
-        return rows;
+        return new Registrations(paths, await Task.WhenAll(rows));
     }
 
-    private async Task<WorktreeRow> InspectedAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, WorktreeHealth health, CancellationToken cancellationToken)
+    private async Task<WorktreeRow> RegisteredRowAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, SemaphoreSlim slots, CancellationToken cancellationToken)
+    {
+        // The disc decides whether the folder exists; git's prunable says only that its .git file is gone, and such a
+        // folder may still hold work, so it is counted like any leftover.
+        bool folderExists = folders.DirectoryExists(path.Value);
+        WorktreeHealth health = WorktreeHealth.From(new WorktreeObservation.Registered(folderExists, entry.Lock, entry.IsPrunable));
+
+        return folderExists && !entry.IsPrunable
+            ? await InspectedAsync(repository, path, entry, health, slots, cancellationToken)
+            : new WorktreeRow(repository, path, entry.Head, health, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), CountLeftoverFiles(path), OwnerExists: true, FolderExists: folderExists);
+    }
+
+    private async Task<WorktreeRow> InspectedAsync(FolderPath repository, FolderPath path, GitWorktreeEntry entry, WorktreeHealth health, SemaphoreSlim slots, CancellationToken cancellationToken)
     {
         return await unreadableWorktrees.RunAsync(
             path,
             async () =>
             {
-                WorktreeCounts counts = await inspector.CountAsync(path, cancellationToken);
+                WorktreeCounts counts = await InSlotAsync(slots, () => inspector.CountAsync(path, cancellationToken), cancellationToken);
 
                 return new WorktreeRow(
                     repository,
@@ -184,6 +198,22 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     }
 
     private static bool IsGitFailure(Exception exception) => exception is GitException;
+
+    /// <summary>One git read once a slot is free, the slot held only while it runs, so no read waits on another for a slot; a read still waiting when the scan is cancelled never starts.</summary>
+    private static async Task<T> InSlotAsync<T>(SemaphoreSlim slots, Func<Task<T>> read, CancellationToken cancellationToken)
+    {
+        // Checked once the slot is held, not while waiting: a slot freed as the scan is cancelled can reach a waiter before its cancellation does.
+        await slots.WaitAsync(CancellationToken.None);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return await read();
+        }
+        finally
+        {
+            slots.Release();
+        }
+    }
 
     private IEnumerable<WorktreeRow> OrphanRows(FolderPath repository, HashSet<FolderPath> registered)
     {
@@ -282,4 +312,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             .Select(WorktreeSession (session) => new WorktreeSession.Running(session.SessionId, session.Name))
             .FirstOrDefault(new WorktreeSession.None());
     }
+
+    /// <summary>One repository's registered worktree folders and its rows, both in git's order, merged into the scan in repository order.</summary>
+    private sealed record Registrations(IReadOnlyList<FolderPath> Folders, IReadOnlyList<WorktreeRow> Rows);
 }

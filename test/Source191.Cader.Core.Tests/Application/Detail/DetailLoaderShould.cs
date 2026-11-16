@@ -101,6 +101,17 @@ public sealed class DetailLoaderShould
     }
 
     [Fact]
+    public async Task AskGitNothingForASessionWhoseFolderHasGone()
+    {
+        SessionRow gone = Row(process: new JobProcess.None()) with { Location = new SessionLocation.FolderGone("Northwind.Billing-invoice-pdf") };
+
+        SessionDetail detail = await Loader().SessionAsync(gone, CancellationToken.None);
+
+        detail.Counts.ShouldBeOfType<DetailFact<WorktreeCounts>.NotApplicable>();
+        processes.CapturedRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task FillAWorktreesDetailWithItsUnpushedCommits()
     {
         await state.RecordCreatedWorktreeAsync(new CreatedWorktree(Worktree, BranchName.From("invoice-pdf"), Repository, new DateTimeOffset(2026, 10, 23, 9, 14, 0, TimeSpan.Zero)));

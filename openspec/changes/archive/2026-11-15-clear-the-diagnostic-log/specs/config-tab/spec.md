@@ -3,7 +3,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: The Config tab shows the setup
-After the settings, under the Setup heading row, the table SHALL have a grey row for each piece of setup Cader reads but does not edit: Settings file (the full path of `config.json`), Diagnostic log file (the full path of `cader.log`, whether the Diagnostic log setting is on or off, and its size or not written yet), Windows Terminal profiles (installed, with the fragment's path, or not set up), Claude bell (on, the other channel named, or not set) and Last update check (when, and the newest release found, or never, or off).
+After the settings, under the Setup heading row, the table SHALL have a grey row for each piece of setup Cader reads but does not edit: Settings file (the full path of `config.json`), Diagnostic log file (on or off, the size of `cader.log` or not written yet, and its full path), Windows Terminal profiles (installed, with the fragment's path, or not set up), Claude bell (on, the other channel named, or not set) and Last update check (when, and the newest release found, or never, or off).
 
 #### Scenario: Everything set up
 - **WHEN** the fragment exists, Claude's settings say terminal_bell and the update source was asked at 09:12 today and named 0.18.0

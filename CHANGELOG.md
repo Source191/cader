@@ -6,6 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Added
 
+- d on the Config tab's Diagnostic log file row clears the diagnostic log: it asks first, naming cader.log and cader.log.1 with their sizes, then deletes both, keeping the events a problem report carries; each log row now shows its file's size, and a Diagnostic log file (older) row shows cader.log.1 while it exists (#304)
 - The new-session wizard now says when its repository filter holds only blank or invisible characters, which match no repository, and that Backspace clears them; the diagnostic log records how many repositories the wizard offered and when its filter first changed and with what kind of character, never the character itself, so a problem report can show why the list was empty (#298)
 - A Before branching setting on the Config tab, and a Before branching choice in the new-session wizard: Fetch origin, Pull default branch or Nothing, for what happens before a new worktree branches from origin's default branch (#273)
 - A native build for Arm Windows 11: each release carries cader_<version>_win-arm64.zip beside the x64 one, and winget installs the one that matches your machine (#93, #253)
@@ -14,6 +15,8 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
+- The Worktrees tab now reads several repositories and worktrees at once, at most eight git commands at a time, so a scan that took 7 to 12 seconds over thirty-odd repositories takes a fraction of that; the rows and their order are unchanged (#308)
+- The diagnostic log now names the Cader process on every line, so two consoles writing to cader.log can be told apart; records a program that cannot start once per folder, with Windows' error number, instead of on every refresh; names the Terminal.Gui method behind a warning and the work behind a frozen screen; and its counts say they are since start (#303)
 - The Sessions tab's detail pane sets a session's facts in two columns of five rows, so related facts line up: Waiting, Folder, Worktree, Branch and Changes on the left, Started, Prompted, Session, Tab and Memory on the right; the pane is one row taller (#311)
 - The Config tab's Enter and f tooltips are shorter, one sentence each like every other key's: Enter edits the setting (all roots, one per line) or says how to change the setup, and f opens the folder, or the settings or log file, in your editor (#307)
 - Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#280)
@@ -23,6 +26,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- A session whose folder has been deleted now reads folder gone: in its REPOSITORY cell and detail pane, with a tooltip saying d deletes it; Enter, rename and resume-all leave it alone, and Cader no longer starts git in that folder every 30 seconds, which filled the diagnostic log (#301)
 - cader setup-terminal now changes Windows Terminal's settings file more carefully: it keeps a copy of the file as it was beside it and names it, keeps the file's permissions, writes nothing when Terminal saved the file meanwhile, when the file is read-only (giving the entries to add by hand) or when the new file would not hold exactly the profile list it should; and --remove now also takes out the entries setup added there, leaving any you customised (#275, #294)
 - Cader now follows CLAUDE_CONFIG_DIR: when it is set to a full path, adopt, rename, resume and Enter look for transcripts there, the Claude bell and cader setup-terminal use that folder's settings.json, and a new Claude folder row on the Config tab names the folder (a relative or ~ value is not used, and the row says so) (#276)
 - A Cader profile deleted in Windows Terminal's settings no longer stays hidden after cader setup-terminal: setup now shows the one entry Terminal needs to show it again and, if you agree, adds it to Terminal's settings file and changes nothing else there; a settings file that is a link, as a dotfiles set-up makes it, is never written and you are given the entry to add by hand; the Config tab's Windows Terminal profiles row says when Terminal is hiding one (#218, #275)

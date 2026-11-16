@@ -46,7 +46,7 @@ public sealed class WordingOfKeysAndColumnsShould
         Wording.ConfigKeys.Select(key => $"{key.Key} {key.Hint}").ShouldBe(
         [
             "enter Edit", "esc Sessions", "/ Filter", "? Help", "q Quit",
-            "c Copy", "f Open folder", "U Update", "! Report", .. TabKeys,
+            "c Copy", "f Open folder", "d Clear log", "U Update", "! Report", .. TabKeys,
         ]);
     }
 
@@ -154,7 +154,8 @@ public sealed class WordingOfKeysAndColumnsShould
                         while a tab opened here shows the session; ▯ grey for a plain claude in its own terminal
             STATE       ◐ needs input (amber), ● working (cyan), ○ idle (white),
                         ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)
-            REPOSITORY  the repository it runs in, or the folder's label outside a repository
+            REPOSITORY  the repository it runs in, or the folder's label outside a repository,
+                        with folder gone: before the label when the folder no longer exists
             PR          its pull request: #123 on GitHub (open, draft, merged, closed),
                         !123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known
             AGE         time since the session started
@@ -234,10 +235,10 @@ public sealed class WordingOfKeysAndColumnsShould
             Enter  edit the setting, or say how to set up         Esc    back to sessions (clears a filter first)
             /      filter                                         ?      help
             q      quit                                           c      copy the path
-            f      open the folder, or the settings or log file   U      update in a new tab
-            !      report a problem on GitHub                     ←      the tab to the left
-            →      the tab to the right                           <      scroll the columns left
-            >      scroll the columns right
+            f      open the folder, or the settings or log file   d      clear the diagnostic log, after asking
+            U      update in a new tab                            !      report a problem on GitHub
+            ←      the tab to the left                            →      the tab to the right
+            <      scroll the columns left                        >      scroll the columns right
 
             Columns
             SETTING  a setting kept in config.json, or, under the Setup heading, setup it reads but does not change

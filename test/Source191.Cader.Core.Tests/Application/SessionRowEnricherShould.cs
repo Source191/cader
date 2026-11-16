@@ -17,6 +17,7 @@ public sealed class SessionRowEnricherShould : IDisposable
 
     private readonly FakeTranscripts transcripts = new();
     private readonly InMemoryState store = new();
+    private readonly FakeFolders folders = new();
 
     private readonly FakeProcessRunner remotes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, "https://github.com/northwind/Northwind.Orders.git\n", string.Empty));
     private readonly FakePullRequests hosts = new();
@@ -27,7 +28,7 @@ public sealed class SessionRowEnricherShould : IDisposable
         catalogue = new PullRequestCatalogue(new GitCli(remotes, "git"), hosts, clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));
     }
 
-    private SessionRowEnricher Enricher => new(new GitCli(processes, "git"), store, registry, clock, transcripts, catalogue);
+    private SessionRowEnricher Enricher => new(new GitCli(processes, "git"), folders, store, registry, clock, transcripts, catalogue);
 
     [Fact]
     public async Task CarryEachRowsPullRequest()
@@ -218,6 +219,53 @@ public sealed class SessionRowEnricherShould : IDisposable
     }
 
     [Fact]
+    public async Task MarkASessionWhoseFolderHasGoneWithoutStartingGit()
+    {
+        Session session = Session(@"C:\repos\Northwind.Orders-fix-123");
+        folders.DeleteTree(@"C:\repos\Northwind.Orders-fix-123");
+
+        SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        row.Location.ShouldBe(new SessionLocation.FolderGone("Northwind.Orders-fix-123"));
+        row.Head.ShouldBe(new Head.Unknown());
+        processes.CapturedRequests.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task MarkAFolderDeletedInsideTheCacheWindow()
+    {
+        AnswerGit(@"C:\repos\Northwind.Orders-fix-123", root: "C:/repos/Northwind.Orders-fix-123", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix-123");
+        Session session = Session(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRowEnricher enricher = Enricher;
+
+        SessionRow before = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+        folders.DeleteTree(@"C:\repos\Northwind.Orders-fix-123");
+        clock.Advance(TimeSpan.FromSeconds(10));
+        SessionRow after = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        before.Location.ShouldBeOfType<SessionLocation.InRepository>();
+        after.Location.ShouldBe(new SessionLocation.FolderGone("Northwind.Orders-fix-123"));
+        after.Head.ShouldBe(new Head.Unknown());
+    }
+
+    [Fact]
+    public async Task ReadAFolderThatComesBackWithGit()
+    {
+        AnswerGit(@"C:\repos\Northwind.Orders-fix-123", root: "C:/repos/Northwind.Orders-fix-123", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix-123");
+        Session session = Session(@"C:\repos\Northwind.Orders-fix-123");
+        folders.DeleteTree(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRowEnricher enricher = Enricher;
+
+        SessionRow gone = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+        folders.WithDirectory(@"C:\repos\Northwind.Orders-fix-123");
+        SessionRow back = (await enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        gone.Location.ShouldBe(new SessionLocation.FolderGone("Northwind.Orders-fix-123"));
+        back.Location.ShouldBe(new SessionLocation.InRepository("Northwind.Orders", FolderPath.From(@"C:\repos\Northwind.Orders")));
+        processes.CapturedRequests.ShouldNotBeEmpty();
+    }
+
+    [Fact]
     public async Task MarkASessionWithALiveTabOpenedHere()
     {
         Session session = Session(@"C:\repos\Northwind.Orders");
@@ -312,13 +360,17 @@ public sealed class SessionRowEnricherShould : IDisposable
 
     private void AnswerGit(string directory, string root, string commonDir, string branch)
     {
+        folders.WithDirectory(directory);
         processes.Answer(request => request.WorkingDirectory == new WorkingFolder.At(directory) && request.Arguments.Contains("--show-toplevel"), new ProcessResult(0, root + "\n", string.Empty));
         processes.Answer(request => request.WorkingDirectory == new WorkingFolder.At(directory) && request.Arguments.Contains("--git-common-dir"), new ProcessResult(0, commonDir + "\n", string.Empty));
         processes.Answer(request => request.WorkingDirectory == new WorkingFolder.At(directory) && request.Arguments.Contains("--show-current"), new ProcessResult(0, branch + "\n", string.Empty));
     }
 
-    private static Session.Background Session(string workingDirectory)
+    /// <summary>A job without a process in <paramref name="workingDirectory"/>, which exists until a fact removes it.</summary>
+    private Session.Background Session(string workingDirectory)
     {
+        folders.WithDirectory(workingDirectory);
+
         return new Session.Background(SessionId.From(Guid.NewGuid().ToString()), JobId.From("81cdb0f9"), Listed.As("name"), FolderPath.From(workingDirectory), Fixtures.Noon, DisplayState.Working, new JobProcess.None());
     }
 

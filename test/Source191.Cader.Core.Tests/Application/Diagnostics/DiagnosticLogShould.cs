@@ -76,7 +76,7 @@ public sealed class DiagnosticLogShould
 
         log.WriteCounts(new PerformanceCounts(counts, new RefreshCounts(clock, log), new StallCounts()));
 
-        sink.Lines.ShouldBe(["2026-10-23T12:00:00.000Z counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", "2026-10-23T12:00:00.000Z stalls ui thread: 0 stalls"]);
+        sink.Lines.ShouldBe([$"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts since start git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", $"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
@@ -94,9 +94,9 @@ public sealed class DiagnosticLogShould
         log.WriteCounts(new PerformanceCounts(new ProcessCounts(), refreshes, new StallCounts()));
 
         sink.Lines.ShouldBe([
-            "2026-10-23T12:10:04.700Z refreshes sessions listing: 2 runs, median 1700 ms, p95 2200 ms, longest 2200 ms",
-            "2026-10-23T12:10:04.700Z refreshes worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
-            "2026-10-23T12:10:04.700Z stalls ui thread: 0 stalls",
+            $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] refreshes since start sessions listing: 2 runs, median 1700 ms, p95 2200 ms, longest 2200 ms",
+            $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] refreshes since start worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
+            $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls",
         ]);
         log.Snapshot().ShouldBeEmpty();
     }
