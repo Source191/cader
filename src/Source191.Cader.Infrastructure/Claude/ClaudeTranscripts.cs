@@ -27,8 +27,18 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
 
     private static bool IsMessage(string line)
     {
-        using JsonDocument document = JsonDocument.Parse(line);
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(line);
 
-        return document.RootElement.GetProperty("type").GetString() is "user" or "assistant";
+            return document.RootElement.ValueKind is JsonValueKind.Object
+                && document.RootElement.TryGetProperty("type", out JsonElement type)
+                && type.ValueKind is JsonValueKind.String
+                && type.GetString() is "user" or "assistant";
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }

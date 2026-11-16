@@ -52,6 +52,25 @@ public sealed class ClaudeTranscriptsShould : IDisposable
     }
 
     [Fact]
+    public void FindAnAssistantLineAfterLinesThatAreNotJson()
+    {
+        string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
+        Directory.CreateDirectory(project);
+        File.WriteAllText(Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl"), """
+            {"type":"ai-ti
+
+            {}
+            ["user"]
+            {"type":3}
+            {"type":"assistant","message":{"role":"assistant","content":"Done."}}
+
+            """);
+        ClaudeTranscripts transcripts = new(home);
+
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeTrue();
+    }
+
+    [Fact]
     public void TreatAMissingProjectsFolderAsNoMessages()
     {
         ClaudeTranscripts transcripts = new(home);
