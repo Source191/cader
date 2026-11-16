@@ -410,6 +410,17 @@ public sealed class GitCliIntegrationShould : IDisposable
     }
 
     [Fact]
+    public async Task CountEveryCommitAfterTheHeadWhenOriginsDefaultIsNotRecorded()
+    {
+        CommitId mergedHead = await BranchWithMainMergedInAndOneCommitAfterItsHeadAsync();
+        await RunGitAsync("remote", "set-head", "origin", "-d");
+
+        int? count = await git.CountCommitsAfterAsync(FolderPath.From(Repository), "refs/heads/fix-92", mergedHead, TestContext.Current.CancellationToken);
+
+        count.ShouldBe(3);
+    }
+
+    [Fact]
     public async Task AnswerNoCountForAHeadGitHasNotGotOrARevisionThatIsNotARef()
     {
         await CloneABareOriginAsync();
