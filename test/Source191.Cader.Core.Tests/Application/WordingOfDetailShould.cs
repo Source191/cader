@@ -27,12 +27,13 @@ public sealed class WordingOfDetailShould
         content.Title.ShouldBe("fix-123");
         Rows(content).ShouldBe(
         [
-            ["Waiting permission prompt", "Started 14:02 (5m ago)", "Prompted not seen since the console started"],
-            [@"Folder C:\Users\me\source\worktrees\Northwind.Orders-fix-123", "Session 81cdb0f9-0000-4000-8000-000000000001"],
-            ["Worktree fix-123", "Branch fix-123", "Tab open, yellow"],
+            ["Waiting permission prompt", "Started 14:02 (5m ago)"],
+            [@"Folder C:\Users\me\source\worktrees\Northwind.Orders-fix-123", "Prompted not seen since the console started"],
+            ["Worktree fix-123", "Session 81cdb0f9-0000-4000-8000-000000000001"],
+            ["Branch fix-123", "Tab open, yellow"],
             ["Changes 3 changed files · 0 unpushed commits · last commit 2h00m ago", "Memory 903 MB (m for the breakdown)"],
         ]);
-        content.Facts.SelectMany(line => line).Where(line => line.Span == 2).Select(line => line.Label).ShouldBe(["Folder", "Changes"]);
+        content.Facts.SelectMany(line => line).Select(line => line.Span).ShouldBe([2, 1, 2, 1, 2, 1, 2, 1, 2, 1]);
         content.Facts[0][0].Tone.ShouldBe(TextTone.Amber);
         content.Below.ShouldBeEmpty();
     }
@@ -97,7 +98,7 @@ public sealed class WordingOfDetailShould
     {
         SessionDetail detail = new(Row(DisplayState.Idle, process: new JobProcess.Running(4242)), new LastPrompt.NotSeen(), new DetailFact<WorktreeCounts>.Known(new WorktreeCounts(3, 0, new LastCommit.Unknown())));
 
-        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[3][0].ShouldBe("Changes 3 changed files · 0 unpushed commits");
+        Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[4][0].ShouldBe("Changes 3 changed files · 0 unpushed commits");
     }
 
     [Fact]
@@ -225,8 +226,8 @@ public sealed class WordingOfDetailShould
         SessionRow detached = Row(DisplayState.Idle, process: new JobProcess.Running(4242)) with { Head = new Head.Detached() };
         SessionRow unknown = Row(DisplayState.Idle, process: new JobProcess.Running(4242)) with { Head = new Head.Unknown() };
 
-        Rows(Wording.Detail(Detail(detached), Now, TimeZoneInfo.Utc))[2].ShouldBe(["Worktree fix-123", "Branch none", "Tab none"]);
-        Rows(Wording.Detail(Detail(unknown), Now, TimeZoneInfo.Utc))[2].ShouldBe(["Worktree fix-123", "Branch none", "Tab none"]);
+        Rows(Wording.Detail(Detail(detached), Now, TimeZoneInfo.Utc))[3].ShouldBe(["Branch none", "Tab none"]);
+        Rows(Wording.Detail(Detail(unknown), Now, TimeZoneInfo.Utc))[3].ShouldBe(["Branch none", "Tab none"]);
     }
 
     [Fact]
@@ -246,8 +247,8 @@ public sealed class WordingOfDetailShould
     {
         WorktreeDetail worktree = new(WorktreeRowOf(unpushed: 0, dirty: 0), new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 
-        Wording.Detail(Detail(Row(DisplayState.Idle, process: new JobProcess.None())), Now, TimeZoneInfo.Utc).Facts.Count.ShouldBe(Wording.DetailFactRows);
-        Wording.Detail(worktree, Now, TimeZoneInfo.Utc).Facts.Count.ShouldBe(Wording.DetailFactRows);
+        Wording.Detail(Detail(Row(DisplayState.Idle, process: new JobProcess.None())), Now, TimeZoneInfo.Utc).Facts.Count.ShouldBe(Wording.SessionFactRows);
+        Wording.Detail(worktree, Now, TimeZoneInfo.Utc).Facts.Count.ShouldBe(Wording.WorktreeFactRows);
     }
 
     [Fact]
