@@ -6,6 +6,7 @@ using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.Globalization;
 
 namespace Source191.Cader.Core.Tests.Application;
 
@@ -26,7 +27,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         .Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, MainOnMainAndFix123InItsWorktree, string.Empty))
         .Answer(request => request.Arguments.SequenceEqual(["config", "--get", "user.email"]), new ProcessResult(0, Email + "\n", string.Empty))
         .Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty))
-        .Answer(request => request.Arguments.Contains("rev-list"), new ProcessResult(0, "0\n", string.Empty));
+        .Answer(request => request.Arguments.Contains("rev-list") && request.Arguments.Contains("--count"), new ProcessResult(0, "0\n", string.Empty));
 
     private static readonly RemoteRepository.GitHub Orders = new("northwind", "Northwind.Orders");
     private static readonly CommitId MergedHead = CommitId.From("afdacd8b1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f60");
@@ -118,7 +119,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         hosts.Answer(Orders, Listing(("c-new-bug", PullRequestState.Merged, new HeadCommit.Known(MergedHead))));
         MainCheckoutOnly();
         Branches(Origin("c-new-bug"));
-        processes.Answer(request => request.Arguments.SequenceEqual(["rev-list", "--count", "refs/remotes/origin/c-new-bug", "--not", MergedHead.Value]), new ProcessResult(0, "1\n", string.Empty));
+        AnswerWorkAfterTheMergedHead("refs/remotes/origin/c-new-bug", commits: 1);
         await Landed("c-new-bug");
 
         WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
@@ -211,7 +212,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
     {
         hosts.Answer(Orders, Listing(("fix-123", PullRequestState.Merged, new HeadCommit.Known(MergedHead))));
         Branches(Local("fix-123", "refs/remotes/origin/fix-123"));
-        processes.Answer(request => request.Arguments.SequenceEqual(["rev-list", "--count", "refs/heads/fix-123", "--not", MergedHead.Value]), new ProcessResult(0, "2\n", string.Empty));
+        AnswerWorkAfterTheMergedHead("refs/heads/fix-123", commits: 2);
         await Landed("fix-123");
 
         WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
@@ -296,4 +297,12 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         new([.. pullRequests.Select((pullRequest, index) => new BranchPullRequest(BranchName.From(pullRequest.Branch), new PullRequest(PullRequestHost.GitHub, 290 + index, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{290 + index}"), pullRequest.State, Fixtures.Noon.AddDays(-index - 1), pullRequest.Head)))]);
 
     private Task Landed(params string[] branches) => catalogue.RefreshStaleAsync([.. branches.Select(branch => (FolderPath.From(Repository), BranchName.From(branch)))]);
+
+    /// <summary>Has git list that many commits after the merged head, each of them work origin's default branch lacks.</summary>
+    private void AnswerWorkAfterTheMergedHead(string revision, int commits)
+    {
+        string listed = string.Concat(Enumerable.Range(1, commits).Select(commit => commit.ToString("x40", CultureInfo.InvariantCulture) + "\n"));
+        processes.Answer(request => request.Arguments.SequenceEqual(["rev-list", revision, "--not", MergedHead.Value]), new ProcessResult(0, listed, string.Empty));
+        processes.Answer(request => request.Arguments.SequenceEqual(["rev-list", "--no-merges", "--cherry-pick", "--right-only", $"refs/remotes/origin/HEAD...{revision}"]), new ProcessResult(0, listed, string.Empty));
+    }
 }

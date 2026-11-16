@@ -131,9 +131,22 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
             return null;
         }
 
-        ProcessResult result = await RunAsync(repository.Value, ["rev-list", "--count", revision, "--not", head.Value], cancellationToken);
+        ProcessResult after = await RunAsync(repository.Value, ["rev-list", revision, "--not", head.Value], cancellationToken);
+        if (after.ExitCode != 0)
+        {
+            return null;
+        }
 
-        return result.ExitCode == 0 && TryCount(result, out int count) ? count : null;
+        List<string> afterHead = Lines(after.StandardOutput);
+        if (afterHead.Count == 0)
+        {
+            return 0;
+        }
+
+        // Without origin/HEAD nothing says what main is, so every commit after the head counts.
+        ProcessResult lacking = await RunAsync(repository.Value, ["rev-list", "--no-merges", "--cherry-pick", "--right-only", $"refs/remotes/origin/HEAD...{revision}"], cancellationToken);
+
+        return lacking.ExitCode == 0 ? afterHead.Intersect(Lines(lacking.StandardOutput), StringComparer.Ordinal).Count() : afterHead.Count;
     }
 
     public async Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
