@@ -120,6 +120,7 @@ public static partial class Wording
             StatusMessage.RunsInOwnTerminal terminal =>
                 $"{Name(terminal.Name)} runs in its own terminal and has no messages yet. d closes its tab, C closes every such tab, or send it something there and press b.",
             StatusMessage.NeverSentAMessage never => $"{Name(never.Name)} has nothing to resume: it was never sent a message. d deletes it.",
+            StatusMessage.FolderGone gone => $"{Name(gone.Name)}'s folder no longer exists, so nothing was resumed. d deletes it.",
             StatusMessage.NoEmptyTerminals => "No terminal sessions without messages.",
             StatusMessage.NoMessagesToRename rename => $"{Name(rename.Name)} has no messages yet, so it cannot be renamed; send it something first.",
             StatusMessage.WorkingSoRenameWaits rename => $"{Name(rename.Name)} is working; wait until it is idle or needs input, because renaming restarts it.",

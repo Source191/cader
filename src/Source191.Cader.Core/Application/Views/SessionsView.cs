@@ -60,6 +60,8 @@ public static class SessionsView
         return row.Session switch
         {
             not Session.Background => new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript)),
+            // Without a process Enter removes the job and resumes it in its folder, which a gone folder would leave removed and not resumed.
+            Session.Background { Process: JobProcess.None } when row.Location is SessionLocation.FolderGone => new RowDecision.Explain(new StatusMessage.FolderGone(row.Session.Name)),
             // Attaching to a session with no process resumes it from its transcript; a session never sent a message has none.
             Session.Background { Process: JobProcess.None } when !row.HasTranscript => new RowDecision.Explain(new StatusMessage.NeverSentAMessage(row.Session.Name)),
             Session.Background session => new RowDecision.Act(new OpenTabForSession(session, row.Tab)),
@@ -84,11 +86,12 @@ public static class SessionsView
     }
     /// <summary>
     /// Every stopped or failed job the table shows, in its order, so a filter narrows what R brings back; a session
-    /// stopped on purpose and not wanted is deleted with d instead.
+    /// stopped on purpose and not wanted is deleted with d instead. A session whose folder has gone is left listed as it is.
     /// </summary>
     private static ViewUpdate<SessionsViewState> ResumeAll(SessionsViewState state)
     {
         Session.Background[] sessions = [.. state.VisibleRows
+            .Where(row => row.Location is not SessionLocation.FolderGone)
             .Select(row => row.Session)
             .OfType<Session.Background>()
             .Where(session => session.State.Kind is DisplayStateKind.Stopped or DisplayStateKind.Failed)];
@@ -149,12 +152,17 @@ public static class SessionsView
             : Effect(state with { Message = StatusMessage.None }, new CloseEmptyTerminals(empty));
     }
 
-    /// <summary>Renaming restarts the session under the new name, so it waits until nothing is in flight.</summary>
+    /// <summary>Renaming restarts the session under the new name in its folder, so it waits until nothing is in flight and needs the folder.</summary>
     private static RowDecision Rename(SessionRow row)
     {
         if (row.Session is not Session.Background session)
         {
             return new RowDecision.Explain(new StatusMessage.RunsInOwnTerminal(row.Session.Name, row.HasTranscript));
+        }
+
+        if (row.Location is SessionLocation.FolderGone)
+        {
+            return new RowDecision.Explain(new StatusMessage.FolderGone(session.Name));
         }
 
         return (row.HasTranscript, session) switch

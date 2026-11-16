@@ -154,7 +154,8 @@ public sealed class WordingOfKeysAndColumnsShould
                         while a tab opened here shows the session; ▯ grey for a plain claude in its own terminal
             STATE       ◐ needs input (amber), ● working (cyan), ○ idle (white),
                         ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)
-            REPOSITORY  the repository it runs in, or the folder's label outside a repository
+            REPOSITORY  the repository it runs in, or the folder's label outside a repository,
+                        with folder gone: before the label when the folder no longer exists
             PR          its pull request: #123 on GitHub (open, draft, merged, closed),
                         !123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known
             AGE         time since the session started

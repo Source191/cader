@@ -286,6 +286,33 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
+    public void MarkAGoneFolderBeforeItsLabel()
+    {
+        Wording.FolderGone(@"~\source\worktrees\Northwind.Orders-fix-123").ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Orders-fix-123");
+    }
+
+    [Fact]
+    public void NameTheFolderGoneMarkInTheRepositoryHelp()
+    {
+        Wording.RepositoryColumn.Meaning.ShouldBe("the repository it runs in, or the folder's label outside a repository,\nwith folder gone: before the label when the folder no longer exists");
+    }
+
+    [Fact]
+    public void TipOnlyARowWhoseFolderHasGone()
+    {
+        SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");
+        SessionRow background = SessionIn(DisplayState.Stopped, 1) with { Location = gone };
+        Session.Interactive terminal = new(SessionId.From("sess-2"), Listed.As("repos-93"), FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123"), DateTimeOffset.UnixEpoch, DisplayState.Idle, ProcessId: 4242);
+        SessionRow interactive = background with { Session = terminal };
+
+        Wording.SessionRowTip(background).ShouldBe("This session's folder no longer exists; d deletes the session.");
+        Wording.SessionRowTip(background).Length.ShouldBeLessThanOrEqualTo(80);
+        Wording.SessionRowTip(interactive).ShouldBe("This session's folder no longer exists.");
+        Wording.SessionRowTip(SessionIn(DisplayState.Stopped, 1)).ShouldBeEmpty();
+        Wording.SessionRowTip(SessionIn(DisplayState.Idle, 1) with { Location = new SessionLocation.Outside("notes") }).ShouldBeEmpty();
+    }
+
+    [Fact]
     public void HoldTheTabBlockAndTheGreyDotBetweenCounts()
     {
         Wording.TabBlock.ShouldBe("██");

@@ -122,7 +122,7 @@ internal static class ConsoleComposition
         ClaudeTranscripts transcripts,
         PullRequestCatalogue pullRequests)
     {
-        SessionRowEnricher enricher = new(launch.Git, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
+        SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
         SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, new ClaudeSettings(parts.ClaudeFolder.Folder.Value), parts.Store, folders, parts.ClaudeFolder, parts.Store.ConfigFile, parts.LogFile, parts.Log);
 
