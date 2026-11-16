@@ -28,6 +28,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- A branch whose pull request was rebased before it merged, or that was moved forward to main and used again after its merge, no longer reads ▲ left behind on the Worktrees tab: only commits after the merge whose changes main lacks now count, and merge commits never do (#325)
 - A console left open no longer grows in handles and memory: each git and claude command Cader ran left its two output pipes open, so one open for 16 hours held over 100,000 handles and twice its usual memory (#318)
 - A session whose folder has been deleted now reads folder gone: in its REPOSITORY cell and detail pane, with a tooltip saying d deletes it; Enter, rename and resume-all leave it alone, and Cader no longer starts git in that folder every 30 seconds, which filled the diagnostic log (#301)
 - cader setup-terminal now changes Windows Terminal's settings file more carefully: it keeps a copy of the file as it was beside it and names it, keeps the file's permissions, writes nothing when Terminal saved the file meanwhile, when the file is read-only (giving the entries to add by hand) or when the new file would not hold exactly the profile list it should; and --remove now also takes out the entries setup added there, leaving any you customised (#275, #294)
