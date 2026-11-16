@@ -22,17 +22,27 @@ internal static class FrameRecorder
                 await Task.Delay(wait, cancellationToken);
             }
 
-            Bitmap bitmap = WindowCapture.Capture(window);
             string file = Path.Combine(folder, string.Create(CultureInfo.InvariantCulture, $"frame-{frame:D5}.png"));
-            saves.Add(Task.Run(
-                () =>
-                {
-                    using (bitmap)
+            Bitmap? captured = WindowCapture.Capture(window);
+            try
+            {
+                // The save ignores the token, so a frame already captured is always saved and disposed; cancelling stops the next capture.
+                Bitmap owned = captured;
+                saves.Add(Task.Run(
+                    () =>
                     {
-                        bitmap.Save(file, ImageFormat.Png);
-                    }
-                },
-                cancellationToken));
+                        using (owned)
+                        {
+                            owned.Save(file, ImageFormat.Png);
+                        }
+                    },
+                    CancellationToken.None));
+                captured = null;
+            }
+            finally
+            {
+                captured?.Dispose();
+            }
         }
 
         await Task.WhenAll(saves);

@@ -77,17 +77,16 @@ public sealed class ProcessRunnerIntegrationShould
             await Should.ThrowAsync<ProcessTimedOutException>(() => limited.RunAsync(request, TestContext.Current.CancellationToken));
 
             watch.Elapsed.ShouldBeInRange(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(7.5), "the five-second wait for the pipes timed out, and disposing the readers did not wait for the orphan");
-            List<Process> orphans = PingsStartedSince(began);
+            List<int> orphans = PingsStartedSince(began);
             orphans.ShouldNotBeEmpty("the orphan still holds the pipe as the run returns");
-            foreach (Process orphan in orphans)
+            foreach (int orphan in orphans)
             {
-                await orphan.WaitForExitAsync(TestContext.Current.CancellationToken);
-                orphan.Dispose();
+                await WaitForExitAsync(orphan);
             }
 
             // The pending reads end only after the orphan exits, so they are given a moment to end before the settle.
             await Task.Delay(TimeSpan.FromMilliseconds(500), TestContext.Current.CancellationToken);
-            SettledHandleCount();
+            HandleCounts.Settled();
         }
         finally
         {
@@ -103,33 +102,47 @@ public sealed class ProcessRunnerIntegrationShould
     {
         ProcessRequest request = new("cmd.exe", ["/c", "echo handles"], WorkingFolder.Inherit);
         await runner.RunAsync(request, TestContext.Current.CancellationToken);
-        int before = SettledHandleCount();
+        int before = HandleCounts.Settled();
 
         for (int run = 0; run < 50; run++)
         {
             await runner.RunAsync(request, TestContext.Current.CancellationToken);
         }
 
-        (SettledHandleCount() - before).ShouldBeLessThan(25);
+        (HandleCounts.Settled() - before).ShouldBeLessThan(25);
     }
 
-    private static int SettledHandleCount()
+    /// <summary>Waits for a process to end; one that has already gone has nothing to wait for.</summary>
+    private static async Task WaitForExitAsync(int processId)
     {
-#pragma warning disable S1215 // The count must not include handles a collection would reclaim.
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-#pragma warning restore S1215
-        using Process current = Process.GetCurrentProcess();
+        if (!Process.TryGetProcessById(processId, out Process? running))
+        {
+            return;
+        }
 
-        return current.HandleCount;
+        using (running)
+        {
+            await running.WaitForExitAsync(TestContext.Current.CancellationToken);
+        }
     }
 
-    private static List<Process> PingsStartedSince(DateTime began)
+    /// <summary>The ids of the pings started since <paramref name="began"/>; every process read to find them is disposed here.</summary>
+    private static List<int> PingsStartedSince(DateTime began)
     {
         Thread.Sleep(500);
+        List<int> started = [];
+        foreach (Process ping in Process.GetProcessesByName("ping"))
+        {
+            using (ping)
+            {
+                if (ping.StartTime >= began)
+                {
+                    started.Add(ping.Id);
+                }
+            }
+        }
 
-        return [.. Process.GetProcessesByName("ping").Where(ping => ping.StartTime >= began)];
+        return started;
     }
 
     [Fact]

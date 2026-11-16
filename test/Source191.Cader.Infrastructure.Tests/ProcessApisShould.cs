@@ -129,7 +129,10 @@ public sealed class ProcessApisShould : IDisposable
         }
 
         SafeProcessHandle.TryOpen(GoneId, out SafeProcessHandle? handle).ShouldBeFalse();
-        handle.ShouldBeNull();
+        using (handle)
+        {
+            handle.ShouldBeNull();
+        }
         Should.Throw<UnauthorizedAccessException>(() => SafeProcessHandle.TryOpen(SystemProcessId, out _), "TryOpen answers false only for an id that has gone");
     }
 

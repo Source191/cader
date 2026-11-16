@@ -1,6 +1,7 @@
 using Interop.UIAutomationClient;
 using Source191.Cader.Domain;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Source191.Cader.Adapters.Terminal;
@@ -16,14 +17,17 @@ internal static class UiAutomationTabs
 {
     private const string TerminalProcessName = "WindowsTerminal";
 
+    // PublicationOnly caches no exception, so a client that failed to start is tried again on the next Enter; a race at
+    // most leaves one extra client to the collector, once.
+    private static readonly Lazy<Automation> Shared = new(Automation.Create, LazyThreadSafetyMode.PublicationOnly);
+
     public static bool Select(TerminalWindow window, string title)
     {
         try
         {
-            IUIAutomation automation = new CUIAutomation8();
-            IUIAutomationElement desktop = automation.GetRootElement();
+            Automation automation = Shared.Value;
 
-            return TerminalProcesses(window).Any(processId => SelectIn(automation, desktop, processId, title));
+            return TerminalProcesses(window).Any(processId => SelectIn(automation, processId, title));
         }
         catch (COMException)
         {
@@ -52,17 +56,19 @@ internal static class UiAutomationTabs
         return found;
     }
 
-    private static bool SelectIn(IUIAutomation automation, IUIAutomationElement desktop, int processId, string title)
+    /// <summary>Searches one process's windows; every COM object the search obtains is released as it returns, and the shared ones are left alone.</summary>
+    private static bool SelectIn(Automation automation, int processId, string title)
     {
-        IUIAutomationCondition ownedWindow = automation.CreatePropertyCondition(UIA_PropertyIds.UIA_ProcessIdPropertyId, processId);
-        IUIAutomationCondition titledTab = automation.CreateAndCondition(
-            automation.CreatePropertyCondition(UIA_PropertyIds.UIA_ControlTypePropertyId, UIA_ControlTypeIds.UIA_TabItemControlTypeId),
-            automation.CreatePropertyCondition(UIA_PropertyIds.UIA_NamePropertyId, title));
-        IUIAutomationElementArray windows = desktop.FindAll(TreeScope.TreeScope_Children, ownedWindow);
+        using ComObjects held = new();
+        IUIAutomationCondition ownedWindow = held.Keep(automation.Client.CreatePropertyCondition(UIA_PropertyIds.UIA_ProcessIdPropertyId, processId));
+        IUIAutomationCondition named = held.Keep(automation.Client.CreatePropertyCondition(UIA_PropertyIds.UIA_NamePropertyId, title));
+        IUIAutomationCondition titledTab = held.Keep(automation.Client.CreateAndCondition(automation.TabItem, named));
+        IUIAutomationElementArray windows = held.Keep(automation.Desktop.FindAll(TreeScope.TreeScope_Children, ownedWindow));
         for (int index = 0; index < windows.Length; index++)
         {
-            IUIAutomationElement? tab = windows.GetElement(index).FindFirst(TreeScope.TreeScope_Descendants, titledTab);
-            if (tab?.GetCurrentPattern(UIA_PatternIds.UIA_SelectionItemPatternId) is IUIAutomationSelectionItemPattern selection)
+            IUIAutomationElement owned = held.Keep(windows.GetElement(index));
+            IUIAutomationElement? tab = held.Keep(owned.FindFirst(TreeScope.TreeScope_Descendants, titledTab));
+            if (held.Keep(tab?.GetCurrentPattern(UIA_PatternIds.UIA_SelectionItemPatternId)) is IUIAutomationSelectionItemPattern selection)
             {
                 selection.Select();
                 return true;
@@ -70,5 +76,50 @@ internal static class UiAutomationTabs
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The one client the process keeps, as UI Automation intends, with the parts every search shares: the desktop and
+    /// the condition for a tab item. Its objects are free-threaded, so the pool threads the searches run on share it.
+    /// </summary>
+    private sealed record Automation(IUIAutomation Client, IUIAutomationElement Desktop, IUIAutomationCondition TabItem)
+    {
+        public static Automation Create()
+        {
+            IUIAutomation client = new CUIAutomation8();
+
+            return new Automation(client, client.GetRootElement(), client.CreatePropertyCondition(UIA_PropertyIds.UIA_ControlTypePropertyId, UIA_ControlTypeIds.UIA_TabItemControlTypeId));
+        }
+    }
+
+    /// <summary>The COM objects one search obtained, released last first when it is disposed; each is held once, so one release is exact.</summary>
+    private sealed class ComObjects : IDisposable
+    {
+        private readonly List<object> held = [];
+
+        [return: NotNullIfNotNull(nameof(value))]
+        public T? Keep<T>(T? value) where T : class
+        {
+            if (value is not null)
+            {
+                held.Add(value);
+            }
+
+            return value;
+        }
+
+        public void Dispose()
+        {
+            // Always true here: only Windows has UI Automation, and the guard is what the platform analyser reads.
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            for (int index = held.Count - 1; index >= 0; index--)
+            {
+                Marshal.ReleaseComObject(held[index]);
+            }
+        }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Win32.SafeHandles;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -85,42 +86,38 @@ public sealed partial class ProcessRegistry
     }
 
     [LibraryImport("ntdll.dll")]
-    private static partial int NtQueryInformationProcess(nint processHandle, int processInformationClass, out ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
+    private static partial int NtQueryInformationProcess(SafeProcessHandle processHandle, int processInformationClass, out ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
 
     [LibraryImport("ntdll.dll")]
-    private static partial int NtQueryInformationProcess(nint processHandle, int processInformationClass, nint processInformation, int processInformationLength, out int returnLength);
+    private static partial int NtQueryInformationProcess(SafeProcessHandle processHandle, int processInformationClass, nint processInformation, int processInformationLength, out int returnLength);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool TerminateProcess(nint processHandle, uint exitCode);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
-    private static partial nint CreateToolhelp32Snapshot(uint flags, uint processId);
+    private static partial ProcessSnapshotHandle CreateToolhelp32Snapshot(uint flags, uint processId);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
-    private static partial nint OpenProcess(uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+    private static partial SafeProcessHandle OpenProcess(uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetProcessTimes(nint processHandle, out long creationTime, out long exitTime, out long kernelTime, out long userTime);
+    private static partial bool GetProcessTimes(SafeProcessHandle processHandle, out long creationTime, out long exitTime, out long kernelTime, out long userTime);
 
     [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool QueryFullProcessImageNameW(nint processHandle, uint flags, [Out] char[] imageName, ref int size);
+    private static partial bool QueryFullProcessImageNameW(SafeProcessHandle processHandle, uint flags, [Out] char[] imageName, ref int size);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool Process32FirstW(nint snapshot, ref ProcessEntry entry);
+    private static partial bool Process32FirstW(ProcessSnapshotHandle snapshot, ref ProcessEntry entry);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool Process32NextW(nint snapshot, ref ProcessEntry entry);
-
-    [LibraryImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool CloseHandle(nint handle);
+    private static partial bool Process32NextW(ProcessSnapshotHandle snapshot, ref ProcessEntry entry);
 
     [LibraryImport("psapi.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetProcessMemoryInfo(nint processHandle, ref ProcessMemoryCountersEx2 counters, uint size);
+    private static partial bool GetProcessMemoryInfo(SafeProcessHandle processHandle, ref ProcessMemoryCountersEx2 counters, uint size);
 }

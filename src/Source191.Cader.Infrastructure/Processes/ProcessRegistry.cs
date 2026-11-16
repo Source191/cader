@@ -1,3 +1,4 @@
+using Microsoft.Win32.SafeHandles;
 using Source191.Cader.Domain;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -46,20 +47,9 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// </summary>
     public IReadOnlyList<ProcessFacts> Snapshot()
     {
-        nint snapshot = CreateToolhelp32Snapshot(SnapshotOfProcesses, 0);
-        if (snapshot == 0 || snapshot == -1)
-        {
-            return [];
-        }
+        using ProcessSnapshotHandle snapshot = CreateToolhelp32Snapshot(SnapshotOfProcesses, 0);
 
-        try
-        {
-            return ReadEntries(snapshot);
-        }
-        finally
-        {
-            CloseHandle(snapshot);
-        }
+        return snapshot.IsInvalid ? [] : ReadEntries(snapshot);
     }
 
     /// <summary>
@@ -77,7 +67,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     }, whenGone: null);
 
     /// <summary>The label of the program behind the handle, or empty when its name cannot be read.</summary>
-    private static string LabelOf(nint handle)
+    private static string LabelOf(SafeProcessHandle handle)
     {
         string name = NameOf(handle);
 
@@ -89,22 +79,11 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// rights to query limited information</see>, runs the query and closes the handle; a process that has gone, or
     /// refuses the handle, reads as <paramref name="whenGone"/>.
     /// </summary>
-    private static T Opened<T>(int processId, Func<nint, T> query, T whenGone)
+    private static T Opened<T>(int processId, Func<SafeProcessHandle, T> query, T whenGone)
     {
-        nint handle = OpenProcess(ProcessQueryLimitedInformation, false, (uint)processId);
-        if (handle == 0)
-        {
-            return whenGone;
-        }
+        using SafeProcessHandle handle = OpenProcess(ProcessQueryLimitedInformation, false, (uint)processId);
 
-        try
-        {
-            return query(handle);
-        }
-        finally
-        {
-            CloseHandle(handle);
-        }
+        return handle.IsInvalid ? whenGone : query(handle);
     }
 
     /// <summary>
@@ -112,11 +91,11 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// one has none
     /// (<see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesstimes">GetProcessTimes</see>).
     /// </summary>
-    private static DateTimeOffset? StartOf(nint handle) => GetProcessTimes(handle, out long creation, out long exit, out _, out _) && exit == 0
+    private static DateTimeOffset? StartOf(SafeProcessHandle handle) => GetProcessTimes(handle, out long creation, out long exit, out _, out _) && exit == 0
         ? new DateTimeOffset(DateTime.FromFileTimeUtc(creation), TimeSpan.Zero)
         : null;
 
-    private static ProcessParent? ParentOfOpened(nint handle)
+    private static ProcessParent? ParentOfOpened(SafeProcessHandle handle)
     {
         int status = NtQueryInformationProcess(handle, ProcessBasicInformationClass, out ProcessBasicInformation information, Marshal.SizeOf<ProcessBasicInformation>(), out _);
         long parentId = information.InheritedFromUniqueProcessId;
@@ -129,7 +108,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     }
 
     /// <summary>The executable's name without its folder or extension, as <see cref="Snapshot"/> names it; empty when it cannot be read.</summary>
-    private static string NameOf(nint handle)
+    private static string NameOf(SafeProcessHandle handle)
     {
         char[] buffer = new char[1024];
         int length = buffer.Length;
@@ -139,7 +118,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
             : string.Empty;
     }
 
-    private static List<ProcessFacts> ReadEntries(nint snapshot)
+    private static List<ProcessFacts> ReadEntries(ProcessSnapshotHandle snapshot)
     {
         List<ProcessFacts> entries = [];
         ProcessEntry entry = new() { Size = (uint)Marshal.SizeOf<ProcessEntry>() };
@@ -159,7 +138,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// reports it</see> (<see href="https://learn.microsoft.com/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2">Windows
     /// 10 2004 onwards</see>), else the working set from the older structure, else nothing.
     /// </summary>
-    private static MemorySize PrivateMemoryOf(nint handle)
+    private static MemorySize PrivateMemoryOf(SafeProcessHandle handle)
     {
         ProcessMemoryCountersEx2 counters = new() { Size = (uint)Marshal.SizeOf<ProcessMemoryCountersEx2>() };
         if (GetProcessMemoryInfo(handle, ref counters, counters.Size))
@@ -174,7 +153,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
             : MemorySize.Zero;
     }
 
-    private static string CommandLineOf(nint handle)
+    private static string CommandLineOf(SafeProcessHandle handle)
     {
         // Asked with no buffer, the call answers "length mismatch" and says how long the buffer must be
         // (https://learn.microsoft.com/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess).
