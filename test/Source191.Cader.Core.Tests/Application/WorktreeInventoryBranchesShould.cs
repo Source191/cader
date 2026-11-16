@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application;
@@ -7,6 +6,7 @@ using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
+using System.Globalization;
 
 namespace Source191.Cader.Core.Tests.Application;
 
