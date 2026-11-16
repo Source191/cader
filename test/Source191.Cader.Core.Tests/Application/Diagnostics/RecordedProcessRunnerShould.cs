@@ -11,6 +11,8 @@ public sealed class RecordedProcessRunnerShould
     private static readonly ProcessRequest WorktreeList = new("git", ["worktree", "list", "--porcelain"], new WorkingFolder.At(@"C:\Users\me\source\repos\Northwind.Orders"));
     private static readonly ProcessRequest Agents = new(@"C:\Users\me\.local\bin\claude.exe", ["agents", "--json", "--all"], WorkingFolder.Inherit);
 
+    private static readonly ProcessRequest RevParse = new("git", ["rev-parse", "--show-toplevel"], new WorkingFolder.At(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123"));
+
     private static readonly DateTimeOffset Written = new(2026, 11, 1, 10, 0, 0, TimeSpan.Zero);
 
     private readonly FakeTimeProvider clock = new(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero));
@@ -56,7 +58,7 @@ public sealed class RecordedProcessRunnerShould
         ProcessResult result = await runner.RunAsync(WorktreeList, CancellationToken.None);
 
         result.StandardOutput.ShouldBe("worktree C:/Users/me");
-        DiagnosticLine.Render(counts, Written).ShouldBe(["2026-11-01T10:00:00.000Z counts git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
+        DiagnosticLine.Render(counts, Written).ShouldBe([$"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts since start git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
@@ -84,6 +86,75 @@ public sealed class RecordedProcessRunnerShould
         failed.Command.ShouldBe(ChildCommand.For(WorktreeList));
         DiagnosticLine.Render(log.Snapshot().Single()).ShouldNotContain(@"C:\Users\me");
         DiagnosticLine.Render(counts, Written).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RecordAFailedStartOncePerCommandAndFolder()
+    {
+        processes.Fail(new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        foreach (int _ in Enumerable.Range(0, 3))
+        {
+            await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        }
+
+        string line = DiagnosticLine.Render(log.Snapshot().ShouldHaveSingleItem());
+        line.ShouldContain("not started git rev-parse: Win32Exception (error 267)");
+        line.ShouldNotContain("Northwind");
+    }
+
+    [Fact]
+    public async Task RecordANewFolderOrCommandAgain()
+    {
+        processes.Fail(new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+        ProcessRequest secondFolder = RevParse with { WorkingDirectory = new WorkingFolder.At(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-456") };
+        ProcessRequest status = RevParse with { Arguments = ["status", "--porcelain"] };
+
+        foreach (ProcessRequest request in (ProcessRequest[])[RevParse, secondFolder, status, RevParse])
+        {
+            await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(request, CancellationToken.None));
+        }
+
+        log.Snapshot().Select(timed => timed.Event).OfType<ProcessFailedToStart>().Select(failed => failed.Command)
+            .ShouldBe([ChildCommand.For(RevParse), ChildCommand.For(RevParse), ChildCommand.For(status)]);
+    }
+
+    [Fact]
+    public async Task RecordAgainAfterTheCommandStartedThere()
+    {
+        bool gone = true;
+        processes.Throw(_ => gone, new Win32Exception(267));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        gone = false;
+        await runner.RunAsync(RevParse, CancellationToken.None);
+        gone = true;
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+
+        log.Snapshot().Select(timed => timed.Event).OfType<ProcessFailedToStart>().Count().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task RecordAgainAfterTheCommandStartedThereAndTimedOut()
+    {
+        bool gone = true;
+        bool slow = false;
+        processes.Throw(_ => gone, new Win32Exception(267));
+        processes.Throw(_ => slow, new ProcessTimedOutException("git.exe", TimeSpan.FromSeconds(60)));
+        RecordedProcessRunner runner = Runner(TimeSpan.Zero);
+
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        (gone, slow) = (false, true);
+        await Should.ThrowAsync<ProcessTimedOutException>(() => runner.RunAsync(RevParse, CancellationToken.None));
+        (gone, slow) = (true, false);
+        await Should.ThrowAsync<Win32Exception>(() => runner.RunAsync(RevParse, CancellationToken.None));
+
+        IEnumerable<DiagnosticEvent> events = log.Snapshot().Select(timed => timed.Event);
+        events.OfType<ProcessFailedToStart>().Count().ShouldBe(2);
+        events.OfType<ProcessTimedOut>().ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -122,7 +193,7 @@ public sealed class RecordedProcessRunnerShould
         int exitCode = await runner.RunInteractiveAsync(new ProcessRequest("claude", ["attach", "81cdb0f9"], WorkingFolder.Inherit), CancellationToken.None);
 
         exitCode.ShouldBe(130);
-        DiagnosticLine.Render(counts, Written).ShouldBe(["2026-11-01T10:00:00.000Z counts claude attach exit 130: 1 run, median 7200000 ms, p95 7200000 ms, longest 7200000 ms"]);
+        DiagnosticLine.Render(counts, Written).ShouldBe([$"2026-11-01T10:00:00.000Z [{Environment.ProcessId}] counts since start claude attach exit 130: 1 run, median 7200000 ms, p95 7200000 ms, longest 7200000 ms"]);
         log.Snapshot().ShouldBeEmpty();
     }
 

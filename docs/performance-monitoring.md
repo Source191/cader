@@ -112,7 +112,7 @@ Open the `.etl` file in Windows Performance Analyzer (from the Microsoft Store o
 
 ## Reading the results
 
-The log is plain text, one line per event, each starting with its UTC time. A few ways in:
+The log is plain text, one line per event, each starting with its UTC time and the id of the Cader process that wrote it. A few ways in:
 
 ```powershell
 $log = "$env:TEMP\cader-$(Get-Date -Format yyyy-MM-dd).log"
@@ -142,20 +142,25 @@ Bring the log, the counters file and any trace to a change (see [CONTRIBUTING.md
 
 ## The lines the log writes
 
-Every line starts with its UTC time; the word after it says what kind of line it is, so one `Select-String` per kind pulls them apart. The counts are written as a set every 10 minutes and at exit, each line stamped with the time of the set; the latest set holds the figures for the whole run so far (the number of runs and the longest over every run, the median and the 95th percentile over each key's latest 1,000).
+Every line starts with its UTC time and, in brackets, the id of the Cader process that wrote it, so the lines of two consoles (or a console and `cader here`) sharing the file can be told apart; each process's `started` line names its version. The word after the id says what kind of line it is, so one `Select-String` per kind pulls them apart. The counts are written as a set every 10 minutes and at exit, each line stamped with the time of the set and saying `since start`: the latest set holds the figures for the whole run so far (the number of runs and the longest over every run, the median and the 95th percentile over each key's latest 1,000).
 
 ```
-2026-11-01T10:00:00.000Z counts claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms
-2026-11-01T10:00:00.000Z refreshes sessions listing: 120 runs, median 1700 ms, p95 2200 ms, longest 5000 ms
-2026-11-01T10:00:00.000Z stalls ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms
-2026-11-01T10:03:12.417Z slow refresh worktrees scan in 3400 ms
-2026-11-01T10:04:55.002Z stalled ui thread for 820 ms
+2026-11-01T10:00:00.000Z [4120] counts since start claude agents --json exit 0: 120 runs, median 1650 ms, p95 2100 ms, longest 4900 ms
+2026-11-01T10:00:00.000Z [4120] refreshes since start sessions listing: 120 runs, median 1700 ms, p95 2200 ms, longest 5000 ms
+2026-11-01T10:00:00.000Z [4120] stalls since start ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms
+2026-11-01T10:03:12.417Z [4120] slow refresh worktrees scan in 3400 ms
+2026-11-01T10:04:55.002Z [4120] stalled ui thread for 820 ms, longest marked work WorktreeRowsLoaded 610 ms
+2026-11-01T10:07:41.250Z [4120] stalled ui thread for 700 ms, no marked work
+2026-11-01T10:09:02.731Z [4120] not started git rev-parse: Win32Exception (error 267) at ...
+2026-11-01T10:12:18.904Z [4120] terminal.gui Warning from AnsiResponseParser.ReleaseHeld
 ```
 
 - **counts:** one line per child program, subcommand and exit code.
 - **refreshes:** one line per part of a refresh that has run: `sessions listing` (the `claude agents` run), `sessions enrichment` (git, transcripts and processes for the rows), `worktrees scan` (not counting the first scan's wait for the first listing) and `pull-request refresh` (from a refresh that starts a lookup until its last lookup lands). A cancelled or failed part is not counted.
 - **stalls:** how late the screen's thread ran a heartbeat it is asked to run four times a second, for every beat more than 100 ms late. The line is written even with `0 stalls`, so a file shows the heartbeat ran. A gap over 30 seconds is the machine sleeping and is ignored.
-- **slow refresh** and **stalled:** a single refresh part over 3 seconds, and a single beat more than 500 ms late, as events in the log at the moment they happen.
+- **slow refresh** and **stalled:** a single refresh part over 3 seconds, and a single beat more than 500 ms late, as events in the log at the moment they happen. A stall names the longest piece of marked work the screen's thread ran since the beat before (a refresh's rows, a key, an effect's outcome or a row's detail being shown) and how long it ran, or says no marked work ran, which points at drawing or Terminal.Gui itself.
+- **not started:** a child program that could not be started, with Windows' error number (267 is a folder that has gone, 2 a missing file), written once per command and folder until that command starts there again.
+- **terminal.gui:** a Terminal.Gui warning or error, naming the method that raised it and never its message.
 
 ```powershell
 $log = "$env:TEMP\cader-$(Get-Date -Format yyyy-MM-dd).log"
@@ -164,12 +169,18 @@ $log = "$env:TEMP\cader-$(Get-Date -Format yyyy-MM-dd).log"
 Select-String -Path $log -Pattern ' refreshes ' | ForEach-Object Line
 
 # The stall counts, and every freeze with its time
-Select-String -Path $log -Pattern ' stalls ui thread' | ForEach-Object Line
+Select-String -Path $log -Pattern ' stalls since start ui thread' | ForEach-Object Line
 Select-String -Path $log -Pattern ' stalled ui thread for (\d+) ms' |
     ForEach-Object { [pscustomobject]@{ At = $_.Line.Substring(0, 24); Milliseconds = [int]$_.Matches.Groups[1].Value } }
 
+# The freezes grouped by the work named in them, and the Terminal.Gui warnings by their method
+Select-String -Path $log -Pattern ' stalled ui thread .*(longest marked work \S+|no marked work)' |
+    Group-Object { $_.Matches.Groups[1].Value -replace '^longest marked work ' } | Sort-Object Count -Descending
+Select-String -Path $log -Pattern ' terminal\.gui \w+( from [^\s:]+)?' |
+    Group-Object { $_.Matches.Groups[0].Value } | Sort-Object Count -Descending
+
 # The sessions listing's 95th percentile in each set, to see it drift
-Select-String -Path $log -Pattern '^(\S+) refreshes sessions listing: .* p95 (\d+) ms' |
+Select-String -Path $log -Pattern '^(\S+) \[\d+\] refreshes since start sessions listing: .* p95 (\d+) ms' |
     ForEach-Object { [pscustomobject]@{ At = $_.Matches.Groups[1].Value; NinetyFifth = [int]$_.Matches.Groups[2].Value } }
 ```
 

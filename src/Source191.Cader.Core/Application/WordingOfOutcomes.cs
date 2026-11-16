@@ -37,6 +37,7 @@ public static partial class Wording
             StartSessionOutcome start => Describe(start),
             SaveSettingsOutcome => "Settings saved.",
             ToggleUpdateCheckOutcome toggled => toggled.On ? "The update check is on: the winget community repository is asked at most once a day." : "The update check is off.",
+            ClearDiagnosticLogOutcome cleared => Describe(cleared),
             ToggleDiagnosticLogOutcome logged => logged.On ? $"The diagnostic log is on: it is now written to {logged.File}." : "The diagnostic log is off.",
             ProblemReportOutcome.Opened => "Opened a problem report in your browser; describe the problem there and submit it.",
             ProblemReportOutcome.NotOpened notOpened => $"Could not open the browser: {notOpened.Reason} Press ! and choose Copy text instead.",
@@ -76,6 +77,9 @@ public static partial class Wording
             SaveSettingsOutcome => StatusTone.Success,
             ToggleUpdateCheckOutcome => StatusTone.Success,
             ToggleDiagnosticLogOutcome => StatusTone.Success,
+            ClearDiagnosticLogOutcome.Cleared => StatusTone.Success,
+            ClearDiagnosticLogOutcome.NothingToClear => StatusTone.Hint,
+            ClearDiagnosticLogOutcome => StatusTone.Notice,
             ProblemReportOutcome.Opened => StatusTone.Success,
             ProblemReportOutcome.NotOpened => StatusTone.Failure,
             ProblemReportOutcome.Copied => StatusTone.Success,
@@ -185,6 +189,18 @@ public static partial class Wording
 
     /// <summary>The log is the one file that can be missing until a setting writes it.</summary>
     private static string WhereTheLogComesFrom(string fileName) => string.Equals(fileName, DiagnosticLogFileName, StringComparison.Ordinal) ? " Diagnostic log on the Config tab turns it on." : string.Empty;
+
+    private static string Describe(ClearDiagnosticLogOutcome outcome)
+    {
+        return outcome switch
+        {
+            ClearDiagnosticLogOutcome.Cleared cleared => $"Deleted {Count(cleared.Files, "log file")} ({FileSize(cleared.Bytes)}); the events kept for a problem report are unchanged.",
+            ClearDiagnosticLogOutcome.NothingToClear => "There is no log file to delete.",
+            ClearDiagnosticLogOutcome.PartlyCleared partly => $"Deleted {Count(partly.Files, "log file")} ({FileSize(partly.Bytes)}), but {partly.Kept} could not be deleted: another program may have it open, so try again.",
+            ClearDiagnosticLogOutcome.NoneCleared none => $"No log file could be deleted: another program may have {(none.Kept == 1 ? "it" : "them")} open, so try again.",
+            _ => outcome.ToString(),
+        };
+    }
 
     private static string Describe(OpenInEditorOutcome outcome)
     {

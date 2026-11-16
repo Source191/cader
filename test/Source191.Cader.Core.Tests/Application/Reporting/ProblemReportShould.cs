@@ -46,9 +46,9 @@ public sealed class ProblemReportShould
         ProblemReportAddress.Length(Title, fitted).ShouldBeLessThanOrEqualTo(ProblemReport.AddressLimit);
         fitted.ShouldStartWith("Environment\nCader 0.17.0-preview.6");
         fitted.Split('\n').Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
-        fitted.ShouldContain("2026-10-29T12:07:31.000Z failed Effect Quit: GitException", customMessage: "the newest failure is kept");
+        fitted.ShouldContain($"2026-10-29T12:07:31.000Z [{Environment.ProcessId}] failed Effect Quit: GitException", customMessage: "the newest failure is kept");
         fitted.ShouldNotContain("view Sessions 0", customMessage: "the crash file's ordinary lines go first");
-        fitted.ShouldContain("counts git status exit 128", customMessage: "non-zero counts outlast ordinary events");
+        fitted.ShouldContain("counts since start git status exit 128", customMessage: "non-zero counts outlast ordinary events");
         fitted.ShouldMatch(@"\n\(\d+ lines left out to fit the page address\)$");
     }
 
@@ -70,13 +70,13 @@ public sealed class ProblemReportShould
         log.Record(new ViewShown(ViewKind.Worktrees));
         counts.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(5));
         ProblemReport report = await Reports().BuildAsync();
-        int withoutTwoEvents = ProblemReportAddress.Length(Title, report.Text) - Uri.EscapeDataString("2026-10-29T12:00:00.000Z view Sessions\n").Length - Uri.EscapeDataString("2026-10-29T12:00:00.000Z view Worktrees\n").Length + Uri.EscapeDataString("\n(2 lines left out to fit the page address)").Length;
+        int withoutTwoEvents = ProblemReportAddress.Length(Title, report.Text) - Uri.EscapeDataString($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] view Sessions\n").Length - Uri.EscapeDataString($"2026-10-29T12:00:00.000Z [{Environment.ProcessId}] view Worktrees\n").Length + Uri.EscapeDataString("\n(2 lines left out to fit the page address)").Length;
 
         string fitted = report.FitWithin(Title, withoutTwoEvents);
 
         fitted.ShouldNotContain("view Sessions");
         fitted.ShouldNotContain("view Worktrees");
-        fitted.ShouldContain("counts git status exit 0");
+        fitted.ShouldContain("counts since start git status exit 0");
         fitted.ShouldContain("failed Load: GitException");
         fitted.ShouldEndWith("\n(2 lines left out to fit the page address)");
     }

@@ -22,6 +22,9 @@ public abstract record StatusMessage
     /// <summary>A stopped session with no transcript: there is nothing to open or resume.</summary>
     public sealed record NeverSentAMessage(ListedName Name) : StatusMessage;
 
+    /// <summary>A session whose folder no longer exists: a resume could not land there, so nothing is removed or resumed.</summary>
+    public sealed record FolderGone(ListedName Name) : StatusMessage;
+
     public sealed record NoEmptyTerminals : StatusMessage;
 
     public sealed record NoMessagesToRename(ListedName Name) : StatusMessage;
@@ -105,4 +108,13 @@ public abstract record StatusMessage
     public sealed record NoPathHere : StatusMessage;
 
     public sealed record NoSettingSelected : StatusMessage;
+
+    /// <summary>d on a diagnostic log row while neither file is there.</summary>
+    public sealed record NoLogToClear : StatusMessage;
+
+    /// <summary>d on a diagnostic log row before its files have been read.</summary>
+    public sealed record LogFilesNotRead : StatusMessage;
+
+    /// <summary>d on a Config row other than the two diagnostic log file rows.</summary>
+    public sealed record ClearsOnlyTheLog : StatusMessage;
 }

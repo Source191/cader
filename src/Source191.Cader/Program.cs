@@ -7,7 +7,7 @@ using System.CommandLine;
 // Composition root, with the Composition folder: the process-wide start is here, each command's wiring in its own class.
 // Everything is wiring; behaviour lives in the tested classes it assembles.
 SharedParts parts = SharedParts.ForCurrentUser();
-Terminal.Gui.App.Logging.Logger = new TerminalGuiBridge(parts.Log);
+Terminal.Gui.App.Logging.Logger = new TerminalGuiBridge(parts.Log, typeof(Terminal.Gui.App.Logging));
 CrashRecorder crashes = parts.Crashes;
 AppDomain.CurrentDomain.UnhandledException += (_, unhandled) =>
 {

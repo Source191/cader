@@ -16,4 +16,5 @@ public sealed record EffectPorts(
     IDesktop Desktop,
     IEditorLocator Editors,
     IFolders Folders,
-    ICrashFile CrashFile);
+    ICrashFile CrashFile,
+    IDiagnosticLogFiles LogFiles);

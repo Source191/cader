@@ -93,6 +93,33 @@ public sealed class WordingOfOutcomesShould
         Wording.Describe(new ToggleDiagnosticLogOutcome(On: false, File: @"C:\Users\me\AppData\Local\Cader\cader.log")).ShouldBe("The diagnostic log is off.");
     }
 
+    [Fact]
+    public void SayHowMuchOfTheLogWasDeletedAndThatTheReportKeepsItsEvents()
+    {
+        Wording.Describe(new ClearDiagnosticLogOutcome.Cleared(Files: 2, Bytes: 13_002_282)).ShouldBe("Deleted 2 log files (12.4 MB); the events kept for a problem report are unchanged.");
+        Wording.Describe(new ClearDiagnosticLogOutcome.Cleared(Files: 1, Bytes: 300)).ShouldBe("Deleted 1 log file (1 KB); the events kept for a problem report are unchanged.");
+    }
+
+    [Fact]
+    public void SayThereWasNoLogFileToDelete()
+    {
+        Wording.Describe(new ClearDiagnosticLogOutcome.NothingToClear()).ShouldBe("There is no log file to delete.");
+    }
+
+    [Fact]
+    public void SayALogFileInUseWasKeptAndToTryAgain()
+    {
+        Wording.Describe(new ClearDiagnosticLogOutcome.PartlyCleared(Files: 1, Bytes: 512_000, Kept: 1))
+            .ShouldBe("Deleted 1 log file (500 KB), but 1 could not be deleted: another program may have it open, so try again.");
+    }
+
+    [Fact]
+    public void SayNoLogFileCouldBeDeletedWithoutSayingAnyWas()
+    {
+        Wording.Describe(new ClearDiagnosticLogOutcome.NoneCleared(Kept: 1)).ShouldBe("No log file could be deleted: another program may have it open, so try again.");
+        Wording.Describe(new ClearDiagnosticLogOutcome.NoneCleared(Kept: 2)).ShouldBe("No log file could be deleted: another program may have them open, so try again.");
+    }
+
     // Sessions.
 
     [Fact]

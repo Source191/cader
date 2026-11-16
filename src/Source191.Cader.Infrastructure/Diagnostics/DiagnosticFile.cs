@@ -13,6 +13,9 @@ public sealed class DiagnosticFile(string path, Func<bool> isOn) : IDiagnosticSi
 {
     public const long MaximumBytes = 10_485_760;
 
+    /// <summary>The older file a rollover leaves beside the log, the one home of its name.</summary>
+    public static string OlderPath(string path) => path + ".1";
+
     public void Write(string line)
     {
         if (!isOn())
@@ -42,7 +45,7 @@ public sealed class DiagnosticFile(string path, Func<bool> isOn) : IDiagnosticSi
 
         try
         {
-            File.Move(path, path + ".1", overwrite: true);
+            File.Move(path, OlderPath(path), overwrite: true);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

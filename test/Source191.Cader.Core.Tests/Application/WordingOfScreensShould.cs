@@ -29,6 +29,7 @@ public sealed class WordingOfScreensShould
     [InlineData(DialogName.WhatsNew, "Cader (What's new)")]
     [InlineData(DialogName.Memory, "Cader (Memory)")]
     [InlineData(DialogName.ProblemReport, "Cader (Report a problem)")]
+    [InlineData(DialogName.ClearLog, "Cader (Clear log)")]
     public void NameEachDialogInTheTabTitle(DialogName dialog, string title)
     {
         Wording.TabTitleDuring(dialog).ShouldBe(title);
@@ -86,7 +87,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void HaveATabTitleForEveryDialog()
     {
-        Enum.GetValues<DialogName>().Length.ShouldBe(14, "a new dialog needs its own NameEachDialogInTheTabTitle case");
+        Enum.GetValues<DialogName>().Length.ShouldBe(15, "a new dialog needs its own NameEachDialogInTheTabTitle case");
     }
 
     [Theory]
@@ -166,7 +167,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void CountTheSettingsAndTheSetupLeftToDo()
     {
-        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(@"C:\Users\me\AppData\Local\Cader\cader.log", Exists: true), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
+        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
 
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
@@ -287,6 +288,33 @@ public sealed class WordingOfScreensShould
         TableTitle title = new("session", Shown: 2, Total: 7, Filter: "tem", Selected: null);
 
         Wording.FilterBeingTyped("tem", title).ShouldBe($"filter: tem_  {Wording.Describe(title)}");
+    }
+
+    [Fact]
+    public void MarkAGoneFolderBeforeItsLabel()
+    {
+        Wording.FolderGone(@"~\source\worktrees\Northwind.Orders-fix-123").ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Orders-fix-123");
+    }
+
+    [Fact]
+    public void NameTheFolderGoneMarkInTheRepositoryHelp()
+    {
+        Wording.RepositoryColumn.Meaning.ShouldBe("the repository it runs in, or the folder's label outside a repository,\nwith folder gone: before the label when the folder no longer exists");
+    }
+
+    [Fact]
+    public void TipOnlyARowWhoseFolderHasGone()
+    {
+        SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");
+        SessionRow background = SessionIn(DisplayState.Stopped, 1) with { Location = gone };
+        Session.Interactive terminal = new(SessionId.From("sess-2"), Listed.As("repos-93"), FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123"), DateTimeOffset.UnixEpoch, DisplayState.Idle, ProcessId: 4242);
+        SessionRow interactive = background with { Session = terminal };
+
+        Wording.SessionRowTip(background).ShouldBe("This session's folder no longer exists; d deletes the session.");
+        Wording.SessionRowTip(background).Length.ShouldBeLessThanOrEqualTo(80);
+        Wording.SessionRowTip(interactive).ShouldBe("This session's folder no longer exists.");
+        Wording.SessionRowTip(SessionIn(DisplayState.Stopped, 1)).ShouldBeEmpty();
+        Wording.SessionRowTip(SessionIn(DisplayState.Idle, 1) with { Location = new SessionLocation.Outside("notes") }).ShouldBeEmpty();
     }
 
     [Fact]

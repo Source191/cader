@@ -1,4 +1,5 @@
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 
 namespace Source191.Cader.Application.Views;
 
@@ -30,12 +31,16 @@ public static class ConfigRows
             new ConfigRow.Setup(SetupItem.SettingsFile, facts.SettingsFile),
             new ConfigRow.Setup(SetupItem.ClaudeFolder, facts.ClaudeFolder),
             new ConfigRow.Setup(SetupItem.DiagnosticLogFile, LogFileAs(settings, facts.DiagnosticLogFile)),
+            .. OlderLogFile(facts.DiagnosticLogFile),
             new ConfigRow.Setup(SetupItem.TerminalProfiles, facts.TerminalProfiles),
             new ConfigRow.Setup(SetupItem.ClaudeBell, facts.ClaudeBell),
             new ConfigRow.Setup(SetupItem.LastUpdateCheck, settings.CheckForUpdates ? facts.LastUpdateCheck : new SetupState.Disabled()),
         ];
     }
 
+    /// <summary>The older file's row, only once the log's files are read and <c>cader.log.1</c> is there, so it never shows while the setup is being read.</summary>
+    private static IEnumerable<ConfigRow> OlderLogFile(SetupState read) => read is SetupState.LogFile { Files.Older: LogFileOnDisc.Written } file ? [new ConfigRow.Setup(SetupItem.OlderDiagnosticLogFile, new SetupState.OlderLog(file.Files))] : [];
+
     /// <summary>Whether the log is on comes from the settings, so the row is right the moment a save toggles it.</summary>
-    private static SetupState LogFileAs(Settings settings, SetupState read) => read is SetupState.LogFile file && !settings.DiagnosticLog ? new SetupState.LogOff(file.Path) : read;
+    private static SetupState LogFileAs(Settings settings, SetupState read) => read is SetupState.LogFile file && !settings.DiagnosticLog ? new SetupState.LogOff(file.Files) : read;
 }

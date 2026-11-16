@@ -86,6 +86,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void DescribeAFolderGone()
+    {
+        Wording.Describe(new StatusMessage.FolderGone(Listed.As("fix-123"))).ShouldBe("fix-123's folder no longer exists, so nothing was resumed. d deletes it.");
+    }
+
+    [Fact]
     public void SayThereAreNoEmptyTerminals()
     {
         Wording.Describe(new StatusMessage.NoEmptyTerminals()).ShouldBe("No terminal sessions without messages.");
@@ -1201,6 +1207,23 @@ public sealed class WordingShould
         Wording.CopyNameButton.ShouldBe("Cop_y name (F2)");
         Wording.StartButton.ShouldBe("_Start (F5)");
         Wording.SaveButton.ShouldBe("_Save (F5)");
+    }
+
+    [Fact]
+    public void AskToDeleteEachLogFileThereWithItsSize()
+    {
+        LogFiles both = new FakeDiagnosticLogFiles().WithCurrent(2_516_582).WithOlder(10_485_700).Read();
+
+        Wording.ClearLogTitle.ShouldBe("Clear diagnostic log");
+        Wording.ClearLogQuestion(both).ShouldBe("Delete cader.log (2.4 MB) and cader.log.1 (10.0 MB)?\nThe events kept for a problem report stay. While Diagnostic log is on, a new cader.log starts with its next event.");
+    }
+
+    [Fact]
+    public void NeverNameALogFileThatIsNotThere()
+    {
+        Wording.ClearLogQuestion(new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read()).ShouldStartWith("Delete cader.log (2.4 MB)?\n");
+        Wording.ClearLogQuestion(new FakeDiagnosticLogFiles().WithOlder(10_485_700).Read()).ShouldStartWith("Delete cader.log.1 (10.0 MB)?\n");
+        Wording.ClearLogQuestion(new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read()).ShouldNotContain("cader.log.1");
     }
 
     /// <summary>A wizard with no repositories to offer.</summary>
