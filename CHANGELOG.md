@@ -15,6 +15,8 @@ What changes in each release of Cader, written for the people who use it. The fo
 ### Changed
 
 - The diagnostic log now names the Cader process on every line, so two consoles writing to cader.log can be told apart; records a program that cannot start once per folder, with Windows' error number, instead of on every refresh; names the Terminal.Gui method behind a warning and the work behind a frozen screen; and its counts say they are since start (#303)
+- The Sessions tab's detail pane sets a session's facts in two columns of five rows, so related facts line up: Waiting, Folder, Worktree, Branch and Changes on the left, Started, Prompted, Session, Tab and Memory on the right; the pane is one row taller (#311)
+- The Config tab's Enter and f tooltips are shorter, one sentence each like every other key's: Enter edits the setting (all roots, one per line) or says how to change the setup, and f opens the folder, or the settings or log file, in your editor (#307)
 - Cader now runs on .NET 11, which it carries itself: the download grows from 33.6 to 36.0 MiB zipped (the program from 38.5 to 41.2 MiB) and start-up is unchanged at about 550 ms; on x64 it needs a processor with the x86-64-v2 instructions, which Windows 11 already requires (#280)
 - A new worktree from origin's default branch now fetches that branch first, so its session starts on an up-to-date base; when the fetch fails or the remote needs signing in, the session still starts and the status line says why. Set Before branching to Nothing for the old behaviour, or to Pull default branch to fast-forward your local default branch as well (#270, #273)
 - CADER_LOG is no longer read and the Diagnostic log setup row has gone; turn on the Diagnostic log setting instead, and the log is written to %LOCALAPPDATA%\Cader\cader.log (#254)
@@ -31,6 +33,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
+- A release's mutation run leaves static mutants, which Stryker's test runner cannot judge in a short run, to the weekly full run and says how many it set aside, so the mutation issue lists only real gaps; three values no test read are now pinned, and the wizard filter's diagnostic reads a broken first character instead of tripping a mutant (#305)
 - The mutation testing marks that called a mutant equivalent are mostly gone: the code they pointed at is simpler or a test now tells the mutant apart, and only true equivalents keep a mark (#296)
 - Cader is built for .NET 11 and its SDK 11.0.100: every project targets net11.0, the CI jobs install that SDK, and the packages and breaking changes are checked, with the Microsoft.Extensions assemblies .NET 11 now carries left out of the build (#277)
 - .NET 11's process APIs are checked against how Cader starts, captures and ends programs: ending a session's or tab's process now looks it up with .NET 11's TryGetProcessById, and the rest are declined, with facts that show why, so nothing a user can see changes (#278)

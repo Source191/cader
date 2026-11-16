@@ -11,7 +11,9 @@
 
     The results folder also gets mutation-report.json cut to the fields below, so the artefact stays small.
 
-    A finding is, after a release, any Survived or NoCoverage mutant in the changed code, and after a full run, a
+    A finding is, after a release, any Survived or NoCoverage mutant in the changed code that Stryker did not mark
+    static (a static one is left to the weekly full run, which judges them reliably, and run.json records how many as
+    staticSetAside; see MutationReport.ps1), and after a full run, a
     whole score more than Tolerance points below the previous full run's (two full runs of the same code differed by
     0.17 points on 13 November 2026, so an exact comparison would raise the issue by chance).
 
@@ -68,7 +70,9 @@ $failing = $false
 $reason = 'Nothing to report.'
 
 if ($Kind -eq 'release') {
-    $undetected = @(Get-UndetectedMutants $report)
+    $everyUndetected = @(Get-UndetectedMutants $report)
+    $undetected = @($everyUndetected | Where-Object { -not $_.Static })
+    $run['staticSetAside'] = $everyUndetected.Count - $undetected.Count
     $finding = $undetected.Count -gt 0
     $failing = $finding -and $counted -ge $MinimumCounted
     if ($finding) { $reason = "$($undetected.Count) mutants survived or had no covering test." }
@@ -108,6 +112,7 @@ foreach ($file in $report.files.GetEnumerator()) {
                 replacement = $_.replacement
                 location    = [ordered]@{ start = [ordered]@{ line = $_.location.start.line } }
                 status      = $_.status
+                static      = $_.static -eq $true
             }
         })
     }

@@ -23,6 +23,12 @@ public sealed class CharacterKindsShould
     }
 
     [Fact]
+    public void ReadALoneSurrogateAtTheStartAsTheReplacementCharacter()
+    {
+        CharacterKinds.First("\uD800orders").ShouldBe(CharacterKinds.Of(Rune.ReplacementChar));
+    }
+
+    [Fact]
     public void ClassifyTheFirstCharacterOfALongerText()
     {
         CharacterKinds.First(" orders").ShouldBe(CharacterKind.Whitespace);

@@ -40,12 +40,10 @@ public sealed record ReleaseVersion : IComparable<ReleaseVersion>
             return false;
         }
 
-        string withoutMetadata = text.Split('+')[0].Trim();
-        int dash = withoutMetadata.IndexOf('-', StringComparison.Ordinal);
-        string core = dash < 0 ? withoutMetadata : withoutMetadata[..dash];
-        string prerelease = dash < 0 ? string.Empty : withoutMetadata[(dash + 1)..];
-        if ((dash < 0 || AreIdentifiers(prerelease))
-            && core.Split('.') is [string major, string minor, string patch]
+        string[] parts = text.Split('+')[0].Trim().Split('-', 2);
+        string prerelease = parts is [_, string label] ? label : string.Empty;
+        if ((parts.Length == 1 || AreIdentifiers(prerelease))
+            && parts[0].Split('.') is [string major, string minor, string patch]
             && Number(major) is int majorNumber
             && Number(minor) is int minorNumber
             && Number(patch) is int patchNumber)

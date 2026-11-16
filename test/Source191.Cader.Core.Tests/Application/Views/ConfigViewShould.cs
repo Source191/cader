@@ -315,7 +315,13 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(shown, new MessageDismissed(older)).State.Message.ShouldBeSameAs(newer);
     }
 
-    private static ConfigViewState At(string key) => Loaded with { List = Loaded.List.Select(key) };
+    private static ConfigViewState At(string key)
+    {
+        ConfigViewState state = Loaded with { List = Loaded.List.Select(key) };
+        state.Selected?.Key.ShouldBe(key, "the row named is the one selected");
+
+        return state;
+    }
 
     private static ConfigViewState Press(ConfigViewState state, params Key[] keys) => keys.Aggregate(state, (current, key) => ConfigView.Reduce(current, new KeyPressed(key)).State);
 
