@@ -296,7 +296,7 @@ public sealed class WordingOfDetailShould
         WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Head = new Head.OnBranch(BranchName.From("fix-invoice-rounding")), Flag = BranchFlagKind.Gone, PullRequest = merged };
         WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 
-        IReadOnlyList<IReadOnlyList<TextPart>> laid = DetailLayout.Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc), width: 118, height: Wording.DetailFactRows);
+        IReadOnlyList<IReadOnlyList<TextPart>> laid = DetailLayout.Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc), width: 118, height: Wording.WorktreeFactRows);
 
         string.Concat(laid[1].Select(part => part.Text)).ShouldContain("fix-invoice-rounding · origin no longer has it, as of the last fetch");
     }
