@@ -17,12 +17,12 @@ Each task is red, green, refactor with a commit per step. "Verify" means `dotnet
 ## 3. Documentation and release
 
 - [x] 3.1 Update `docs\user-guide.md`: BRANCH's `▲ left behind` line and the paragraph after the table say that only commits after the merge whose changes origin's default branch lacks count, so a branch rebased before merging or reused after it is not left behind. **Verify:** the guide's words match the spec delta's requirement.
-- [ ] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` (a fix: patch, or the next prerelease number while the version is a preview) and add a `CHANGELOG.md` line under `## Unreleased`, `### Fixed`: a branch rebased before its pull request merged, or reused after it, no longer reads left behind. **Verify:** `Assert-VersionBumped.ps1 -Base origin/main -Head HEAD` and `Assert-ChangelogUpdated.ps1 -Base origin/main -Head HEAD` pass.
+- [x] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` (a fix: patch, or the next prerelease number while the version is a preview) and add a `CHANGELOG.md` line under `## Unreleased`, `### Fixed`: a branch rebased before its pull request merged, or reused after it, no longer reads left behind. **Verify:** `Assert-VersionBumped.ps1 -Base origin/main -Head HEAD` and `Assert-ChangelogUpdated.ps1 -Base origin/main -Head HEAD` pass.
 - [x] 3.3 Tick track-branches' 5.5 in its archived `tasks.md` (the owner checked on 16 November 2026 that `⑂`, `○` and `▲` take one cell each). **Verify:** the archived task reads `[x]`.
 
 ## 4. Integration
 
-- [ ] 4.1 Run `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate --all`. **Verify:** each exits 0.
+- [x] 4.1 Run `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate --all`. **Verify:** each exits 0.
 - [ ] 4.2 **Check (owner):** install with `tools\install-local.ps1` and open the Worktrees tab over this repository: `c-mem-leak` (on `c-dispose-tidy`) reads at most `1 commit after #320 merged`, `c-multi-account` is not left behind, and the gone, closed and no PR flags read as before. **Verify:** by eye.
 
 ## Workflow follow-up
