@@ -7,7 +7,7 @@
 
 ## 2. UI Automation objects
 
-- [ ] 2.1 Guard: `UiAutomationTabsShould.AnswerFalseTwiceForATitleNoTabHas`, for `TerminalWindow.Owning` this process's id and for `TerminalWindow.Any` (decision 4), passes on today's code. Commit.
+- [x] 2.1 Guard: `UiAutomationTabsShould.AnswerFalseTwiceForATitleNoTabHas`, for `TerminalWindow.Owning` this process's id and for `TerminalWindow.Any` (decision 4), passes on today's code. Commit.
 - [ ] 2.2 Refactor: the cached `Lazy<IUIAutomation>` and tab-item condition, and each call's COM objects released in reverse order through a `using` list (decision 3). Verify 2.1 passes, then temporarily release the cached condition and verify 2.1 fails with `InvalidComObjectException` before reverting that. Commit.
 - [ ] 2.3 Manual: in a Cader built from this branch with the Claude Code variables cleared (CLAUDE.md), Enter on a session whose tab is open switches to that tab, twice. Record the result and date in `windows.md`'s UI Automation line, which today says this is not re-checked on .NET 11.
 
