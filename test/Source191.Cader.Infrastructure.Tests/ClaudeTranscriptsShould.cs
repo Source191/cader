@@ -71,6 +71,34 @@ public sealed class ClaudeTranscriptsShould : IDisposable
     }
 
     [Fact]
+    public void TreatATranscriptItCannotReadAsHavingMessages()
+    {
+        string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
+        Directory.CreateDirectory(project);
+        string path = Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl");
+        File.WriteAllText(path, TitleAndName);
+        ClaudeTranscripts transcripts = new(home);
+
+        using FileStream locked = new(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReadATranscriptClaudeIsStillWriting()
+    {
+        string project = Path.Combine(home, "projects", "C--Users-me-source-repos-Northwind-Orders");
+        Directory.CreateDirectory(project);
+        string path = Path.Combine(project, "5a4a7350-31ac-49b6-899f-c7d832d8ef63.jsonl");
+        File.WriteAllText(path, TitleAndName);
+        ClaudeTranscripts transcripts = new(home);
+
+        using FileStream writing = new(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite | FileShare.Delete);
+
+        transcripts.HasMessages(SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63")).ShouldBeFalse();
+    }
+
+    [Fact]
     public void TreatAMissingProjectsFolderAsNoMessages()
     {
         ClaudeTranscripts transcripts = new(home);
