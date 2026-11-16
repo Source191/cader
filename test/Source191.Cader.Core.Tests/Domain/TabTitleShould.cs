@@ -22,4 +22,29 @@ public sealed class TabTitleShould
     {
         TabTitle.Shows(tabName, "fix-123").ShouldBeTrue();
     }
+
+    /// <summary>Only the name alone, or after exactly one glyph and one space, is the session's tab; anything looser could take another tab for it.</summary>
+    [Theory]
+    [InlineData("fix-124")]
+    [InlineData("fix-1234")]
+    [InlineData("notes on fix-123")]
+    [InlineData("◐◑ fix-123")]
+    [InlineData("a fix-123")]
+    [InlineData("7 fix-123")]
+    [InlineData("◐fix-123")]
+    [InlineData("◐  fix-123")]
+    [InlineData(" fix-123")]
+    [InlineData("\t fix-123")]
+    public void NotShowASessionInAnyOtherTitle(string tabName)
+    {
+        TabTitle.Shows(tabName, "fix-123").ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("◐ ")]
+    public void NotShowASessionWhoseTitleIsBlank(string tabName)
+    {
+        TabTitle.Shows(tabName, string.Empty).ShouldBeFalse();
+    }
 }
