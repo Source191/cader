@@ -29,6 +29,7 @@ public sealed class WordingOfScreensShould
     [InlineData(DialogName.WhatsNew, "Cader (What's new)")]
     [InlineData(DialogName.Memory, "Cader (Memory)")]
     [InlineData(DialogName.ProblemReport, "Cader (Report a problem)")]
+    [InlineData(DialogName.ClearLog, "Cader (Clear log)")]
     public void NameEachDialogInTheTabTitle(DialogName dialog, string title)
     {
         Wording.TabTitleDuring(dialog).ShouldBe(title);
@@ -82,7 +83,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void HaveATabTitleForEveryDialog()
     {
-        Enum.GetValues<DialogName>().Length.ShouldBe(14, "a new dialog needs its own NameEachDialogInTheTabTitle case");
+        Enum.GetValues<DialogName>().Length.ShouldBe(15, "a new dialog needs its own NameEachDialogInTheTabTitle case");
     }
 
     [Theory]
@@ -162,7 +163,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void CountTheSettingsAndTheSetupLeftToDo()
     {
-        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(@"C:\Users\me\AppData\Local\Cader\cader.log", Exists: true), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
+        SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
 
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
         Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);

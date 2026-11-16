@@ -10,7 +10,7 @@ public static partial class Wording
     private const int BarGap = 2;
 
     private static readonly string[] SecondBarRowForSessions = ["c", "f", "s", "p", "/", "?", "!", "q"];
-    private static readonly string[] SecondBarRowForConfig = ["c", "f", "/", "?", "!", "q"];
+    private static readonly string[] SecondBarRowForConfig = ["c", "f", "d", "/", "?", "!", "q"];
     private static readonly string[] FirstBarRowForWorktrees = ["d", "D", "P", "n", "o", "enter"];
 
     public static readonly TextPart Dot = new(" · ", TextTone.Grey);

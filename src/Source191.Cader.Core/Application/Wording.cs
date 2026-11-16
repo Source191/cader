@@ -93,6 +93,17 @@ public static partial class Wording
 
     public static IReadOnlyList<string> DeleteButtons { get; } = ["Delete", "Cancel"];
 
+    public static string ClearLogTitle => "Clear diagnostic log";
+
+    /// <summary>The clear's question: each log file there with its size as the tab last read it, never one that is absent.</summary>
+    public static string ClearLogQuestion(LogFiles files)
+    {
+        LogFileOnDisc[] both = [files.Current, files.Older];
+        IEnumerable<string> written = both.OfType<LogFileOnDisc.Written>().Select(file => $"{Path.GetFileName(file.Path)} ({FileSize(file.Bytes)})");
+
+        return $"Delete {string.Join(" and ", written)}?\nThe events kept for a problem report stay. While Diagnostic log is on, a new cader.log starts with its next event.";
+    }
+
     /// <summary>A dialog's Cancel button with its hotkey marked; Esc is not named because the dialog has no key bar.</summary>
     public static string CancelButton => "_Cancel";
 
@@ -518,6 +529,9 @@ public static partial class Wording
             StatusMessage.SetupAdvice advice => Describe(advice.Item),
             StatusMessage.NoPathHere => "This row's value is not a path.",
             StatusMessage.NoSettingSelected => "No setting selected.",
+            StatusMessage.NoLogToClear => "There is no log file to delete.",
+            StatusMessage.LogFilesNotRead => "The log files have not been read yet; press d again in a moment.",
+            StatusMessage.ClearsOnlyTheLog => "d clears the diagnostic log on the Diagnostic log file row, and changes nothing here.",
             StatusMessage.NotRemoved { OfferForce: true } refused => $"Not removed: {Describe(refused.Reason)}. D forces after a typed confirmation.",
             StatusMessage.NotRemoved refused => $"Not removed: {Describe(refused.Reason)}.",
             StatusMessage.ForceCancelled => "Cancelled; nothing removed.",

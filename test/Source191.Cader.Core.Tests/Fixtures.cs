@@ -28,6 +28,7 @@ internal static class Fixtures
             _ when type == typeof(ListedName) => Listed.As("fix-123"),
             _ when type == typeof(SessionName) => SessionName.From("fix-124"),
             _ when type == typeof(int) => 2,
+            _ when type == typeof(long) => 2L,
             _ when type == typeof(bool) => true,
             _ when type == typeof(RemovalReason) => new RemovalReason.Locked(),
             _ when type == typeof(BranchToConfirm) => new BranchToConfirm(FolderPath.From(@"C:\repos\Northwind.Orders"), BranchName.From("fix-123")),

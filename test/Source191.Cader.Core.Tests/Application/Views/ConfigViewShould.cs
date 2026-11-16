@@ -1,5 +1,6 @@
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application.Views;
@@ -14,7 +15,7 @@ public sealed class ConfigViewShould
     private static readonly SetupFacts Facts = new(
         new SetupState.At(SettingsFile),
         new SetupState.Folder(TestSettings.DefaultClaudeFolder),
-        new SetupState.LogFile(LogFile, Exists: true),
+        new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()),
         new SetupState.NotSetUp(),
         new SetupState.Enabled(),
         new SetupState.Never());
@@ -138,6 +139,88 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(At("setup:DiagnosticLogFile"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile))]);
     }
 
+    [Fact]
+    public void CopyAndOpenTheOlderLogFileItself()
+    {
+        ConfigViewState older = WithOlderLog() with { List = WithOlderLog().List.Select("setup:OlderDiagnosticLogFile") };
+
+        ConfigView.Reduce(older, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile + ".1"))]);
+        ConfigView.Reduce(older, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFileInEditor(FolderPath.From(LogFile + ".1"))]);
+    }
+
+    [Theory]
+    [InlineData("setup:DiagnosticLogFile")]
+    [InlineData("setup:OlderDiagnosticLogFile")]
+    public void AskToClearTheLogFromEitherLogRow(string key)
+    {
+        ConfigViewState state = WithOlderLog() with { List = WithOlderLog().List.Select(key) };
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(state, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBe([new ClearDiagnosticLog(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read())]);
+        update.State.Message.ShouldBe(StatusMessage.None);
+    }
+
+    [Fact]
+    public void AskToClearALogThatIsOn()
+    {
+        LogFiles files = new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read();
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(files) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work).WithDiagnosticLogToggled(), facts))).State;
+
+        ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new ClearDiagnosticLog(files)]);
+    }
+
+    [Fact]
+    public void AskToClearALogThatIsOff()
+    {
+        ConfigView.Reduce(At("setup:DiagnosticLogFile"), new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new ClearDiagnosticLog(new FakeDiagnosticLogFiles().WithCurrent(300).Read())]);
+    }
+
+    [Fact]
+    public void SayThereIsNoLogFileToClear()
+    {
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()) };
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoLogToClear());
+    }
+
+    [Fact]
+    public void SayTheLogFilesAreNotReadYet()
+    {
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), SetupFacts.Reading))).State;
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.LogFilesNotRead());
+    }
+
+    [Theory]
+    [InlineData("worktree-root")]
+    [InlineData("diagnostic-log")]
+    [InlineData("setup:SettingsFile")]
+    public void SayDClearsOnlyTheLogAndChangeNothingElsewhere(string key)
+    {
+        ConfigViewState state = At(key);
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(state, new KeyPressed(Key.Of('d')));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.ShouldBe(state with { Message = new StatusMessage.ClearsOnlyTheLog() });
+    }
+
+    private static ConfigViewState WithOlderLog()
+    {
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
+
+        return ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -146,7 +229,7 @@ public sealed class ConfigViewShould
     public void CopyTheDiagnosticLogFilesPathWhateverTheSettingAndTheFile(bool settingOn, bool fileExists)
     {
         Settings settings = settingOn ? TestSettings.For(Repos, Work).WithDiagnosticLogToggled() : TestSettings.For(Repos, Work);
-        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(LogFile, fileExists) };
+        SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(fileExists ? new FakeDiagnosticLogFiles().WithCurrent(300).Read() : new FakeDiagnosticLogFiles().Read()) };
         ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(settings, facts))).State;
 
         ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile))]);

@@ -94,6 +94,10 @@ public sealed class StatusTonesShould
         [typeof(SaveSettingsOutcome)] = StatusTone.Success,
         [typeof(ToggleUpdateCheckOutcome)] = StatusTone.Success,
         [typeof(ToggleDiagnosticLogOutcome)] = StatusTone.Success,
+        [typeof(ClearDiagnosticLogOutcome.Cleared)] = StatusTone.Success,
+        [typeof(ClearDiagnosticLogOutcome.NothingToClear)] = StatusTone.Hint,
+        [typeof(ClearDiagnosticLogOutcome.PartlyCleared)] = StatusTone.Notice,
+        [typeof(ClearDiagnosticLogOutcome.NoneCleared)] = StatusTone.Notice,
         [typeof(ProblemReportOutcome.Opened)] = StatusTone.Success,
         [typeof(ProblemReportOutcome.NotOpened)] = StatusTone.Failure,
         [typeof(ProblemReportOutcome.Copied)] = StatusTone.Success,
@@ -248,6 +252,9 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.SetupAdvice)] = StatusTone.Hint,
         [typeof(StatusMessage.NoPathHere)] = StatusTone.Notice,
         [typeof(StatusMessage.NoSettingSelected)] = StatusTone.Notice,
+        [typeof(StatusMessage.NoLogToClear)] = StatusTone.Hint,
+        [typeof(StatusMessage.LogFilesNotRead)] = StatusTone.Hint,
+        [typeof(StatusMessage.ClearsOnlyTheLog)] = StatusTone.Hint,
     };
 
     public static TheoryData<Type> StatusMessageCases => [.. typeof(StatusMessage).GetNestedTypes().Where(type => type.IsAssignableTo(typeof(StatusMessage)))];

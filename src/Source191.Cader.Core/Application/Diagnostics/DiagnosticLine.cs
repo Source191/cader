@@ -54,6 +54,7 @@ public static class DiagnosticLine
         PackagedNotesUnreadable unreadable => $"no readable release notes in the package of {unreadable.Running.Text}",
         EffectRan ran => $"effect {ran.Effect} -> {ran.Outcome} in {Milliseconds(ran.Duration)}",
         WizardOpened opened => $"wizard opened offering {Count(opened.Repositories, "repository", "repositories")}",
+        DiagnosticLogCleared cleared => $"diagnostic log cleared: {Count(cleared.FilesRemoved, "file", "files")}, {cleared.BytesRemoved.ToString(CultureInfo.InvariantCulture)} bytes, {cleared.FilesKept.ToString(CultureInfo.InvariantCulture)} kept",
         WizardFilterStarted filter => $"wizard filter first changed after {Milliseconds(filter.After)}: {filter.FirstCharacter}, {Count(filter.Characters, "character", "characters")}, {(filter.ListFilled ? "list filled" : "list not filled")}",
 
         ProcessSlow slow => $"slow {slow.Command} exit {slow.ExitCode} in {Milliseconds(slow.Duration)}",

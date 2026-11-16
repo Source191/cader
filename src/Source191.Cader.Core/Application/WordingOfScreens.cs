@@ -45,6 +45,7 @@ public static partial class Wording
         DialogName.WhatsNew => "What's new",
         DialogName.Memory => "Memory",
         DialogName.ProblemReport => ProblemReportDialogTitle,
+        DialogName.ClearLog => "Clear log",
     };
 
     /// <summary>An amount of memory as the settings row, the detail pane and the breakdown write it: whole megabytes below 1,000 MB, gigabytes to one decimal from there.</summary>
@@ -54,6 +55,17 @@ public static partial class Wording
         long whole = (long)Math.Round(megabytes);
 
         return whole < 1000 ? $"{whole} MB" : $"{(megabytes / 1024).ToString("F1", CultureInfo.InvariantCulture)} GB";
+    }
+
+    /// <summary>A file's size as the Config tab's log rows write it: whole kilobytes rounded up below a megabyte, as Explorer shows them, then megabytes to one decimal.</summary>
+    public static string FileSize(long bytes)
+    {
+        const long kilobyte = 1024;
+        const long megabyte = kilobyte * kilobyte;
+
+        return bytes < megabyte
+            ? $"{((bytes + kilobyte - 1) / kilobyte).ToString(CultureInfo.InvariantCulture)} KB"
+            : $"{((double)bytes / megabyte).ToString("F1", CultureInfo.InvariantCulture)} MB";
     }
 
     /// <summary>The settings row's Claude Code value: the version as the CLI printed it, and the minimum with a prompt to update when it is older.</summary>
@@ -152,6 +164,7 @@ public static partial class Wording
         new(Key.Of('q'), "Quit", "quit", Tip: "Quit; your sessions keep running in the background."),
         new(Key.Of('c'), "Copy", "copy the path", Tip: "Copy the row's path to the clipboard."),
         new(Key.Of('f'), "Open folder", "open the folder, or the settings or log file", Tip: "Open the folder, or the settings or log file, in the editor chosen above."),
+        new(Key.Of('d'), "Clear log", "clear the diagnostic log, after asking", Tip: "Delete cader.log and cader.log.1 after asking; the report's events stay."),
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
