@@ -14,7 +14,7 @@
 
 ## 3. Facts and release
 
-- [ ] 3.1 Record in `windows.md` the 16 November 2026 probe (Windows Terminal 1.25.3131.0 kept a tab opened with Cader's arguments titled through OSC 0, OSC 1, OSC 2 and `SetConsoleTitle`), and in `claude-code.md` the titles Claude Code 2.1.325 gives a working session's tab (`◐ <name>`, `◑ <name>`), an idle one (the name alone) and its own tabs (`✳ <topic>`), and that they reach a tab opened with `--suppressApplicationTitle` by a route not yet known (decision 4). Verify both read clearly.
+- [x] 3.1 Record in `windows.md` the 16 November 2026 probe (Windows Terminal 1.25.3131.0 kept a tab opened with Cader's arguments titled through OSC 0, OSC 1, OSC 2 and `SetConsoleTitle`), and in `claude-code.md` the titles Claude Code 2.1.325 gives a working session's tab (`◐ <name>`, `◑ <name>`), an idle one (the name alone) and its own tabs (`✳ <topic>`), and that they reach a tab opened with `--suppressApplicationTitle` by a route not yet known (decision 4). Verify both read clearly.
 - [ ] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add a Fixed entry under Unreleased in `CHANGELOG.md` saying Enter switches to a working session's open tab again. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
