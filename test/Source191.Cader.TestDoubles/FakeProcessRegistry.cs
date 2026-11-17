@@ -10,6 +10,7 @@ public sealed class FakeProcessRegistry : IProcessRegistry
     private readonly Dictionary<int, DateTimeOffset> running = [];
     private readonly Dictionary<int, (int ParentId, string Name)> tree = [];
     private readonly Dictionary<int, ProcessUsage> usage = [];
+    private readonly Dictionary<int, int> handleCounts = [];
 
     public FakeProcessRegistry Running(int processId, DateTimeOffset startedAt)
     {
@@ -104,6 +105,18 @@ public sealed class FakeProcessRegistry : IProcessRegistry
         }
 
         return found;
+    }
+
+    /// <summary>Declares how many handles a process holds; one not declared here reads as refusing the query.</summary>
+    public FakeProcessRegistry Holding(int processId, int handles)
+    {
+        handleCounts[processId] = handles;
+        return this;
+    }
+
+    public int? HandleCountOf(int processId)
+    {
+        return handleCounts.TryGetValue(processId, out int found) ? found : null;
     }
 
     public ProcessUsage? UsageOf(int processId)

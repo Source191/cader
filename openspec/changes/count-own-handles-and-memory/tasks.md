@@ -2,7 +2,7 @@
 
 ## 1. Reading the handle count
 
-- [ ] 1.1 Red then green: `ProcessRegistryIntegrationShould.ReadThisProcesssHandleCount` (a count above zero and within 10% of `Process.GetCurrentProcess().HandleCount`) and `ReportNoHandleCountForAProcessThatDoesNotExist`, with `IProcessRegistry.HandleCountOf` added and `ProcessRegistry` answering through `Opened<T>` and a `GetProcessHandleCount` import (design decision 1). `FakeProcessRegistry` answers a set value. Verify the class passes. Commit per step.
+- [x] 1.1 Red then green: `ProcessRegistryIntegrationShould.ReadThisProcesssHandleCount` (a count above zero and within 10% of `Process.GetCurrentProcess().HandleCount`) and `ReportNoHandleCountForAProcessThatDoesNotExist`, with `IProcessRegistry.HandleCountOf` added and `ProcessRegistry` answering through `Opened<T>` and a `GetProcessHandleCount` import (design decision 1). `FakeProcessRegistry` answers a set value. Verify the class passes. Commit per step.
 
 ## 2. The reading in the counts
 

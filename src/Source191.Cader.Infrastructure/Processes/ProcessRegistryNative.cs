@@ -117,6 +117,10 @@ public sealed partial class ProcessRegistry
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool Process32NextW(ProcessSnapshotHandle snapshot, ref ProcessEntry entry);
 
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetProcessHandleCount(SafeProcessHandle processHandle, out uint handleCount);
+
     [LibraryImport("psapi.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetProcessMemoryInfo(SafeProcessHandle processHandle, ref ProcessMemoryCountersEx2 counters, uint size);
