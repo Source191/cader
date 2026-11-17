@@ -35,6 +35,7 @@ public sealed class NullFreeModelsShould
         new(typeof(IProcessRegistry), "StartTimeOf", "the process has gone or its start time is refused to Cader"),
         new(typeof(IProcessRegistry), "ParentOf", "the process has gone or lists no parent"),
         new(typeof(IProcessRegistry), "UsageOf", "the process has gone or cannot be measured"),
+        new(typeof(IProcessRegistry), "HandleCountOf", "the process has gone or its handle count is refused to Cader"),
         new(typeof(ClaudeFolder), "From(variable)", "takes CLAUDE_CONFIG_DIR as the environment gives it, unset or not"),
         new(typeof(ConfirmedProcess), "TryConfirm(processStartedAt)", "takes IProcessRegistry.StartTimeOf's answer as it comes"),
         new(typeof(ConfirmedProcess), "TryConfirmClaim(processStartedAt)", "takes IProcessRegistry.StartTimeOf's answer as it comes"),

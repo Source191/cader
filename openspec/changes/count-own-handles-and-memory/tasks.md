@@ -6,7 +6,7 @@
 
 ## 2. The reading in the counts
 
-- [ ] 2.1 Red then green: `OwnProcessMeterShould` reads a `FakeProcessRegistry`'s handles and memory into an `OwnHolding`, and each figure Windows refuses as `Unknown` (decision 2). Commit per step.
+- [x] 2.1 Red then green: `OwnProcessMeterShould` reads a `FakeProcessRegistry`'s handles and memory into an `OwnHolding`, and each figure Windows refuses as `Unknown` (decision 2). Commit per step.
 - [ ] 2.2 Red then green: `DiagnosticLineShould` renders the "process now" line after the stalls line, with thousands separators, MB and `unknown` (decision 3), and the existing count lines are unchanged. Commit per step.
 - [ ] 2.3 Wire `OwnProcessMeter` into `PerformanceCounts` where it is built, and into `SceneHost` (decision 4). Verify `dotnet build -c Debug`, and that `PeriodicCountsShould`, the crash recorder's and the problem report's tests and `DiagnosticsPrivacyShould` pass. Commit.
 
