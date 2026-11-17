@@ -27,7 +27,7 @@ public sealed class AdoptSessionHandlerShould
         processTable.Terminated.ShouldBe([4242]);
         ProcessRequest resume = processes.CapturedRequests.Single(request => request.Arguments.Contains("--resume"));
         resume.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository));
-        resume.Arguments.ShouldBe(["--bg", "--resume", "sess-9", "-n", "repos-31"]);
+        resume.WithoutTitleSettings().ShouldBe(["--bg", "--resume", "sess-9", "-n", "repos-31"]);
         message.ShouldBe(new AdoptSessionOutcome.Moved(Listed.As("repos-31"), TabClosed: false));
     }
 
@@ -51,7 +51,7 @@ public sealed class AdoptSessionHandlerShould
 
         await Handler.HandleAsync(new AdoptSession(SessionTestData.Terminal(" ", 4242)), CancellationToken.None);
 
-        processes.CapturedRequests.Single(request => request.Arguments.Contains("--resume")).Arguments.ShouldBe(["--bg", "--resume", "sess-9"]);
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("--resume")).WithoutTitleSettings().ShouldBe(["--bg", "--resume", "sess-9"]);
     }
 
     [Fact]

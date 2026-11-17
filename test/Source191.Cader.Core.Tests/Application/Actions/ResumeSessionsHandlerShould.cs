@@ -58,7 +58,7 @@ public sealed class ResumeSessionsHandlerShould
         List<ProcessRequest> resumes = [.. processes.CapturedRequests.Where(request => request.Arguments.Contains("--resume"))];
         resumes.Select(request => request.WorkingDirectory).ShouldBe([new WorkingFolder.At(Repository), new WorkingFolder.At(Worktree)]);
         resumes.Select(request => request.Arguments[2]).ShouldBe(["sess-1", "sess-2"]);
-        resumes.Select(request => request.Arguments[^1]).ShouldAllBe(name => name == "fix-123", "the display name survives the resume");
+        resumes.Select(request => request.WithoutTitleSettings()[^1]).ShouldAllBe(name => name == "fix-123", "the display name survives the resume");
         message.ShouldBeOfType<ResumeSessionsOutcome>().Resumed.ShouldBe(2);
     }
 
@@ -72,7 +72,7 @@ public sealed class ResumeSessionsHandlerShould
 
         await Handler.HandleAsync(new ResumeSessions([first, second]), CancellationToken.None);
 
-        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(' ', request.Arguments)).ShouldBe(
+        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(' ', request.WithoutTitleSettings())).ShouldBe(
             ["rm 81cdb0f9", "--bg --resume sess-1 -n fix-123", "rm c429a96e", "--bg --resume sess-2 -n fix-124"],
             "a listed job resumed with flags starts a copy, so it is removed first and the session id continues");
     }
@@ -100,7 +100,7 @@ public sealed class ResumeSessionsHandlerShould
 
         await Handler.HandleAsync(new ResumeSessions([named, blank]), CancellationToken.None);
 
-        processes.CapturedRequests.Where(request => request.Arguments.Contains("--resume")).Select(request => string.Join(" ", request.Arguments))
+        processes.CapturedRequests.Where(request => request.Arguments.Contains("--resume")).Select(request => string.Join(" ", request.WithoutTitleSettings()))
             .ShouldBe(["--bg --resume sess-1 -n fix-123", "--bg --resume sess-2"], "a listed name SessionName refuses is resumed without -n");
     }
 
