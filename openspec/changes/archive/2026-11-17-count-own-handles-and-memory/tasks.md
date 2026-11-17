@@ -13,7 +13,7 @@
 ## 3. Record and release
 
 - [x] 3.1 Update `security.md`'s Diagnostics paragraph (the counts now carry Cader's own handles and private memory) and the user guide's description of the log if it lists the count lines. Verify both read clearly.
-- [ ] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
+- [x] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
 
