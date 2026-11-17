@@ -80,7 +80,7 @@ public sealed class DiagnosticsPrivacyShould
         lines.Any(DiagnosticLine.IsCrashLine).ShouldBeTrue();
         lines.ShouldContain(line => line.Contains("slow refresh worktrees scan in ", StringComparison.Ordinal));
         DiagnosticLine.Render(counts, Fixtures.Noon).ShouldContain($"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts since start git worktree remove exit 128: 1 run, median 0 ms, p95 0 ms, longest 0 ms");
-        string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts()), Fixtures.Noon)]);
+        string everything = string.Join('\n', [.. lines, crashFile.Written ?? string.Empty, .. DiagnosticLine.Render(new PerformanceCounts(counts, refreshes, new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry(), Environment.ProcessId)), Fixtures.Noon)]);
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
@@ -194,7 +194,7 @@ public sealed class DiagnosticsPrivacyShould
     {
         ClaudeCli claude = new(processes, Claude);
         GitCli git = new(processes, "git");
-        CrashRecorder crashes = new(log, new PerformanceCounts(counts, refreshes, new StallCounts()), crashFile, clock);
+        CrashRecorder crashes = new(log, new PerformanceCounts(counts, refreshes, new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry(), Environment.ProcessId)), crashFile, clock);
 
         SessionListing listing = await LoadTheSessionsAsync(claude);
         await OpenATabAsync(claude, git, listing);
