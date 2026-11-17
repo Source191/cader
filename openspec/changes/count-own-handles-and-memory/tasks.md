@@ -7,12 +7,12 @@
 ## 2. The reading in the counts
 
 - [x] 2.1 Red then green: `OwnProcessMeterShould` reads a `FakeProcessRegistry`'s handles and memory into an `OwnHolding`, and each figure Windows refuses as `Unknown` (decision 2). Commit per step.
-- [ ] 2.2 Red then green: `DiagnosticLineShould` renders the "process now" line after the stalls line, with thousands separators, MB and `unknown` (decision 3), and the existing count lines are unchanged. Commit per step.
-- [ ] 2.3 Wire `OwnProcessMeter` into `PerformanceCounts` where it is built, and into `SceneHost` (decision 4). Verify `dotnet build -c Debug`, and that `PeriodicCountsShould`, the crash recorder's and the problem report's tests and `DiagnosticsPrivacyShould` pass. Commit.
+- [x] 2.2 Red then green: `DiagnosticLineShould` renders the "process now" line after the stalls line, with thousands separators, MB and `unknown` (decision 3), and the existing count lines are unchanged. Commit per step.
+- [x] 2.3 Wire `OwnProcessMeter` into `PerformanceCounts` where it is built, and into `SceneHost` (decision 4). Verify `dotnet build -c Debug`, and that `PeriodicCountsShould`, the crash recorder's and the problem report's tests and `DiagnosticsPrivacyShould` pass. Commit.
 
 ## 3. Record and release
 
-- [ ] 3.1 Update `security.md`'s Diagnostics paragraph (the counts now carry Cader's own handles and private memory) and the user guide's description of the log if it lists the count lines. Verify both read clearly.
+- [x] 3.1 Update `security.md`'s Diagnostics paragraph (the counts now carry Cader's own handles and private memory) and the user guide's description of the log if it lists the count lines. Verify both read clearly.
 - [ ] 3.2 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up

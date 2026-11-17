@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Diagnostics;
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
