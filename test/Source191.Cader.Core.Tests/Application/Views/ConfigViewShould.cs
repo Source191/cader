@@ -24,6 +24,24 @@ public sealed class ConfigViewShould
     private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, []))).State;
 
     [Fact]
+    public void RefreshTheTabOnF5()
+    {
+        ConfigView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);
+    }
+
+    [Fact]
+    public void RefreshTheTabOnF5WhileAFilterIsBeingTyped()
+    {
+        ConfigViewState typing = Press(Loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'));
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(typing, new KeyPressed(Key.F5));
+
+        update.Effects.ShouldBe([new RefreshShownTab()]);
+        update.State.List.Filter.Text.ShouldBe("fix");
+        update.State.List.FilterEditing.ShouldBeTrue();
+    }
+
+    [Fact]
     public void LoadTheRowsWithTheFirstSelected()
     {
         Loaded.List.Loaded.ShouldBeTrue();
