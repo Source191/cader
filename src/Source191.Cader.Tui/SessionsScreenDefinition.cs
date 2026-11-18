@@ -48,6 +48,15 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public string RowTip(SessionRow row) => Wording.SessionRowTip(row);
 
+    /// <summary>The repository's name; outside a repository the folder's label, after the folder gone mark once the folder has gone. The place and branch are the pane's.</summary>
+    public string Heading(SessionRow first) => first.Location switch
+    {
+        SessionLocation.Outside => folders.For(first.Session.WorkingDirectory),
+        SessionLocation.InRepository inRepository => inRepository.Name,
+        SessionLocation.FolderGone => Wording.FolderGone(folders.For(first.Session.WorkingDirectory)),
+        _ => throw new UnreachableException(),
+    };
+
     public IReadOnlyList<TextPart> Counts(SessionsViewState state) => Wording.SessionCounts(state.List.Rows, state.AutomatedRuns);
 
     public KeyBar Bar(SessionsViewState state, bool updateKnown) => Wording.SessionsBar(state, updateKnown);
