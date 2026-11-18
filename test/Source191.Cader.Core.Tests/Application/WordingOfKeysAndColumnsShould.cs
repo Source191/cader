@@ -150,17 +150,17 @@ public sealed class WordingOfKeysAndColumnsShould
             F5     refresh this tab now
 
             Columns
-            NAME        the session name given at launch, or the folder name for an unnamed one
-            TAB         a block in the tab's colour, faded as the tab looks from the console's own tab,
-                        while a tab opened here shows the session; ▯ grey for a plain claude in its own terminal
-            STATE       ◐ needs input (amber), ● working (cyan), ○ idle (white),
-                        ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)
-            REPOSITORY  the repository it runs in, or the folder's label outside a repository,
-                        with folder gone: before the label when the folder no longer exists
-            PR          its pull request: #123 on GitHub (open, draft, merged, closed),
-                        !123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known
-            ACCOUNT     the account it belongs to: ● logged in now, ? not yet seen logged in; Config lists and renames them
-            AGE         time since the session started
+            NAME     the session name given at launch, or the folder name for an unnamed one, under a heading
+                     naming its repository, or the folder's label outside a repository, after folder gone:
+                     when the folder no longer exists
+            TAB      a block in the tab's colour, faded as the tab looks from the console's own tab,
+                     while a tab opened here shows the session; ▯ grey for a plain claude in its own terminal
+            STATE    ◐ needs input (amber), ● working (cyan), ○ idle (white),
+                     ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)
+            PR       its pull request: #123 on GitHub (open, draft, merged, closed),
+                     !123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known
+            ACCOUNT  the account it belongs to: ● logged in now, ? not yet seen logged in; Config lists and renames them
+            AGE      time since the session started
 
             Pane
             Waiting   what it waits for: Claude Code's reason, a first prompt, or nothing

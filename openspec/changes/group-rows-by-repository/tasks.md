@@ -20,13 +20,13 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 
 ## 3. Wording
 
-- [ ] 3.1 Remove `Wording.RepositoryColumn` and its `ColumnHelp` line from `SessionsColumns`; rewrite NAME's help to say what the heading names (repository, folder label, folder gone); verify `WordingOfScreensShould`, `KeyHelpParityShould` and the help-text facts pass and `SpellBritish` stays green
+- [x] 3.1 Remove `Wording.RepositoryColumn` and its `ColumnHelp` line from `SessionsColumns`; rewrite NAME's help to say what the heading names (repository, folder label, folder gone); verify `WordingOfScreensShould`, `KeyHelpParityShould` and the help-text facts pass and `SpellBritish` stays green
 - [ ] 3.2 Rewrite WORKTREE's help to say the heading names the repository; verify its `Wording*Should` fact passes
 
 ## 4. Screen (Tui)
 
-- [ ] 4.1 `SessionsScreenDefinitionShould.HaveNoRepositoryColumn` and `MakeNameTheElasticColumn`; drop REPOSITORY and make NAME `ColumnFit.Elastic()`; verify they pass and the one-elastic-column fact holds
-- [ ] 4.2 `SessionsScreenDefinitionShould.NameAHeadingByRepositoryFolderOrFolderGone`; add `IScreenDefinition.Heading(TRow first)` and implement it on Sessions (moving today's REPOSITORY cell words into it); verify it passes
+- [x] 4.1 `SessionsScreenDefinitionShould.HaveNoRepositoryColumn` and `MakeNameTheElasticColumn`; drop REPOSITORY and make NAME `ColumnFit.Elastic()`; verify they pass and the one-elastic-column fact holds
+- [x] 4.2 `SessionsScreenDefinitionShould.NameAHeadingByRepositoryFolderOrFolderGone`; add `IScreenDefinition.Heading(TRow first)` and implement it on Sessions (moving today's REPOSITORY cell words into it); verify it passes
 - [ ] 4.3 `WorktreesScreenDefinitionShould.NameAHeadingByRepository` and `ShowNoRepositoryInTheWorktreeCell` (folder slug, inner path, label, or a branch or origin row's branch); verify they pass
 - [ ] 4.4 Make `TableSource`, `ColumnSizing` (`Source`, `WidestCell`, `CellColour`, `RowColour`), `TableToolTips` and `TableBody.Redraw` work over `TableLine<TRow>`: a heading bold orange with its text elided in the middle in the first column and a faint rule in the rest, never widening a column and showing no tooltip; a row's first cell indented by two; the cursor on the selected row's line; verify `ColumnFitsShould`, `PaletteShould` and the Tui facts pass, and add facts for any rule the change makes testable there
 - [ ] 4.5 Update `tools\ReadmeScene`'s `SceneHost` for any changed constructor; verify `dotnet build -c Debug` passes with warnings as errors

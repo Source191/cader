@@ -25,10 +25,9 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
 
     public IReadOnlyList<TableColumn<SessionRow>> Columns { get; } =
     [
-        TableColumn<SessionRow>.Plain(Wording.NameColumn, (row, _, _) => Wording.Name(row.Session.Name), new ColumnFit.Capped(28)),
+        TableColumn<SessionRow>.Plain(Wording.NameColumn, (row, _, width) => TextFit.CutEnd(Wording.Name(row.Session.Name), width), new ColumnFit.Elastic()),
         new(Wording.TabColumn, (row, _, _) => Swatch(row), new ColumnFit.Natural(), TabPaint),
         TableColumn<SessionRow>.Plain(Wording.StateColumn, (row, _, _) => $"{Wording.StateGlyph(row.Session.State.Kind)} {Wording.StateWord(row.Session.State)}", new ColumnFit.Natural()),
-        TableColumn<SessionRow>.Plain(Wording.RepositoryColumn, (row, _, width) => Repository(row, folders).Fit(width), new ColumnFit.Elastic()),
         TableColumn<SessionRow>.Plain(Wording.PullRequestColumn, (row, _, _) => Wording.PullRequestCell(row.PullRequest), new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.AccountColumn, (row, _, _) => Wording.AccountCell(row.Account), new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.AgeColumn, (row, now, _) => Durations.Age(now - row.Session.StartedAt), new ColumnFit.RightAligned()),
@@ -73,15 +72,6 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
             activity.Observe(before.List.Rows, loaded.Rows);
         }
     }
-
-    /// <summary>The repository alone, its middle elided when too long; outside a repository the folder's label, cut at its end, and after the folder gone mark once the folder has gone. The place and branch are the pane's.</summary>
-    private static WhereLabel Repository(SessionRow row, FolderLabels folders) => row.Location switch
-    {
-        SessionLocation.Outside => new WhereLabel.Outside(folders.For(row.Session.WorkingDirectory)),
-        SessionLocation.InRepository inRepository => new WhereLabel.Inside(inRepository.Name, string.Empty),
-        SessionLocation.FolderGone => new WhereLabel.Outside(Wording.FolderGone(folders.For(row.Session.WorkingDirectory))),
-        _ => throw new UnreachableException(),
-    };
 
     /// <summary>A filled cell while a session tab shows the session, a hollow block for a session started outside the console in its own tab, nothing otherwise.</summary>
     private static string Swatch(SessionRow row)
