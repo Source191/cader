@@ -34,6 +34,31 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void KeepFolderGoneApartFromTheLiveFolder()
+    {
+        FolderPath notes = FolderPath.From(@"C:\Users\me\scratch\notes");
+        SessionRow liveWaiting = Row(Job("live-waiting", DisplayState.NeedsInput, "notes", "aaaa0001") with { WorkingDirectory = notes }) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(Job("gone", DisplayState.NeedsInput, "notes", "aaaa0002") with { WorkingDirectory = notes }) with { Location = new SessionLocation.FolderGone("notes") };
+        SessionRow liveStopped = Row(Job("live-stopped", DisplayState.Stopped, "notes", "aaaa0003") with { WorkingDirectory = notes }) with { Location = new SessionLocation.Outside("notes") };
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([liveStopped, gone, liveWaiting]));
+
+        loaded.VisibleRows.ShouldBe([liveWaiting, liveStopped, gone]);
+    }
+
+    [Fact]
+    public void TellTwoRepositoriesOfOneNameApartByCheckout()
+    {
+        SessionRow reposWorking = Row(Job("repos-working", DisplayState.Working, "Northwind.Orders", "aaaa0001"));
+        SessionRow workWaiting = Row(Job("work-waiting", DisplayState.NeedsInput, "Northwind.Orders", "aaaa0002") with { WorkingDirectory = FolderPath.From(@"D:\work\Northwind.Orders") });
+        SessionRow reposStopped = Row(Job("repos-stopped", DisplayState.Stopped, "Northwind.Orders", "aaaa0003"));
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([reposStopped, workWaiting, reposWorking]));
+
+        loaded.VisibleRows.ShouldBe([reposWorking, reposStopped, workWaiting]);
+    }
+
+    [Fact]
     public void ShowLoadedRowsByGroupThenAttention()
     {
         Loaded.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("change-feed"), Listed.As("remove-sonar"), Listed.As("repos-93"), Listed.As("old-spike")]);
