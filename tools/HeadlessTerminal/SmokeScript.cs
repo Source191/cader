@@ -6,7 +6,7 @@ namespace Source191.Cader.HeadlessTerminal;
 
 /// <summary>
 /// The smoke run's steps, built from Wording so a renamed title or a rebound key needs no change here: open and cancel
-/// the Keys help, the new-session wizard (checking its Before branching choice shows whole) and the problem report on the sessions view, the repository roots dialog and its folder picker, the Open folder with dialog and its file picker (Custom chosen) and the Before branching dialog on the Config tab, then on the worktrees view its help,
+/// the Keys help, the new-session wizard (checking its Before branching choice shows whole) and the problem report on the sessions view, the repository roots dialog and its folder picker, the Open folder with dialog and its file picker (Custom chosen) the Before branching dialog and the Sessions refresh dialog on the Config tab, then on the worktrees view its help,
 /// the force-remove confirmation, the fixed-folder wizard and the solution chooser for the named worktree, and quit. Dialogs are recognised by the tab title each one sets,
 /// views by a column only that view has; a key is looked up by its hint, and a lost hint fails with its name.
 /// </summary>
@@ -68,6 +68,12 @@ public static class SmokeScript
             new SmokeStep(Opened(DialogName.Settings), string.Empty, Usual),
             new SmokeStep(new CaptureMarker.ScreenText(Wording.BeforeBranchingCaption), string.Empty, Usual),
             new SmokeStep(new CaptureMarker.ScreenText(LastBeforeBranching), escape, Usual),
+            // Sessions refresh is found by the first word of its name, as its last word names the Worktrees refresh row too; its dialog's caption shows over its one box.
+            new SmokeStep(closed, KeyFor(config, "Filter") + Wording.ConfigSetting(new ConfigRow.SessionsRefresh(RefreshInterval.Off)).Split(' ')[0], Usual),
+            new SmokeStep(CaptureMarker.Nothing, Sequence("enter"), Usual),
+            new SmokeStep(CaptureMarker.Nothing, KeyFor(config, "Edit"), Usual),
+            new SmokeStep(Opened(DialogName.Settings), string.Empty, Usual),
+            new SmokeStep(new CaptureMarker.ScreenText(Wording.RefreshCaption), escape, Usual),
             new SmokeStep(closed, TabKeys(config, ConsoleTab.Config, ConsoleTab.Worktrees), Usual),
             new SmokeStep(worktreesView, string.Empty, Usual),
             // The scan has finished once the table's title names a selection; keys typed into the filter before then are lost.
