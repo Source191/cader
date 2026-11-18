@@ -168,7 +168,7 @@ Before asking for review, check that:
 CI runs the console inside a pseudo-console, so rendering, keys and the attach through `cader here` are covered; anything that goes out through `wt.exe` is not, because a runner has no desktop. Before merging a pull request that changes how tabs are opened, titled or coloured, or how a session is attached, build it with `tools\install-local.ps1`, start it by the path the script prints and check in a real Windows Terminal:
 
 1. Enter on a session opens a coloured tab titled with the session name, and Enter again switches to that tab while it is open.
-2. `n`, choose a repository, name the session, leave `New worktree` chosen, F5: a new tab opens attached to the new session, its REPOSITORY cell reads the repository, and the Worktrees tab lists the new worktree.
+2. `n`, choose a repository, name the session, leave `New worktree` chosen, F5: a new tab opens attached to the new session, its row sits under the repository's heading, and the Worktrees tab lists the new worktree.
 3. Ctrl+Z in that tab closes it, and the TAB block clears within one refresh.
 4. `d` on a session shown in its tab ends it and the tab closes by itself.
 5. A background session that pauses for input turns its row amber and rings the bell in the console's tab while another tab is in front.
