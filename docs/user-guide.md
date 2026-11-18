@@ -56,9 +56,10 @@ Every Claude Code session on the machine, whether it was started here or not.
 | STATE | ◐ needs input (amber), ● working (cyan), ○ idle (white), ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey) |
 | REPOSITORY | The repository it runs in, or the folder's label outside a repository, with folder gone: before the label when the folder no longer exists |
 | PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
+| ACCOUNT | The label of the Claude account the session belongs to: ● before it for the account logged in now, ? for one Cader has not yet seen logged in, blank when Claude Code did not record it (sessions from before Claude Code 2.1.325) |
 | AGE | Time since the session started |
 
-The detail pane shows, in its left column, what the session is waiting for, its folder, worktree, branch and changes (changed files, unpushed commits, the last commit), and in its right column when it started and was last prompted, its session id, its tab and its memory (`m` for the breakdown).
+The detail pane shows, in its left column, what the session is waiting for, its folder, worktree, branch and changes (changed files, unpushed commits, the last commit), and in its right column when it started and was last prompted, its session id, its tab and its memory (`m` for the breakdown). Beneath them the Account line gives the session's account in full (label, email and organisation) and says whether it is logged in now, or which email to log in as (`/login` in any Claude Code session) before you resume, rename or adopt it.
 
 ### The Worktrees tab
 
@@ -81,7 +82,7 @@ The detail pane gives the health's reason in full, the branch and whether it is 
 
 ### The Config tab
 
-The settings (see [Configuration](#configuration)), then a Setup heading with what the console reads but does not change: the settings file, the Windows Terminal profiles, Claude Code's terminal bell and the last update check. Enter on a setup row says how to change it.
+The settings (see [Configuration](#configuration)), then a Setup heading with what the console reads but does not change: the settings file, the Windows Terminal profiles, Claude Code's terminal bell and the last update check. Enter on a setup row says how to change it. Once Cader has seen a Claude login, an Accounts heading lists each account (see [Accounts](#accounts)).
 
 ## Sessions
 
@@ -128,6 +129,16 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
 - **Diagnostic log:** whether Cader also writes its diagnostic log to a file, named on the Diagnostic log file row; Enter turns it on or off at once. It is off until you turn it on.
 
 Under the Setup heading the grey rows are read, not edited. **Claude folder** names the folder Cader reads Claude Code's transcripts and settings from, `~\.claude` unless Cader was started with `CLAUDE_CONFIG_DIR` set to a full path (the row says when it came from there, and when the value was not a full path, such as a relative or `~` one, and so was not used); the Claude bell row and `cader setup-terminal` read and write that folder's `settings.json`. **Settings file** and **Diagnostic log file** show the full path of `config.json` and of `%LOCALAPPDATA%\Cader\cader.log` as plain text you can select and copy from the terminal; the log row also says whether the log is on or off and the file's size (KB below 1 MB, then MB to one decimal), or that nothing has been written to it yet. When `cader.log` reaches 10 MB it becomes `cader.log.1` and a new one starts; while that older file exists a **Diagnostic log file (older)** row after the log row shows its size and path. Every row answers `c` (copy the path) and `f`: on the Settings file and both diagnostic log file rows `f` opens the file itself in the editor chosen above (a log that does not exist yet is reported, and Diagnostic log turns it on), and on any other row it opens the folder. `d` on either diagnostic log file row clears the log: it asks first, naming each file and its size, then deletes `cader.log` and `cader.log.1` and says how much went. The events a problem report carries are kept, and while Diagnostic log is on a new `cader.log` starts with the next event; a file another program has open is kept, and the status line says to try again.
+
+### Accounts
+
+Cader reads who is logged in to Claude Code with `claude auth status` when it starts and then at most once a minute, and remembers each account it sees in `%LOCALAPPDATA%\Cader\accounts.json` under a short label: `1` for the first, `2` for the next, and so on. Each session's transcript records the account it was started under, which the Sessions tab's ACCOUNT column shows by that label.
+
+The Config tab's Accounts rows are the legend: each shows the label, the account's email and organisation, and logged in now for the current one. Enter on a row renames its label (1 to 8 characters, and no two accounts may share one in any case), for example to `work` or `personal`.
+
+- **Two logins in one organisation:** Claude Code names only the organisation of the current login, so two seats in the same Team or Enterprise organisation share one label.
+- **Not seen yet:** a session whose account Cader has never seen logged in shows `?`; log in as that account once (`/login` in any Claude Code session) and Cader names it within a minute.
+- **Forgetting an account:** edit or delete `accounts.json` while Cader is closed.
 
 ## Notifications and profiles
 
@@ -179,7 +190,7 @@ The key bar shows the keys for the selected row. Left and Right switch tabs on e
 
 ## Privacy
 
-It sends nothing but a daily, anonymous check of the winget community repository on GitHub for a newer release, and of that release's changelog (turn it off with Check for updates), and the problem reports you choose to submit. It stores no credential and records nothing personal: its diagnostics are numbers, durations, versions and names of its own, never a path, a prompt or program output.
+It sends nothing but a daily, anonymous check of the winget community repository on GitHub for a newer release, and of that release's changelog (turn it off with Check for updates), and the problem reports you choose to submit. It stores no credential and records nothing personal: its diagnostics are numbers, durations, versions and names of its own, never a path, a prompt or program output. The accounts it remembers (email, organisation and label) stay in `accounts.json` on your machine and never reach the diagnostic log or a problem report.
 
 ## Troubleshooting
 
