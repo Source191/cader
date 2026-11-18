@@ -113,7 +113,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 
 ## Configuration
 
-The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\config.json` and read again on every scan, so a change applies at once.
+The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\config.json` and read again on every scan and refresh, so a change applies at once.
 
 - **Repository roots:** the folders searched for git repositories; `~\source\repos` until you change it. Enter edits every root, one per line, and F3 browses for a folder.
 - **Worktree root:** where new worktrees go; a `worktrees` folder beside the first root until you change it.
@@ -125,6 +125,8 @@ The Config tab edits the settings, which are kept in `%LOCALAPPDATA%\Cader\confi
   - **Nothing:** the old behaviour; the worktree branches from origin's default branch as of your last `git fetch`.
   - **When it does not work:** the session still starts, from the branch as last fetched, and the status line says what failed. If origin's default branch has been renamed, run `git remote set-head origin --auto` in the repository.
 - **Default place:** where the wizard starts a session: a new worktree, or the repository's current branch.
+- **Sessions refresh:** how often the Sessions tab lists the sessions on its own, in whole seconds from 0 to 3600; every 5 seconds until you change it. 0 turns the timer off: the list still refreshes as the console opens, after an action and on F5, but the bell for a session that starts waiting rings only at the next refresh.
+- **Worktrees refresh:** how often the Worktrees tab rescans while it is shown, in whole seconds from 0 to 3600; every 15 seconds until you change it. 0 turns the timer off: it still rescans when shown, after an action and on F5. A slow scan of many repositories is never joined by another.
 - **Check for updates:** whether to ask the winget community repository once a day for a newer release.
 - **Diagnostic log:** whether Cader also writes its diagnostic log to a file, named on the Diagnostic log file row; Enter turns it on or off at once. It is off until you turn it on.
 
@@ -163,7 +165,7 @@ Before it changes Terminal's settings file, setup keeps a copy of it as it was b
 
 ## Every key
 
-The key bar shows the keys for the selected row. Left and Right switch tabs on every tab, `<` and `>` scroll a table too wide for the terminal, and `U` (update) and `!` (report a problem) work everywhere.
+The key bar shows the keys for the selected row. Left and Right switch tabs on every tab, `<` and `>` scroll a table too wide for the terminal, F5 refreshes the shown tab now (Sessions lists the sessions, Worktrees rescans, Config rereads the setup; nothing starts while that tab is already refreshing, and the help lists it, not the key bar), and `U` (update) and `!` (report a problem) work everywhere.
 
 | Key | Sessions | Worktrees | Config |
 | --- | --- | --- | --- |
