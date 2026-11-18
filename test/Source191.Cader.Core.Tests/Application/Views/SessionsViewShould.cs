@@ -10,8 +10,8 @@ public sealed class SessionsViewShould
     private static readonly SessionRow Working = Row("remove-sonar", DisplayState.Working, "Northwind.Templates", jobId: "aaaa1111");
     private static readonly Session.Background WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
     private static readonly SessionRow Waiting = Row(WaitingJob);
-    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Northwind.Archive", jobId: "cccc3333");
-    private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "repos");
+    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Northwind.Warehouse", jobId: "cccc3333");
+    private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "Northwind.Tools");
     private static readonly SessionRow Interactive = Row(InteractiveTerminal);
 
     private static readonly SessionsViewState Loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, Waiting])).State;
@@ -152,11 +152,11 @@ public sealed class SessionsViewShould
     [Fact]
     public void FilterRowsAsTheFilterTextIsTyped()
     {
-        SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l')));
+        SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l'), Key.Of('d')));
 
         typing.List.FilterEditing.ShouldBeTrue();
         typing.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("old-spike")]);
-        typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "ol", Selected: "old-spike"));
+        typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "old", Selected: "old-spike"));
     }
 
     [Fact]
@@ -173,13 +173,13 @@ public sealed class SessionsViewShould
     [Fact]
     public void CommitTheFilterWithEnterAndClearItWithEscape()
     {
-        SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
+        SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('l'), Key.Enter);
         committed.List.FilterEditing.ShouldBeFalse();
         committed.VisibleRows.Count.ShouldBe(3);
 
         SessionsViewState cleared = Press(committed, Key.Escape);
         cleared.VisibleRows.Count.ShouldBe(4);
-        cleared.Title.ShouldBe(new TableTitle("session", Shown: 4, Total: 4, Filter: string.Empty, Selected: "change-feed"));
+        cleared.Title.ShouldBe(new TableTitle("session", Shown: 4, Total: 4, Filter: string.Empty, Selected: "remove-sonar"));
     }
 
     [Fact]
