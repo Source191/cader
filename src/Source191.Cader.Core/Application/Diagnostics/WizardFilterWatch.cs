@@ -28,7 +28,7 @@ public sealed class WizardFilterWatch
     {
         if (state.ShowsChooser)
         {
-            log.Record(new WizardOpened(state.AllChoices.Count));
+            log.Record(new WizardOpened(state.AllChoices.RepositoryCount));
         }
 
         return new WizardFilterWatch(log, clock, watching: state.ShowsChooser);

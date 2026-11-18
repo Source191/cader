@@ -328,6 +328,21 @@ public static partial class Wording
 
     public static string WizardChosenCaption(WizardState wizard) => wizard.ShowsChooser ? "Repository" : "Directory";
 
+    /// <summary>A row of the wizard's list: a group's heading, or a choice indented under it.</summary>
+    public static string WizardListRow(WizardRow row) => row switch
+    {
+        WizardRow.Heading heading => WizardHeading(heading.Group),
+        WizardRow.Offered offered => $"  {offered.Choice.Name}",
+        _ => throw new UnreachableException(),
+    };
+
+    public static string WizardHeading(ChoiceGroup group) => group switch
+    {
+        ChoiceGroup.Recent => "Recent",
+        ChoiceGroup.Folders => "Folders (no repository)",
+        ChoiceGroup.Repositories => "Repositories",
+    };
+
     public static string WizardChosen(WizardState wizard) => wizard.Chosen switch
     {
         RepositoryPick.Picked picked => picked.Choice.Name,

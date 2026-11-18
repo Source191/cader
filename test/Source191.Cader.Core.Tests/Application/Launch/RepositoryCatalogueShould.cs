@@ -21,37 +21,52 @@ public sealed class RepositoryCatalogueShould
     [Fact]
     public void ListEveryGitRepositoryDirectlyUnderTheRootsAlphabetically()
     {
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [], filter: string.Empty);
+        RepositoryChoices choices = Catalogue.Choices(recent: []);
 
-        choices.Where(choice => choice.IsRepository).Select(choice => choice.Name)
-            .ShouldBe(["Northwind.Agents", "Northwind.Billing", "Northwind.Templates"]);
+        choices.Recent.ShouldBeEmpty();
+        choices.Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Agents", "Northwind.Billing", "Northwind.Templates"]);
+        choices.Repositories.ShouldAllBe(choice => choice.IsRepository);
     }
 
     [Fact]
-    public void OfferNoRootAsAChoice()
+    public void ListTheRootsAsFolderChoicesByTheirFullPaths()
     {
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [FolderPath.From(Path.Combine(Root, "Northwind.Templates"))], filter: string.Empty);
+        const string Work = @"D:\work";
+        folders.WithDirectory(Work);
+        RepositoryCatalogue catalogue = new(folders, TestSettings.Current(Root, Work));
 
-        choices.ShouldAllBe(choice => choice.IsRepository, "cader here starts a session in any folder");
-        choices.Select(choice => choice.Name).ShouldBe(["Northwind.Templates", "Northwind.Agents", "Northwind.Billing"]);
+        RepositoryChoices choices = catalogue.Choices(recent: [FolderPath.From(Path.Combine(Root, "Northwind.Templates"))]);
+
+        choices.Recent.Select(choice => choice.Name).ShouldBe(["Northwind.Templates"]);
+        choices.Folders.ShouldBe([new RepositoryChoice(Root, FolderPath.From(Root), IsRepository: false), new RepositoryChoice(Work, FolderPath.From(Work), IsRepository: false)]);
+        choices.Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Agents", "Northwind.Billing"]);
     }
 
     [Fact]
     public void PutRecentlyUsedRepositoriesFirstInRecentOrder()
     {
-        IReadOnlyList<FolderPath> recent = [FolderPath.From(Path.Combine(Root, "Northwind.Agents")), FolderPath.From(Path.Combine(Root, "Northwind.Templates")), FolderPath.From(Path.Combine(Root, "gone"))];
+        IReadOnlyList<FolderPath> recent = [FolderPath.From(Path.Combine(Root, "Northwind.Agents")), FolderPath.From(Path.Combine(Root, "Northwind.Templates")), FolderPath.From(Path.Combine(Root, "gone")), FolderPath.From(Root)];
 
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent, filter: string.Empty);
+        RepositoryChoices choices = Catalogue.Choices(recent);
 
-        choices.Take(3).Select(choice => choice.Name).ShouldBe(["Northwind.Agents", "Northwind.Templates", "Northwind.Billing"]);
+        choices.Recent.Select(choice => choice.Name).ShouldBe(["Northwind.Agents", "Northwind.Templates"], "a recently used root is listed with the folders, not as a recent repository");
+        choices.Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"]);
+        choices.Folders.Select(choice => choice.Name).ShouldBe([Root]);
     }
 
     [Fact]
     public void FilterByNameCaseInsensitively()
     {
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [], filter: "BILL");
+        RepositoryChoices choices = Catalogue.Choices(recent: []).Matching("BILL");
 
-        choices.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"]);
+        choices.Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"]);
+        choices.Folders.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FilterAFolderChoiceByItsPath()
+    {
+        Catalogue.Choices(recent: []).Matching("source").Folders.Select(choice => choice.Name).ShouldBe([Root]);
     }
 
     [Fact]
@@ -59,15 +74,24 @@ public sealed class RepositoryCatalogueShould
     {
         RepositoryCatalogue catalogue = new(folders, TestSettings.Current(Root, Path.Combine(Root, "missing")));
 
-        catalogue.Choices(recent: [], filter: string.Empty).Count(choice => choice.IsRepository).ShouldBe(3);
+        RepositoryChoices choices = catalogue.Choices(recent: []);
+
+        choices.Repositories.Count.ShouldBe(3);
+        choices.Folders.Select(choice => choice.Name).ShouldBe([Root]);
     }
 
     [Fact]
     public void OfferMainCheckoutsOnly()
     {
-        IReadOnlyList<RepositoryChoice> choices = Catalogue.Choices(recent: [], filter: "Billing");
+        RepositoryChoices choices = Catalogue.Choices(recent: []).Matching("Billing");
 
-        choices.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"], "a linked worktree under a root is not a repository");
+        choices.Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"], "a linked worktree under a root is not a repository");
+    }
+
+    [Fact]
+    public void CountTheRepositoriesOffered()
+    {
+        Catalogue.Choices(recent: [FolderPath.From(Path.Combine(Root, "Northwind.Agents"))]).RepositoryCount.ShouldBe(3, "the folder choices are not repositories");
     }
 
     [Fact]
@@ -80,6 +104,6 @@ public sealed class RepositoryCatalogueShould
 
         await settings.SaveAsync(TestSettings.For(Root, Work));
 
-        catalogue.Choices(recent: [], filter: "Ledger").Select(choice => choice.Name).ShouldBe(["Northwind.Ledger"]);
+        catalogue.Choices(recent: []).Matching("Ledger").Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Ledger"]);
     }
 }

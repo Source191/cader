@@ -46,7 +46,7 @@ public static class WizardView
 
         WizardState filtered = state with { Filter = text, Focus = WizardField.RepositoryFilter, Problem = FilterProblem(state.Problem, text) };
 
-        return filtered with { SelectedIndex = filtered.Choices.Count > 0 ? 0 : null };
+        return filtered with { SelectedIndex = WizardState.FirstChoice(filtered.Rows) };
     }
 
     /// <summary>A filter of characters nobody can see is explained; any other filter clears that explanation and leaves every other problem as it was.</summary>
@@ -57,16 +57,43 @@ public static class WizardView
         (false, _) => current,
     };
 
-    /// <summary>An arrow or page key in the filter moves focus into the list, so its highlight shows, and moves the selection within bounds.</summary>
+    /// <summary>An arrow or page key in the filter moves focus into the list, so its highlight shows, and moves the selection within bounds, over any heading.</summary>
     private static WizardState Moved(WizardState state, int delta)
     {
-        int count = state.Choices.Count;
-        int? index = state.SelectedIndex is int current && count > 0 ? Math.Clamp(current + delta, 0, count - 1) : state.SelectedIndex;
+        IReadOnlyList<WizardRow> rows = state.Rows;
+        int? index = state.SelectedIndex is int current && rows.Count > 0 ? Landing(rows, Math.Clamp(current + delta, 0, rows.Count - 1), delta) : state.SelectedIndex;
 
         return state with { SelectedIndex = index, Focus = WizardField.RepositoryList };
     }
 
-    private static WizardState Selected(WizardState state, int index) => index >= 0 && index < state.Choices.Count ? state with { SelectedIndex = index } : state;
+    /// <summary>The list's own keys or a click; one that lands on a heading moves on in the direction it came from.</summary>
+    private static WizardState Selected(WizardState state, int index)
+    {
+        IReadOnlyList<WizardRow> rows = state.Rows;
+
+        return index >= 0 && index < rows.Count ? state with { SelectedIndex = Landing(rows, index, index - (state.SelectedIndex ?? -1)) } : state;
+    }
+
+    /// <summary>The target when it is a choice; otherwise the nearest choice in the direction of travel, or the nearest the other way when there is none.</summary>
+    private static int Landing(IReadOnlyList<WizardRow> rows, int target, int direction)
+    {
+        int step = direction < 0 ? -1 : 1;
+
+        return Nearest(rows, target, step) ?? Nearest(rows, target, -step) ?? target;
+    }
+
+    private static int? Nearest(IReadOnlyList<WizardRow> rows, int from, int step)
+    {
+        for (int index = from; index >= 0 && index < rows.Count; index += step)
+        {
+            if (rows[index] is WizardRow.Offered)
+            {
+                return index;
+            }
+        }
+
+        return null;
+    }
 
     private static WizardState Confirmed(WizardState state)
     {

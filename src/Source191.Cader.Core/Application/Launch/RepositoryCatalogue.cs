@@ -4,13 +4,13 @@ using Source191.Cader.Ports;
 namespace Source191.Cader.Application.Launch;
 
 /// <summary>
-/// The repositories the wizard offers: every main checkout directly under the roots saved now, recently used ones
-/// first. A linked worktree (a .git file rather than a folder) under a root is not offered, and neither is a root
-/// itself: cader here starts a session in any folder.
+/// What the wizard offers: every main checkout directly under the roots saved now, recently used ones apart, and each
+/// root that exists as a folder choice for work across repositories. A linked worktree (a .git file rather than a
+/// folder) under a root is not offered.
 /// </summary>
 public sealed class RepositoryCatalogue(IFolders folders, CurrentSettings settings)
 {
-    public IReadOnlyList<RepositoryChoice> Choices(IReadOnlyList<FolderPath> recent, string filter)
+    public RepositoryChoices Choices(IReadOnlyList<FolderPath> recent)
     {
         List<FolderPath> roots = [.. settings.Value.RepositoryRoots.Where(root => folders.DirectoryExists(root.Value))];
         List<RepositoryChoice> repositories = [.. Paths(roots
@@ -22,9 +22,10 @@ public sealed class RepositoryCatalogue(IFolders folders, CurrentSettings settin
         List<RepositoryChoice> recentFirst = [.. recent
             .Select(path => repositories.FirstOrDefault(choice => choice.Path == path))
             .OfType<RepositoryChoice>()];
-        IEnumerable<RepositoryChoice> rest = repositories.Where(choice => !recentFirst.Contains(choice));
+        List<RepositoryChoice> rest = [.. repositories.Where(choice => !recentFirst.Contains(choice))];
+        List<RepositoryChoice> rootFolders = [.. roots.Select(root => new RepositoryChoice(root.Value, root, IsRepository: false))];
 
-        return [.. recentFirst.Concat(rest).Where(choice => choice.Matches(filter))];
+        return new RepositoryChoices(recentFirst, rootFolders, rest);
     }
 
     private bool IsMainCheckout(string path) => folders.DirectoryExists(System.IO.Path.Combine(path, ".git"));
