@@ -32,6 +32,7 @@ public sealed class TabTitleShould
     [InlineData("a fix-123")]
     [InlineData("7 fix-123")]
     [InlineData("◐fix-123")]
+    [InlineData("◐xfix-123")]
     [InlineData("◐  fix-123")]
     [InlineData(" fix-123")]
     [InlineData("\t fix-123")]
