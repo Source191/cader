@@ -55,7 +55,7 @@ A session started in a folder choice SHALL start in that folder, with no worktre
 
 #### Scenario: The preview for a folder choice
 - **WHEN** the user selects C:\Users\me\source\repos
-- **THEN** the preview says it runs in C:\Users\me\source\repos, which is not a repository, so Where does not apply, and the chosen line's caption reads Folder
+- **THEN** the preview says it runs in C:\Users\me\source\repos, which is not a repository, so Where does not apply
 
 #### Scenario: Moving back to a repository
 - **WHEN** Where reads New worktree, the user selects C:\Users\me\source\repos and then Northwind.Orders
