@@ -27,7 +27,7 @@ public sealed record SessionsViewState(
 
     public TableTitle Title => List.Title("session", row => Wording.Name(row.Session.Name));
 
-    public IReadOnlyList<TableLine<SessionRow>> Lines => [];
+    public IReadOnlyList<TableLine<SessionRow>> Lines => TableLines.Ungrouped(List.Visible);
 
     private static IEnumerable<SessionRow> ByAttention(IEnumerable<SessionRow> rows)
     {

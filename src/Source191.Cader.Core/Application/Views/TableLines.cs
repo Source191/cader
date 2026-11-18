@@ -6,6 +6,9 @@ public static class TableLines
     /// <summary>A heading before each run of rows that share a group key, then the rows, so a group with no visible row has no heading.</summary>
     public static IReadOnlyList<TableLine<TRow>> Grouped<TRow>(IReadOnlyList<TRow> visible, Func<TRow, string> groupKey) => [.. visible.SelectMany((row, index) => LinesOf(visible, groupKey, index))];
 
+    /// <summary>One line per row, for a view whose rows are not grouped.</summary>
+    public static IReadOnlyList<TableLine<TRow>> Ungrouped<TRow>(IReadOnlyList<TRow> visible) => [.. visible.Select(row => new TableLine<TRow>.Row(row))];
+
     /// <summary>The row's line, after its group's heading when it is the first of its run.</summary>
     private static IReadOnlyList<TableLine<TRow>> LinesOf<TRow>(IReadOnlyList<TRow> visible, Func<TRow, string> groupKey, int index)
     {
