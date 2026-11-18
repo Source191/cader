@@ -18,7 +18,7 @@
 ## 4. The adapter
 
 - [x] 4.1 Add `Ports\IFolderChanges` and its hand-written fake in `TestDoubles` (which raises changes on demand).
-- [ ] 4.2 Red then green: `FolderChangesShould` (Infrastructure.Tests, a temporary folder as the root) states a created file and a created subfolder are reported with their relative paths, a missing folder answers a watch that reports nothing and throws nothing, and nothing is reported after the watch is disposed; add `Infrastructure\Files\FolderChanges` over `FileSystemWatcher` (decision 1).
+- [x] 4.2 Red then green: `FolderChangesShould` (Infrastructure.Tests, a temporary folder as the root) states a created file and a created subfolder are reported with their relative paths, a missing folder answers a watch that reports nothing and throws nothing, and nothing is reported after the watch is disposed; add `Infrastructure\Files\FolderChanges` over `FileSystemWatcher` (decision 1).
 - [ ] 4.3 Red then green: with a real repository in a temporary folder, `FolderChangesShould` states `git worktree add` and `remove` produce a change `ChangeFilter` counts, and that `git status`, `git fetch` from a local remote and `git commit` produce none it counts.
 - [ ] 4.4 Red then green: `HandleCounts` gains a fact that starting and disposing a hundred watches leaves the process's handle count where it began.
 
