@@ -30,6 +30,34 @@ public sealed class RowFilterShould
         filter.Matches(["anything"]).ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("200B")]
+    public void MatchEverythingWhenOnlyInvisibleCharacters(string text)
+    {
+        RowFilter filter = new(text);
+
+        filter.Matches(["anything"]).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IgnoreBlanksBeforeTheText()
+    {
+        RowFilter filter = new(" templates");
+
+        filter.Matches(["Northwind.Templates"]).ShouldBeTrue();
+        filter.Matches(["catalogue"]).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void KeepASpaceAfterTheFirstVisibleCharacter()
+    {
+        RowFilter filter = new("fix login");
+
+        filter.Matches(["fix login"]).ShouldBeTrue();
+        filter.Matches(["fix-login"]).ShouldBeFalse();
+    }
+
     [Fact]
     public void MatchAmongTheFieldsARowHasAndNotWhenItHasNone()
     {
