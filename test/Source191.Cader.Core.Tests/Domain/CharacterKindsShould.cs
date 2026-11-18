@@ -47,6 +47,20 @@ public sealed class CharacterKindsShould
         CharacterKinds.AllInvisible(text).ShouldBe(invisible);
     }
 
+    [Theory]
+    [InlineData("", "")]
+    [InlineData(" ", "")]
+    [InlineData("​\u001B ", "")]
+    [InlineData(" orders", "orders")]
+    [InlineData("​orders", "orders")]
+    [InlineData("d o", "d o")]
+    [InlineData("my ", "my ")]
+    [InlineData(" fix login", "fix login")]
+    public void DropOnlyTheInvisibleCharactersAtTheStart(string text, string expected)
+    {
+        CharacterKinds.WithoutInvisibleStart(text).ShouldBe(expected);
+    }
+
     [Fact]
     public void ReadACharacterOutsideTheBasicPlaneAsOne()
     {
