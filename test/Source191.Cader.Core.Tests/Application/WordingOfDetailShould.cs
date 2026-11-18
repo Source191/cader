@@ -32,8 +32,9 @@ public sealed class WordingOfDetailShould
             ["Worktree fix-123", "Session 81cdb0f9-0000-4000-8000-000000000001"],
             ["Branch fix-123", "Tab open, yellow"],
             ["Changes 3 changed files · 0 unpushed commits · last commit 2h00m ago", "Memory 903 MB (m for the breakdown)"],
+            ["Account not recorded by Claude Code for this session"],
         ]);
-        content.Facts.SelectMany(line => line).Select(line => line.Span).ShouldBe([2, 1, 2, 1, 2, 1, 2, 1, 2, 1]);
+        content.Facts.SelectMany(line => line).Select(line => line.Span).ShouldBe([2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3]);
         content.Facts[0][0].Tone.ShouldBe(TextTone.Amber);
         content.Below.ShouldBeEmpty();
     }
@@ -384,6 +385,43 @@ public sealed class WordingOfDetailShould
     private static SessionDetail Detail(SessionRow row) => new(row, new LastPrompt.NotSeen(), new DetailFact<WorktreeCounts>.NotApplicable());
 
     private static string[] Text(DetailContent content) => [.. content.Facts.SelectMany(line => line).Concat(content.Below).Select(line => $"{line.Label} {line.Text}")];
+
+    private static readonly KnownAccount Work = new(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("work"));
+
+    [Fact]
+    public void SayTheAccountIsLoggedInNow()
+    {
+        SessionRow row = Row(DisplayState.Idle, process: new JobProcess.None()) with { Account = new RowAccount.Known(Work, LoggedInNow: true) };
+
+        DetailLine account = Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single();
+
+        (account.Label, account.Text, account.Tone).ShouldBe(("Account", "work · me@northwind.example · Northwind Traders · logged in now", TextTone.Plain));
+    }
+
+    [Fact]
+    public void SayWhichAccountToLogInAsForAnother()
+    {
+        KnownAccount personal = Work with { Email = "me@home.example", OrganisationName = string.Empty, Label = AccountLabel.From("personal") };
+        SessionRow row = Row(DisplayState.Idle, process: new JobProcess.None()) with { Account = new RowAccount.Known(personal, LoggedInNow: false) };
+
+        DetailLine account = Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single();
+
+        (account.Text, account.Tone).ShouldBe(("personal · me@home.example · log in as me@home.example to resume it", TextTone.Amber));
+    }
+
+    [Fact]
+    public void SayAnOwnerHasNotBeenSeenLoggedIn()
+    {
+        SessionRow row = Row(DisplayState.Idle, process: new JobProcess.None()) with { Account = new RowAccount.Unseen() };
+
+        Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single().Text.ShouldBe("not yet seen logged in; log in as its account once and Cader names it");
+    }
+
+    [Fact]
+    public void SayClaudeCodeRecordedNoOwner()
+    {
+        Wording.Detail(Detail(Row(DisplayState.Idle, process: new JobProcess.None())), Now, TimeZoneInfo.Utc).Facts[5].Single().Text.ShouldBe("not recorded by Claude Code for this session");
+    }
 
     private static string[][] Rows(DetailContent content) => [.. content.Facts.Select(row => row.Select(line => $"{line.Label} {line.Text}").ToArray())];
 

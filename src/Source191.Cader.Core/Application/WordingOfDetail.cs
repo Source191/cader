@@ -11,7 +11,7 @@ namespace Source191.Cader.Application;
 public static partial class Wording
 {
     /// <summary>The rows a session's facts take.</summary>
-    public const int SessionFactRows = 5;
+    public const int SessionFactRows = 6;
 
     /// <summary>The rows a worktree's facts take.</summary>
     public const int WorktreeFactRows = 4;
@@ -23,7 +23,7 @@ public static partial class Wording
     private const string NotInARepository = "not in a repository";
     private const string FolderGoneWords = "folder gone";
 
-    /// <summary>A session's facts in five rows of two columns, the left one two of the pane's columns wide; its state and pull request are in the row.</summary>
+    /// <summary>A session's facts in five rows of two columns, the left one two of the pane's columns wide, then its account across the pane; its state and pull request are in the row.</summary>
     public static DetailContent Detail(SessionDetail detail, DateTimeOffset now, TimeZoneInfo zone)
     {
         SessionRow row = detail.Row;
@@ -38,6 +38,7 @@ public static partial class Wording
             [new("Worktree", PlaceOf(row), TextTone.Plain, Span: 2), new("Session", session.SessionId.Value, TextTone.Plain, Span: 1)],
             [new("Branch", HeadLine(row.Head), TextTone.Plain, Span: 2), new("Tab", TabLine(row), TextTone.Plain, Span: 1)],
             [new("Changes", CountsLine(detail.Counts, row, now), TextTone.Plain, Span: 2), new("Memory", MemoryLine(row.Memory), TextTone.Plain, Span: 1)],
+            [AccountLine(row.Account)],
         ];
 
         return new DetailContent(Name(session.Name), facts, []);

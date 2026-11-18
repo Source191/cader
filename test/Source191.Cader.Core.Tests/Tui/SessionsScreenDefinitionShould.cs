@@ -75,6 +75,7 @@ public sealed class SessionsScreenDefinitionShould
             $"{Wording.StateGlyph(DisplayStateKind.Idle)} {Wording.StateWord(DisplayState.Idle)}",
             @"~\source\worktrees\Northwind.Billing-invoice-pdf",
             string.Empty,
+            string.Empty,
             "3h00m",
         ]);
     }

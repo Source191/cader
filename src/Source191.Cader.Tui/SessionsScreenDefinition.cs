@@ -30,6 +30,7 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
         TableColumn<SessionRow>.Plain(Wording.StateColumn, (row, _, _) => $"{Wording.StateGlyph(row.Session.State.Kind)} {Wording.StateWord(row.Session.State)}", new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.RepositoryColumn, (row, _, width) => Repository(row, folders).Fit(width), new ColumnFit.Elastic()),
         TableColumn<SessionRow>.Plain(Wording.PullRequestColumn, (row, _, _) => Wording.PullRequestCell(row.PullRequest), new ColumnFit.Natural()),
+        TableColumn<SessionRow>.Plain(Wording.AccountColumn, (row, _, _) => Wording.AccountCell(row.Account), new ColumnFit.Natural()),
         TableColumn<SessionRow>.Plain(Wording.AgeColumn, (row, now, _) => Durations.Age(now - row.Session.StartedAt), new ColumnFit.RightAligned()),
     ];
 

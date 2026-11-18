@@ -283,6 +283,8 @@ public static partial class Wording
 
     public static ColumnHelp PullRequestColumn { get; } = new("PR", "its pull request: #123 on GitHub (open, draft, merged, closed),\n!123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known");
 
+    public static ColumnHelp AccountColumn { get; } = new("ACCOUNT", "the account it belongs to: ● logged in now, ? not yet seen logged in; Config lists and renames them");
+
     public static ColumnHelp AgeColumn { get; } = new("AGE", "time since the session started");
 
     public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
@@ -300,7 +302,7 @@ public static partial class Wording
 
     public static ColumnHelp SessionColumn { get; } = new("SESSION", "the session running in it, if any");
 
-    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AgeColumn];
+    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AccountColumn, AgeColumn];
 
     public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, BranchColumn, LastCommitColumn, SessionColumn];
 
@@ -319,6 +321,7 @@ public static partial class Wording
         new("Tab", "the tab opened for it and the tab's colour, or its own terminal"),
         new("Changes", "changed files, unpushed commits and the last commit there"),
         new("Memory", "what the session and everything it started use; m for the breakdown"),
+        new("Account", "its account's label, email and organisation, and whether it is logged in now or which to log in as"),
     ];
 
     /// <summary>The worktrees pane's lines, for the help.</summary>

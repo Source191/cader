@@ -10,7 +10,7 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void NameEachColumnOnce()
     {
-        ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AgeColumn];
+        ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AccountColumn, Wording.AgeColumn];
         ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.BranchColumn, Wording.LastCommitColumn, Wording.SessionColumn];
         ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
 
@@ -83,7 +83,7 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void ExplainEveryColumnOfEachView()
     {
-        Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "REPOSITORY", "PR", "AGE"]);
+        Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "REPOSITORY", "PR", "ACCOUNT", "AGE"]);
         Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "BRANCH", "LAST COMMIT", "SESSION"]);
         Wording.ConfigColumns.Select(column => column.Name).ShouldBe(["SETTING", "VALUE"]);
         Wording.SessionsColumns.Concat(Wording.WorktreesColumns).ShouldAllBe(column => column.Meaning.Length > 0);
@@ -126,7 +126,7 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void ExplainEveryLineOfEachPane()
     {
-        Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory"]);
+        Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory", "Account"]);
         Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Repository", "Changes", "Unpushed"]);
         Wording.SessionsPane.Concat(Wording.WorktreesPane).ShouldAllBe(line => line.Meaning.Length > 0);
     }
@@ -158,6 +158,7 @@ public sealed class WordingOfKeysAndColumnsShould
                         with folder gone: before the label when the folder no longer exists
             PR          its pull request: #123 on GitHub (open, draft, merged, closed),
                         !123 on Azure DevOps (active, draft, completed, abandoned); blank if none or not yet known
+            ACCOUNT     the account it belongs to: ● logged in now, ? not yet seen logged in; Config lists and renames them
             AGE         time since the session started
 
             Pane
@@ -171,6 +172,7 @@ public sealed class WordingOfKeysAndColumnsShould
             Tab       the tab opened for it and the tab's colour, or its own terminal
             Changes   changed files, unpushed commits and the last commit there
             Memory    what the session and everything it started use; m for the breakdown
+            Account   its account's label, email and organisation, and whether it is logged in now or which to log in as
 
             Report a problem (!)
             A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),

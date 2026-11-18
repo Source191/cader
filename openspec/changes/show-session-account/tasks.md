@@ -32,9 +32,9 @@
 
 ## 6. Sessions column and pane
 
-- [ ] 6.1 `WordingOfSessionsShould` (or the existing column wording facts): `AccountCell` reads `● work`, `personal`, `?` and blank; `SessionsColumns` holds ACCOUNT between PR and AGE with help naming ●, ? and the Config tab; then the `Wording` members; verify with the Core tests and `KeyHelpParityShould`
-- [ ] 6.2 Add the ACCOUNT column (`ColumnFit.Natural`) to `SessionsScreenDefinition`; verify by building and by the help and tooltip scenarios in the session-listing delta through the existing screen facts
-- [ ] 6.3 `WordingOfDetailShould`: the Account line for the current login, another account (naming the email to log in as), an unseen owner and no recorded owner, and six rows with Account at the foot of the left column; then `SessionFactRows = 6` and the fact; verify with the Core tests
+- [x] 6.1 `WordingOfSessionsShould` (or the existing column wording facts): `AccountCell` reads `● work`, `personal`, `?` and blank; `SessionsColumns` holds ACCOUNT between PR and AGE with help naming ●, ? and the Config tab; then the `Wording` members; verify with the Core tests and `KeyHelpParityShould`
+- [x] 6.2 Add the ACCOUNT column (`ColumnFit.Natural`) to `SessionsScreenDefinition`; verify by building and by the help and tooltip scenarios in the session-listing delta through the existing screen facts
+- [x] 6.3 `WordingOfDetailShould`: the Account line for the current login, another account (naming the email to log in as), an unseen owner and no recorded owner, and six rows with Account at the foot of the left column; then `SessionFactRows = 6` and the fact; verify with the Core tests
 
 ## 7. Config tab legend and rename
 
