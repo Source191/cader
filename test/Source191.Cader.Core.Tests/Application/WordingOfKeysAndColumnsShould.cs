@@ -10,7 +10,7 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void NameEachColumnOnce()
     {
-        ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.RepositoryColumn, Wording.PullRequestColumn, Wording.AccountColumn, Wording.AgeColumn];
+        ColumnHelp[] sessions = [Wording.NameColumn, Wording.TabColumn, Wording.StateColumn, Wording.PullRequestColumn, Wording.AccountColumn, Wording.AgeColumn];
         ColumnHelp[] worktrees = [Wording.WorktreeColumn, Wording.HealthColumn, Wording.BranchColumn, Wording.LastCommitColumn, Wording.SessionColumn];
         ColumnHelp[] config = [Wording.SettingColumn, Wording.ValueColumn];
 
@@ -83,7 +83,7 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void ExplainEveryColumnOfEachView()
     {
-        Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "REPOSITORY", "PR", "ACCOUNT", "AGE"]);
+        Wording.SessionsColumns.Select(column => column.Name).ShouldBe(["NAME", "TAB", "STATE", "PR", "ACCOUNT", "AGE"]);
         Wording.WorktreesColumns.Select(column => column.Name).ShouldBe(["WORKTREE", "HEALTH", "BRANCH", "LAST COMMIT", "SESSION"]);
         Wording.ConfigColumns.Select(column => column.Name).ShouldBe(["SETTING", "VALUE"]);
         Wording.SessionsColumns.Concat(Wording.WorktreesColumns).ShouldAllBe(column => column.Meaning.Length > 0);

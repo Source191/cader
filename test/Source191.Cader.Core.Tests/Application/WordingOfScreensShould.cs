@@ -321,9 +321,10 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
-    public void NameTheFolderGoneMarkInTheRepositoryHelp()
+    public void SayInTheNameHelpWhatTheHeadingNames()
     {
-        Wording.RepositoryColumn.Meaning.ShouldBe("the repository it runs in, or the folder's label outside a repository,\nwith folder gone: before the label when the folder no longer exists");
+        Wording.NameColumn.Meaning.ShouldBe("the session name given at launch, or the folder name for an unnamed one, under a heading\nnaming its repository, or the folder's label outside a repository, after folder gone:\nwhen the folder no longer exists");
+        Wording.NameColumn.Meaning.Split('\n').ShouldAllBe(line => line.Length <= 90);
     }
 
     [Fact]
