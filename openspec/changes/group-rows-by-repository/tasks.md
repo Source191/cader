@@ -21,7 +21,7 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 ## 3. Wording
 
 - [x] 3.1 Remove `Wording.RepositoryColumn` and its `ColumnHelp` line from `SessionsColumns`; rewrite NAME's help to say what the heading names (repository, folder label, folder gone); verify `WordingOfScreensShould`, `KeyHelpParityShould` and the help-text facts pass and `SpellBritish` stays green
-- [ ] 3.2 Rewrite WORKTREE's help to say the heading names the repository; verify its `Wording*Should` fact passes
+- [x] 3.2 Rewrite WORKTREE's help to say the heading names the repository; verify its `Wording*Should` fact passes
 
 ## 4. Screen (Tui)
 

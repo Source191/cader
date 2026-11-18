@@ -287,7 +287,7 @@ public static partial class Wording
 
     public static ColumnHelp AgeColumn { get; } = new("AGE", "time since the session started");
 
-    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
+    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the folder's slug, or its label when not named after its repository, or a branch row's branch,\nunder a heading naming the repository");
 
     public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots),\n⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason");
 
