@@ -242,6 +242,7 @@ public static partial class Wording
             SettingsProblem.BatchFileExecutable => "A batch file cannot be used as the editor: cmd.exe would read the folder path as commands.",
             SettingsProblem.NoFolderPlaceholder => $"A custom editor's arguments need {EditorChoice.FolderPlaceholder} where the folder goes.",
             SettingsProblem.ExecutableMissing missing => $"{missing.Path} does not exist.",
+            SettingsProblem.RefreshIntervalNotWholeSeconds => $"The interval is a whole number of seconds from 0 to {RefreshInterval.MostSeconds}, where 0 turns the timer off.",
             _ => problem.ToString(),
         };
     }

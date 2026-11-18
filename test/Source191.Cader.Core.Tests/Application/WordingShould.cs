@@ -775,6 +775,7 @@ public sealed class WordingShould
         Wording.Describe(new SettingsProblem.BatchFileExecutable()).ShouldBe("A batch file cannot be used as the editor: cmd.exe would read the folder path as commands.");
         Wording.Describe(new SettingsProblem.NoFolderPlaceholder()).ShouldBe("A custom editor's arguments need {folder} where the folder goes.");
         Wording.Describe(new SettingsProblem.ExecutableMissing(@"C:\Tools\subl.exe")).ShouldBe(@"C:\Tools\subl.exe does not exist.");
+        Wording.Describe(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Sessions)).ShouldBe("The interval is a whole number of seconds from 0 to 3600, where 0 turns the timer off.");
     }
 
     [Fact]

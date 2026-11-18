@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Source191.Cader.Domain;
 
@@ -129,8 +131,8 @@ public sealed record Settings
             DefaultPlace,
             DiagnosticLog,
             BeforeBranching,
-            string.Empty,
-            string.Empty);
+            SessionsRefresh.Seconds.ToString(CultureInfo.InvariantCulture),
+            WorktreesRefresh.Seconds.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>These settings with the update check turned the other way.</summary>
@@ -149,7 +151,9 @@ public sealed record Settings
             && CheckForUpdates == other.CheckForUpdates
             && DefaultPlace == other.DefaultPlace
             && DiagnosticLog == other.DiagnosticLog
-            && BeforeBranching == other.BeforeBranching;
+            && BeforeBranching == other.BeforeBranching
+            && SessionsRefresh.Equals(other.SessionsRefresh)
+            && WorktreesRefresh.Equals(other.WorktreesRefresh);
     }
 
     public override int GetHashCode() => HashCode.Combine(RepositoryRoots.Count, WorktreeRoot, Editor, DefaultBase);
@@ -161,20 +165,34 @@ public sealed record Settings
             return Refused(new SettingsProblem.WorktreeRootNotFullPath());
         }
 
+        if (!TypedInterval(text.SessionsRefresh, out RefreshInterval? sessionsRefresh))
+        {
+            return Refused(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Sessions));
+        }
+
+        if (!TypedInterval(text.WorktreesRefresh, out RefreshInterval? worktreesRefresh))
+        {
+            return Refused(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Worktrees));
+        }
+
         if (text.Preset != EditorPreset.Custom)
         {
-            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, SessionsRefreshWhenUnset, WorktreesRefreshWhenUnset));
+            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh));
         }
 
         IReadOnlyList<string> arguments = CommandArguments.Split(text.Arguments);
 
         return EditorChoice.Validate(text.Executable, arguments, fileExists) switch
         {
-            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, SessionsRefreshWhenUnset, WorktreesRefreshWhenUnset)),
+            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh)),
             EditorChoiceValidation.Refused refused => Refused(refused.Problem),
             _ => throw new UnreachableException(),
         };
     }
+
+    /// <summary>An interval as typed: a whole number of seconds from 0 to 3600, with spaces around it ignored.</summary>
+    private static bool TypedInterval(string typed, [MaybeNullWhen(false)] out RefreshInterval interval) =>
+        RefreshInterval.TryFrom(int.TryParse(typed.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int seconds) ? seconds : null, out interval);
 
     private static SettingsValidation.Refused Refused(SettingsProblem problem) => new(problem);
 }
