@@ -8,7 +8,7 @@ The sessions table SHALL group its rows by where they run: one group per reposit
 - **THEN** one bold orange row reading Northwind.Orders, followed by a faint rule, comes before both rows, whose names start two cells in
 
 ### Requirement: Groups run A to Z with attention first within a group
-Repository groups SHALL run A to Z by name ignoring case, two of one name in checkout order, then the folder groups A to Z by label ignoring case. Within a group the rows SHALL be ordered by display state: needs input first, then working, idle, completed, failed, stopped, and within a state by most recently started first.
+Repository groups SHALL run A to Z by name ignoring case, two of one name in checkout order, then the folder groups A to Z by the folder's path ignoring case, a folder that has gone after a live folder of the same path. Within a group the rows SHALL be ordered by display state: needs input first, then working, idle, completed, failed, stopped, and within a state by most recently started first.
 
 #### Scenario: Two repositories
 - **WHEN** the list holds a stopped and a working session in Northwind.Orders and a needs-input session in Northwind.Billing
