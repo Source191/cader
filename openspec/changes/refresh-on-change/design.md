@@ -38,6 +38,11 @@ What the disc shows (checked 18 November 2026, Claude Code 2.1.327, git 2.56, `F
 ## Adaptations while implementing
 
 - **The Claude folder is never unset:** `Domain\ClaudeFolder` always names a folder (`Unset` is the default `.claude` under the profile), so `WatchPlan` always plans the two Claude watches, and task 2.2's "a Claude folder left unset plans no Claude watch" became "the folder `CLAUDE_CONFIG_DIR` names is the one watched". A Claude folder with no `sessions` or `jobs` folder is the adapter's no-op watch (decision 1).
+- **Where the repositories come from:** `WorktreeInventory.Repositories` holds the repositories under the roots that its latest scan found (a `SharedSnapshot`), because a scan's rows leave out a repository with no linked worktree and no free branch, which is exactly the one whose first `git worktree add` must be seen.
+- **Who follows the plan:** `ConsoleLoads.FollowChanges()` builds the plan and calls `ChangeWatches.Follow`; `ScanWorktreesAsync` calls it after each scan returns, and the composition (and `SceneHost`, with a watcher that reports nothing) once as the console opens. That keeps the decision in a tested class, and `ConsoleScreen`'s constructor is unchanged: it already holds both schedules.
+- **The two halves of a schedule:** `RefreshSchedule.IsDue()` answers for the timer or a change; `IsDueForChange()` for a change alone, which the ticker asks of a hidden Worktrees tab.
+- **A refused watch:** the adapter wraps Windows' refusal in `Ports\FolderWatchException`; `ChangeWatches` records it once and keeps the plan entry as no watch, so it is tried again only after it leaves the plan and returns. A folder missing when its watch starts (a Claude folder with no `jobs` yet) is likewise not watched until it leaves the plan; the timers cover both.
+- **Overflow:** `WatchTrouble` names the watch's `WatchKind` and a `WatchTroubleKind` (`CouldNotStart`, `Overflowed`), rendered as `watch Repository CouldNotStart`.
 
 ## Risks / Trade-offs
 

@@ -34,7 +34,7 @@
 
 ## 7. Documents and release
 
-- [ ] 7.1 `docs\user-guide.md` says the tabs refresh when sessions or worktrees change and that the timers are a safety net; `.claude\rules\console-screen.md`'s Refreshing section names `ChangeFilter`, `WatchPlan`, `ChangeWatches` and `RefreshSchedule.Changed`. Verify by reading them against the specs.
+- [x] 7.1 `docs\user-guide.md` says the tabs refresh when sessions or worktrees change and that the timers are a safety net; `.claude\rules\console-screen.md`'s Refreshing section names `ChangeFilter`, `WatchPlan`, `ChangeWatches` and `RefreshSchedule.Changed`. Verify by reading them against the specs.
 - [ ] 7.2 Raise the minor `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
