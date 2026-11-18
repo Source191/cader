@@ -93,6 +93,20 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
+    public void NameAHeadingByRepositoryFolderOrFolderGone()
+    {
+        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Stopped, new JobProcess.None());
+        SessionRow inRepository = Row(session, new LiveTab.None()) with { Location = new SessionLocation.InRepository("Northwind.Billing", FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")) };
+        SessionRow outside = Row(session with { WorkingDirectory = FolderPath.From(@"C:\Users\me\scratch\notes") }, new LiveTab.None()) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(session, new LiveTab.None()) with { Location = new SessionLocation.FolderGone("Northwind.Billing-invoice-pdf") };
+        IScreenDefinition<SessionsViewState, SessionRow> screen = definition;
+
+        screen.Heading(inRepository).ShouldBe("Northwind.Billing");
+        screen.Heading(outside).ShouldBe(@"~\scratch\notes");
+        screen.Heading(gone).ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Billing-invoice-pdf");
+    }
+
+    [Fact]
     public void AnswerARowTipOnlyForASessionWhoseFolderHasGone()
     {
         SessionRow present = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Stopped, new JobProcess.None()), new LiveTab.None());

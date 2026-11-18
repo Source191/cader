@@ -51,6 +51,9 @@ internal interface IScreenDefinition<TState, TRow>
     /// <summary>What a row is, shown as a tooltip while the pointer rests on it, or empty text for a view whose rows need none.</summary>
     string RowTip(TRow row) => string.Empty;
 
+    /// <summary>What the heading of a group reads, from the group's first row; a view whose rows are not grouped is never asked.</summary>
+    string Heading(TRow first) => string.Empty;
+
     /// <summary>Whether the tab has a pane under its table and how it reads the selected row; asked once, when the tab is built.</summary>
     TableDetail<TRow> Detail => new TableDetail<TRow>.None();
 }
