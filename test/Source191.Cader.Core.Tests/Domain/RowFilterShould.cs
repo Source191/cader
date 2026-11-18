@@ -32,7 +32,7 @@ public sealed class RowFilterShould
 
     [Theory]
     [InlineData(" ")]
-    [InlineData("200B")]
+    [InlineData("​")]
     public void MatchEverythingWhenOnlyInvisibleCharacters(string text)
     {
         RowFilter filter = new(text);
