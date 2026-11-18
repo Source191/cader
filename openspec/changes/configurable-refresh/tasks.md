@@ -33,7 +33,7 @@
 ## 6. Documents and release
 
 - [x] 6.1 `docs\user-guide.md` describes the two settings and F5; `.claude\rules\console-screen.md`'s Refreshing section names `RefreshSchedule`, the single ticker and `IRefreshesTab`. Verify by reading them against the specs.
-- [ ] 6.2 Raise the minor `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
+- [x] 6.2 Raise the minor `Version` with `.github\scripts\Step-Version.ps1` and add an Added entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
 
