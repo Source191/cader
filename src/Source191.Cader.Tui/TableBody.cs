@@ -69,7 +69,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         table.Style.HeaderScheme = Palette.Plain(Palette.White);
         table.Style.ExpandLastColumn = true;
         table.SetScheme(Palette.Plain(Palette.Grey));
-        sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, app);
+        sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, definition.Heading, app);
         TableToolTips<TRow> toolTips = new(table, app, [.. definition.Columns.Select(column => column.Help)], definition.RowTip);
         detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, context.Heartbeat, host);
 
@@ -214,14 +214,15 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     public void Redraw()
     {
         DateTimeOffset now = clock.GetUtcNow();
-        IReadOnlyList<TRow> rows = State.List.Visible;
+        IReadOnlyList<TableLine<TRow>> lines = State.Lines;
         TRow? selected = State.List.Selected;
         sizing.Selected(selected);
-        table.Table = sizing.Source(rows, now);
+        table.Table = sizing.Source(lines, now);
         sizing.RestoreOffset();
-        if (rows.Count > 0)
+        if (lines.Count > 0)
         {
-            int index = selected is null ? 0 : Math.Max(rows.ToList().IndexOf(selected), 0);
+            // The cursor sits on the selected row's line, which a heading never is.
+            int index = selected is null ? 0 : Math.Max(lines.ToList().FindIndex(line => line is TableLine<TRow>.Row row && Equals(row.Item, selected)), 0);
             table.SetSelection(0, index, false, null);
         }
 

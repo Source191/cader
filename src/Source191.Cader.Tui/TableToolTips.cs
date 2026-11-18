@@ -1,4 +1,5 @@
 using Source191.Cader.Application;
+using Source191.Cader.Application.Views;
 using Terminal.Gui.App;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -65,7 +66,8 @@ internal sealed class TableToolTips<TRow>
             return;
         }
 
-        if (over is PointerOver.Row row && table.Table is TableSource<TRow> source && row.Index < source.Rows && rowTip(source.RowAt(row.Index)) is { Length: > 0 } tip)
+        // A heading is no row, so it has no tip.
+        if (over is PointerOver.Row row && table.Table is TableSource<TRow> source && row.Index < source.Rows && source.LineAt(row.Index) is TableLine<TRow>.Row line && rowTip(line.Item) is { Length: > 0 } tip)
         {
             ShowToolTip(x, table.Frame.Y + (mouse.Position?.Y ?? 0), 1, tip);
         }
