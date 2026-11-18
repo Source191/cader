@@ -26,6 +26,16 @@ public static class CharacterKinds
         return Of(first);
     }
 
+    /// <summary>The text from its first visible character; empty when it has none. Characters after that one are kept, so a space between words still counts.</summary>
+    public static string WithoutInvisibleStart(string text)
+    {
+        int invisible = text.EnumerateRunes().TakeWhile(IsInvisible).Sum(rune => rune.Utf16SequenceLength);
+
+        return text[invisible..];
+    }
+
+    private static bool IsInvisible(Rune rune) => Of(rune) is CharacterKind.Whitespace or CharacterKind.Control or CharacterKind.Format;
+
     /// <summary>Whether the text holds characters and none of them can be seen: each is whitespace, a control or a format character.</summary>
     public static bool AllInvisible(string text) => text.Length > 0 && text.EnumerateRunes().All(rune => Of(rune) is CharacterKind.Whitespace or CharacterKind.Control or CharacterKind.Format);
 }

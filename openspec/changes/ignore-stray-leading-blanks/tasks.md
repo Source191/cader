@@ -4,7 +4,7 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 
 ## 1. The leading-invisible rule (Domain)
 
-- [ ] 1.1 Red: `CharacterKindsShould.DropOnlyTheInvisibleCharactersAtTheStart` (theory: `""` → `""`, `" "` → `""`, `"​\u001B "` → `""`, `" orders"` → `"orders"`, `"​orders"` → `"orders"`, `"d o"` → `"d o"`, `"my "` → `"my "`, `" fix login"` → `"fix login"`). Green: `CharacterKinds.WithoutInvisibleStart(string)` over runes with `Of`. Verify the Core suite passes.
+- [x] 1.1 Red: `CharacterKindsShould.DropOnlyTheInvisibleCharactersAtTheStart` (theory: `""` → `""`, `" "` → `""`, `"​\u001B "` → `""`, `" orders"` → `"orders"`, `"​orders"` → `"orders"`, `"d o"` → `"d o"`, `"my "` → `"my "`, `" fix login"` → `"fix login"`). Green: `CharacterKinds.WithoutInvisibleStart(string)` over runes with `Of`. Verify the Core suite passes.
 
 ## 2. The tables' `/` filter (Domain)
 
