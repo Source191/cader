@@ -15,7 +15,7 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 - [x] 2.1 `SessionsViewShould.GroupRowsByRepositoryAToZIgnoringCase` and `PutFolderGroupsAfterRepositories`, then order `SessionsViewState` by group key first; verify they pass
 - [x] 2.2 `SessionsViewShould.KeepAttentionOrderWithinAGroup` (needs input first, then working, idle, completed, failed, stopped, newest first within a state), reusing `Sessions.OrderedByAttention`; verify the old whole-table attention facts are rewritten to the grouped order and pass
 - [x] 2.3 `SessionsViewShould.KeepFolderGoneApartFromTheLiveFolder` and `TellTwoRepositoriesOfOneNameApartByCheckout`; verify they pass
-- [ ] 2.4 `WorktreesViewShould.GroupRowsByRepositoryNameAcrossRoots` (Northwind.Alpha under D:\work before Northwind.Zeta under C:\Users\me\source\repos) and `KeepFoldersBeforeBranchesWithinAGroup`; change `WorktreesViewState`'s order; verify they pass
+- [x] 2.4 `WorktreesViewShould.GroupRowsByRepositoryNameAcrossRoots` (Northwind.Alpha under D:\work before Northwind.Zeta under C:\Users\me\source\repos) and `KeepFoldersBeforeBranchesWithinAGroup`; change `WorktreesViewState`'s order; verify they pass
 - [ ] 2.5 `SessionsViewShould` and `WorktreesViewShould` facts that each state's `Lines` puts a heading before each group; verify they pass
 
 ## 3. Wording

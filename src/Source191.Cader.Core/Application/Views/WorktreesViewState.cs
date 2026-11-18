@@ -9,7 +9,7 @@ public sealed record WorktreesViewState(
     private static readonly ListPolicy<WorktreeRow> Policy = new(
         KeyOf: row => row.Key,
         FilterFields: row => [row.RepositoryName, row.FolderName, .. FilterText.Of(row.Head), row.Health.Kind.ToString()],
-        Order: rows => rows.OrderBy(row => row.Repository.Key, StringComparer.Ordinal).ThenBy(row => row.Placement).ThenBy(row => row.FolderName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Key, StringComparer.Ordinal),
+        Order: rows => rows.OrderBy(row => row.RepositoryName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Repository.Key, StringComparer.Ordinal).ThenBy(row => row.Placement).ThenBy(row => row.FolderName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Key, StringComparer.Ordinal),
         KeyComparison: StringComparison.Ordinal,
         Selectable: _ => true);
 

@@ -14,7 +14,7 @@ public sealed class WorktreesViewShould
     private static readonly WorktreeRow Dirty = Row(@"C:\repos\Northwind.Orders-fix-2", On("fix-2"), WorktreeHealthKind.Ok) with { DirtyFiles = 5, UnpushedCommits = 2 };
     private static readonly WorktreeRow Locked = Row(@"C:\repos\Northwind.Orders-locked", On("maintenance"), WorktreeHealthKind.Locked, new HealthReason.Locked("another tool is using it"));
     private static readonly WorktreeRow Orphan = Row(@"C:\repos\Northwind.Orders\.claude\worktrees\fix-service-tests", new Head.Unknown(), WorktreeHealthKind.Orphan) with { LeftoverFileCount = 12 };
-    private static readonly WorktreeRow Empty = Row(@"C:\repos\Northwind.Orders.worktrees", new Head.Unknown(), WorktreeHealthKind.Empty) with { Repository = FolderPath.From(@"C:\repos") };
+    private static readonly WorktreeRow Empty = Row(@"C:\code\Northwind.Orders.worktrees", new Head.Unknown(), WorktreeHealthKind.Empty) with { Repository = FolderPath.From(@"C:\code") };
     private static readonly WorktreeRow Gone = Row(@"C:\repos\Northwind.Retired-republish", new Head.Unknown(), WorktreeHealthKind.Broken) with { Repository = FolderPath.From(@"C:\repos\Northwind.Retired"), OwnerExists = false };
     private static readonly WorktreeRow Busy = Row(@"C:\repos\Northwind.Orders-fix-3", On("fix-3"), WorktreeHealthKind.Ok) with { Session = new WorktreeSession.Running(SessionId.From("sess-fix-3"), Listed.As("fix-the-tests")) };
     private static readonly WorktreeRow Elsewhere = Row(@"C:\Users\me\source\worktrees\Northwind.Ledger-fix", On("fix"), WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(FolderPath.From(@"D:\other\Northwind.Ledger"))) with { Repository = FolderPath.From(@"D:\other\Northwind.Ledger"), DirtyFiles = 3 };
@@ -50,7 +50,7 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
-    public void OrderRowsByRepositoryThenPathAndSelectTheFirst()
+    public void OrderRowsByRepositoryNameThenPathAndSelectTheFirst()
     {
         Loaded.VisibleRows.Select(row => row.FolderName).ShouldBe(["Northwind.Orders.worktrees", "fix-service-tests", "Northwind.Orders-fix-1", "Northwind.Orders-fix-2", "Northwind.Orders-fix-3", "Northwind.Orders-locked", "Northwind.Retired-republish"]);
         Loaded.Selected.ShouldBe(Empty);
