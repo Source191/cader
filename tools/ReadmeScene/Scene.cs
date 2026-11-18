@@ -6,4 +6,5 @@ public sealed record Scene(
     IReadOnlyList<SceneRepository> Repositories,
     IReadOnlyList<SceneSession> Sessions,
     IReadOnlyList<SceneAutomatedRun> AutomatedRuns,
-    IReadOnlyList<ScenePullRequest> PullRequests);
+    IReadOnlyList<ScenePullRequest> PullRequests,
+    IReadOnlyList<SceneAccount> Accounts);

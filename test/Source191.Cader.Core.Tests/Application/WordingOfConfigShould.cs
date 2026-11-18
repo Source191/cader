@@ -1,6 +1,7 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application;
@@ -11,6 +12,8 @@ public sealed class WordingOfConfigShould
     private static readonly TimeZoneInfo UnitedKingdom = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
     private const string LogFile = @"C:\Users\me\AppData\Local\Cader\cader.log";
     private const string Fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
+
+    private static readonly KnownAccount Work = new(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("work"));
 
     public static TheoryData<ConfigRow, string, string> Rows => new()
     {
@@ -51,7 +54,10 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Checked(new DateTimeOffset(2026, 10, 30, 9, 12, 0, TimeSpan.Zero), new NewestRelease.Unreadable("rubbish"))), "Last update check", "09:12 today, newest rubbish" },
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Checked(new DateTimeOffset(2026, 10, 28, 18, 5, 0, TimeSpan.Zero), new NewestRelease.None())), "Last update check", "28 October 2026 18:05" },
         { new ConfigRow.Setup(SetupItem.LastUpdateCheck, new SetupState.Never()), "Last update check", "never" },
-        { new ConfigRow.Heading(), "Setup", string.Empty },
+        { new ConfigRow.Heading(ConfigSection.Setup), "Setup", string.Empty },
+        { new ConfigRow.Heading(ConfigSection.Accounts), "Accounts", string.Empty },
+        { new ConfigRow.Account(new RowAccount.Known(Work, LoggedInNow: true)), "Account work", "me@northwind.example · Northwind Traders · logged in now" },
+        { new ConfigRow.Account(new RowAccount.Known(Work with { OrganisationName = string.Empty }, LoggedInNow: false)), "Account work", "me@northwind.example" },
     };
 
     [Fact]
@@ -68,12 +74,19 @@ public sealed class WordingOfConfigShould
             new ConfigRow.CheckForUpdates(On: true),
             new ConfigRow.DiagnosticLog(On: true),
             .. Enum.GetValues<SetupItem>().Select(item => new ConfigRow.Setup(item, new SetupState.Reading())),
+            new ConfigRow.Account(new RowAccount.Known(Work, LoggedInNow: true)),
         ];
 
         string[] descriptions = [.. rows.Select(Wording.ConfigDescription)];
 
         descriptions.ShouldAllBe(description => description.Length > 0 && description.Length <= 110);
         descriptions.Distinct().Count().ShouldBe(rows.Length);
+    }
+
+    [Fact]
+    public void SayAnAccountsLabelIsRenamedWithEnter()
+    {
+        Wording.ConfigDescription(new ConfigRow.Account(new RowAccount.Known(Work, LoggedInNow: false))).ShouldBe("The label names this account in the Sessions tab's ACCOUNT column; Enter renames it.");
     }
 
     [Fact]
@@ -156,7 +169,7 @@ public sealed class WordingOfConfigShould
     [Fact]
     public void SayNothingToDescribeAHeading()
     {
-        Wording.ConfigDescription(new ConfigRow.Heading()).ShouldBeEmpty();
+        Wording.ConfigDescription(new ConfigRow.Heading(ConfigSection.Setup)).ShouldBeEmpty();
     }
 
     [Fact]

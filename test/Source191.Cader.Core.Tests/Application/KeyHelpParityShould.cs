@@ -17,7 +17,7 @@ public sealed class KeyHelpParityShould
 
     private static readonly WorktreesViewState LoadedWorktrees = WorktreesView.Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Worktrees.Row(WorktreeHealthKind.Ok)])).State;
 
-    private static readonly ConfigViewState LoadedConfig = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(@"C:\Users\me\source\repos"), ConfigFacts()))).State;
+    private static readonly ConfigViewState LoadedConfig = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(@"C:\Users\me\source\repos"), ConfigFacts(), []))).State;
 
     public static TheoryData<string> SessionsKeyTexts => [.. Wording.SessionsKeys.Select(help => help.Key)];
 

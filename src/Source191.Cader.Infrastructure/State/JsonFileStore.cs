@@ -15,7 +15,7 @@ namespace Source191.Cader.Adapters.State;
 /// beside the file and is moved over it. The single-file recent.json of earlier versions is imported once and
 /// removed; the created.json, the descriptions\ folder and sessions.json of earlier versions are no longer read.
 /// </summary>
-public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion
+public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion, IKnownAccounts
 {
     private const int RecentLimit = 10;
 
@@ -49,6 +49,8 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     private string UpdateCheckPath => Path.Combine(folder, "update-check.json");
 
     private string LastRunPath => Path.Combine(folder, "last-run.json");
+
+    private string AccountsPath => Path.Combine(folder, "accounts.json");
 
     public async Task<IReadOnlyList<TabRegistration>> ReadTabsAsync() => [.. (await ReadAllAsync<TabFile>(TabsFolder)).Select(file => file.ToRegistration())];
 
@@ -108,6 +110,16 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
     }
 
     public Task WriteLastRunAsync(ReleaseVersion version) => WriteJsonAsync(LastRunPath, new LastRunFile(version.ToString()));
+
+    /// <summary>An entry whose id or label is not one is left out; the rest are kept, so one bad hand edit loses only itself.</summary>
+    public async Task<IReadOnlyList<KnownAccount>> ReadAccountsAsync()
+    {
+        AccountsFile? file = await ReadJsonAsync<AccountsFile>(AccountsPath);
+
+        return file is null ? [] : [.. file.Accounts.Select(entry => entry.ToAccount()).OfType<KnownAccount>()];
+    }
+
+    public Task WriteAccountsAsync(IReadOnlyList<KnownAccount> accounts) => WriteJsonAsync(AccountsPath, new AccountsFile([.. accounts.Select(AccountEntry.From)]));
 
     /// <summary>The notes as the file keeps them, the changelog text read from GitHub; text that is not a changelog, or none, is no notes.</summary>
     private static ReleaseNotes NotesOf(string? text) => ReleaseNotes.TryParse(text, out ReleaseNotes? notes) ? notes : ReleaseNotes.None;
@@ -274,4 +286,17 @@ public sealed class JsonFileStore(string folder, TimeProvider clock) : ITabRegis
 
     /// <summary>last-run.json, <c>{"version": "0.21.0"}</c>: the released version that last ran.</summary>
     private sealed record LastRunFile(string? Version = null);
+
+    /// <summary>accounts.json, <c>{"accounts": [{"organisationId": ..., "email": ..., "organisationName": ..., "label": "work"}]}</c>: the Claude accounts Cader has seen logged in.</summary>
+    private sealed record AccountsFile(IReadOnlyList<AccountEntry> Accounts);
+
+    private sealed record AccountEntry(string OrganisationId, string Email, string OrganisationName, string Label)
+    {
+        public static AccountEntry From(KnownAccount account) => new(account.Organisation.Value, account.Email, account.OrganisationName, account.Label.Value);
+
+        public KnownAccount? ToAccount() =>
+            Domain.OrganisationId.TryParse(OrganisationId, out OrganisationId? organisation) && AccountLabel.TryParse(Label, out AccountLabel? label)
+                ? new KnownAccount(organisation, Email, OrganisationName, label)
+                : null;
+    }
 }

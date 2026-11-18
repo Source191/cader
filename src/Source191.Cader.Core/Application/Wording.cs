@@ -154,6 +154,7 @@ public static partial class Wording
             StatusMessage.WorkingSoRenameWaits rename => $"{Name(rename.Name)} is working; wait until it is idle or needs input, because renaming restarts it.",
             StatusMessage.RenameCancelled => "Rename cancelled.",
             StatusMessage.InvalidName invalid => Describe(invalid.Problem),
+            StatusMessage.InvalidAccountLabel invalid => Describe(invalid.Problem),
             StatusMessage.AlreadyInBackground adopted => $"{Name(adopted.Name)} already runs in the background.",
             StatusMessage.WorkingSoAdoptWaits adopt => $"{Name(adopt.Name)} is working; wait until it is idle or needs input, so nothing in flight is lost.",
             _ => DescribeWorktreesAndScreen(message),

@@ -65,6 +65,9 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         ClaudeVersionReport claudeVersion = await claude.VersionAsync(cancellationToken);
         Started start = Started.From(version, claudeVersion, Environment.OSVersion.Version, Environment.Version, Console.WindowWidth, Console.WindowHeight);
 
+        await store.WriteAccountsAsync([.. scene.Accounts.Select(account => new KnownAccount(OrganisationId.From(account.OrganisationId), account.Email, account.Organisation, AccountLabel.From(account.Label)))]);
+        using AccountCatalogue accounts = new(claude, store, clock);
+        await accounts.LoadAsync();
         using PullRequestCatalogue pullRequests = new(
             gitCli,
             new PullRequestHosts(new GitHubPullRequests(processes, new ProgramLocation.Found(executables.GitHub)), new AzureDevOpsPullRequests(processes, new ProgramLocation.Found(executables.AzureDevOps))),
@@ -81,7 +84,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         EffectPorts ports = new(claude, gitCli, processRegistry, transcripts, terminal, store, clock, clipboard, desktop, editors, fileFolders, crashFile, logFiles);
         TabScripts tabScripts = new(executables.Claude, ownPath);
         OwnProcess own = new(Environment.ProcessId, home, new ProgramLocation.Missing());
-        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, own, log, Path.Combine(folders.State, "cader.log"));
+        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, accounts, own, log, Path.Combine(folders.State, "cader.log"));
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);
@@ -95,10 +98,10 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         HeaderSettingsRow header = new(version, ClaudeCodeSupport.Check(claudeVersion), updates, processRegistry, Environment.ProcessId);
         ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log));
         FolderLabels folderLabels = new(settings, home);
-        SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests);
+        SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, log);
         SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal"), clock), new ClaudeSettings(folders.ClaudeHome), store, logFiles, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, log);
-        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, fileFolders, counts.Refreshes);
+        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, fileFolders, accounts, counts.Refreshes);
 
         SessionActivity activity = new(clock);
         RunningLoads listings = new();
@@ -163,14 +166,16 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         await recording;
     }
 
-    // Enter opens a tab only for a session with a transcript; an empty file is enough for ClaudeTranscripts.
+    // Enter opens a tab only for a session with a transcript; a session with a scene account gets the owner line the ACCOUNT column reads.
     private void WriteTranscripts(SceneListing listing)
     {
         string project = Path.Combine(folders.ClaudeHome, "projects", "readme-scene");
         Directory.CreateDirectory(project);
+        IReadOnlyDictionary<string, string> owners = listing.Owners();
         foreach (string sessionId in listing.SessionIds())
         {
-            File.WriteAllText(Path.Combine(project, $"{sessionId}.jsonl"), string.Empty);
+            string owner = owners.TryGetValue(sessionId, out string? organisation) ? $$"""{"type":"session-owner","organizationUuid":"{{organisation}}","sessionId":"{{sessionId}}"}""" + "\n" : string.Empty;
+            File.WriteAllText(Path.Combine(project, $"{sessionId}.jsonl"), owner);
         }
     }
 }

@@ -55,6 +55,34 @@ public sealed class SceneProcessRunnerShould
     }
 
     [Fact]
+    public async Task AnswerTheLoginWithTheScenesLoggedInAccount()
+    {
+        ClaudeLogin login = await claude.LoginAsync(TestContext.Current.CancellationToken);
+
+        login.ShouldBe(new ClaudeLogin.LoggedIn(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "dev@northwind.example", "Northwind Traders"));
+    }
+
+    [Fact]
+    public async Task AnswerNoLoginWithoutALoggedInAccount()
+    {
+        Scene scene = SceneFile.Read("""{ "claudeVersion": "2.1.316", "accounts": [ { "label": "work", "email": "dev@northwind.example", "organisation": "Northwind Traders", "organisationId": "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91" } ] }""");
+        ClaudeCli loggedOut = new(new SceneProcessRunner(new SceneListing(scene, new SceneLayout(Home), clock), new ScenePullRequests(scene, clock), Executables, others), Executables.Claude);
+
+        (await loggedOut.LoginAsync(TestContext.Current.CancellationToken)).ShouldBe(new ClaudeLogin.LoggedOut());
+    }
+
+    [Fact]
+    public void OwnEachSessionWithAnAccountByItsOrganisation()
+    {
+        SceneListing sceneListing = new(SceneFile.Read(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "scene.json"))), new SceneLayout(Home), clock);
+
+        IReadOnlyDictionary<string, string> owners = sceneListing.Owners();
+
+        owners.Count.ShouldBe(6);
+        owners.Values.Distinct().ShouldBe(["6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91", "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60"], ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task AnswerTheClaudeVersion()
     {
         ClaudeVersionReport version = await claude.VersionAsync(TestContext.Current.CancellationToken);

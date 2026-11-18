@@ -22,7 +22,7 @@ public static partial class Wording
     /// <summary>The Config counts beside the tabs: how many settings, then how much setup is left to do, in amber.</summary>
     public static IReadOnlyList<TextPart> ConfigCounts(IReadOnlyList<ConfigRow> rows)
     {
-        int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading));
+        int settings = rows.Count(row => row is not (ConfigRow.Setup or ConfigRow.Heading or ConfigRow.Account));
         int toSetUp = rows.Count(row => row is ConfigRow.Setup { State: SetupState.NotSetUp or SetupState.HiddenByTerminal });
 
         return [new TextPart(Count(settings, "setting"), TextTone.Plain), .. toSetUp > 0 ? [new TextPart($"{toSetUp} to set up", TextTone.Amber)] : Array.Empty<TextPart>()];

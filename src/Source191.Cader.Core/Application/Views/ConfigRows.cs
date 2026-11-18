@@ -3,10 +3,14 @@ using Source191.Cader.Ports;
 
 namespace Source191.Cader.Application.Views;
 
-/// <summary>The Config tab's rows: the settings in the order the tab lists them, then the Setup heading and the setup, read or still being read.</summary>
+/// <summary>The Config tab's rows: the settings in the order the tab lists them, then the Setup heading and the setup, read or still being read, then the Accounts heading and the remembered accounts when there are any.</summary>
 public static class ConfigRows
 {
-    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts) => [.. SettingRows(settings), new ConfigRow.Heading(), .. SetupRows(settings, facts)];
+    public static IReadOnlyList<ConfigRow> For(Settings settings, SetupFacts facts, IReadOnlyList<RowAccount.Known> accounts) =>
+        [.. SettingRows(settings), new ConfigRow.Heading(ConfigSection.Setup), .. SetupRows(settings, facts), .. AccountRows(accounts)];
+
+    private static IEnumerable<ConfigRow> AccountRows(IReadOnlyList<RowAccount.Known> accounts) =>
+        accounts.Count == 0 ? [] : [new ConfigRow.Heading(ConfigSection.Accounts), .. accounts.Select(account => new ConfigRow.Account(account))];
 
     private static IEnumerable<ConfigRow> SettingRows(Settings settings)
     {

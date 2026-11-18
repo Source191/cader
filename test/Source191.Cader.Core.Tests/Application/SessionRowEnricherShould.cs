@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using Source191.Cader.Adapters.Claude;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application;
 using Source191.Cader.Application.Diagnostics;
@@ -22,13 +23,16 @@ public sealed class SessionRowEnricherShould : IDisposable
     private readonly FakeProcessRunner remotes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, "https://github.com/northwind/Northwind.Orders.git\n", string.Empty));
     private readonly FakePullRequests hosts = new();
     private readonly PullRequestCatalogue catalogue;
+    private readonly FakeProcessRunner logins = new();
+    private readonly AccountCatalogue accounts;
 
     public SessionRowEnricherShould()
     {
         catalogue = new PullRequestCatalogue(new GitCli(remotes, "git"), hosts, clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));
+        accounts = new AccountCatalogue(new ClaudeCli(logins, @"C:\Users\me\.local\bin\claude.exe"), store, clock);
     }
 
-    private SessionRowEnricher Enricher => new(new GitCli(processes, "git"), folders, store, registry, clock, transcripts, catalogue);
+    private SessionRowEnricher Enricher => new(new GitCli(processes, "git"), folders, store, registry, clock, transcripts, catalogue, accounts);
 
     [Fact]
     public async Task CarryEachRowsPullRequest()
@@ -379,8 +383,43 @@ public sealed class SessionRowEnricherShould : IDisposable
         return new AutomatedRun(SessionId.From(Guid.NewGuid().ToString()), FolderPath.From(@"C:\repos\Northwind.Orders-fix"), processId);
     }
 
+    [Fact]
+    public async Task CarryEachRowsAccount()
+    {
+        OrganisationId northwind = OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91");
+        KnownAccount work = new(northwind, "me@northwind.example", "Northwind Traders", AccountLabel.From("work"));
+        await store.WriteAccountsAsync([work]);
+        await accounts.LoadAsync();
+        Session.Background owned = Session(@"C:\repos\Northwind.Orders");
+        Session.Background older = Session(@"C:\repos\Northwind.Billing");
+        transcripts.WithOwner(owned.SessionId, northwind);
+
+        IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([owned, older], CancellationToken.None);
+
+        rows.Select(row => row.Account).ShouldBe([new RowAccount.Known(work, LoggedInNow: false), new RowAccount.Unrecorded()]);
+    }
+
+    [Fact]
+    public async Task NotWaitForTheLogin()
+    {
+        TaskCompletionSource release = new();
+        List<IReadOnlyList<string>> started = [];
+        logins.WhileRunning = request =>
+        {
+            started.Add(request.Arguments);
+            return release.Task;
+        };
+
+        IReadOnlyList<SessionRow> rows = await Enricher.EnrichAsync([Session(@"C:\repos\Northwind.Orders")], CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        rows.Single().Account.ShouldBe(new RowAccount.Unrecorded());
+        started.ShouldBe([["auth", "status", "--json"]]);
+        release.SetResult();
+    }
+
     public void Dispose()
     {
         catalogue.Dispose();
+        accounts.Dispose();
     }
 }

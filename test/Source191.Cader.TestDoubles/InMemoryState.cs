@@ -7,7 +7,7 @@ namespace Source191.Cader.TestDoubles;
 /// Every state port in memory, with the same rules as the file store: recent repositories most recent first and
 /// capped at ten, one created-worktree record per path.
 /// </summary>
-public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion
+public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion, IKnownAccounts
 {
     private const int RecentLimit = 10;
 
@@ -18,6 +18,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     private UpdateCheckRecord updateCheck = new UpdateCheckRecord.Never();
     private UserConfig config = UserConfig.Missing;
     private LastRun lastRun = new LastRun.Never();
+    private IReadOnlyList<KnownAccount> accounts = [];
     private Exception? nextRecordFailure;
 
     public Task<IReadOnlyList<TabRegistration>> ReadTabsAsync()
@@ -146,6 +147,28 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     {
         lastRun = new LastRun.Ran(version);
         LastRunWrites++;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>How many times the remembered accounts were written.</summary>
+    public int AccountWrites { get; private set; }
+
+    public Task<IReadOnlyList<KnownAccount>> ReadAccountsAsync()
+    {
+        lock (gate)
+        {
+            return Task.FromResult(accounts);
+        }
+    }
+
+    public Task WriteAccountsAsync(IReadOnlyList<KnownAccount> accounts)
+    {
+        lock (gate)
+        {
+            this.accounts = [.. accounts];
+            AccountWrites++;
+        }
+
         return Task.CompletedTask;
     }
 }

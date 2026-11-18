@@ -39,6 +39,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly CurrentSettings settings = TestSettings.Current(Root);
     private readonly PullRequestCatalogue catalogue;
+    private readonly AccountCatalogue accounts;
     private readonly DiagnosticLog log;
     private readonly RefreshCounts refreshes;
 
@@ -46,6 +47,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     {
         log = new DiagnosticLog(clock, []);
         refreshes = new RefreshCounts(clock, log);
+        accounts = new AccountCatalogue(new ClaudeCli(new FakeProcessRunner(), Claude), store, clock);
         catalogue = new PullRequestCatalogue(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));
     }
 
@@ -82,7 +84,7 @@ public sealed class ConsoleLoadsShould : IDisposable
 
         ViewInput read = await Loads().ReadConfigAsync(TestContext.Current.CancellationToken);
 
-        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp));
+        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp, []));
     }
 
     [Fact]
@@ -108,8 +110,8 @@ public sealed class ConsoleLoadsShould : IDisposable
         await settings.SaveAsync(settings.Value.WithUpdateCheckToggled());
         IReadOnlyList<ConfigRow> after = loads.ConfigRowsWhileReading();
 
-        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading));
-        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading));
+        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading, []));
+        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading, []));
         after.ShouldNotBe(before);
     }
 
@@ -178,15 +180,16 @@ public sealed class ConsoleLoadsShould : IDisposable
     private ConsoleLoads Loads(FakeDiagnosticLogFiles logFiles)
     {
         GitCli git = new(gitRuns, "git");
-        SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue);
+        SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue, accounts);
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
-        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, refreshes);
+        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, accounts, refreshes);
     }
 
     public void Dispose()
     {
         catalogue.Dispose();
+        accounts.Dispose();
     }
 }

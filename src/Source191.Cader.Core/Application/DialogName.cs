@@ -19,4 +19,5 @@ public enum DialogName
     Memory,
     ProblemReport,
     ClearLog,
+    AccountLabel,
 }

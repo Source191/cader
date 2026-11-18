@@ -36,6 +36,9 @@ public abstract record StatusMessage
     /// <summary>The typed name was refused, for the domain's reason.</summary>
     public sealed record InvalidName(NameProblem Problem) : StatusMessage;
 
+    /// <summary>The typed account label was refused, for the domain's reason or because another account uses it.</summary>
+    public sealed record InvalidAccountLabel(AccountLabelProblem Problem) : StatusMessage;
+
     public sealed record AlreadyInBackground(ListedName Name) : StatusMessage;
 
     public sealed record WorkingSoAdoptWaits(ListedName Name) : StatusMessage;

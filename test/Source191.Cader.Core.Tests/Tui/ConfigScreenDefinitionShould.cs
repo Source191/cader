@@ -34,7 +34,7 @@ public sealed class ConfigScreenDefinitionShould
     {
         ConfigScreenDefinition definition = new(new FakeTimeProvider());
 
-        definition.RowColour(new ConfigRow.Heading()).ShouldBe(Palette.Orange);
+        definition.RowColour(new ConfigRow.Heading(ConfigSection.Setup)).ShouldBe(Palette.Orange);
         definition.RowColour(new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled())).ShouldBe(Palette.Grey);
         definition.RowColour(new ConfigRow.CheckForUpdates(On: true)).ShouldBe(Palette.White);
     }

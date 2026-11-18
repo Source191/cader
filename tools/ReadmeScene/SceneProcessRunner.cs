@@ -46,6 +46,7 @@ public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests p
     {
         ["agents", "--json", "--all"] => Answer(listing.Json()),
         ["--version"] => Answer($"{listing.ClaudeVersion} (Claude Code)"),
+        ["auth", "status", "--json"] => Answer(listing.LoginJson()),
         ["--bg", "-n", string name, ..] when request.WorkingDirectory is WorkingFolder.At folder => Answer($"Session backgrounded · {listing.Start(name, folder.Path)}"),
         _ => Refuse(request.Arguments),
     };

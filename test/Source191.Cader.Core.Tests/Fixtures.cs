@@ -50,6 +50,8 @@ internal static class Fixtures
             _ when type == typeof(WorktreeHealthKind) => WorktreeHealthKind.Locked,
             _ when type == typeof(HealthReason) => new HealthReason.FolderGone(),
             _ when type == typeof(NameProblem) => NameProblem.Missing,
+            _ when type == typeof(AccountLabel) => AccountLabel.From("work"),
+            _ when type == typeof(AccountLabelProblem) => AccountLabelProblem.TooLong,
             _ when type == typeof(LaunchProblem) => new LaunchProblem.WorktreeNeedsLetters(),
             _ when type == typeof(ViewEffect) => new Quit(),
             _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false),

@@ -1,3 +1,4 @@
+using Source191.Cader.Application;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
@@ -20,7 +21,7 @@ public sealed class ConfigViewShould
         new SetupState.Enabled(),
         new SetupState.Never());
 
-    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts))).State;
+    private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, []))).State;
 
     [Fact]
     public void LoadTheRowsWithTheFirstSelected()
@@ -108,7 +109,7 @@ public sealed class ConfigViewShould
         ConfigView.Reduce(At("worktree-root"), new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\source\worktrees"))]);
         string fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
         SetupFacts installed = Facts with { TerminalProfiles = new SetupState.At(fragment) };
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), installed))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), installed, []))).State;
 
         ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:TerminalProfiles") }, new KeyPressed(Key.Of('f'))).Effects.ShouldBe([new OpenFolderInEditor(FolderPath.From(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader"))]);
     }
@@ -118,7 +119,7 @@ public sealed class ConfigViewShould
     {
         string fragment = @"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json";
         SetupFacts hidden = Facts with { TerminalProfiles = new SetupState.HiddenByTerminal(fragment) };
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), hidden))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), hidden, []))).State;
         ConfigViewState onRow = loaded with { List = loaded.List.Select("setup:TerminalProfiles") };
 
         ConfigView.Reduce(onRow, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(fragment))]);
@@ -166,7 +167,7 @@ public sealed class ConfigViewShould
     {
         LogFiles files = new FakeDiagnosticLogFiles().WithCurrent(2_516_582).Read();
         SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(files) };
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work).WithDiagnosticLogToggled(), facts))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work).WithDiagnosticLogToggled(), facts, []))).State;
 
         ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d'))).Effects.ShouldBe([new ClearDiagnosticLog(files)]);
     }
@@ -181,7 +182,7 @@ public sealed class ConfigViewShould
     public void SayThereIsNoLogFileToClear()
     {
         SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().Read()) };
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts, []))).State;
 
         ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
 
@@ -192,7 +193,7 @@ public sealed class ConfigViewShould
     [Fact]
     public void SayTheLogFilesAreNotReadYet()
     {
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), SetupFacts.Reading))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), SetupFacts.Reading, []))).State;
 
         ViewUpdate<ConfigViewState> update = ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('d')));
 
@@ -218,7 +219,7 @@ public sealed class ConfigViewShould
     {
         SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
 
-        return ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts))).State;
+        return ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), facts, []))).State;
     }
 
     [Theory]
@@ -230,7 +231,7 @@ public sealed class ConfigViewShould
     {
         Settings settings = settingOn ? TestSettings.For(Repos, Work).WithDiagnosticLogToggled() : TestSettings.For(Repos, Work);
         SetupFacts facts = Facts with { DiagnosticLogFile = new SetupState.LogFile(fileExists ? new FakeDiagnosticLogFiles().WithCurrent(300).Read() : new FakeDiagnosticLogFiles().Read()) };
-        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(settings, facts))).State;
+        ConfigViewState loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(settings, facts, []))).State;
 
         ConfigView.Reduce(loaded with { List = loaded.List.Select("setup:DiagnosticLogFile") }, new KeyPressed(Key.Of('c'))).Effects.ShouldBe([new CopyFolderPath(FolderPath.From(LogFile))]);
     }
@@ -303,7 +304,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState state = At("worktree-root");
 
-        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts))).State;
+        ConfigViewState reloaded = ConfigView.Reduce(state, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For([Repos, Work], @"E:\trees"), Facts, []))).State;
 
         reloaded.Selected.ShouldBe(new ConfigRow.WorktreeRoot(FolderPath.From(@"E:\trees")));
     }
@@ -373,7 +374,7 @@ public sealed class ConfigViewShould
     [Fact]
     public void LeaveTheSetupHeadingOutOfTheTitle()
     {
-        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts))).State;
+        ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, []))).State;
 
         oneRoot.Title.Shown.ShouldBe(14);
         oneRoot.Title.Total.ShouldBe(14);
@@ -396,6 +397,91 @@ public sealed class ConfigViewShould
         ConfigViewState shown = Loaded with { Message = newer };
 
         ConfigView.Reduce(shown, new MessageDismissed(older)).State.Message.ShouldBeSameAs(newer);
+    }
+
+    private static readonly KnownAccount First = new(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("1"));
+    private static readonly KnownAccount Personal = new(OrganisationId.From("0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60"), "me@home.example", "Personal", AccountLabel.From("personal"));
+
+    private static readonly ConfigViewState WithAccounts = ConfigView.Reduce(
+        ConfigViewState.Empty,
+        new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, [new RowAccount.Known(First, LoggedInNow: true), new RowAccount.Known(Personal, LoggedInNow: false)]))).State;
+
+    private static string AccountKey(KnownAccount account) => new ConfigRow.Account(new RowAccount.Known(account, LoggedInNow: false)).Key;
+
+    [Fact]
+    public void StepOverTheAccountsHeading()
+    {
+        ConfigViewState lastSetup = WithAccounts with { List = WithAccounts.List.Select("setup:LastUpdateCheck") };
+
+        Press(lastSetup, Key.Down).Selected.ShouldBe(new ConfigRow.Account(new RowAccount.Known(First, LoggedInNow: true)));
+        Press(lastSetup, Key.Down, Key.Up).Selected?.Key.ShouldBe("setup:LastUpdateCheck");
+    }
+
+    [Theory]
+    [InlineData("northwind")]
+    [InlineData("Northwind Traders")]
+    [InlineData("Account 1")]
+    public void FindAnAccountByLabelEmailOrOrganisation(string filter)
+    {
+        ConfigViewState filtered = WithAccounts with { List = WithAccounts.List.StartFilter() };
+        filtered = filter.Aggregate(filtered, (state, character) => ConfigView.Reduce(state, new KeyPressed(Key.Of(character))).State);
+
+        filtered.List.Visible.ShouldContain(row => row.Key == AccountKey(First));
+        filtered.List.Visible.ShouldNotContain(row => row is ConfigRow.Heading);
+    }
+
+    [Theory]
+    [InlineData('c')]
+    [InlineData('f')]
+    public void SayAnAccountRowHoldsNoPath(char key)
+    {
+        ConfigViewState account = WithAccounts with { List = WithAccounts.List.Select(AccountKey(First)) };
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(account, new KeyPressed(Key.Of(key)));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.NoPathHere());
+    }
+
+    [Fact]
+    public void AskForANewLabelOnEnter()
+    {
+        ConfigViewState account = WithAccounts with { List = WithAccounts.List.Select(AccountKey(First)) };
+
+        ConfigView.Reduce(account, new KeyPressed(Key.Enter)).Effects.ShouldBe([new AskForAccountLabel(First)]);
+    }
+
+    [Fact]
+    public void RenameWithAGoodLabel()
+    {
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(WithAccounts, new AccountLabelConfirmed(First, " work "));
+
+        update.Effects.ShouldBe([new RenameAccount(First, AccountLabel.From("work"))]);
+    }
+
+    [Fact]
+    public void RenameToTheSameLabelInAnotherCase()
+    {
+        ConfigView.Reduce(WithAccounts, new AccountLabelConfirmed(Personal, "Personal")).Effects.ShouldBe([new RenameAccount(Personal, AccountLabel.From("Personal"))]);
+    }
+
+    [Theory]
+    [InlineData("   ", AccountLabelProblem.Blank)]
+    [InlineData("northwind", AccountLabelProblem.TooLong)]
+    [InlineData("wo\u0007rk", AccountLabelProblem.ControlCharacter)]
+    [InlineData("PERSONAL", AccountLabelProblem.Taken)]
+    public void RefuseALabelThatBreaksARule(string label, AccountLabelProblem problem)
+    {
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(WithAccounts, new AccountLabelConfirmed(First, label));
+
+        update.Effects.ShouldBeEmpty();
+        update.State.Message.ShouldBe(new StatusMessage.InvalidAccountLabel(problem));
+    }
+
+    [Fact]
+    public void SayARenameWasCancelled()
+    {
+        ConfigView.Reduce(WithAccounts, new AccountLabelCancelled()).State.Message.ShouldBe(new StatusMessage.RenameCancelled());
     }
 
     private static ConfigViewState At(string key)

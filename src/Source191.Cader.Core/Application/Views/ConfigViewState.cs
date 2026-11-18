@@ -19,15 +19,15 @@ public sealed record ConfigViewState(
 
     public TableTitle Title => List.Title("row", Wording.ConfigSetting);
 
-    /// <summary>A row's setting and its path when it has one; the heading has none, so any filter hides it.</summary>
+    /// <summary>A row's setting and its path when it has one, and an account's email and organisation; a heading has none, so any filter hides it.</summary>
     private static IReadOnlyList<string> FilterFieldsOf(ConfigRow row)
     {
-        if (row is ConfigRow.Heading)
+        return row switch
         {
-            return [];
-        }
-
-        return [Wording.ConfigSetting(row), ConfigView.TryPathOf(row, out string? path) ? path : string.Empty];
+            ConfigRow.Heading => [],
+            ConfigRow.Account account => [Wording.ConfigSetting(row), account.Known.Account.Email, account.Known.Account.OrganisationName],
+            _ => [Wording.ConfigSetting(row), ConfigView.TryPathOf(row, out string? path) ? path : string.Empty],
+        };
     }
 
 }

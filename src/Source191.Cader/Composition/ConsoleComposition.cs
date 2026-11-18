@@ -37,19 +37,21 @@ internal static class ConsoleComposition
         using CancellationTokenSource versionTimeout = new(TimeSpan.FromSeconds(5));
         Task<ClaudeVersionReport> claudeVersion = launch.Claude.VersionAsync(versionTimeout.Token);
         using PullRequestCatalogue pullRequests = PullRequests(parts, launch.Git);
+        using AccountCatalogue accounts = new(launch.Claude, parts.Store, TimeProvider.System);
+        await accounts.LoadAsync();
         ScreenClipboard clipboard = new();
         using WingetPackageVersions packageVersions = new(parts.Version, new HttpClientHandler());
         string updateCheckOptOut = Environment.GetEnvironmentVariable(UpdateCheckOptOut.VariableName) ?? string.Empty;
         UpdateCheckSwitch updateSwitch = new(settings, updateCheckOptOut);
         UpdateCheck updates = new(parts.Version, updateSwitch.IsOn, parts.Store, packageVersions, TimeProvider.System);
-        EffectDispatcher dispatcher = Dispatcher(parts, launch, settings, home, transcripts, folders, clipboard);
+        EffectDispatcher dispatcher = Dispatcher(parts, launch, settings, accounts, home, transcripts, folders, clipboard);
         ClaudeVersionReport claudeVersionReport = await claudeVersion;
         Started start = parts.RecordStart(claudeVersionReport);
 
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
-        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests);
+        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests, accounts);
         ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
@@ -71,6 +73,7 @@ internal static class ConsoleComposition
         SharedParts parts,
         LaunchParts launch,
         CurrentSettings settings,
+        AccountCatalogue accounts,
         FolderPath home,
         ClaudeTranscripts transcripts,
         Folders folders,
@@ -85,7 +88,7 @@ internal static class ConsoleComposition
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, own, parts.Log, parts.LogFile);
+        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
     }
 
     private static DialogEffects Dialogs(
@@ -120,16 +123,17 @@ internal static class ConsoleComposition
         CurrentSettings settings,
         Folders folders,
         ClaudeTranscripts transcripts,
-        PullRequestCatalogue pullRequests)
+        PullRequestCatalogue pullRequests,
+        AccountCatalogue accounts)
     {
-        SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
+        SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
         SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, new ClaudeSettings(parts.ClaudeFolder.Folder.Value), parts.Store, parts.LogFiles, parts.ClaudeFolder, parts.Store.ConfigFile, parts.Log);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
 
-        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, parts.Counts.Refreshes);
+        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, accounts, parts.Counts.Refreshes);
     }
 
     private static ConsoleScreen Screen(

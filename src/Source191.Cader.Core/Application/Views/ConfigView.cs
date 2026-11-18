@@ -18,6 +18,8 @@ public static class ConfigView
             MessageDismissed dismissed when ReferenceEquals(state.Message, dismissed.Message) => Unchanged(state with { Message = StatusMessage.None }),
             MessageDismissed => Unchanged(state),
             UpdateTabOpened => Effect(state, new Quit()),
+            AccountLabelConfirmed confirmed => RenameAccountWith(state, confirmed),
+            AccountLabelCancelled => Unchanged(state with { Message = new StatusMessage.RenameCancelled() }),
             KeyPressed pressed when state.List.FilterEditing => Unchanged(state with { List = state.List.EditFilter(pressed.Key), Message = StatusMessage.None }),
             KeyPressed pressed => Act(state, pressed.Key),
             _ => Unchanged(state),
@@ -41,6 +43,24 @@ public static class ConfigView
         };
 
         return path is not null;
+    }
+
+    /// <summary>A typed label checked by the label rules, then against every other remembered account's label in any case.</summary>
+    private static ViewUpdate<ConfigViewState> RenameAccountWith(ConfigViewState state, AccountLabelConfirmed confirmed)
+    {
+        IEnumerable<AccountLabel> others = state.List.Rows
+            .OfType<ConfigRow.Account>()
+            .Select(row => row.Known.Account)
+            .Where(account => account.Organisation != confirmed.Account.Organisation)
+            .Select(account => account.Label);
+
+        return AccountLabel.Validate(confirmed.Label) switch
+        {
+            AccountLabelValidation.Valid valid when AccountLabels.IsTaken(others, valid.Label) => Unchanged(state with { Message = new StatusMessage.InvalidAccountLabel(AccountLabelProblem.Taken) }),
+            AccountLabelValidation.Valid valid => Effect(state with { Message = StatusMessage.None }, new RenameAccount(confirmed.Account, valid.Label)),
+            AccountLabelValidation.Refused refused => Unchanged(state with { Message = new StatusMessage.InvalidAccountLabel(refused.Problem) }),
+            _ => throw new UnreachableException(),
+        };
     }
 
     private static ViewUpdate<ConfigViewState> Act(ConfigViewState state, Key key)
@@ -86,6 +106,7 @@ public static class ConfigView
             ConfigRow.CheckForUpdates => new RowDecision.Act(new ToggleUpdateCheck()),
             ConfigRow.DiagnosticLog => new RowDecision.Act(new ToggleDiagnosticLog()),
             ConfigRow.Setup setup => new RowDecision.Explain(new StatusMessage.SetupAdvice(setup.Item)),
+            ConfigRow.Account account => new RowDecision.Act(new AskForAccountLabel(account.Known.Account)),
             _ => new RowDecision.Act(new EditSetting(SettingsScope.For(row))),
         };
     }

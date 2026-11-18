@@ -22,6 +22,7 @@ public sealed class SceneListing
     private readonly List<ListedSession> sessions;
     private readonly List<(SceneAutomatedRun Run, string Folder, string SessionId, int ProcessId)> automatedRuns;
     private readonly Dictionary<string, int> listingsSinceStart = [];
+    private readonly IReadOnlyList<SceneAccount> accounts;
     private int nextProcessId;
 
     public SceneListing(Scene scene, SceneLayout layout, TimeProvider clock)
@@ -31,6 +32,7 @@ public sealed class SceneListing
         sessions = [.. scene.Sessions.Select(session => new ListedSession(session, layout.FolderOf(session), SessionIdOf(session.Name), HasProcess(session.State) ? NextProcessId() : null))];
         automatedRuns = [.. scene.AutomatedRuns.Select((run, index) => (run, layout.Repository(run.Repository), SessionIdOf($"automated-{index}"), NextProcessId()))];
         ClaudeVersion = scene.ClaudeVersion;
+        accounts = scene.Accounts;
     }
 
     public string ClaudeVersion { get; }
@@ -77,6 +79,29 @@ public sealed class SceneListing
             return automatedRuns.Where(run => run.ProcessId == processId)
                 .Select(run => new ProcessUsage(run.Run.StartedAt(clock), MemorySize.FromMegabytes(run.Run.MemoryMegabytes), "claude"))
                 .FirstOrDefault();
+        }
+    }
+
+    /// <summary>What <c>claude auth status --json</c> answers: the scene account marked as logged in, or no login.</summary>
+    public string LoginJson() => accounts.FirstOrDefault(account => account.LoggedIn) is SceneAccount login
+        ? JsonSerializer.Serialize(new { loggedIn = true, email = login.Email, orgId = login.OrganisationId, orgName = login.Organisation })
+        : JsonSerializer.Serialize(new { loggedIn = false });
+
+    /// <summary>The organisation that owns each listed session with an account, for its transcript's session-owner line.</summary>
+    public IReadOnlyDictionary<string, string> Owners()
+    {
+        lock (gate)
+        {
+            Dictionary<string, string> owners = [with(StringComparer.Ordinal)];
+            foreach (ListedSession session in sessions)
+            {
+                if (accounts.FirstOrDefault(account => account.Label == session.Session.Account) is SceneAccount owner)
+                {
+                    owners[session.SessionId] = owner.OrganisationId;
+                }
+            }
+
+            return owners;
         }
     }
 
