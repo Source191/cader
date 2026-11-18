@@ -142,6 +142,7 @@ public sealed class RefreshScheduleShould
         RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
         schedule.Started();
         List<DateTimeOffset> starts = [];
+        DateTimeOffset lastChange = clock.GetUtcNow();
         TimeSpan tick = TimeSpan.FromMilliseconds(50);
 
         for (TimeSpan elapsed = TimeSpan.Zero; elapsed < TimeSpan.FromSeconds(63); elapsed += tick)
@@ -149,6 +150,7 @@ public sealed class RefreshScheduleShould
             if (elapsed < TimeSpan.FromMinutes(1) && elapsed.TotalMilliseconds % 200 == 0)
             {
                 schedule.Changed();
+                lastChange = clock.GetUtcNow();
             }
 
             if (elapsed.TotalMilliseconds % 250 == 0 && schedule.IsDue())
@@ -162,7 +164,7 @@ public sealed class RefreshScheduleShould
 
         starts.Zip(starts.Skip(1), (earlier, later) => later - earlier).ShouldAllBe(gap => gap >= TimeSpan.FromSeconds(1));
         starts.Count.ShouldBeGreaterThan(50);
-        starts[^1].ShouldBeGreaterThan(Fixtures.Noon + TimeSpan.FromMinutes(1));
+        starts[^1].ShouldBeGreaterThan(lastChange);
     }
 
     [Fact]

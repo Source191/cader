@@ -13,7 +13,7 @@
 
 ## 3. The schedule hears changes
 
-- [ ] 3.1 Red then green: `RefreshScheduleShould` (`FakeTimeProvider`) states a pending change is due 500 ms after the first change and at least one second after the last start, is due while the interval is `Off`, is cleared by `Started()`, is set again by a change after `Started()`, and that changes every 200 ms for a minute make it due no more than once a second; add `Changed()` behind a `Lock` (decision 3).
+- [x] 3.1 Red then green: `RefreshScheduleShould` (`FakeTimeProvider`) states a pending change is due 500 ms after the first change and at least one second after the last start, is due while the interval is `Off`, is cleared by `Started()`, is set again by a change after `Started()`, and that changes every 200 ms for a minute make it due no more than once a second; add `Changed()` behind a `Lock` (decision 3).
 
 ## 4. The adapter
 
