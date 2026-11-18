@@ -40,9 +40,11 @@ public sealed class ClaudeContractShould
     }
 
     /// <summary>
-    /// auth status answers loggedIn, and when it names an email and an organisation id the console reads them as a login;
-    /// no value is printed. A session's session-owner line is not checked here: a session started with no prompt writes no
-    /// transcript before its first message (claude-code.md), and a prompt would make a model call.
+    /// auth status answers loggedIn, exiting 0 when it is true and 1 when it is false, and when it names an email and an
+    /// organisation id the console reads them as a login; no value is printed. On the contract runner it answers logged
+    /// out: the workflow signs in through CLAUDE_CODE_OAUTH_TOKEN, which the runner drops from its children with every
+    /// CLAUDE_CODE_* variable (InheritedEnvironment). A session's session-owner line is not checked here: a session started
+    /// with no prompt writes no transcript before its first message (claude-code.md), and a prompt would make a model call.
     /// </summary>
     [Fact]
     public async Task ReadTheLoginFromAuthStatus()
@@ -52,10 +54,10 @@ public sealed class ClaudeContractShould
         ProcessResult raw = await runner.RunAsync(new ProcessRequest(executable, ["auth", "status", "--json"], WorkingFolder.Inherit), Cancellation);
         ClaudeLogin login = await new ClaudeCli(runner, executable).LoginAsync(Cancellation);
 
-        raw.ExitCode.ShouldBe(0, "claude auth status --json failed");
         using JsonDocument document = JsonDocument.Parse(raw.StandardOutput);
         JsonElement root = document.RootElement;
         root.GetProperty("loggedIn").ValueKind.ShouldBeOneOf(JsonValueKind.True, JsonValueKind.False);
+        raw.ExitCode.ShouldBe(root.GetProperty("loggedIn").ValueKind is JsonValueKind.True ? 0 : 1, "claude auth status --json exits 0 when logged in and 1 when not");
         bool namesAnAccount = root.TryGetProperty("email", out JsonElement email) && email.ValueKind is JsonValueKind.String
             && root.TryGetProperty("orgId", out JsonElement organisation) && organisation.ValueKind is JsonValueKind.String;
         (login is ClaudeLogin.LoggedIn).ShouldBe(namesAnAccount && root.GetProperty("loggedIn").ValueKind is JsonValueKind.True, "the console reads a login exactly when auth status names an email and an organisation id");

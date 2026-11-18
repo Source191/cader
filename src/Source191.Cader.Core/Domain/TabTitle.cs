@@ -20,13 +20,15 @@ public static class TabTitle
         return string.Equals(tabName, sessionTitle, StringComparison.Ordinal) || FollowsOneGlyph(tabName, sessionTitle);
     }
 
-    /// <summary>The title is one Unicode scalar value that is neither a letter, a digit nor white space, a space, then the name.</summary>
+    /// <summary>
+    /// The title is one Unicode scalar value that is neither a letter, a digit nor white space, a space, then the name.
+    /// Once it ends with the space and the name the glyph's length is at least zero, and an empty one does not decode.
+    /// </summary>
     private static bool FollowsOneGlyph(string tabName, string sessionTitle)
     {
         int glyphLength = tabName.Length - sessionTitle.Length - 1;
 
-        return glyphLength > 0
-            && tabName.EndsWith(" " + sessionTitle, StringComparison.Ordinal)
+        return tabName.EndsWith(" " + sessionTitle, StringComparison.Ordinal)
             && Rune.DecodeFromUtf16(tabName.AsSpan(0, glyphLength), out Rune glyph, out int read) is OperationStatus.Done
             && read == glyphLength
             && !Rune.IsLetterOrDigit(glyph)
