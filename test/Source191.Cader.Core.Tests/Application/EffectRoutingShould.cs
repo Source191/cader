@@ -1,5 +1,6 @@
 using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Tui;
 
 namespace Source191.Cader.Core.Tests.Application;
 
@@ -33,5 +34,23 @@ public sealed class EffectRoutingShould
         EffectsMarked<IConsultsSessions>().ShouldAllBe(type => ConsoleView.Answers(type), "an effect that consults the sessions has no answer in ConsoleView");
         EffectsMarked<IConsultsSessions>().ShouldNotContain(type => type.IsAssignableTo(typeof(ISwitchesTab)) || type.IsAssignableTo(typeof(ILeavesScreen)) || type.IsAssignableTo(typeof(IDialogEffect)), "an effect is routed by one marker");
         ConsoleView.Answers(typeof(Quit)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RefreshTheShownTabForEveryEffectThatRefreshesIt()
+    {
+        EffectsMarked<IRefreshesTab>().ShouldNotBeEmpty();
+        EffectsMarked<IRefreshesTab>().ShouldAllBe(type => EffectRoutes.Of(type) == EffectRoute.Refresh, "an effect that refreshes the tab is not routed to ITabHost.RefreshShown by TableBody");
+        EffectsMarked<IRefreshesTab>().ShouldNotContain(type => type.IsAssignableTo(typeof(ISwitchesTab)) || type.IsAssignableTo(typeof(ILeavesScreen)) || type.IsAssignableTo(typeof(IDialogEffect)) || type.IsAssignableTo(typeof(IConsultsSessions)), "an effect is routed by one marker");
+    }
+
+    [Fact]
+    public void RouteEveryMarkerItsOwnWay()
+    {
+        EffectRoutes.Of(typeof(Quit)).ShouldBe(EffectRoute.Leave);
+        EffectRoutes.Of(typeof(NextTab)).ShouldBe(EffectRoute.Switch);
+        EffectRoutes.Of(typeof(OpenWorktreeSession)).ShouldBe(EffectRoute.Consult);
+        EffectRoutes.Of(typeof(ClearDiagnosticLog)).ShouldBe(EffectRoute.Dialog);
+        EffectRoutes.Of(typeof(ToggleUpdateCheck)).ShouldBe(EffectRoute.Dispatch);
     }
 }
