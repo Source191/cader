@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Application;
+using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
@@ -17,6 +18,7 @@ public sealed class ChangeWatchesShould : IDisposable
 
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly FakeFolderChanges changes = new();
+    private readonly RecordingSink sink = new();
     private readonly RefreshSchedule sessions;
     private readonly RefreshSchedule worktrees;
     private readonly ChangeWatches watches;
@@ -25,7 +27,7 @@ public sealed class ChangeWatchesShould : IDisposable
     {
         sessions = new RefreshSchedule(() => RefreshInterval.Off, clock);
         worktrees = new RefreshSchedule(() => RefreshInterval.Off, clock);
-        watches = new ChangeWatches(changes, sessions, worktrees);
+        watches = new ChangeWatches(changes, sessions, worktrees, new DiagnosticLog(clock, [sink]));
     }
 
     [Fact]
@@ -93,6 +95,44 @@ public sealed class ChangeWatchesShould : IDisposable
 
         worktrees.IsDueForChange().ShouldBeFalse();
         sessions.IsDueForChange().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RecordAWatchWindowsRefusesAndStartTheRest()
+    {
+        changes.Refused.Add(Orders.Combine(".git"));
+
+        watches.Follow(Plan(Orders, Billing));
+
+        changes.Live.Count.ShouldBe(4);
+        sink.Lines.ShouldHaveSingleItem().ShouldEndWith("] watch Repository CouldNotStart");
+    }
+
+    [Fact]
+    public void TryARefusedWatchAgainOnlyOnceItHasLeftThePlan()
+    {
+        changes.Refused.Add(Orders.Combine(".git"));
+        watches.Follow(Plan(Orders));
+        watches.Follow(Plan(Orders));
+        changes.Refused.Clear();
+
+        watches.Follow(Plan());
+        watches.Follow(Plan(Orders));
+
+        sink.Lines.Count.ShouldBe(1);
+        changes.Live.Select(watch => watch.Folder).ShouldContain(Orders.Combine(".git"));
+    }
+
+    [Fact]
+    public void RecordAnOverflowAndRefreshForIt()
+    {
+        watches.Follow(Plan(Orders));
+
+        changes.Raise(Jobs, new FolderChange(string.Empty, FolderChangeKind.Overflowed));
+        clock.Advance(TimeSpan.FromSeconds(2));
+
+        sessions.IsDueForChange().ShouldBeTrue();
+        sink.Lines.ShouldHaveSingleItem().ShouldEndWith("] watch ClaudeJobs Overflowed");
     }
 
     [Fact]

@@ -24,6 +24,12 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void NameATroubledWatchByItsKindAlone()
+    {
+        DiagnosticLine.Render(new TimedEvent(At, new WatchTrouble(WatchKind.Repository, WatchTroubleKind.CouldNotStart))).ShouldBe($"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] watch Repository CouldNotStart");
+    }
+
+    [Fact]
     public void PutTheProcessIdAfterTheTime()
     {
         ProcessCounts counts = new();

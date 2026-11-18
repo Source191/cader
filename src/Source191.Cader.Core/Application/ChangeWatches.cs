@@ -1,3 +1,4 @@
+using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 
@@ -8,7 +9,7 @@ namespace Source191.Cader.Application;
 /// counts. <see cref="Follow"/> runs as the console opens and after each scan, on whichever thread the scan ended on,
 /// and the changes arrive on pool threads, so the watches sit behind a lock; nothing a change does takes it.
 /// </summary>
-public sealed class ChangeWatches(IFolderChanges changes, RefreshSchedule sessions, RefreshSchedule worktrees) : IDisposable
+public sealed class ChangeWatches(IFolderChanges changes, RefreshSchedule sessions, RefreshSchedule worktrees, DiagnosticLog log) : IDisposable
 {
     private readonly Lock gate = new();
     private readonly Dictionary<PlannedWatch, IDisposable> live = [];
@@ -51,6 +52,8 @@ public sealed class ChangeWatches(IFolderChanges changes, RefreshSchedule sessio
             RefreshedTab.Sessions => sessions,
             RefreshedTab.Worktrees => worktrees,
         };
+
+        log.Record(new WatchTrouble(watch.Kind, WatchTroubleKind.Overflowed));
 
         return changes.Watch(watch.Folder, watch.Subfolders, change => Heard(watch.Kind, schedule, change));
     }

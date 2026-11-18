@@ -190,6 +190,24 @@ public sealed class DiagnosticsPrivacyShould : IDisposable
         Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void KeepWatchedFoldersOutOfTheLog()
+    {
+        FakeFolderChanges changes = new();
+        changes.Refused.Add(FolderPath.From(Repository).Combine(".git"));
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        using ChangeWatches watches = new(changes, schedule, schedule, log);
+
+        watches.Follow(WatchPlan.For(TestSettings.For(RepositoryRoot), TestSettings.DefaultClaudeFolder, [FolderPath.From(Repository)]));
+        changes.Raise(FolderPath.From(RepositoryRoot), new FolderChange("Northwind.Billing", FolderChangeKind.Created));
+        changes.Raise(FolderPath.From(RepositoryRoot), new FolderChange(string.Empty, FolderChangeKind.Overflowed));
+
+        sink.Lines.ShouldContain(line => line.EndsWith("watch Repository CouldNotStart", StringComparison.Ordinal));
+        sink.Lines.ShouldContain(line => line.EndsWith("watch Root Overflowed", StringComparison.Ordinal));
+        string everything = string.Join('\n', sink.Lines);
+        Seeded.Where(value => everything.Contains(value, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
+    }
+
     private static ReleaseVersion ReleaseVersion(string text)
     {
         Source191.Cader.Domain.ReleaseVersion.TryParse(text, out ReleaseVersion? version).ShouldBeTrue();
