@@ -110,6 +110,14 @@ public sealed class LaunchPlanShould
     }
 
     [Fact]
+    public void PlanANameWithoutTheBlanksAroundIt()
+    {
+        LaunchPlanResult result = LaunchPlanBuilder.Build(Default with { NameText = " fix-login" }, WorktreeRoot, _ => false);
+
+        result.ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("fix-login");
+    }
+
+    [Fact]
     public void LaunchANameWithASemicolon()
     {
         LaunchPlanResult result = LaunchPlanBuilder.Build(Default with { NameText = "fix a;b" }, WorktreeRoot, _ => false);

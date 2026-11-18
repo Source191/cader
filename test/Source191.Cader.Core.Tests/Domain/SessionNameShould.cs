@@ -22,6 +22,21 @@ public sealed class SessionNameShould
         listed.ShouldBe(SessionName.From(text));
     }
 
+    [Theory]
+    [InlineData(" fix-login ", "fix-login")]
+    [InlineData(" fix the login ", "fix the login")]
+    public void DropBlanksAtBothEndsOfATypedName(string text, string expected)
+    {
+        SessionName.Validate(text).ShouldBeOfType<SessionNameValidation.Valid>().Name.Value.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void KeepAListedNameUnchanged()
+    {
+        SessionName.TryParse(" listed ", out SessionName? listed).ShouldBeTrue();
+        listed.ShouldNotBeNull().Value.ShouldBe(" listed ");
+    }
+
     [Fact]
     public void AcceptAnyOtherName()
     {
