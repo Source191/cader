@@ -9,6 +9,7 @@ namespace Source191.Cader.Infrastructure.Tests;
 
 /// <summary>The real watcher behind IFolderChanges, on a throwaway folder.</summary>
 [Trait("Category", "Integration")]
+[Collection("Machine-wide pings")]
 public sealed class FolderChangesShould : IDisposable
 {
     private static readonly TimeSpan Patience = TimeSpan.FromSeconds(5);
@@ -128,8 +129,21 @@ public sealed class FolderChangesShould : IDisposable
         reported.Where(CountsForARepository).ShouldBeEmpty();
     }
 
-    public void Dispose()
+    /// <summary>A watch holds a handle on its folder; a scan follows a plan of many repositories, so every one started must be released.</summary>
+    [Fact]
+    public void ReleaseEveryWatchItStarts()
     {
+        changes.Watch(FolderPath.From(root), subfolders: true, reported.Enqueue).Dispose();
+        int before = HandleCounts.Settled();
+
+        List<IDisposable> watches = [.. Enumerable.Range(0, 100).Select(_ => changes.Watch(FolderPath.From(root), subfolders: true, reported.Enqueue))];
+        watches.ForEach(watch => watch.Dispose());
+
+        (HandleCounts.Settled() - before).ShouldBeLessThan(25);
+        GC.KeepAlive(watches);
+    }
+
+    public void Dispose()    {
         Directory.Delete(root, recursive: true);
     }
 
