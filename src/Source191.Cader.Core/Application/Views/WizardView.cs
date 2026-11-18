@@ -79,20 +79,7 @@ public static class WizardView
     {
         int step = direction < 0 ? -1 : 1;
 
-        return Nearest(rows, target, step) ?? Nearest(rows, target, -step) ?? target;
-    }
-
-    private static int? Nearest(IReadOnlyList<WizardRow> rows, int from, int step)
-    {
-        for (int index = from; index >= 0 && index < rows.Count; index += step)
-        {
-            if (rows[index] is WizardRow.Offered)
-            {
-                return index;
-            }
-        }
-
-        return null;
+        return WizardState.Nearest(rows, target, step) ?? WizardState.Nearest(rows, target, -step) ?? target;
     }
 
     private static WizardState Confirmed(WizardState state)
