@@ -53,7 +53,7 @@ public sealed class WorktreesScreenDefinitionShould
 
         definition.Columns.Select(column => column.Cell(row, Fixtures.Noon, int.MaxValue)).ShouldBe(
         [
-            @"Northwind.Billing › ~\source\worktrees\Northwind.Billing-invoice-pdf",
+            @"~\source\worktrees\Northwind.Billing-invoice-pdf",
             Wording.HealthCell(WorktreeHealthKind.Ok),
             string.Empty,
             "2h00m",
@@ -62,13 +62,34 @@ public sealed class WorktreesScreenDefinitionShould
     }
 
     [Fact]
-    public void NameTheRepositoryAndTheBranchInTheWorktreeCellOfABranchRow()
+    public void NameTheBranchInTheWorktreeCellOfABranchRow()
     {
         WorktreeRow branch = Row(new LastCommit.Unknown()) with { Path = Repository, Head = new Head.OnBranch(BranchName.From("spike-refunds")), Health = WorktreeHealth.CheckedOutNowhere };
         WorktreeRow origin = branch with { Head = new Head.OnBranch(BranchName.From("c-new-bug")), Health = WorktreeHealth.OnlyOnOrigin };
 
-        definition.Columns[0].Cell(branch, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › spike-refunds");
-        definition.Columns[0].Cell(origin, Fixtures.Noon, int.MaxValue).ShouldBe("Northwind.Billing › c-new-bug");
+        definition.Columns[0].Cell(branch, Fixtures.Noon, int.MaxValue).ShouldBe("spike-refunds");
+        definition.Columns[0].Cell(origin, Fixtures.Noon, int.MaxValue).ShouldBe("c-new-bug");
+    }
+
+    [Theory]
+    [InlineData(@"D:\work\Northwind.Billing-invoice-pdf", "invoice-pdf")]
+    [InlineData(@"C:\Users\me\source\repos\Northwind.Billing\src\Api", @"src\Api")]
+    [InlineData(@"D:\work\spike", "spike")]
+    [InlineData(@"C:\Users\me\scratch\Northwind.Billing-old", @"~\scratch\Northwind.Billing-old")]
+    public void ShowNoRepositoryInTheWorktreeCell(string folder, string cell)
+    {
+        WorktreeRow row = Row(new LastCommit.Unknown()) with { Path = FolderPath.From(folder) };
+
+        definition.Columns[0].Cell(row, Fixtures.Noon, int.MaxValue).ShouldBe(cell);
+        definition.Columns[0].Cell(row, Fixtures.Noon, 4).ShouldBe(TextFit.CutEnd(cell, 4));
+    }
+
+    [Fact]
+    public void NameAHeadingByRepository()
+    {
+        IScreenDefinition<WorktreesViewState, WorktreeRow> screen = definition;
+
+        screen.Heading(Row(new LastCommit.Unknown())).ShouldBe("Northwind.Billing");
     }
 
     [Theory]
