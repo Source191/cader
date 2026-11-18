@@ -43,6 +43,8 @@ public static partial class Wording
             ConfigRow.DefaultBase => "Default base",
             ConfigRow.BeforeBranching => "Before branching",
             ConfigRow.DefaultPlace => "Default place",
+            ConfigRow.SessionsRefresh => "Sessions refresh",
+            ConfigRow.WorktreesRefresh => "Worktrees refresh",
             ConfigRow.CheckForUpdates => "Check for updates",
             ConfigRow.DiagnosticLog => "Diagnostic log",
             ConfigRow.Setup setup => ConfigSetting(setup.Item),
@@ -63,6 +65,8 @@ public static partial class Wording
         ConfigRow.DefaultBase => "New worktrees branch from origin's default branch (see Before branching), or from HEAD.",
         ConfigRow.BeforeBranching => "What happens before a new worktree branches from origin: fetch it, fetch and fast-forward, or nothing.",
         ConfigRow.DefaultPlace => "Where the wizard opened with n starts a session: a new worktree, or the repository's current branch.",
+        ConfigRow.SessionsRefresh => "How often the sessions are listed on their own; showing the tab, an action and F5 list them too.\n0 turns the timer off, and a waiting session's bell then rings only at the next refresh; Enter changes it.",
+        ConfigRow.WorktreesRefresh => "How often the shown Worktrees tab rescans on its own; showing it, an action and F5 rescan it too.\n0 turns the timer off; Enter changes it.",
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
         ConfigRow.DiagnosticLog => "Writes the diagnostic log to a file, named on the Diagnostic log file row below; Enter turns it on or off.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
@@ -81,6 +85,8 @@ public static partial class Wording
             ConfigRow.DefaultBase defaultBase => Describe(defaultBase.Base),
             ConfigRow.BeforeBranching before => Describe(before.Choice),
             ConfigRow.DefaultPlace place => Describe(place.Place),
+            ConfigRow.SessionsRefresh refresh => Describe(refresh.Interval),
+            ConfigRow.WorktreesRefresh refresh => Describe(refresh.Interval),
             ConfigRow.CheckForUpdates check => check.On ? "on" : "off",
             ConfigRow.DiagnosticLog log => log.On ? "on" : "off",
             ConfigRow.Setup setup => SetupValue(setup.Item, setup.State, now, zone),
@@ -104,6 +110,14 @@ public static partial class Wording
             _ => scope.ToString(),
         };
     }
+
+    /// <summary>A refresh interval as its Config row reads: every second, every N seconds, or off.</summary>
+    public static string Describe(RefreshInterval interval) => interval.Seconds switch
+    {
+        0 => "off",
+        1 => "every second",
+        int seconds => string.Create(CultureInfo.InvariantCulture, $"every {seconds} seconds"),
+    };
 
     /// <summary>Where a new worktree's branch starts, as the Default base row, its dialog and the wizard name it: origin's remote-tracking branch, after the update config.json's beforeBranching chooses, or HEAD.</summary>
     public static string Describe(WorktreeBase worktreeBase)

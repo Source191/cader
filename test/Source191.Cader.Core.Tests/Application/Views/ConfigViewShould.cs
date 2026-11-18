@@ -259,7 +259,7 @@ public sealed class ConfigViewShould
     {
         ConfigViewState filtered = Press(Loaded, Key.Slash, Key.Of('w'), Key.Of('o'), Key.Of('r'), Key.Of('k'), Key.Enter);
 
-        filtered.List.Visible.Select(row => row.Key).ShouldBe(["root:1", "worktree-root"]);
+        filtered.List.Visible.Select(row => row.Key).ShouldBe(["root:1", "worktree-root", "worktrees-refresh"]);
     }
 
     [Theory]
@@ -394,8 +394,8 @@ public sealed class ConfigViewShould
     {
         ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, []))).State;
 
-        oneRoot.Title.Shown.ShouldBe(14);
-        oneRoot.Title.Total.ShouldBe(14);
+        oneRoot.Title.Shown.ShouldBe(16);
+        oneRoot.Title.Total.ShouldBe(16);
     }
 
     [Fact]

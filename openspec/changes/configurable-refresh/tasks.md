@@ -21,7 +21,7 @@
 
 ## 4. The Config rows and their dialog
 
-- [ ] 4.1 Red then green: `ConfigRowsShould` states the rows read Default place, Sessions refresh, Worktrees refresh, Check for updates in that order, with values every 5 seconds, every 15 seconds, every second for 1 and off for 0, and the counts read 10 settings for one root; add the two `ConfigRow` cases and their `Wording` (values, labels, tooltips with the bell sentence on Sessions) with `WordingShould` facts.
+- [x] 4.1 Red then green: `ConfigRowsShould` states the rows read Default place, Sessions refresh, Worktrees refresh, Check for updates in that order, with values every 5 seconds, every 15 seconds, every second for 1 and off for 0, and the counts read 10 settings for one root; add the two `ConfigRow` cases and their `Wording` (values, labels, tooltips with the bell sentence on Sessions) with `WordingShould` facts.
 - [ ] 4.2 Red then green: `ConfigViewShould` states Enter on either row opens the settings dialog on its field, and c and f say the value is not a path; `SettingsViewShould` states typing `60` and Save in the Worktrees refresh dialog saves 60, typing `ten` keeps the dialog open with the problem on that field, and the dialog opens on the saved value; add the two `SettingsField` members and the reducer cases, with the problem's words in `Wording`.
 - [ ] 4.3 `Tui\SettingsDialog` shows the one box for an interval field, bound to the reducer as the worktree root's box is; `SmokeScript` gains a step that opens Sessions refresh and closes it with Esc (its marker from `Wording`), and `SmokeScriptShould` stays green. Verify by `dotnet run -- smoke` from `tools\HeadlessTerminal` against a local install.
 

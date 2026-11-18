@@ -143,7 +143,7 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, []);
 
-        rows.Skip(9).ShouldBe(
+        rows.Skip(11).ShouldBe(
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)),
             new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(TestSettings.DefaultClaudeFolder)),
@@ -161,11 +161,11 @@ public sealed class ConfigRowsShould
         IReadOnlyList<ConfigRow> saved = ConfigRows.For(TestSettings.For([Repos], @"D:\worktrees"), AllSetUp, []);
 
         rows.OfType<ConfigRow.Heading>().Count().ShouldBe(1);
-        rows[6].ShouldBeOfType<ConfigRow.CheckForUpdates>();
-        rows[7].ShouldBeOfType<ConfigRow.DiagnosticLog>();
-        rows[8].ShouldBeOfType<ConfigRow.Heading>();
-        rows[9].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
-        saved[8].Key.ShouldBe(rows[8].Key);
+        rows[8].ShouldBeOfType<ConfigRow.CheckForUpdates>();
+        rows[9].ShouldBeOfType<ConfigRow.DiagnosticLog>();
+        rows[10].ShouldBeOfType<ConfigRow.Heading>();
+        rows[11].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
+        saved[10].Key.ShouldBe(rows[10].Key);
     }
 
     private static readonly RowAccount.Known Work = new(new KnownAccount(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("work")), LoggedInNow: true);
@@ -192,7 +192,7 @@ public sealed class ConfigRowsShould
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, [Personal, Work]);
 
         Wording.ConfigCounts(rows).ShouldBe([new TextPart("10 settings", TextTone.Plain)]);
-        ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(rows)).State.List.Rows.Count(row => row is not ConfigRow.Heading).ShouldBe(16);
+        ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(rows)).State.List.Rows.Count(row => row is not ConfigRow.Heading).ShouldBe(18);
     }
 
     [Fact]
