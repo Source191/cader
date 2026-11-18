@@ -8,8 +8,8 @@
 ## 2. Wizard
 
 - [x] 2.1 `WizardState.FirstChoice`: answer `Nearest(rows, 0, 1)`, moving `Nearest` from `WizardView` into `WizardState`; `WizardViewShould` and `WizardStateShould` stay green. Apply `<=` for `<` in the walk's bound by hand and see `NarrowChoicesAsTheFilterChanges` fail, then revert. Commit.
-- [ ] 2.2 `WizardViewShould`: with no selection, a click on the Folders heading selects the root below it. Commit.
-- [ ] 2.3 `WizardView.Selected`: `?? index` for `?? -1` (design 3); the new fact stays green, and `<=` for `<` in `Landing` by hand makes it fail. Commit.
+- [x] 2.2 `WizardViewShould`: with no selection, a click on the Folders heading selects the root below it. Commit.
+- [x] 2.3 `WizardView.Selected`: `?? index` for `?? -1` (design 3); the new fact stays green, and `<=` for `<` in `Landing` by hand makes it fail. Commit.
 
 ## 3. Contract
 
