@@ -7,7 +7,7 @@ namespace Source191.Cader.TestDoubles;
 /// Every state port in memory, with the same rules as the file store: recent repositories most recent first and
 /// capped at ten, one created-worktree record per path.
 /// </summary>
-public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion
+public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedWorktrees, IUserConfig, IUpdateCheckRecords, ILastRunVersion, IKnownAccounts
 {
     private const int RecentLimit = 10;
 

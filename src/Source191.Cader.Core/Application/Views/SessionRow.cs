@@ -27,4 +27,7 @@ public sealed record SessionRow(Session Session, SessionLocation Location, Head 
     /// <summary>What the session's process and everything it started use; nothing to measure for a session with no process, or whose process has gone.</summary>
     public SessionMemory Memory { get; init; } = new SessionMemory.NothingToMeasure();
 
+    /// <summary>The account the session belongs to, as far as its transcript and the accounts Cader has seen say.</summary>
+    public RowAccount Account { get; init; } = new RowAccount.Unrecorded();
+
 }

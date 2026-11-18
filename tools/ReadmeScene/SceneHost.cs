@@ -65,6 +65,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         ClaudeVersionReport claudeVersion = await claude.VersionAsync(cancellationToken);
         Started start = Started.From(version, claudeVersion, Environment.OSVersion.Version, Environment.Version, Console.WindowWidth, Console.WindowHeight);
 
+        using AccountCatalogue accounts = new(claude, store, clock);
+        await accounts.LoadAsync();
         using PullRequestCatalogue pullRequests = new(
             gitCli,
             new PullRequestHosts(new GitHubPullRequests(processes, new ProgramLocation.Found(executables.GitHub)), new AzureDevOpsPullRequests(processes, new ProgramLocation.Found(executables.AzureDevOps))),
@@ -95,7 +97,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         HeaderSettingsRow header = new(version, ClaudeCodeSupport.Check(claudeVersion), updates, processRegistry, Environment.ProcessId);
         ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log));
         FolderLabels folderLabels = new(settings, home);
-        SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests);
+        SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, log);
         SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal"), clock), new ClaudeSettings(folders.ClaudeHome), store, logFiles, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, log);
         ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, fileFolders, counts.Refreshes);

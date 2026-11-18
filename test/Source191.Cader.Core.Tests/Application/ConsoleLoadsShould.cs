@@ -39,6 +39,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly CurrentSettings settings = TestSettings.Current(Root);
     private readonly PullRequestCatalogue catalogue;
+    private readonly AccountCatalogue accounts;
     private readonly DiagnosticLog log;
     private readonly RefreshCounts refreshes;
 
@@ -46,6 +47,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     {
         log = new DiagnosticLog(clock, []);
         refreshes = new RefreshCounts(clock, log);
+        accounts = new AccountCatalogue(new ClaudeCli(new FakeProcessRunner(), Claude), store, clock);
         catalogue = new PullRequestCatalogue(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));
     }
 
@@ -178,7 +180,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     private ConsoleLoads Loads(FakeDiagnosticLogFiles logFiles)
     {
         GitCli git = new(gitRuns, "git");
-        SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue);
+        SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue, accounts);
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
@@ -188,5 +190,6 @@ public sealed class ConsoleLoadsShould : IDisposable
     public void Dispose()
     {
         catalogue.Dispose();
+        accounts.Dispose();
     }
 }

@@ -10,7 +10,7 @@ namespace Source191.Cader.Application;
 /// Turns listed sessions into table rows by asking git about each working directory (cached, because that is
 /// three processes per directory) and checking for live tabs. A directory that no longer exists is never asked of git.
 /// </summary>
-public sealed class SessionRowEnricher(IGit git, IFolders folders, ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock, ITranscripts transcripts, PullRequestCatalogue pullRequests)
+public sealed class SessionRowEnricher(IGit git, IFolders folders, ITabRegistry tabs, IProcessRegistry processes, TimeProvider clock, ITranscripts transcripts, PullRequestCatalogue pullRequests, AccountCatalogue accounts)
 {
     private static readonly TimeSpan CacheWindow = TimeSpan.FromSeconds(30);
 
@@ -31,6 +31,7 @@ public sealed class SessionRowEnricher(IGit git, IFolders folders, ITabRegistry 
             SessionRow row = new(session, located.Location, located.Head, tab, transcripts.HasMessages(session.SessionId))
             {
                 Memory = MemoryOf(session, processTable),
+                Account = accounts.Find(transcripts.OwnerOf(session.SessionId)),
             };
             rows.Add(located.Location is SessionLocation.InRepository inRepository ? row with { PullRequest = pullRequests.Find(inRepository.Checkout, located.Head) } : row);
             if (located is { Location: SessionLocation.InRepository { Checkout: FolderPath checkout }, Head: Head.OnBranch on })
@@ -41,6 +42,7 @@ public sealed class SessionRowEnricher(IGit git, IFolders folders, ITabRegistry 
 
         // Never awaited: the rows show what the catalogue already holds, and a later refresh picks up what lands.
         _ = pullRequests.RefreshStaleAsync(branches);
+        _ = accounts.RefreshStaleAsync();
 
         return rows;
     }

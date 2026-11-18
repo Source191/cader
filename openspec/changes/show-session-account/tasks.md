@@ -25,10 +25,10 @@
 
 ## 5. Account catalogue and rows
 
-- [ ] 5.1 `AccountCatalogueShould`: `Find` answers `Unrecorded`, `Unseen`, and `Known` with `LoggedInNow` true or false from loaded accounts and a login; then `Application\AccountCatalogue` with `LoadAsync` and `Find`; verify with the Core tests
-- [ ] 5.2 `AccountCatalogueShould`: `RefreshStaleAsync` remembers a new login as the next free number and writes the store, updates a changed email and keeps the label, does nothing within a minute (`FakeTimeProvider`), runs one login at a time, and leaves no current login after `LoggedOut` or `NotRead`; then the refresh; verify with the Core tests
-- [ ] 5.3 `AccountCatalogueShould`: `RenameAsync` writes the new label and answers changed, and answers unchanged for the same label; then the rename; verify with the Core tests
-- [ ] 5.4 `SessionRowEnricherShould`: each row carries the `RowAccount` for its transcript's owner, and a slow login never delays `EnrichAsync`; then `SessionRow.Account` and the enricher's calls; verify with the Core tests
+- [x] 5.1 `AccountCatalogueShould`: `Find` answers `Unrecorded`, `Unseen`, and `Known` with `LoggedInNow` true or false from loaded accounts and a login; then `Application\AccountCatalogue` with `LoadAsync` and `Find`; verify with the Core tests
+- [x] 5.2 `AccountCatalogueShould`: `RefreshStaleAsync` remembers a new login as the next free number and writes the store, updates a changed email and keeps the label, does nothing within a minute (`FakeTimeProvider`), runs one login at a time, and leaves no current login after `LoggedOut` or `NotRead`; then the refresh; verify with the Core tests
+- [x] 5.3 `AccountCatalogueShould`: `RenameAsync` writes the new label and answers changed, and answers unchanged for the same label; then the rename; verify with the Core tests
+- [x] 5.4 `SessionRowEnricherShould`: each row carries the `RowAccount` for its transcript's owner, and a slow login never delays `EnrichAsync`; then `SessionRow.Account` and the enricher's calls; verify with the Core tests
 
 ## 6. Sessions column and pane
 

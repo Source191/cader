@@ -37,6 +37,8 @@ internal static class ConsoleComposition
         using CancellationTokenSource versionTimeout = new(TimeSpan.FromSeconds(5));
         Task<ClaudeVersionReport> claudeVersion = launch.Claude.VersionAsync(versionTimeout.Token);
         using PullRequestCatalogue pullRequests = PullRequests(parts, launch.Git);
+        using AccountCatalogue accounts = new(launch.Claude, parts.Store, TimeProvider.System);
+        await accounts.LoadAsync();
         ScreenClipboard clipboard = new();
         using WingetPackageVersions packageVersions = new(parts.Version, new HttpClientHandler());
         string updateCheckOptOut = Environment.GetEnvironmentVariable(UpdateCheckOptOut.VariableName) ?? string.Empty;
@@ -49,7 +51,7 @@ internal static class ConsoleComposition
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
-        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests);
+        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests, accounts);
         ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
@@ -120,9 +122,10 @@ internal static class ConsoleComposition
         CurrentSettings settings,
         Folders folders,
         ClaudeTranscripts transcripts,
-        PullRequestCatalogue pullRequests)
+        PullRequestCatalogue pullRequests,
+        AccountCatalogue accounts)
     {
-        SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests);
+        SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
         SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, new ClaudeSettings(parts.ClaudeFolder.Folder.Value), parts.Store, parts.LogFiles, parts.ClaudeFolder, parts.Store.ConfigFile, parts.Log);
 
