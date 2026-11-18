@@ -1,6 +1,8 @@
 # Tasks
 
-Implement with Claude Opus 5.5 (`claude-opus-5-5`) at high effort (design.md, Implementation model and effort). Each task is one red, green, refactor cycle with a commit per step; the test named first is the one to make fail.
+**Implement with:** Claude Opus 5.5 (`claude-opus-5-5`) at high effort, because the change crosses Application and the Tui and a heading's drawing needs judgement against a real run (design.md, Implementation model and effort).
+
+Each task is one red, green, refactor cycle with a commit per step; the test named first is the one to make fail.
 
 ## 1. Grouped lines (Application)
 

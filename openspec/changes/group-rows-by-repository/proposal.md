@@ -35,6 +35,7 @@ None.
 
 ## Impact
 
+- **Implement with:** Claude Opus 5.5 (`claude-opus-5-5`) at high effort: it crosses Application and the Tui, and how a heading draws in Terminal.Gui needs judgement against a real run.
 - `Application\Views`: `SessionsViewState` and `WorktreesViewState` order rows by group first; a new grouped-lines projection of the visible rows (headings between groups) that `IListViewState` exposes; `ListSelection`'s selection, filter and title logic are unchanged, because headings are never rows.
 - `Domain\Sessions`: the attention order is applied within a group.
 - `Tui`: `TableSource`, `ColumnSizing`, `TableToolTips` and `TableBody` draw lines rather than rows, so a heading has its own colour, no tooltip and never widens a column; `SessionsScreenDefinition` loses REPOSITORY and makes NAME elastic; `WorktreesScreenDefinition` drops the repository from WORKTREE; each definition names a group's heading.
