@@ -41,11 +41,11 @@ Enter on an account row SHALL open a dialog holding the account's label, as rena
 - **THEN** `accounts.json` and the row are unchanged
 
 ### Requirement: An account row describes itself
-While an account row is selected, and as its tooltip, the Config tab SHALL say that the label names the account in the Sessions tab's ACCOUNT column and that Enter renames it. c and f on an account row SHALL say it holds no path.
+An account row's description, shown as its tooltip like every other row's, SHALL say that the label names the account in the Sessions tab's ACCOUNT column and that Enter renames it. c and f on an account row SHALL say it holds no path.
 
-#### Scenario: Status line for an account row
-- **WHEN** the user selects Account work
-- **THEN** the status line says the label names this account in the ACCOUNT column and Enter renames it
+#### Scenario: Tooltip on an account row
+- **WHEN** the mouse rests on Account work
+- **THEN** a tooltip says the label names this account in the ACCOUNT column and Enter renames it
 
 #### Scenario: Copy on an account row
 - **WHEN** the user presses c on Account work

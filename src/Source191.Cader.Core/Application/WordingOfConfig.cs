@@ -46,7 +46,9 @@ public static partial class Wording
             ConfigRow.CheckForUpdates => "Check for updates",
             ConfigRow.DiagnosticLog => "Diagnostic log",
             ConfigRow.Setup setup => ConfigSetting(setup.Item),
-            ConfigRow.Heading => "Setup",
+            ConfigRow.Heading { Section: ConfigSection.Setup } => "Setup",
+            ConfigRow.Heading => "Accounts",
+            ConfigRow.Account account => $"Account {account.Known.Account.Label.Value}",
             _ => row.ToString(),
         };
     }
@@ -64,6 +66,7 @@ public static partial class Wording
         ConfigRow.CheckForUpdates => "Whether to ask the winget community repository once a day for a newer release, which U then installs.",
         ConfigRow.DiagnosticLog => "Writes the diagnostic log to a file, named on the Diagnostic log file row below; Enter turns it on or off.",
         ConfigRow.Setup setup => SetupDescription(setup.Item),
+        ConfigRow.Account => "The label names this account in the Sessions tab's ACCOUNT column; Enter renames it.",
         _ => string.Empty,
     };
 
@@ -82,6 +85,7 @@ public static partial class Wording
             ConfigRow.DiagnosticLog log => log.On ? "on" : "off",
             ConfigRow.Setup setup => SetupValue(setup.Item, setup.State, now, zone),
             ConfigRow.Heading => string.Empty,
+            ConfigRow.Account account => AccountValue(account.Known),
             _ => row.ToString(),
         };
     }

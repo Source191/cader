@@ -11,7 +11,7 @@ namespace Source191.Cader.Application;
 /// runs none of its own. The listing, the enrichment and the scan are each timed as a refresh part; the scan's wait for the
 /// first listing is not part of its time.
 /// </summary>
-public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enricher, WorktreeInventory inventory, SetupFactsReader setup, CurrentSettings settings, IFolders folders, RefreshCounts refreshes)
+public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enricher, WorktreeInventory inventory, SetupFactsReader setup, CurrentSettings settings, IFolders folders, AccountCatalogue accounts, RefreshCounts refreshes)
 {
     /// <summary>The Sessions tab's rows and the automated runs of the same listing.</summary>
     public async Task<ViewInput> LoadSessionsAsync(CancellationToken cancellationToken)
@@ -33,11 +33,11 @@ public sealed class ConsoleLoads(LatestSessions sessions, SessionRowEnricher enr
     /// <summary>The Config tab's rows with the setup read now, each repository root whose folder is not found marked so.</summary>
     public async Task<ViewInput> ReadConfigAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<ConfigRow> rows = ConfigRows.For(settings.Value, await setup.ReadAsync(cancellationToken));
+        IReadOnlyList<ConfigRow> rows = ConfigRows.For(settings.Value, await setup.ReadAsync(cancellationToken), accounts.Accounts);
 
         return new ConfigRowsLoaded([.. rows.Select(row => row is ConfigRow.RepositoryRoot root ? root with { Found = folders.DirectoryExists(root.Path.Value) } : row)]);
     }
 
     /// <summary>The Config tab's rows before the setup has been read, with the settings as they are now.</summary>
-    public IReadOnlyList<ConfigRow> ConfigRowsWhileReading() => ConfigRows.For(settings.Value, SetupFacts.Reading);
+    public IReadOnlyList<ConfigRow> ConfigRowsWhileReading() => ConfigRows.For(settings.Value, SetupFacts.Reading, accounts.Accounts);
 }

@@ -21,7 +21,7 @@ namespace Source191.Cader.Core.Tests.Application.Diagnostics;
 /// fixtures full of names, folders, ids, a prompt and program output that names them, record none of those values in
 /// any line, in the counts or in the crash file.
 /// </summary>
-public sealed class DiagnosticsPrivacyShould
+public sealed class DiagnosticsPrivacyShould : IDisposable
 {
     private const string Claude = @"C:\Users\me\.local\bin\claude.exe";
     private const string OwnExecutable = @"C:\Users\me\.dotnet\tools\cader.exe";
@@ -35,6 +35,10 @@ public sealed class DiagnosticsPrivacyShould
     private const string Job = "81cdb0f9";
     private const string SessionIdentity = "1a4d2d86-8e87-44fe-a9f7-61d47d481ae3";
     private const string Prompt = "Refactor the PaymentGateway retry loop";
+    private const string Email = "ledger@northwind.example";
+    private const string OrganisationName = "Northwind Traders";
+    private const string Organisation = "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91";
+    private const string Label = "ledger";
     private const string GitRefusal = @"fatal: 'C:/Users/me/source/worktrees/Northwind.Orders-fix-flaky-tests' contains modified or untracked files, use --force to delete it";
 
     private static readonly string Listing = $$"""[{"pid":4242,"id":"{{Job}}","cwd":"C:\\Users\\me\\source\\repos\\Northwind.Orders","kind":"background","startedAt":1,"sessionId":"{{SessionIdentity}}","name":"{{Name}}","status":"idle","state":"blocked"}]""";
@@ -43,7 +47,7 @@ public sealed class DiagnosticsPrivacyShould
     /// <summary>Every value the fixtures above seed, in each spelling a program might print it.</summary>
     private static readonly string[] Seeded =
     [
-        @"C:\Users\me", "C:/Users/me", @"C:\\Users\\me", "Northwind", Branch, Name, Job, SessionIdentity, Prompt, "PaymentGateway", "fatal", "modified or untracked",
+        @"C:\Users\me", "C:/Users/me", @"C:\\Users\\me", "Northwind", Branch, Name, Job, SessionIdentity, Prompt, "PaymentGateway", "fatal", "modified or untracked", Email, "northwind", OrganisationName, Organisation, Label,
     ];
 
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
@@ -54,6 +58,7 @@ public sealed class DiagnosticsPrivacyShould
     private readonly RefreshCounts refreshes;
     private readonly FakeProcessRunner children;
     private readonly RecordedProcessRunner processes;
+    private readonly AccountCatalogue accounts;
 
     public DiagnosticsPrivacyShould()
     {
@@ -63,8 +68,10 @@ public sealed class DiagnosticsPrivacyShould
             .AnswerAll(new ProcessResult(0, $"worktree {Repository}\nbranch refs/heads/{Branch}\n", string.Empty))
             .Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty))
             .Answer(request => request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty))
-            .Answer(request => request.Arguments.Contains("remove"), new ProcessResult(128, string.Empty, GitRefusal));
+            .Answer(request => request.Arguments.Contains("remove"), new ProcessResult(128, string.Empty, GitRefusal))
+            .Answer(request => request.Arguments.Contains("auth"), new ProcessResult(0, $$"""{"loggedIn":true,"email":"{{Email}}","orgId":"{{Organisation}}","orgName":"{{OrganisationName}}"}""", string.Empty));
         processes = new RecordedProcessRunner(children, log, counts, clock);
+        accounts = new AccountCatalogue(new ClaudeCli(processes, Claude), new InMemoryState(), clock);
     }
 
     [Fact]
@@ -202,6 +209,7 @@ public sealed class DiagnosticsPrivacyShould
         await RemoveADirtyWorktreeAsync(git);
         await ScanSlowlyAsync(git);
         await FailALoadAsync();
+        await RenameAnAccountAsync(claude, git);
         await Should.ThrowAsync<InvalidOperationException>(() => crashes.GuardAsync(() => throw new InvalidOperationException($"{Name} in {Worktree} stopped: {Prompt}")));
     }
 
@@ -223,13 +231,24 @@ public sealed class DiagnosticsPrivacyShould
         outcome.ShouldBeOfType<OpenTabOutcome.Opened>();
     }
 
+    /// <summary>The login is read, remembered under its number and renamed, with the log on.</summary>
+    private async Task RenameAnAccountAsync(ClaudeCli claude, GitCli git)
+    {
+        await accounts.RefreshStaleAsync();
+        KnownAccount remembered = accounts.Accounts.Single().Account;
+
+        Outcome outcome = await Dispatcher(claude, git).DispatchAsync(new RenameAccount(remembered, AccountLabel.From(Label)), CancellationToken.None);
+
+        outcome.ShouldBeOfType<RenameAccountOutcome.Renamed>();
+    }
+
     private EffectDispatcher Dispatcher(ClaudeCli claude, GitCli git)
     {
         InMemoryState store = new();
         LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile(), new FakeDiagnosticLogFiles());
 
-        return Composition.Handlers(ports, launches, new TabScripts(Claude, OwnExecutable), TestSettings.Current(), new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
+        return Composition.Handlers(ports, launches, new TabScripts(Claude, OwnExecutable), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
     }
 
     private async Task StartASessionWithAPromptAsync(ClaudeCli claude, GitCli git)
@@ -276,4 +295,6 @@ public sealed class DiagnosticsPrivacyShould
     {
         await Attempt.RunAsync<int>(log, FailureSite.Load, CodeName.For(typeof(SessionsViewState)), () => throw new InvalidOperationException($"Could not read {Repository} for {Name}"), _ => 0);
     }
+
+    public void Dispose() => accounts.Dispose();
 }

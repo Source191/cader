@@ -44,7 +44,7 @@ internal static class ConsoleComposition
         string updateCheckOptOut = Environment.GetEnvironmentVariable(UpdateCheckOptOut.VariableName) ?? string.Empty;
         UpdateCheckSwitch updateSwitch = new(settings, updateCheckOptOut);
         UpdateCheck updates = new(parts.Version, updateSwitch.IsOn, parts.Store, packageVersions, TimeProvider.System);
-        EffectDispatcher dispatcher = Dispatcher(parts, launch, settings, home, transcripts, folders, clipboard);
+        EffectDispatcher dispatcher = Dispatcher(parts, launch, settings, accounts, home, transcripts, folders, clipboard);
         ClaudeVersionReport claudeVersionReport = await claudeVersion;
         Started start = parts.RecordStart(claudeVersionReport);
 
@@ -73,6 +73,7 @@ internal static class ConsoleComposition
         SharedParts parts,
         LaunchParts launch,
         CurrentSettings settings,
+        AccountCatalogue accounts,
         FolderPath home,
         ClaudeTranscripts transcripts,
         Folders folders,
@@ -87,7 +88,7 @@ internal static class ConsoleComposition
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, own, parts.Log, parts.LogFile);
+        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
     }
 
     private static DialogEffects Dialogs(
@@ -132,7 +133,7 @@ internal static class ConsoleComposition
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
 
-        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, parts.Counts.Refreshes);
+        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, accounts, parts.Counts.Refreshes);
     }
 
     private static ConsoleScreen Screen(

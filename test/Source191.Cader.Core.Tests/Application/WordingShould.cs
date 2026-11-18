@@ -120,6 +120,10 @@ public sealed class WordingShould
     {
         Wording.Describe(NameProblem.Missing).ShouldBe("A session name is required.");
         Wording.Describe(new StatusMessage.InvalidName(NameProblem.Missing)).ShouldBe("A session name is required.");
+        Wording.Describe(new StatusMessage.InvalidAccountLabel(AccountLabelProblem.Blank)).ShouldBe("An account label cannot be blank.");
+        Wording.Describe(new StatusMessage.InvalidAccountLabel(AccountLabelProblem.TooLong)).ShouldBe("An account label is at most 8 characters.");
+        Wording.Describe(new StatusMessage.InvalidAccountLabel(AccountLabelProblem.ControlCharacter)).ShouldBe("An account label cannot hold a control character.");
+        Wording.Describe(new StatusMessage.InvalidAccountLabel(AccountLabelProblem.Taken)).ShouldBe("Another account already uses that label.");
     }
 
     [Fact]

@@ -84,6 +84,8 @@ public sealed class WordingOfOutcomesShould
     {
         Wording.Describe(new ToggleUpdateCheckOutcome(On: true)).ShouldBe("The update check is on: the winget community repository is asked at most once a day.");
         Wording.Describe(new ToggleUpdateCheckOutcome(On: false)).ShouldBe("The update check is off.");
+        Wording.Describe(new RenameAccountOutcome.Renamed(AccountLabel.From("1"), AccountLabel.From("work"))).ShouldBe("Account 1 is now work.");
+        Wording.Describe(new RenameAccountOutcome.Unchanged(AccountLabel.From("work"))).ShouldBe("Account work keeps its label.");
     }
 
     [Fact]

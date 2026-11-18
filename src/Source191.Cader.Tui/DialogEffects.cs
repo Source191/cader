@@ -24,6 +24,7 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         [typeof(OpenLaunchWizard)] = (self, context, _) => self.StartSession(context, new WizardOrigin.Anywhere()),
         [typeof(StartSessionIn)] = (self, context, effect) => self.StartSession(context, WizardOrigin.In(((StartSessionIn)effect).Row.Path)),
         [typeof(AskForNewName)] = (_, context, effect) => Rename(context, ((AskForNewName)effect).Session),
+        [typeof(AskForAccountLabel)] = (_, context, effect) => RenameAccount(context, ((AskForAccountLabel)effect).Account),
         [typeof(CloseEmptyTerminals)] = (_, context, effect) => ConfirmCloseEmpty(context, (CloseEmptyTerminals)effect),
         [typeof(DeleteSession)] = (self, context, effect) => self.ConfirmDelete(context, (DeleteSession)effect),
         [typeof(ConfirmForceRemove)] = (_, context, effect) => ConfirmForce(context, (ConfirmForceRemove)effect),
@@ -83,6 +84,16 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         {
             TypedAnswer.Typed typed => new RenameConfirmed(session, typed.Text),
             TypedAnswer.Cancelled => new RenameCancelled(session),
+        };
+        context.Reduce(answered);
+    }
+
+    private static void RenameAccount(IEffectContext context, KnownAccount account)
+    {
+        ViewInput answered = NameDialog.Show(context.App, context.Diagnostics, DialogName.AccountLabel, Wording.AccountLabelTitle, Wording.AccountLabelPrompt(account), account.Label.Value) switch
+        {
+            TypedAnswer.Typed typed => new AccountLabelConfirmed(account, typed.Text),
+            TypedAnswer.Cancelled => new AccountLabelCancelled(),
         };
         context.Reduce(answered);
     }

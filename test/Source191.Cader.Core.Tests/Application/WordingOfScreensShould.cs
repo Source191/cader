@@ -31,6 +31,7 @@ public sealed class WordingOfScreensShould
     [InlineData(DialogName.Memory, "Cader (Memory)")]
     [InlineData(DialogName.ProblemReport, "Cader (Report a problem)")]
     [InlineData(DialogName.ClearLog, "Cader (Clear log)")]
+    [InlineData(DialogName.AccountLabel, "Cader (Rename account)")]
     public void NameEachDialogInTheTabTitle(DialogName dialog, string title)
     {
         Wording.TabTitleDuring(dialog).ShouldBe(title);
@@ -88,7 +89,7 @@ public sealed class WordingOfScreensShould
     [Fact]
     public void HaveATabTitleForEveryDialog()
     {
-        Enum.GetValues<DialogName>().Length.ShouldBe(16, "a new dialog needs its own NameEachDialogInTheTabTitle case");
+        Enum.GetValues<DialogName>().Length.ShouldBe(17, "a new dialog needs its own NameEachDialogInTheTabTitle case");
     }
 
     [Theory]
@@ -192,9 +193,9 @@ public sealed class WordingOfScreensShould
     {
         SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
 
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts)).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() })).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.HiddenByTerminal(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json") })).ShouldBe([new TextPart("8 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts, [])).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() }, [])).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.HiddenByTerminal(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json") }, [])).ShouldBe([new TextPart("8 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
     }
 
     [Fact]

@@ -84,7 +84,7 @@ public sealed class ConsoleLoadsShould : IDisposable
 
         ViewInput read = await Loads().ReadConfigAsync(TestContext.Current.CancellationToken);
 
-        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp));
+        read.ShouldBeOfType<ConfigRowsLoaded>().Rows.ShouldBe(ConfigRows.For(settings.Value, nothingSetUp, []));
     }
 
     [Fact]
@@ -110,8 +110,8 @@ public sealed class ConsoleLoadsShould : IDisposable
         await settings.SaveAsync(settings.Value.WithUpdateCheckToggled());
         IReadOnlyList<ConfigRow> after = loads.ConfigRowsWhileReading();
 
-        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading));
-        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading));
+        before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading, []));
+        after.ShouldBe(ConfigRows.For(TestSettings.For(Root).WithUpdateCheckToggled(), SetupFacts.Reading, []));
         after.ShouldNotBe(before);
     }
 
@@ -184,7 +184,7 @@ public sealed class ConsoleLoadsShould : IDisposable
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
-        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, refreshes);
+        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, accounts, refreshes);
     }
 
     public void Dispose()

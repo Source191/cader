@@ -38,16 +38,16 @@
 
 ## 7. Config tab legend and rename
 
-- [ ] 7.1 `ConfigRowsShould`: no accounts means no Accounts heading; two accounts give the heading then rows in number-aware label order after the setup; counts stay 8 settings and the title counts 15 rows; then `ConfigRow.Heading`'s section, `ConfigRow.Account` and `ConfigRows.For`; verify with the Core tests
-- [ ] 7.2 `ConfigViewShould`: Down from the last setup row steps over the Accounts heading; a filter by `northwind` finds account rows by label, email or organisation and hides the heading; c and f on an account row say there is no path; verify with the Core tests
-- [ ] 7.3 `WordingOfConfigShould`: an account row's SETTING, VALUE (with logged in now), status-line description and tooltip; then the `Wording` members; verify with the Core tests
-- [ ] 7.4 `RenameAccountHandlerShould`: `RenameAccount` answers `Renamed(old, new)` and writes `InMemoryState`, or `Unchanged`; then `RenameAccountHandler`, `RenameAccountOutcome`, its line in `Composition.Handlers`, its words in `WordingOfOutcomes` and its tone in `Wording.ToneOf` with a line in `StatusTonesShould`; verify with `EffectDispatcherShould` and `HandlersShould`
-- [ ] 7.5 `ConfigViewShould`: Enter on an account row raises `AskForAccountLabel`; `AccountLabelConfirmed` with a good label raises `RenameAccount`; blank, too long, control character and taken (ignoring case) give a status message naming the problem; `AccountLabelCancelled` says nothing changed; then the reducer cases and their `StatusMessage` words; verify with the Core tests
-- [ ] 7.6 Show `AskForAccountLabel` with `NameDialog` under `DialogName.AccountLabel` in `DialogEffects`, reloading the Config rows after the outcome as a settings save does; verify with `DialogEffectsShould` and `ScreenLoopShould`
+- [x] 7.1 `ConfigRowsShould`: no accounts means no Accounts heading; two accounts give the heading then rows in number-aware label order after the setup; counts stay 8 settings and the title counts 15 rows; then `ConfigRow.Heading`'s section, `ConfigRow.Account` and `ConfigRows.For`; verify with the Core tests
+- [x] 7.2 `ConfigViewShould`: Down from the last setup row steps over the Accounts heading; a filter by `northwind` finds account rows by label, email or organisation and hides the heading; c and f on an account row say there is no path; verify with the Core tests
+- [x] 7.3 `WordingOfConfigShould`: an account row's SETTING, VALUE (with logged in now) and tooltip description; then the `Wording` members; verify with the Core tests
+- [x] 7.4 `RenameAccountHandlerShould`: `RenameAccount` answers `Renamed(old, new)` and writes `InMemoryState`, or `Unchanged`; then `RenameAccountHandler`, `RenameAccountOutcome`, its line in `Composition.Handlers`, its words in `WordingOfOutcomes` and its tone in `Wording.ToneOf` with a line in `StatusTonesShould`; verify with `EffectDispatcherShould` and `HandlersShould`
+- [x] 7.5 `ConfigViewShould`: Enter on an account row raises `AskForAccountLabel`; `AccountLabelConfirmed` with a good label raises `RenameAccount`; blank, too long, control character and taken (ignoring case) give a status message naming the problem; `AccountLabelCancelled` says nothing changed; then the reducer cases and their `StatusMessage` words; verify with the Core tests
+- [x] 7.6 Show `AskForAccountLabel` with `NameDialog` under `DialogName.AccountLabel` in `DialogEffects`, reloading the Config rows after the outcome as a settings save does; verify with `DialogEffectsShould` and `ScreenLoopShould`
 
 ## 8. Privacy, wiring and contract
 
-- [ ] 8.1 `DiagnosticsPrivacyShould`: a rename and a failed login run with the log on leave no email, label, organisation name or id in the log or a problem report; verify with the Core tests
+- [x] 8.1 `DiagnosticsPrivacyShould`: a rename and a failed login run with the log on leave no email, label, organisation name or id in the log or a problem report; verify with the Core tests
 - [ ] 8.2 Wire `AccountCatalogue`, `IKnownAccounts` and its `LoadAsync` in `ConsoleComposition`, and the same parts in `tools\ReadmeScene`'s `SceneHost` with made-up Northwind accounts in `scene.json`; verify with `dotnet build -c Debug` and `tools\ReadmeScene.Tests`
 - [ ] 8.3 `ClaudeContractShould` fact (`Category=ClaudeContract`): `auth status --json` has a boolean `loggedIn`, and when `email` and `orgId` are present the contract session's transcript has a `session-owner` line whose `organizationUuid` matches `orgId`; verify locally with `CADER_CLAUDE_CONTRACT=1` as `checks.md` says, and record which branch CI took
 
