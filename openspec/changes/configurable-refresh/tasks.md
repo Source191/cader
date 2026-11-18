@@ -10,7 +10,7 @@
 
 ## 2. The schedule
 
-- [ ] 2.1 Red then green: `RefreshScheduleShould` (Core.Tests, Application, `FakeTimeProvider`) states a schedule is due once its interval has passed since `Started()`, never while the interval is `Off`, picks up a new interval from its function on the next ask, and that `Started()` from any cause pushes the next due time back a whole interval; add `Application\RefreshSchedule` (decision 1).
+- [x] 2.1 Red then green: `RefreshScheduleShould` (Core.Tests, Application, `FakeTimeProvider`) states a schedule is due once its interval has passed since `Started()`, never while the interval is `Off`, picks up a new interval from its function on the next ask, and that `Started()` from any cause pushes the next due time back a whole interval; add `Application\RefreshSchedule` (decision 1).
 
 ## 3. F5
 
