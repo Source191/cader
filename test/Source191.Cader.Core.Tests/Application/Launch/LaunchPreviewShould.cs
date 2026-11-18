@@ -1,3 +1,4 @@
+using Source191.Cader.Application;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Domain;
 
@@ -7,7 +8,7 @@ public sealed class LaunchPreviewShould
 {
     private static readonly RepositoryChoice Repository = new("Northwind.Orders", FolderPath.From(@"C:\repos\Northwind.Orders"), IsRepository: true);
     private static readonly FolderPath WorktreeRoot = FolderPath.From(@"C:\Users\me\source\worktrees");
-    private static readonly RepositoryChoice NoRepository = new("repos (no repository)", FolderPath.From(@"C:\repos"), IsRepository: false);
+    private static readonly RepositoryChoice NoRepository = new(@"C:\repos", FolderPath.From(@"C:\repos"), IsRepository: false);
 
     [Fact]
     public void SayTheSessionRunsOnTheCurrentBranchWhenNoWorktreeIsWanted()
@@ -30,10 +31,11 @@ public sealed class LaunchPreviewShould
             .ShouldBe(@"The name becomes the worktree folder Northwind.Orders-<name> under C:\Users\me\source\worktrees and its branch.");
     }
 
-    [Fact]
-    public void WarnThatAWorktreeNeedsARepository()
+    [Theory]
+    [InlineData(LaunchMode.NewWorktree)]
+    [InlineData(LaunchMode.CurrentBranch)]
+    public void SayAFolderChoiceIsNotARepositoryWhateverTheMode(LaunchMode mode)
     {
-        LaunchPreview.Describe(NoRepository, "anything", LaunchMode.NewWorktree, WorktreeRoot)
-            .ShouldBe("A worktree needs a repository; this folder is not one.");
+        LaunchPreview.Describe(NoRepository, "anything", mode, WorktreeRoot).ShouldBe(Wording.PreviewFolder(@"C:\repos"));
     }
 }

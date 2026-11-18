@@ -58,7 +58,8 @@ public static partial class Wording
     /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
     public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
 
-    public static string PreviewNeedsRepository => "A worktree needs a repository; this folder is not one.";
+    /// <summary>The wizard's preview for a folder choice, which starts in the folder whatever Where says.</summary>
+    public static string PreviewFolder(string folderName) => $"Runs in {folderName}, which is not a repository, so Where does not apply.";
 
     /// <summary>The wizard's preview for a worktree whose name has not yielded a folder yet.</summary>
     public static string PreviewBeforeAName(string repositoryName, FolderPath worktreeRoot) => $"The name becomes the worktree folder {repositoryName}-<name> under {worktreeRoot} and its branch.";

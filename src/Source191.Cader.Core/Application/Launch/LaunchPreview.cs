@@ -10,14 +10,14 @@ public static class LaunchPreview
 {
     public static string Describe(RepositoryChoice repository, string nameText, LaunchMode mode, FolderPath worktreeRoot)
     {
+        if (!repository.IsRepository)
+        {
+            return Wording.PreviewFolder(repository.Name);
+        }
+
         if (mode == LaunchMode.CurrentBranch)
         {
             return Wording.PreviewCurrentBranch(repository.Name);
-        }
-
-        if (!repository.IsRepository)
-        {
-            return Wording.PreviewNeedsRepository;
         }
 
         if (!WorktreeSlug.TryParse(nameText, out WorktreeSlug? slug))
