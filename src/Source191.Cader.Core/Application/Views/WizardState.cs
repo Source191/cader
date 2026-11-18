@@ -63,11 +63,20 @@ public sealed record WizardState(
     };
 
     /// <summary>The first row that is a choice, or none when there is no choice to select.</summary>
-    internal static int? FirstChoice(IReadOnlyList<WizardRow> rows)
-    {
-        int index = rows.ToList().FindIndex(row => row is WizardRow.Offered);
+    internal static int? FirstChoice(IReadOnlyList<WizardRow> rows) => Nearest(rows, 0, 1);
 
-        return index < 0 ? null : index;
+    /// <summary>The first choice walking from a row by a step of one up or down, or none before the list ends.</summary>
+    internal static int? Nearest(IReadOnlyList<WizardRow> rows, int from, int step)
+    {
+        for (int index = from; index >= 0 && index < rows.Count; index += step)
+        {
+            if (rows[index] is WizardRow.Offered)
+            {
+                return index;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>What the name will become, or nothing while no repository is chosen.</summary>

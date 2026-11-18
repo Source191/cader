@@ -468,6 +468,14 @@ public sealed class WizardViewShould
     }
 
     [Fact]
+    public void MoveDownFromAHeadingClickedWithNoSelection()
+    {
+        WizardState unselected = Opened with { SelectedIndex = null };
+
+        Reduce(unselected, new WizardInput.ChoiceSelected(2)).SelectedIndex.ShouldBe(3, "with nothing selected a click on the Folders heading moves on to the root below it");
+    }
+
+    [Fact]
     public void SelectTheFirstChoiceAndRefuseOneBeyondTheLast()
     {
         WizardState onTheLast = Reduce(Opened, new WizardInput.ListMoved(2));
