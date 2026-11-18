@@ -33,6 +33,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- A stray space typed along with n no longer empties the new-session wizard's list: the wizard's filter and the tables' / filter ignore spaces and invisible characters before the text, and a new session's name loses spaces at either end; the wizard no longer has a line for a filter of only blanks, since that filter now shows every repository (#339)
 - Renaming a session just moved to the background with /bg no longer loses it: Claude Code gives such a session a transcript with no messages until its next turn, so rename now says it has no messages yet and to send it something first, instead of removing it and starting a copy that fails with "source session not found" (#327)
 - Enter on a working session whose tab is open switches to that tab again, instead of saying the tab could not be found: Claude Code puts a spinning glyph before a working session's tab title, and Cader now finds the tab with or without it (#326)
 - A branch whose pull request was rebased before it merged, or that was moved forward to main and used again after its merge, no longer reads ▲ left behind on the Worktrees tab: only commits after the merge whose changes main lacks now count, and merge commits never do (#325)
