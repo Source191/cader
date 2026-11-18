@@ -30,6 +30,11 @@ public sealed class WordingOfConfigShould
         { new ConfigRow.BeforeBranching(BeforeBranching.None), "Before branching", "Nothing" },
         { new ConfigRow.DefaultPlace(LaunchMode.NewWorktree), "Default place", "New worktree" },
         { new ConfigRow.DefaultPlace(LaunchMode.CurrentBranch), "Default place", "Current branch" },
+        { new ConfigRow.SessionsRefresh(RefreshInterval.From(5)), "Sessions refresh", "every 5 seconds" },
+        { new ConfigRow.SessionsRefresh(RefreshInterval.From(1)), "Sessions refresh", "every second" },
+        { new ConfigRow.SessionsRefresh(RefreshInterval.Off), "Sessions refresh", "off" },
+        { new ConfigRow.WorktreesRefresh(RefreshInterval.From(15)), "Worktrees refresh", "every 15 seconds" },
+        { new ConfigRow.WorktreesRefresh(RefreshInterval.Off), "Worktrees refresh", "off" },
         { new ConfigRow.CheckForUpdates(On: true), "Check for updates", "on" },
         { new ConfigRow.CheckForUpdates(On: false), "Check for updates", "off" },
         { new ConfigRow.DiagnosticLog(On: true), "Diagnostic log", "on" },
@@ -71,6 +76,8 @@ public sealed class WordingOfConfigShould
             new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault),
             new ConfigRow.BeforeBranching(BeforeBranching.Fetch),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
+            new ConfigRow.SessionsRefresh(RefreshInterval.From(5)),
+            new ConfigRow.WorktreesRefresh(RefreshInterval.From(15)),
             new ConfigRow.CheckForUpdates(On: true),
             new ConfigRow.DiagnosticLog(On: true),
             .. Enum.GetValues<SetupItem>().Select(item => new ConfigRow.Setup(item, new SetupState.Reading())),
@@ -79,8 +86,15 @@ public sealed class WordingOfConfigShould
 
         string[] descriptions = [.. rows.Select(Wording.ConfigDescription)];
 
-        descriptions.ShouldAllBe(description => description.Length > 0 && description.Length <= 110);
+        descriptions.ShouldAllBe(description => description.Length > 0 && description.Split('\n', StringSplitOptions.None).All(line => line.Length <= 110));
         descriptions.Distinct().Count().ShouldBe(rows.Length);
+    }
+
+    [Fact]
+    public void SayWhatTheRefreshRowsDoInTheirTooltips()
+    {
+        Wording.ConfigDescription(new ConfigRow.SessionsRefresh(RefreshInterval.From(5))).ShouldBe("How often the sessions are listed on their own; showing the tab, an action and F5 list them too.\n0 turns the timer off, and a waiting session's bell then rings only at the next refresh; Enter changes it.");
+        Wording.ConfigDescription(new ConfigRow.WorktreesRefresh(RefreshInterval.Off)).ShouldBe("How often the shown Worktrees tab rescans on its own; showing it, an action and F5 rescan it too.\n0 turns the timer off; Enter changes it.");
     }
 
     [Fact]
