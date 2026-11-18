@@ -4,7 +4,7 @@ context: |
   Cader is a terminal console for Claude Code sessions and git worktrees on Windows 11, installed with winget as the self-contained program `cader`.
   Windows only: Windows Terminal (wt.exe, 1.25 or later), PowerShell 7, the Claude Code CLI 2.1.309 or later, git. No macOS or Linux support in this version.
   Sessions it starts are background sessions under Claude Code's supervisor (claude --bg -n <name>). It shells out to claude attach rather than hosting a session itself.
-  Depend only on the documented CLI surface: claude agents --json [--all], claude --bg, claude attach, claude stop, claude rm, claude --bg --resume. Never parse transcript JSONL or the ~/.claude/sessions folder beyond checking that a transcript file exists and reading each transcript line's top-level type until a user or assistant line is found. Resolve names to IDs before stop or rm, because those take only IDs.
+  Depend only on the documented CLI surface: claude agents --json [--all], claude --bg, claude attach, claude stop, claude rm, claude --bg --resume, claude auth status --json. Never parse transcript JSONL or the ~/.claude/sessions folder beyond checking that a transcript file exists, reading each transcript line's top-level type until a user or assistant line is found, and reading the organizationUuid of the first line whose type is session-owner. Resolve names to IDs before stop or rm, because those take only IDs.
   New worktrees go to <worktree root>\<repository>-<slug> on a branch named <slug>, never under .claude/worktrees; the worktree root is a setting (default worktrees beside the first repository root). Sibling worktrees made by versions before 0.8.0 stay where they are and are still listed and removed. It creates and removes them itself with git worktree commands.
   A new worktree is the wizard's default launch mode; the current branch is the alternative, and the only mode for a fixed folder (n on the worktrees view) and cader here.
   Windows Terminal can open a tab (title, tabColor, startingDirectory, suppressApplicationTitle); its command line can only focus a tab by index and cannot list tabs, but Windows UI Automation can select a tab item by its title in the owning WindowsTerminal.exe window, which is how the console switches to a tab it opened. A tab can set its own title (OSC 2) and tab background (OSC 4 palette entry 264) with escape sequences unless it was launched with an explicit tabColor. A tab closes by itself when its root shell exits with code 0.
@@ -20,7 +20,7 @@ context: |
 
 rules:
   proposal:
-    - State what is out of scope, including multiple Claude accounts, which is a later change
+    - State what is out of scope, including multiple Claude accounts beyond naming a session's owner, which is a later change
   tasks:
     - Each task is one red-green-refactor cycle or smaller, with the test named before the code
     - Order tasks so the pure domain rules come before adapters and adapters before screens
