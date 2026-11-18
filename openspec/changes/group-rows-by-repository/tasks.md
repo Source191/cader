@@ -7,7 +7,7 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 ## 1. Grouped lines (Application)
 
 - [x] 1.1 `TableLinesShould.PutAHeadingBeforeEachRunOfOneKey`, then add `Application\Views\TableLine<TRow>` (nested `Heading(TRow First)` and `Row(TRow Item)`) and `TableLines.Grouped`; verify the fact passes and `SealedTypesShould`, `NullFreeModelsShould` and `ClosedHierarchiesShould` stay green
-- [ ] 1.2 `TableLinesShould.GiveNoHeadingForNoRows` and `KeepOneHeadingForOneGroup`; verify they pass
+- [x] 1.2 `TableLinesShould.GiveNoHeadingForNoRows` and `KeepOneHeadingForOneGroup`; verify they pass
 - [ ] 1.3 `ListSelectionShould` facts that a grouped list's `Move`, `Load`, first load and filter never select a heading and that a filter leaves no empty group's heading in `Lines`; add `Lines` to `IListViewState<TRow>` and each view state (Config one `Row` per row); verify `ListSelectionShould` and `ReducersShould` pass
 
 ## 2. Group order (Domain and Application)
