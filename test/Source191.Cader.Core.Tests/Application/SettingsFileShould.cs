@@ -181,7 +181,7 @@ public sealed class SettingsFileShould
     [Fact]
     public void RoundTripThroughTheFileRecord()
     {
-        Settings settings = Settings.Resolve([FolderPath.From(@"C:\repos"), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: BeforeBranching.None);
+        Settings settings = Settings.Resolve([FolderPath.From(@"C:\repos"), FolderPath.From(@"D:\work")], new WorktreeRootChoice.At(FolderPath.From(@"E:\trees")), EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]), WorktreeBase.Head, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: LaunchMode.CurrentBranch, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: BeforeBranching.None, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         UserConfig config = SettingsFile.ToConfig(settings);
 

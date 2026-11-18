@@ -119,7 +119,7 @@ public sealed class SettingsViewShould
     [Fact]
     public void OpenTheBeforeBranchingDialogOnTheSavedValue()
     {
-        Settings pulling = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: BeforeBranching.Pull);
+        Settings pulling = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: BeforeBranching.Pull, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         SettingsState.Open(pulling, new SettingsScope.BeforeBranching(), Exists, Installed).Text.BeforeBranching.ShouldBe(BeforeBranching.Pull);
         Opened(new SettingsScope.BeforeBranching()).Text.BeforeBranching.ShouldBe(BeforeBranching.Fetch);

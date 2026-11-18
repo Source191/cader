@@ -8,7 +8,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public sealed record Settings
 {
-    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching)
+    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching, RefreshInterval sessionsRefresh, RefreshInterval worktreesRefresh)
     {
         RepositoryRoots = repositoryRoots;
         WorktreeRoot = worktreeRoot;
@@ -18,6 +18,8 @@ public sealed record Settings
         DefaultPlace = defaultPlace;
         DiagnosticLog = diagnosticLog;
         BeforeBranching = beforeBranching;
+        SessionsRefresh = sessionsRefresh;
+        WorktreesRefresh = worktreesRefresh;
     }
 
     public IReadOnlyList<FolderPath> RepositoryRoots { get; }
@@ -40,6 +42,12 @@ public sealed record Settings
     /// <summary>What is done before a new worktree branches from origin's default branch: fetch it, fetch and fast-forward the local branch too, or nothing.</summary>
     public BeforeBranching BeforeBranching { get; }
 
+    /// <summary>How often the Sessions tab lists the sessions on its own; off for no timer.</summary>
+    public RefreshInterval SessionsRefresh { get; }
+
+    /// <summary>How often the Worktrees tab rescans on its own while it is shown; off for no timer.</summary>
+    public RefreshInterval WorktreesRefresh { get; }
+
     /// <summary>The base a file without one branches from: origin's default branch.</summary>
     public const WorktreeBase BaseWhenUnset = WorktreeBase.RemoteDefault;
 
@@ -55,11 +63,17 @@ public sealed record Settings
     /// <summary>A file without the setting fetches origin's default branch before a new worktree branches from it.</summary>
     public const BeforeBranching BeforeBranchingWhenUnset = BeforeBranching.Fetch;
 
+    /// <summary>A file without the setting lists the sessions every 5 seconds.</summary>
+    public static readonly RefreshInterval SessionsRefreshWhenUnset = RefreshInterval.From(5);
+
+    /// <summary>A file without the setting rescans the shown Worktrees tab every 15 seconds.</summary>
+    public static readonly RefreshInterval WorktreesRefreshWhenUnset = RefreshInterval.From(15);
+
     /// <summary>
     /// Fills in what is missing: no roots means <c>&lt;home&gt;\source\repos</c>; <see cref="WorktreeRootChoice.BesideFirstRoot"/> means <c>worktrees</c>
     /// beside the first root (inside it when it has no parent, such as <c>D:\</c>). A file's missing base, update setting, place, log and before-branching setting are <see cref="BaseWhenUnset"/>, <see cref="ChecksForUpdatesWhenUnset"/>, <see cref="PlaceWhenUnset"/>, <see cref="DiagnosticLogWhenUnset"/> and <see cref="BeforeBranchingWhenUnset"/>.
     /// </summary>
-    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching)
+    public static Settings Resolve(IReadOnlyList<FolderPath> roots, WorktreeRootChoice worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, FolderPath home, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching, RefreshInterval sessionsRefresh, RefreshInterval worktreesRefresh)
     {
         IReadOnlyList<FolderPath> resolvedRoots = roots is { Count: > 0 } ? roots : [home.Combine(Path.Combine("source", "repos"))];
         FolderPath first = resolvedRoots[0];
@@ -70,7 +84,7 @@ public sealed record Settings
             _ => throw new UnreachableException(),
         };
 
-        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace, diagnosticLog, beforeBranching);
+        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace, diagnosticLog, beforeBranching, sessionsRefresh, worktreesRefresh);
     }
 
     /// <summary>
@@ -114,14 +128,16 @@ public sealed record Settings
             CheckForUpdates,
             DefaultPlace,
             DiagnosticLog,
-            BeforeBranching);
+            BeforeBranching,
+            string.Empty,
+            string.Empty);
     }
 
     /// <summary>These settings with the update check turned the other way.</summary>
-    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching);
+    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh);
 
     /// <summary>These settings with the diagnostic log turned the other way.</summary>
-    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog, BeforeBranching);
+    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh);
 
     public bool Equals(Settings? other)
     {
@@ -147,14 +163,14 @@ public sealed record Settings
 
         if (text.Preset != EditorPreset.Custom)
         {
-            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching));
+            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, SessionsRefreshWhenUnset, WorktreesRefreshWhenUnset));
         }
 
         IReadOnlyList<string> arguments = CommandArguments.Split(text.Arguments);
 
         return EditorChoice.Validate(text.Executable, arguments, fileExists) switch
         {
-            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching)),
+            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, SessionsRefreshWhenUnset, WorktreesRefreshWhenUnset)),
             EditorChoiceValidation.Refused refused => Refused(refused.Problem),
             _ => throw new UnreachableException(),
         };

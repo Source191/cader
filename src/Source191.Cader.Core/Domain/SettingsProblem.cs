@@ -28,4 +28,7 @@ public abstract record SettingsProblem
     public sealed record ExecutableMissing(string Path) : SettingsProblem;
 
     public sealed record NoFolderPlaceholder : SettingsProblem;
+
+    /// <summary>The interval typed for a tab is not a whole number of seconds from 0 to 3600.</summary>
+    public sealed record RefreshIntervalNotWholeSeconds(RefreshedTab Tab) : SettingsProblem;
 }

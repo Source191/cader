@@ -121,7 +121,7 @@ public sealed class ConfigRowsShould
     public void CarryACustomEditor()
     {
         EditorChoice subl = EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]);
-        Settings settings = Settings.Resolve([FolderPath.From(Repos)], new WorktreeRootChoice.BesideFirstRoot(), subl, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Repos)], new WorktreeRootChoice.BesideFirstRoot(), subl, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         ConfigRows.For(settings, AllSetUp, []).OfType<ConfigRow.OpenFolderWith>().Single().Editor.ShouldBe(subl);
     }

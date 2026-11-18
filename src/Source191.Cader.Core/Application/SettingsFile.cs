@@ -23,7 +23,9 @@ public static class SettingsFile
             config.CheckForUpdates ?? Settings.ChecksForUpdatesWhenUnset,
             DefinedOr(config.DefaultPlace, Settings.PlaceWhenUnset),
             config.DiagnosticLog ?? Settings.DiagnosticLogWhenUnset,
-            DefinedOr(config.BeforeBranching, Settings.BeforeBranchingWhenUnset));
+            DefinedOr(config.BeforeBranching, Settings.BeforeBranchingWhenUnset),
+            Settings.SessionsRefreshWhenUnset,
+            Settings.WorktreesRefreshWhenUnset);
     }
 
     public static UserConfig ToConfig(Settings settings)
