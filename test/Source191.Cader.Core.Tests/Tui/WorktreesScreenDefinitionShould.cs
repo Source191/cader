@@ -17,6 +17,7 @@ public sealed class WorktreesScreenDefinitionShould
     private static readonly FolderPath Worktree = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf");
 
     private readonly WorktreesScreenDefinition definition;
+    private readonly RefreshSchedule schedule;
 
     public WorktreesScreenDefinitionShould()
     {
@@ -24,7 +25,8 @@ public sealed class WorktreesScreenDefinitionShould
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
-        definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock));
+        schedule = new RefreshSchedule(() => Settings.WorktreesRefreshWhenUnset, clock);
+        definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock), schedule);
     }
 
     [Fact]
@@ -140,9 +142,9 @@ public sealed class WorktreesScreenDefinitionShould
     }
 
     [Fact]
-    public void RefreshEveryFifteenSeconds()
+    public void RefreshOnTheScheduleItWasGiven()
     {
-        definition.Refresh.ShouldBe(new TabRefresh.Every(TimeSpan.FromSeconds(15)));
+        definition.Refresh.ShouldBe(new TabRefresh.Every(schedule));
     }
 
     private static WorktreeRow Row(LastCommit lastCommit) => new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 0, lastCommit, new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);

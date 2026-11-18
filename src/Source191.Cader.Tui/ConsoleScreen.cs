@@ -32,7 +32,9 @@ public sealed class ConsoleScreen(
     TimeProvider clock,
     ScreenContext context,
     string claudeExecutable,
-    FolderLabels folders)
+    FolderLabels folders,
+    RefreshSchedule sessionsRefresh,
+    RefreshSchedule worktreesRefresh)
     : IConsoleScreen
 {
     private readonly Func<CancellationToken, Task<ViewInput>> loadSessions = loadSessions;
@@ -50,6 +52,8 @@ public sealed class ConsoleScreen(
     private readonly ScreenContext context = context;
     private readonly string claudeExecutable = claudeExecutable;
     private readonly FolderLabels folders = folders;
+    private readonly RefreshSchedule sessionsRefresh = sessionsRefresh;
+    private readonly RefreshSchedule worktreesRefresh = worktreesRefresh;
 
     public ConsoleExit Run(ConsoleState initial, WhatsNewAtStart opening)
     {
@@ -139,8 +143,8 @@ public sealed class ConsoleScreen(
             settings = [.. Enumerable.Range(0, SettingsRows).Select(row => new View { X = 0, Y = row, Width = Dim.Fill(), Height = 1 })];
             tabs = new Tabs { X = 0, Y = StripTop, Width = Dim.Fill(), Height = Dim.Fill(2) };
             tabs.SetScheme(Palette.Plain(Palette.Grey));
-            sessions = new TableBody<SessionsViewState, SessionRow>(new SessionsScreenDefinition(screen.notifier, screen.activity, screen.claudeExecutable, screen.folders, new SessionDetails(screen.details, screen.clock)), screen.dialogs, screen.dispatcher, screen.loadSessions, screen.clock, context, app, this, initial.Sessions);
-            worktrees = new TableBody<WorktreesViewState, WorktreeRow>(new WorktreesScreenDefinition(screen.folders, new WorktreeDetails(screen.details, screen.clock)), screen.dialogs, screen.dispatcher, screen.scanWorktrees, screen.clock, context, app, this, initial.Worktrees);
+            sessions = new TableBody<SessionsViewState, SessionRow>(new SessionsScreenDefinition(screen.notifier, screen.activity, screen.claudeExecutable, screen.folders, new SessionDetails(screen.details, screen.clock), screen.sessionsRefresh), screen.dialogs, screen.dispatcher, screen.loadSessions, screen.clock, context, app, this, initial.Sessions);
+            worktrees = new TableBody<WorktreesViewState, WorktreeRow>(new WorktreesScreenDefinition(screen.folders, new WorktreeDetails(screen.details, screen.clock), screen.worktreesRefresh), screen.dialogs, screen.dispatcher, screen.scanWorktrees, screen.clock, context, app, this, initial.Worktrees);
             config = new TableBody<ConfigViewState, ConfigRow>(new ConfigScreenDefinition(screen.clock), screen.dialogs, screen.dispatcher, screen.readConfig, screen.clock, context, app, this, initial.Config);
             tabs.Add(sessions.View, worktrees.View, config.View);
             Array.ForEach([sessions.View, worktrees.View, config.View], view => view.SetScheme(Palette.TabFrame()));
@@ -419,38 +423,41 @@ public sealed class ConsoleScreen(
         private int HeaderSpan() => sessions.View.Title.Length + worktrees.View.Title.Length + config.View.Title.Length + 4;
 
         /// <summary>
-        /// The sessions are listed at once and on every tick, shown or not. The worktrees are scanned once at once, whichever
-        /// tab is shown (the scan waits for the first sessions listing), and on a tick only while their tab is shown. The
-        /// heartbeat beats on its own timeout, which Terminal.Gui keeps running under a dialog too.
+        /// The sessions are listed at once, and the worktrees scanned once at once, whichever tab is shown (the scan waits
+        /// for the first sessions listing). After that one ticker, at the heartbeat's interval, asks each tab's schedule
+        /// whether its timed refresh is due: the sessions' whether shown or not, the worktrees' only while their tab is
+        /// shown. The schedules read the interval from the current settings at each ask, so a saved interval applies on the
+        /// next tick. The heartbeat beats on its own timeout; Terminal.Gui keeps both running under a dialog too.
         /// </summary>
         private void StartRefreshing()
         {
-            Refresh(sessions, ListSessions);
-            Refresh(worktrees, () =>
-            {
-                if (Active == worktrees)
-                {
-                    ScanWorktrees();
-                }
-            });
-            Refresh(config, ReadConfig);
+            Every(Heartbeat.Interval, RefreshWhatIsDue);
             Every(Heartbeat.Interval, screen.context.Heartbeat.Beat);
             ListSessions();
             ScanWorktrees();
         }
 
-        /// <summary>Adds the tab's refresh timer, or none for a tab that never refreshes on one.</summary>
-        private void Refresh(ITabBody body, Action tick)
+        private void RefreshWhatIsDue()
         {
-            switch (body.Refresh)
+            if (IsDue(sessions))
             {
-                case TabRefresh.Every every:
-                    Every(every.Interval, tick);
-                    break;
-                case TabRefresh.Never:
-                    break;
-                default:
-                    throw new UnreachableException();
+                ListSessions();
+            }
+
+            if (Active == worktrees && IsDue(worktrees))
+            {
+                ScanWorktrees();
+            }
+        }
+
+        private static bool IsDue(ITabBody body) => body.Refresh is TabRefresh.Every every && every.Schedule.IsDue();
+
+        /// <summary>Tells the tab's schedule its refresh has started, from whatever cause, so the next timed one is a whole interval away.</summary>
+        private static void Started(ITabBody body)
+        {
+            if (body.Refresh is TabRefresh.Every every)
+            {
+                every.Schedule.Started();
             }
         }
 
@@ -475,6 +482,7 @@ public sealed class ConsoleScreen(
         {
             if (screen.listings.TryReserve())
             {
+                Started(sessions);
                 sessions.TriggerLoad();
             }
         }
@@ -488,6 +496,7 @@ public sealed class ConsoleScreen(
         {
             if (screen.scans.TryReserve())
             {
+                Started(worktrees);
                 worktrees.TriggerLoad();
             }
         }

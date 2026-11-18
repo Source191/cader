@@ -27,7 +27,7 @@
 
 ## 5. The screen follows the schedule
 
-- [ ] 5.1 `TabRefresh.Every` carries a `RefreshSchedule`; `SessionsScreenDefinition` and `WorktreesScreenDefinition` take theirs from the composition (reading `CurrentSettings.Value.SessionsRefresh` and `WorktreesRefresh`), and `ConsoleComposition` and `tools\ReadmeScene\SceneHost` build them. `ConsoleScreen` replaces the per-tab timers with one 250 ms ticker that asks each schedule, tells it `Started()` wherever it starts that tab's refresh, keeps the Worktrees timer's "only while shown" rule, and implements `RefreshShown()`. Untested wiring under the Tui rule; verify with `dotnet build -c Debug` and the full suite.
+- [x] 5.1 `TabRefresh.Every` carries a `RefreshSchedule`; `SessionsScreenDefinition` and `WorktreesScreenDefinition` take theirs from the composition (reading `CurrentSettings.Value.SessionsRefresh` and `WorktreesRefresh`), and `ConsoleComposition` and `tools\ReadmeScene\SceneHost` build them. `ConsoleScreen` replaces the per-tab timers with one 250 ms ticker that asks each schedule, tells it `Started()` wherever it starts that tab's refresh, keeps the Worktrees timer's "only while shown" rule, and implements `RefreshShown()`. Untested wiring under the Tui rule; verify with `dotnet build -c Debug` and the full suite.
 - [ ] 5.2 Manual, in a local install (`tools\install-local.ps1`, Claude Code variables cleared): set Worktrees refresh to 5, add a worktree in a shell and see it listed within about 5 seconds with the tab shown; set it to 0 and see it only on F5 or a show; press F5 on Sessions and see a session started elsewhere at once; press F5 in the wizard and see the session start. Record what was seen, the date and the build here.
 
 ## 6. Documents and release

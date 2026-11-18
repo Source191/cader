@@ -52,7 +52,7 @@ internal static class ConsoleComposition
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
         ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests, accounts);
-        ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels);
+        ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels, settings);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
         WhatsNewOnStart whatsNew = new(parts.Version, parts.Store, new PackagedReleaseNotes(parts.OwnFolder), parts.Log);
@@ -143,7 +143,8 @@ internal static class ConsoleComposition
         ScreenContext context,
         DialogEffects dialogs,
         EffectDispatcher dispatcher,
-        FolderLabels folderLabels)
+        FolderLabels folderLabels,
+        CurrentSettings settings)
     {
         StateTransitionNotifier notifier = new(Console.Out);
         SessionActivity activity = new(TimeProvider.System);
@@ -167,6 +168,8 @@ internal static class ConsoleComposition
             TimeProvider.System,
             context,
             launch.Programs.Claude,
-            folderLabels);
+            folderLabels,
+            new RefreshSchedule(() => settings.Value.SessionsRefresh, TimeProvider.System),
+            new RefreshSchedule(() => settings.Value.WorktreesRefresh, TimeProvider.System));
     }
 }

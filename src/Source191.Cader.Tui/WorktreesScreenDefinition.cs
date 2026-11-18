@@ -7,11 +7,11 @@ using Terminal.Gui.Drawing;
 namespace Source191.Cader.Tui;
 
 /// <summary>The worktrees view as the shared table screen shows it: its layout, columns, colours and the effects its keys raise.</summary>
-internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSource<WorktreeRow> detail) : IScreenDefinition<WorktreesViewState, WorktreeRow>
+internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSource<WorktreeRow> detail, RefreshSchedule schedule) : IScreenDefinition<WorktreesViewState, WorktreeRow>
 {
     public ConsoleTab Tab => ConsoleTab.Worktrees;
 
-    public TabRefresh Refresh => new TabRefresh.Every(TimeSpan.FromSeconds(15));
+    public TabRefresh Refresh => new TabRefresh.Every(schedule);
 
     public TableDetail<WorktreeRow> Detail => new TableDetail<WorktreeRow>.Pane(detail);
 
