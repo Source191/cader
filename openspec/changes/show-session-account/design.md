@@ -74,8 +74,8 @@ All text goes in `Wording`: `AccountColumn` and its `ColumnHelp` in `SessionsCol
 
 ## Risks / Trade-offs
 
-- [`session-owner` is not documented and may change] → A contract fact reads a contract session's transcript for the line and its `organizationUuid`, and `claude-code.md` records it with date and version. A missing line only blanks the column.
-- [CI authenticates with `CLAUDE_CODE_OAUTH_TOKEN`, so `auth status` there may give no email or `orgId`] → The contract fact asserts `loggedIn` is a boolean and, when `email` and `orgId` are present, that `orgId` is a GUID and matches the transcript's `organizationUuid`; otherwise it records that the shape was not checked. See open questions.
+- [`session-owner` is not documented and may change] → `claude-code.md` records it with date and version, and a missing line only blanks the column. No contract fact reads it: a session started with no prompt writes no transcript, and a prompt would make a model call, so a change to the line shows as blank ACCOUNT cells.
+- [CI authenticates with `CLAUDE_CODE_OAUTH_TOKEN`, so `auth status` there may give no email or `orgId`] → The contract fact asserts `loggedIn` is a boolean and that `LoginAsync` reads a login exactly when `auth status` names an email and an organisation id, so it holds either way. See open questions.
 - [Two seats in one organisation share a label] → Stated in the proposal; a later change could read `accountUuid` if anyone needs it.
 - [`accounts.json` holds emails on disc] → It is in the user's own `%LOCALAPPDATA%`, beside `.claude.json`, which already holds them, and it is never attached to a problem report or logged.
 - [A transcript with no owner line is reread whenever it changes] → Only while it is being written; a new CLI writes the line within its first lines, so the scan stops early.

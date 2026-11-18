@@ -49,7 +49,7 @@
 
 - [x] 8.1 `DiagnosticsPrivacyShould`: a rename and a failed login run with the log on leave no email, label, organisation name or id in the log or a problem report; verify with the Core tests
 - [x] 8.2 Wire `AccountCatalogue`, `IKnownAccounts` and its `LoadAsync` in `ConsoleComposition`, and the same parts in `tools\ReadmeScene`'s `SceneHost` with made-up Northwind accounts in `scene.json`; verify with `dotnet build -c Debug` and `tools\ReadmeScene.Tests`
-- [ ] 8.3 `ClaudeContractShould` fact (`Category=ClaudeContract`): `auth status --json` has a boolean `loggedIn`, and when `email` and `orgId` are present the contract session's transcript has a `session-owner` line whose `organizationUuid` matches `orgId`; verify locally with `CADER_CLAUDE_CONTRACT=1` as `checks.md` says, and record which branch CI took
+- [x] 8.3 `ClaudeContractShould` fact (`Category=ClaudeContract`): `auth status --json` has a boolean `loggedIn`, and `LoginAsync` reads a login exactly when it names an email and an organisation id (a promptless contract session writes no transcript, so its owner line cannot be read without a model call; recorded in `claude-code.md`); verify locally with `CADER_CLAUDE_CONTRACT=1` as `checks.md` says
 
 ## 9. Documentation and release
 

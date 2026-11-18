@@ -39,6 +39,28 @@ public sealed class ClaudeContractShould
         ReleaseVersion.TryParse(version.Text, out _).ShouldBeTrue($"claude --version gave \"{version.Text}\"");
     }
 
+    /// <summary>
+    /// auth status answers loggedIn, and when it names an email and an organisation id the console reads them as a login;
+    /// no value is printed. A session's session-owner line is not checked here: a session started with no prompt writes no
+    /// transcript before its first message (claude-code.md), and a prompt would make a model call.
+    /// </summary>
+    [Fact]
+    public async Task ReadTheLoginFromAuthStatus()
+    {
+        string executable = ClaudeContract.Executable();
+
+        ProcessResult raw = await runner.RunAsync(new ProcessRequest(executable, ["auth", "status", "--json"], WorkingFolder.Inherit), Cancellation);
+        ClaudeLogin login = await new ClaudeCli(runner, executable).LoginAsync(Cancellation);
+
+        raw.ExitCode.ShouldBe(0, "claude auth status --json failed");
+        using JsonDocument document = JsonDocument.Parse(raw.StandardOutput);
+        JsonElement root = document.RootElement;
+        root.GetProperty("loggedIn").ValueKind.ShouldBeOneOf(JsonValueKind.True, JsonValueKind.False);
+        bool namesAnAccount = root.TryGetProperty("email", out JsonElement email) && email.ValueKind is JsonValueKind.String
+            && root.TryGetProperty("orgId", out JsonElement organisation) && organisation.ValueKind is JsonValueKind.String;
+        (login is ClaudeLogin.LoggedIn).ShouldBe(namesAnAccount && root.GetProperty("loggedIn").ValueKind is JsonValueKind.True, "the console reads a login exactly when auth status names an email and an organisation id");
+    }
+
     [Fact]
     public async Task ListAStartedBackgroundSessionInAKnownState()
     {
