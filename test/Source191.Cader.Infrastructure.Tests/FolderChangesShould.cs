@@ -1,6 +1,8 @@
 using Source191.Cader.Adapters.Files;
+using Source191.Cader.Application;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using Source191.Cader.TestDoubles;
 using System.Collections.Concurrent;
 
 namespace Source191.Cader.Infrastructure.Tests;
@@ -84,9 +86,56 @@ public sealed class FolderChangesShould : IDisposable
         reported.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task ReportAWorktreeAddedOrRemovedAsAChangeThatCounts()
+    {
+        using TemporaryGitRoot git = new();
+        string repository = await git.CreateRepositoryAsync("Northwind.Orders");
+        using IDisposable watch = changes.Watch(FolderPath.From(Path.Combine(repository, ".git")), subfolders: true, reported.Enqueue);
+
+        string worktree = await git.AddSiblingWorktreeAsync(repository, "feature");
+        await UntilAsync(() => reported.Any(CountsForARepository));
+        reported.Clear();
+        await git.GitAsync(repository, "worktree", "remove", worktree);
+
+        await UntilAsync(() => reported.Any(CountsForARepository));
+    }
+
+    [Fact]
+    public async Task ReportNothingThatCountsForGitsEverydayWork()
+    {
+        using TemporaryGitRoot git = new();
+        string upstream = await git.CreateRepositoryAsync("Northwind.Upstream");
+        string repository = await git.CreateRepositoryAsync("Northwind.Orders");
+        await git.GitAsync(repository, "remote", "add", "origin", upstream);
+        string worktree = await git.AddSiblingWorktreeAsync(repository, "feature");
+        await git.CommitAFileAsync(upstream, "CHANGES.md");
+        await Task.Delay(Quiet, TestContext.Current.CancellationToken);
+        using IDisposable watch = changes.Watch(FolderPath.From(Path.Combine(repository, ".git")), subfolders: true, reported.Enqueue);
+
+        foreach (string checkout in new[] { repository, worktree })
+        {
+            await git.GitAsync(checkout, "status", "--porcelain");
+            await git.GitAsync(checkout, "worktree", "list", "--porcelain");
+            await git.GitAsync(checkout, "for-each-ref", "refs/heads");
+            await git.CommitAFileAsync(checkout, "NOTES.md");
+        }
+
+        await git.GitAsync(repository, "fetch", "origin");
+        await Task.Delay(Quiet, TestContext.Current.CancellationToken);
+
+        reported.ShouldNotBeEmpty("git wrote to its folder");
+        reported.Where(CountsForARepository).ShouldBeEmpty();
+    }
+
     public void Dispose()
     {
         Directory.Delete(root, recursive: true);
+    }
+
+    private static bool CountsForARepository(FolderChange change)
+    {
+        return ChangeFilter.Counts(WatchKind.Repository, change);
     }
 
     private static async Task UntilAsync(Func<bool> condition)
