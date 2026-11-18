@@ -4,116 +4,31 @@ namespace Source191.Cader.Core.Tests.Domain;
 
 public sealed class WhereLabelShould
 {
-    private const string LongRepository = "Northwind.Integration.CosmosDb.ChangeFeedMonitoring";
-
     [Fact]
-    public void NameTheRepositoryAndTheSlugOfAWorktreeMadeHere()
+    public void NameTheSlugOfAWorktreeMadeHere()
     {
-        WhereLabel.For("Northwind.Orders", "Northwind.Orders-fix-123", inRepository: true).Text.ShouldBe("Northwind.Orders › fix-123");
-    }
-
-    [Fact]
-    public void NameTheMainCheckoutByItsRepositoryAlone()
-    {
-        WhereLabel.For("Northwind.Orders", "Northwind.Orders", inRepository: true).Text.ShouldBe("Northwind.Orders");
+        WhereLabel.PlaceOf("Northwind.Orders", "Northwind.Orders-fix-123").ShouldBe("fix-123");
     }
 
     [Fact]
     public void NameAFolderInsideTheRepository()
     {
-        WhereLabel.For("Northwind.Orders", @"Northwind.Orders\src\Api", inRepository: true).Text.ShouldBe("Northwind.Orders › src\\Api");
+        WhereLabel.PlaceOf("Northwind.Orders", @"Northwind.Orders\src\Api").ShouldBe(@"src\Api");
     }
 
     [Fact]
-    public void NameAHandMadeFolderByItsLabel()
+    public void IgnoreCaseInTheRepositorysName()
     {
-        WhereLabel.For("Northwind.Orders", "spike", inRepository: true).Text.ShouldBe("Northwind.Orders › spike");
+        WhereLabel.PlaceOf("Northwind.Orders", "northwind.orders-fix-123").ShouldBe("fix-123");
     }
-
-    [Fact]
-    public void ShowTheLabelAloneOutsideARepository()
-    {
-        WhereLabel.For("notes", @"~\scratch\notes", inRepository: false).Text.ShouldBe(@"~\scratch\notes");
-    }
-
-    [Fact]
-    public void BeInsideARepositoryWithItsPlaceAndOutsideOneWithTheFolderLabel()
-    {
-        WhereLabel.For("Northwind.Orders", "Northwind.Orders-fix-123", inRepository: true).ShouldBe(new WhereLabel.Inside("Northwind.Orders", "fix-123"));
-        WhereLabel.For("notes", @"~\scratch\notes", inRepository: false).ShouldBe(new WhereLabel.Outside(@"~\scratch\notes"));
-    }
-
-    [Fact]
-    public void CutTheLabelOutsideARepositoryAtItsEnd()
-    {
-        new WhereLabel.Outside(@"~\scratch\notes").Fit(8).ShouldBe(@"~\scrat…");
-    }
-
-    [Fact]
-    public void ElideTheRepositoryFirst()
-    {
-        WhereLabel label = WhereLabel.For(LongRepository, $"{LongRepository}-fix-123", inRepository: true);
-
-        string fitted = label.Fit(57);
-
-        fitted.Length.ShouldBe(57);
-        fitted.ShouldEndWith("› fix-123");
-        fitted.Count(character => character == '…').ShouldBe(1);
-        fitted.ShouldStartWith(LongRepository[..8]);
-        fitted[..fitted.IndexOf(" › ", StringComparison.Ordinal)].ShouldEndWith(LongRepository[^8..]);
-        label.Fit(64).ShouldBe($"{LongRepository} › fix-123");
-        label.Fit(20).ShouldEndWith("› fix-123");
-        label.Fit(20).Length.ShouldBe(20);
-    }
-
-    public static TheoryData<WhereLabel> LabelsToFit =>
-    [
-        new WhereLabel.Inside("Northwind.Orders", "fix-123"),
-        new WhereLabel.Inside("Northwind.Orders", string.Empty),
-        new WhereLabel.Outside(@"~\scratch\notes"),
-    ];
 
     [Theory]
-    [MemberData(nameof(LabelsToFit))]
-    public void NeverAnswerMoreThanTheWidth(WhereLabel label)
+    [InlineData("spike")]
+    [InlineData(@"~\scratch\Northwind.Orders-old")]
+    [InlineData("Northwind.Orders")]
+    [InlineData("Northwind.OrdersArchive")]
+    public void NameAnyOtherFolderByItsWholeLabel(string label)
     {
-        for (int width = 0; width <= 4; width++)
-        {
-            label.Fit(width).Length.ShouldBeLessThanOrEqualTo(width);
-        }
-    }
-
-    [Fact]
-    public void KeepTheSeparatorForAPlaceOnly()
-    {
-        WhereLabel noPlace = new WhereLabel.Inside("Northwind.Orders", string.Empty);
-
-        for (int width = 0; width <= 6; width++)
-        {
-            noPlace.Fit(width).ShouldNotContain("›");
-        }
-
-        new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(5).ShouldBe("… › …");
-    }
-
-    [Fact]
-    public void RefuseANegativeWidthWhateverTheLabel()
-    {
-        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Outside("notes").Fit(-1)).ParamName.ShouldBe("width");
-        Should.Throw<ArgumentOutOfRangeException>(() => new WhereLabel.Inside("Northwind.Orders", "fix-123").Fit(-1)).ParamName.ShouldBe("width");
-    }
-
-    [Fact]
-    public void ShowTheWholeLabelWhenItFitsToTheLastCharacter()
-    {
-        new WhereLabel.Outside("notes").Fit(5).ShouldBe("notes");
-        new WhereLabel.Inside("a", "b").Fit(5).ShouldBe("a › b");
-        new WhereLabel.Inside(string.Empty, "x").Fit(4).ShouldBe(" › x");
-    }
-
-    [Fact]
-    public void ElideTheRepositoryWhenItHasExactlyThreeCharactersOfRoom()
-    {
-        new WhereLabel.Inside("Northwind", "x").Fit(7).ShouldBe("N…d › x");
+        WhereLabel.PlaceOf("Northwind.Orders", label).ShouldBe(label);
     }
 }
