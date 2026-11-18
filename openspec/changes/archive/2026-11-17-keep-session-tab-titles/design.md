@@ -19,15 +19,16 @@
 ## Decisions
 
 1. **First find which process writes the title, by trying the attach alone.** Set `$env:CLAUDE_CODE_DISABLE_TERMINAL_TITLE = '1'` in a hand-run attach of a working throwaway session and read the tab's name through UI Automation, as the 16 November probes did; if the glyph remains, start a throwaway session with the variable and attach without it. The result decides decision 2 and is recorded in `claude-code.md`.
-2. **Set it where it works, and nowhere else.**
-   - **The attach is enough:** `TabScripts.Attach` adds the assignment as its own line before the attach. It is a constant, so it needs no quoting, and it affects only that tab's shell.
-   - **The session writes the title:** the start and resume requests in `ClaudeCli` carry it in `Variables`, as the fetch carries `GIT_TERMINAL_PROMPT=0`. The session then skips the small-model title request too, which Cader's named sessions do not need.
-   - *Rejected: both always.* Each place it is set without effect is a line to explain and test.
+   - **Result (17 November 2026, CLI 2.1.326):** neither worked, and a third route did. UI Automation read a plain title throughout even without the variable (the control did not reproduce the 16 November glyph, with the workstation apparently locked), so the evidence is `claude attach` captured in the headless terminal's pseudo-console: the control writes about thirty `OSC 0;◐ <name>` and `OSC 0;◑ <name>` titles; the variable on the attach, on the `claude --bg` start, or on both leaves them all. A session asked to print its own environment read a variable set by the `claude --bg` client as unset, so a background session's environment is its supervisor's, and `Variables` on a request never reaches it. `claude --bg --settings '{"env":{"CLAUDE_CODE_DISABLE_TERMINAL_TITLE":"1"}}'` leaves no glyph title in the capture, on a start and on a resume.
+2. **Set it where it works, and nowhere else: as settings on the session's start and resume.** `ClaudeCli` adds the constant pair `--settings` and `{"env":{"CLAUDE_CODE_DISABLE_TERMINAL_TITLE":"1"}}` to `--bg` and to `--bg --resume`, after the existing flags and before an opening prompt. The JSON is a constant with no user text, `--settings` applies to that session alone, and Cader writes nothing to the user's `settings.json`. The session then skips the small-model title request too, which Cader's named sessions do not need.
+   - *Rejected: the variable in the attach script* (the original 2.1). It changes only the attach client's status report, not the title.
+   - *Rejected: `Variables` on the start and resume requests* (the original 2.2). The client's environment never reaches the session.
    - *Rejected: `terminalTitleFromRename` in settings.* It covers only `/rename` and `--name`, not the status glyph, and Cader never writes the user's settings for a preference.
 3. **Keep `TabTitle.Shows`.** Tabs opened before this change, and sessions started by an older Cader, still carry the glyph until they are reopened.
 
 ## Risks / Trade-offs
 
 - **[Risk] The variable also turns off status reports to the terminal.** → Cader reads session states from `claude agents --json`, never from the terminal, and the bell comes from `preferredNotifChannel`, a separate setting; the manual check confirms the bell still rings.
+- **[Risk] A later CLI changes how `--settings` reaches a background session.** → The nightly contract fact starts a session through `ClaudeCli`, so a refused flag fails there; a silent change brings the glyph back, which #326's rule still finds.
 - **[Risk] A later CLI renames or drops the variable.** → The glyph then returns and #326's rule still finds the tab; `claude-code.md` records the version it was checked with.
 - **[Trade-off] Claude Code's generated session titles stop for sessions that carry it.** Cader names every session it starts, so nothing it shows depends on them.

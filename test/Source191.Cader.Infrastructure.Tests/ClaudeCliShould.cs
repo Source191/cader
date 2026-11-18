@@ -10,6 +10,10 @@ public sealed class ClaudeCliShould
     private const string Executable = @"C:\Users\me\.local\bin\claude.exe";
     private const string Directory = @"C:\repos\Northwind.Orders";
 
+    // A session's own environment is its supervisor's, never the client's (seen 17 November 2026, CLI 2.1.326), so the
+    // variable that turns Claude Code's title updates off reaches it only as a value in the settings passed at its start.
+    private const string TitleSettings = """{"env":{"CLAUDE_CODE_DISABLE_TERMINAL_TITLE":"1"}}""";
+
     private const string StartedOutput = """
         Starting background service…
         backgrounded · 81cdb0f9 · cc-spike (idle — send a prompt to start)
@@ -135,7 +139,7 @@ public sealed class ClaudeCliShould
 
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Directory)),
-            request => request.Arguments.ShouldBe(["--bg", "-n", "Refund retry policy"]));
+            request => request.Arguments.ShouldBe(["--bg", "-n", "Refund retry policy", "--settings", TitleSettings]));
         StartResult.Started started = result.ShouldBeOfType<StartResult.Started>();
         started.JobId.ShouldBe(JobId.From("81cdb0f9"));
         started.Message.ShouldBe(StartedOutput.Trim());
@@ -148,7 +152,19 @@ public sealed class ClaudeCliShould
 
         await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.Text("Fix the flaky test"), CancellationToken.None);
 
-        processes.CapturedRequests.Single().Arguments.ShouldBe(["--bg", "-n", "Refund retry policy", "Fix the flaky test"]);
+        processes.CapturedRequests.Single().Arguments.ShouldBe(["--bg", "-n", "Refund retry policy", "--settings", TitleSettings, "Fix the flaky test"]);
+    }
+
+    [Fact]
+    public async Task TurnClaudeCodesTitleUpdatesOffInASessionItStartsAndInOneItResumes()
+    {
+        processes.AnswerAll(new ProcessResult(0, StartedOutput, string.Empty));
+
+        await Cli.StartBackgroundAsync(FolderPath.From(Directory), name, new OpeningPrompt.None(), CancellationToken.None);
+        await Cli.ResumeBackgroundAsync(SessionId.From("81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"), FolderPath.From(Directory), Listed.None(), CancellationToken.None);
+
+        processes.CapturedRequests.Count.ShouldBe(2);
+        processes.CapturedRequests.ShouldAllBe(request => string.Join(' ', request.Arguments).Contains($"--settings {TitleSettings}", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -200,13 +216,13 @@ public sealed class ClaudeCliShould
 
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Directory)),
-            request => request.Arguments.ShouldBe(["--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6"]));
+            request => request.Arguments.ShouldBe(["--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "--settings", TitleSettings]));
         result.ShouldBeOfType<ResumeResult.Continued>();
     }
 
     [Theory]
-    [InlineData("cc-spike", new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "-n", "cc-spike" })]
-    [InlineData(null, new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6" })]
+    [InlineData("cc-spike", new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "-n", "cc-spike", "--settings", TitleSettings })]
+    [InlineData(null, new[] { "--bg", "--resume", "81cdb0f9-8c3f-4c9b-b478-ca0a5ebf85c6", "--settings", TitleSettings })]
     public async Task ResumeWithANameOnlyForANamedSession(string? name, string[] expected)
     {
         processes.AnswerAll(new ProcessResult(0, "backgrounded · 81cdb0f9 · cc-spike", string.Empty));

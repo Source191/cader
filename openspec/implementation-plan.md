@@ -52,3 +52,4 @@ Carried from the stack of 14 November, whose changes are archived without them; 
 - **announce-winget-approval:** 2.1, remove the README's winget notice once microsoft/winget-pkgs#479528 merges.
 - **close-mutation-gaps:** the first strict release run, and the deliberate-failure check.
 - **upgrade-to-net11:** 1.1 and 2.6 (refresh timings over the owner's own state) and 1.7 (re-observing the Terminal.Gui and UI Automation facts).
+- **keep-session-tab-titles:** 2.4, in a Cader built from this branch with the Claude Code variables cleared, Enter on a session, prompt it, and verify the tab keeps its name while it works and the bell still rings when it waits (the spike showed only the pseudo-console capture changing, never a glyph in a real tab).

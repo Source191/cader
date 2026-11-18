@@ -41,7 +41,7 @@ public sealed class RenameSessionHandlerShould
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
         List<ProcessRequest> claude = [.. processes.CapturedRequests.Where(request => request.FileName == Claude)];
-        claude.Select(request => string.Join(' ', request.Arguments)).ShouldBe(["rm 81cdb0f9", "--bg --resume sess-1 -n fix-124"]);
+        claude.Select(request => string.Join(' ', request.WithoutTitleSettings())).ShouldBe(["rm 81cdb0f9", "--bg --resume sess-1 -n fix-124"]);
         claude[1].WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository));
         message.ShouldBe(new RenameSessionOutcome.Renamed(Listed.As("fix-123"), SessionName.From("fix-124"), TabMoved: false));
     }
@@ -64,7 +64,7 @@ public sealed class RenameSessionHandlerShould
 
         Outcome message = await Handler.HandleAsync(Rename, CancellationToken.None);
 
-        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => request.Arguments[^1]).ShouldBe(["81cdb0f9", "fix-124", "fix-123"]);
+        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => request.WithoutTitleSettings()[^1]).ShouldBe(["81cdb0f9", "fix-124", "fix-123"]);
         message.ShouldBeOfType<RenameSessionOutcome.Restored>().OldName.ShouldBe(Listed.As("fix-123"));
     }
 
@@ -78,7 +78,7 @@ public sealed class RenameSessionHandlerShould
 
         await Handler.HandleAsync(rename, CancellationToken.None);
 
-        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(" ", request.Arguments))
+        processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(" ", request.WithoutTitleSettings()))
             .ShouldBe(["rm 81cdb0f9", "--bg --resume sess-1 -n fix-124", "--bg --resume sess-1"]);
     }
 
@@ -116,7 +116,7 @@ public sealed class RenameSessionHandlerShould
         message.ShouldBe(new RenameSessionOutcome.Restored(Listed.As("fix-123"), "boom", TabClosed: true));
     }
 
-    private string ClaudeCalls() => string.Join(", ", processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(' ', request.Arguments)));
+    private string ClaudeCalls() => string.Join(", ", processes.CapturedRequests.Where(request => request.FileName == Claude).Select(request => string.Join(' ', request.WithoutTitleSettings())));
 
     [Fact]
     public async Task ResumeNothingWhenTheJobCannotBeRemoved()

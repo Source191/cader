@@ -18,6 +18,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Changed
 
+- A session's tab now keeps the session's name as its title while the session works, instead of showing a spinning glyph before it: sessions that Cader starts or resumes from now on are told to turn Claude Code's own terminal title updates off, which also stops it asking a small model for a title; sessions started earlier keep their glyph until you resume them, and Enter still finds their tabs (#331)
 - The Worktrees tab now reads several repositories and worktrees at once, at most eight git commands at a time, so a scan that took 7 to 12 seconds over thirty-odd repositories takes a fraction of that; the rows and their order are unchanged (#308)
 - The diagnostic log now names the Cader process on every line, so two consoles writing to cader.log can be told apart; records a program that cannot start once per folder, with Windows' error number, instead of on every refresh; names the Terminal.Gui method behind a warning and the work behind a frozen screen; and its counts say they are since start (#303)
 - The Sessions tab's detail pane sets a session's facts in two columns of five rows, so related facts line up: Waiting, Folder, Worktree, Branch and Changes on the left, Started, Prompted, Session, Tab and Memory on the right; the pane is one row taller (#311)

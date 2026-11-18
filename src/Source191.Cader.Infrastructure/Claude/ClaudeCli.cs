@@ -12,6 +12,10 @@ namespace Source191.Cader.Adapters.Claude;
 /// </summary>
 public sealed class ClaudeCli(IProcessRunner processes, string executable) : IClaudeCli
 {
+    // The tab keeps the session's name only if its own process turns Claude Code's title updates off, and a session's
+    // environment is its supervisor's, not the client's (claude-code.md), so the variable travels as settings for that session.
+    private static readonly string[] TitleSettings = ["--settings", """{"env":{"CLAUDE_CODE_DISABLE_TERMINAL_TITLE":"1"}}"""];
+
     public async Task<SessionListing> ListSessionsAsync(CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(["agents", "--json", "--all"], cancellationToken);
@@ -37,7 +41,7 @@ public sealed class ClaudeCli(IProcessRunner processes, string executable) : ICl
 
     public async Task<StartResult> StartBackgroundAsync(FolderPath directory, SessionName name, OpeningPrompt openingPrompt, CancellationToken cancellationToken)
     {
-        List<string> arguments = ["--bg", "-n", name.Value];
+        List<string> arguments = ["--bg", "-n", name.Value, .. TitleSettings];
         if (openingPrompt is OpeningPrompt.Text text)
         {
             arguments.Add(text.Words);
@@ -55,7 +59,7 @@ public sealed class ClaudeCli(IProcessRunner processes, string executable) : ICl
     public Task RemoveAsync(JobId jobId, CancellationToken cancellationToken) => RunOrThrowAsync(["rm", jobId.Value], cancellationToken);
 
     public Task<ResumeResult> ResumeBackgroundAsync(SessionId sessionId, FolderPath directory, ListedName name, CancellationToken cancellationToken) =>
-        ResumeAsync(["--bg", "--resume", sessionId.Value, .. NameArguments(name)], directory, cancellationToken);
+        ResumeAsync(["--bg", "--resume", sessionId.Value, .. NameArguments(name), .. TitleSettings], directory, cancellationToken);
 
     private static string[] NameArguments(ListedName name) => name switch
     {
