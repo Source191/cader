@@ -4,7 +4,7 @@
 
 ## 1. Record the facts
 
-- [ ] 1.1 Add the files, their fields and when they are written (design, Context) to `.claude\rules\claude-code.md`, dated 18 November 2026 with CLI 2.1.327, and reword `openspec\config.yaml`'s context line to allow watching the `sessions` and `jobs` folders for change notifications while still forbidding reading them. Verify `openspec validate --all` passes.
+- [x] 1.1 Add the files, their fields and when they are written (design, Context) to `.claude\rules\claude-code.md`, dated 18 November 2026 with CLI 2.1.327, and reword `openspec\config.yaml`'s context line to allow watching the `sessions` and `jobs` folders for change notifications while still forbidding reading them. Verify `openspec validate --all` passes.
 
 ## 2. What counts and what is watched
 
