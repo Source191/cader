@@ -53,16 +53,38 @@ public sealed class ChangeWatches(IFolderChanges changes, RefreshSchedule sessio
             RefreshedTab.Worktrees => worktrees,
         };
 
-        log.Record(new WatchTrouble(watch.Kind, WatchTroubleKind.Overflowed));
+        try
+        {
+            return changes.Watch(watch.Folder, watch.Subfolders, change => Heard(watch.Kind, schedule, change));
+        }
+        catch (FolderWatchException)
+        {
+            // Kept in the plan as no watch, so it is recorded once and tried again only once it has left the plan and come back.
+            log.Record(new WatchTrouble(watch.Kind, WatchTroubleKind.CouldNotStart));
 
-        return changes.Watch(watch.Folder, watch.Subfolders, change => Heard(watch.Kind, schedule, change));
+            return new Unwatched();
+        }
     }
 
-    private static void Heard(WatchKind kind, RefreshSchedule schedule, FolderChange change)
+    private void Heard(WatchKind kind, RefreshSchedule schedule, FolderChange change)
     {
+        if (change.Kind is FolderChangeKind.Overflowed)
+        {
+            log.Record(new WatchTrouble(kind, WatchTroubleKind.Overflowed));
+        }
+
         if (ChangeFilter.Counts(kind, change))
         {
             schedule.Changed();
+        }
+    }
+
+    /// <summary>A watch Windows refused: nothing to stop.</summary>
+    private sealed class Unwatched : IDisposable
+    {
+        public void Dispose()
+        {
+            // Nothing was watched, so nothing is released.
         }
     }
 }

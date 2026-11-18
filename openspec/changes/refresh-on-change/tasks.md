@@ -25,7 +25,7 @@
 ## 5. Keeping watches in step
 
 - [x] 5.1 Red then green: `ChangeWatchesShould` (with the fake) states `Follow` starts a watch per planned folder, disposes one no longer planned, leaves an unchanged one alone, and routes a counted change to the schedule it feeds and an ignored one nowhere; add `Application\ChangeWatches`.
-- [ ] 5.2 Red then green: `DiagnosticEventsShould` and `DiagnosticsPrivacyShould` cover a new `DiagnosticEvent.WatchTrouble` (watch kind and trouble, no path), and `ChangeWatchesShould` states a watch that throws as it starts, or overflows, records it; give it its line in `DiagnosticLine` (decision 5).
+- [x] 5.2 Red then green: `DiagnosticEventsShould` and `DiagnosticsPrivacyShould` cover a new `DiagnosticEvent.WatchTrouble` (watch kind and trouble, no path), and `ChangeWatchesShould` states a watch that throws as it starts, or overflows, records it; give it its line in `DiagnosticLine` (decision 5).
 
 ## 6. The screen
 
