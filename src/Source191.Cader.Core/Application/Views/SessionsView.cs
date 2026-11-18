@@ -175,7 +175,7 @@ public static class SessionsView
     }
     private static ViewUpdate<SessionsViewState> RenameWith(SessionsViewState state, RenameConfirmed confirmed)
     {
-        return SessionName.Validate(confirmed.Name.Trim()) switch
+        return SessionName.Validate(confirmed.Name) switch
         {
             SessionNameValidation.Valid valid => Renamed(state, new RenameSession(confirmed.Session, valid.Name)),
             SessionNameValidation.Refused refused => Unchanged(state with { Message = new StatusMessage.InvalidName(refused.Problem) }),

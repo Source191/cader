@@ -17,8 +17,8 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 
 ## 4. Typed session names (Domain and Application)
 
-- [ ] 4.1 Red: `SessionNameShould` facts that `Validate(" fix-login ")` is `Valid` with the name `fix-login`, `Validate(" fix the login ")` keeps `fix the login`, `Validate("   ")` is `Refused(NameProblem.Missing)`, and `TryParse(" listed ")` keeps the listed text unchanged. Green: `Validate` checks and builds from `text.Trim()`. Verify the Core suite passes.
-- [ ] 4.2 Red: `LaunchPlanShould` asserts a request named `" fix-login"` plans the session `fix-login` (the wizard's fixed-folder case), and a `HereCommand` fact asserts `cader here " fix-login"` plans `fix-login`. Green: nothing beyond 4.1 should be needed; then remove `.Trim()` from `SessionsView.RenameWith`, keeping its rename facts green. Verify the Core suite passes.
+- [x] 4.1 Red: `SessionNameShould` facts that `Validate(" fix-login ")` is `Valid` with the name `fix-login`, `Validate(" fix the login ")` keeps `fix the login`, `Validate("   ")` is `Refused(NameProblem.Missing)`, and `TryParse(" listed ")` keeps the listed text unchanged. Green: `Validate` checks and builds from `text.Trim()`. Verify the Core suite passes.
+- [x] 4.2 Red: `LaunchPlanShould` asserts a request named `" fix-login"` plans the session `fix-login` (the wizard's fixed-folder case), and a `HereCommand` fact asserts `cader here " fix-login"` plans `fix-login`. Green: nothing beyond 4.1 should be needed; then remove `.Trim()` from `SessionsView.RenameWith`, keeping its rename facts green. Verify the Core suite passes.
 
 ## 5. Smoke check, rules and release notes
 
