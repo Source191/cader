@@ -8,7 +8,7 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 
 ## 2. The tables' `/` filter (Domain)
 
-- [ ] 2.1 Red: `RowFilterShould` facts that a filter of `" "` or `"​"` keeps every row, `" templates"` keeps the rows `"templates"` keeps, and `"fix login"` keeps `fix login` but not `fix-login`. Green: `RowFilter.Matches` applies `WithoutInvisibleStart` and keeps every row when it is empty, replacing its `IsNullOrWhiteSpace` check. Verify the Core suite passes, including the Sessions, Worktrees and Config view facts that filter.
+- [x] 2.1 Red: `RowFilterShould` facts that a filter of `" "` or `"​"` keeps every row, `" templates"` keeps the rows `"templates"` keeps, and `"fix login"` keeps `fix login` but not `fix-login`. Green: `RowFilter.Matches` applies `WithoutInvisibleStart` and keeps every row when it is empty, replacing its `IsNullOrWhiteSpace` check. Verify the Core suite passes, including the Sessions, Worktrees and Config view facts that filter.
 
 ## 3. The wizard's repository filter (Application)
 

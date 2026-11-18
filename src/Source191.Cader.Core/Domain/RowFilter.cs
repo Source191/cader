@@ -6,11 +6,13 @@ public sealed record RowFilter(string Text)
 
     public bool Matches(IReadOnlyList<string> fields)
     {
-        if (string.IsNullOrWhiteSpace(Text))
+        string visible = CharacterKinds.WithoutInvisibleStart(Text);
+
+        if (visible.Length == 0)
         {
             return true;
         }
 
-        return fields.Any(field => field.Contains(Text, StringComparison.OrdinalIgnoreCase));
+        return fields.Any(field => field.Contains(visible, StringComparison.OrdinalIgnoreCase));
     }
 }

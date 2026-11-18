@@ -23,17 +23,8 @@ public sealed class RowFilterShould
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void MatchEverythingWhenBlank(string text)
-    {
-        RowFilter filter = new(text);
-
-        filter.Matches(["anything"]).ShouldBeTrue();
-    }
-
-    [Theory]
-    [InlineData(" ")]
-    [InlineData("​")]
-    public void MatchEverythingWhenOnlyInvisibleCharacters(string text)
+    [InlineData("\u200B")]
+    public void MatchEverythingWhenBlankOrInvisible(string text)
     {
         RowFilter filter = new(text);
 
