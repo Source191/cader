@@ -39,9 +39,9 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 
 ## 6. Integration checks
 
-- [ ] 6.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`; verify all pass
+- [x] 6.1 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`; verify all pass
 - [ ] 6.2 Run the installed build with `tools\install-local.ps1` and `dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`; verify exit 0, then check both tabs by hand: Down steps over headings, a filter hides empty groups, `>` scrolls and `<` brings the heading text back
-- [ ] 6.3 Run `openspec validate group-rows-by-repository --strict`; verify it reports the change valid
+- [x] 6.3 Run `openspec validate group-rows-by-repository --strict`; verify it reports the change valid
 
 ## Workflow follow-up
 
