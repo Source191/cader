@@ -26,12 +26,7 @@ public abstract record WhereLabel
     /// <summary>A folder outside any repository, shown by its label.</summary>
     public sealed record Outside(string Place) : WhereLabel
     {
-        public override string Fit(int width)
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative(width);
-
-            return CutEnd(Place, width);
-        }
+        public override string Fit(int width) => TextFit.CutEnd(Place, width);
     }
 
     /// <summary>A folder in a repository; an empty place is the main checkout, or a cell that names the repository alone.</summary>
@@ -58,7 +53,7 @@ public abstract record WhereLabel
                 return TextFit.ElideMiddle(Repository, room) + tail;
             }
 
-            return TextFit.Ellipsis + Separator + CutEnd(Place, width - TextFit.Ellipsis.Length - Separator.Length);
+            return TextFit.Ellipsis + Separator + TextFit.CutEnd(Place, width - TextFit.Ellipsis.Length - Separator.Length);
         }
     }
 
@@ -77,11 +72,4 @@ public abstract record WhereLabel
             .Select(prefix => label[prefix.Length..])
             .FirstOrDefault(label);
     }
-
-    private static string CutEnd(string text, int width) => (text.Length <= width, width) switch
-    {
-        (true, _) => text,
-        (_, 0) => string.Empty,
-        _ => text[..(width - TextFit.Ellipsis.Length)] + TextFit.Ellipsis,
-    };
 }

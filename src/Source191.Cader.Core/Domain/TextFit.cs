@@ -9,7 +9,17 @@ public static class TextFit
     private const int LeastElided = 3;
 
     /// <summary>The text within <paramref name="width"/> characters: whole when it fits, else its start and an ellipsis, and nothing at width zero.</summary>
-    public static string CutEnd(string text, int width) => text;
+    public static string CutEnd(string text, int width)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(width);
+
+        return (text.Length <= width, width) switch
+        {
+            (true, _) => text,
+            (_, 0) => string.Empty,
+            _ => text[..(width - Ellipsis.Length)] + Ellipsis,
+        };
+    }
 
     /// <summary>
     /// The text within <paramref name="width"/> characters: whole when it fits, else its start and its end around an ellipsis
