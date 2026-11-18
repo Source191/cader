@@ -58,6 +58,29 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void GroupRowsByRepositoryNameAcrossRoots()
+    {
+        WorktreeRow zeta = Row(@"C:\Users\me\source\worktrees\Northwind.Zeta-fix", On("fix"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Zeta") };
+        WorktreeRow alpha = Row(@"D:\work\Northwind.Alpha-fix", On("fix"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"D:\work\Northwind.Alpha") };
+        WorktreeRow lowerCase = Row(@"D:\work\cader-tidy", On("tidy"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"D:\work\cader") };
+
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([zeta, alpha, lowerCase]));
+
+        loaded.VisibleRows.ShouldBe([lowerCase, alpha, zeta]);
+    }
+
+    [Fact]
+    public void KeepFoldersBeforeBranchesWithinAGroup()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds");
+        WorktreeRow invoice = Row(@"C:\repos\Northwind.Billing-invoice-pdf", On("invoice-pdf"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"C:\repos\Northwind.Billing") };
+
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([spike, Clean, invoice]));
+
+        loaded.VisibleRows.ShouldBe([invoice, Clean, spike]);
+    }
+
+    [Fact]
     public void MoveTheSelectionWithTheArrowKeysAndStopAtTheEnds()
     {
         Press(Loaded, Key.Down, Key.Down).Selected.ShouldBe(Clean);
