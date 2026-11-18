@@ -229,6 +229,9 @@ public sealed class WordingOfConfigShould
         Wording.SettingsDialogTitle(new SettingsScope.Base()).ShouldBe("Worktree base");
         Wording.SettingsDialogTitle(new SettingsScope.Place()).ShouldBe("Default place");
         Wording.SettingsDialogTitle(new SettingsScope.BeforeBranching()).ShouldBe("Before branching");
+        Wording.SettingsDialogTitle(new SettingsScope.SessionsRefresh()).ShouldBe("Sessions refresh");
+        Wording.SettingsDialogTitle(new SettingsScope.WorktreesRefresh()).ShouldBe("Worktrees refresh");
+        Wording.RefreshCaption.ShouldBe("Seconds between refreshes, from 0 to 3600; 0 turns the timer off");
     }
 
     /// <summary>A new worktree's base is fetched first unless config.json's beforeBranching says None, so no word may say Cader never fetches.</summary>

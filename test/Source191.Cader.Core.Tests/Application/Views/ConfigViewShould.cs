@@ -98,6 +98,13 @@ public sealed class ConfigViewShould
         update.State.Message.ShouldBe(new StatusMessage.SetupAdvice(item));
     }
 
+    [Fact]
+    public void EditEitherRefreshIntervalInItsOwnDialog()
+    {
+        ConfigView.Reduce(At("sessions-refresh"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new EditSetting(new SettingsScope.SessionsRefresh())]);
+        ConfigView.Reduce(At("worktrees-refresh"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new EditSetting(new SettingsScope.WorktreesRefresh())]);
+    }
+
     [Theory]
     [InlineData("root:0")]
     [InlineData("root:1")]
@@ -263,11 +270,13 @@ public sealed class ConfigViewShould
     }
 
     [Theory]
-    [InlineData('c')]
-    [InlineData('f')]
-    public void SayWhenTheValueIsNotAPath(char key)
+    [InlineData('c', "open-folder-with")]
+    [InlineData('f', "open-folder-with")]
+    [InlineData('c', "sessions-refresh")]
+    [InlineData('f', "worktrees-refresh")]
+    public void SayWhenTheValueIsNotAPath(char key, string row)
     {
-        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At("open-folder-with"), new KeyPressed(Key.Of(key)));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At(row), new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoPathHere());

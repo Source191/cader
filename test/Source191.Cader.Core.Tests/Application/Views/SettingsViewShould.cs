@@ -26,6 +26,8 @@ public sealed class SettingsViewShould
         { new SettingsScope.Base(), SettingsField.Base },
         { new SettingsScope.Place(), SettingsField.Place },
         { new SettingsScope.BeforeBranching(), SettingsField.BeforeBranching },
+        { new SettingsScope.SessionsRefresh(), SettingsField.SessionsRefresh },
+        { new SettingsScope.WorktreesRefresh(), SettingsField.WorktreesRefresh },
     };
 
     [Theory]
@@ -68,6 +70,8 @@ public sealed class SettingsViewShould
         { new SettingsScope.Editor(), [new SettingsInput.PresetChanged(EditorPreset.Custom), new SettingsInput.ExecutableChanged(@"C:\Tools\edit.cmd"), new SettingsInput.ArgumentsChanged("{folder}")], new SettingsProblem.BatchFileExecutable(), SettingsField.Executable },
         { new SettingsScope.Editor(), [new SettingsInput.PresetChanged(EditorPreset.Custom), new SettingsInput.ExecutableChanged(@"C:\Tools\subl.exe"), new SettingsInput.ArgumentsChanged("-n")], new SettingsProblem.NoFolderPlaceholder(), SettingsField.Arguments },
         { new SettingsScope.Editor(), [new SettingsInput.PresetChanged(EditorPreset.Custom), new SettingsInput.ExecutableChanged(@"C:\Tools\gone.exe"), new SettingsInput.ArgumentsChanged("-n {folder}")], new SettingsProblem.ExecutableMissing(@"C:\Tools\gone.exe"), SettingsField.Executable },
+        { new SettingsScope.WorktreesRefresh(), [new SettingsInput.WorktreesRefreshChanged("ten")], new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Worktrees), SettingsField.WorktreesRefresh },
+        { new SettingsScope.SessionsRefresh(), [new SettingsInput.SessionsRefreshChanged("2.5")], new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Sessions), SettingsField.SessionsRefresh },
     };
 
     [Theory]
@@ -105,6 +109,45 @@ public sealed class SettingsViewShould
         SettingsState state = Reduce(Opened(new SettingsScope.Base()), new SettingsInput.BaseChanged(WorktreeBase.Head));
 
         SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings.DefaultBase.ShouldBe(WorktreeBase.Head);
+    }
+
+    [Fact]
+    public void SaveTheWorktreesRefresh()
+    {
+        SettingsState state = Reduce(Opened(new SettingsScope.WorktreesRefresh()), new SettingsInput.WorktreesRefreshChanged("60"));
+
+        Settings saved = SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        saved.WorktreesRefresh.ShouldBe(RefreshInterval.From(60));
+        saved.SessionsRefresh.ShouldBe(RefreshInterval.From(5));
+    }
+
+    [Fact]
+    public void SaveTheSessionsRefreshTurnedOff()
+    {
+        SettingsState state = Reduce(Opened(new SettingsScope.SessionsRefresh()), new SettingsInput.SessionsRefreshChanged(" 0 "));
+
+        SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings.SessionsRefresh.ShouldBe(RefreshInterval.Off);
+    }
+
+    [Fact]
+    public void KeepTheIntervalDialogOpenOnAnIntervalThatIsNotWholeSeconds()
+    {
+        SettingsState state = Reduce(Opened(new SettingsScope.WorktreesRefresh()), new SettingsInput.WorktreesRefreshChanged("ten"));
+
+        SettingsUpdate saved = SettingsView.Reduce(state, new SettingsInput.Save());
+
+        saved.Effect.ShouldBe(new SettingsEffect.None());
+        saved.State.Text.WorktreesRefresh.ShouldBe("ten");
+    }
+
+    [Fact]
+    public void OpenAnIntervalDialogOnTheSavedValue()
+    {
+        Settings off = SettingsView.Reduce(Reduce(Opened(new SettingsScope.SessionsRefresh()), new SettingsInput.SessionsRefreshChanged("0")), new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        SettingsState.Open(off, new SettingsScope.SessionsRefresh(), Exists, Installed).Text.SessionsRefresh.ShouldBe("0");
+        Opened(new SettingsScope.WorktreesRefresh()).Text.WorktreesRefresh.ShouldBe("15");
     }
 
     [Fact]

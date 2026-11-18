@@ -28,6 +28,9 @@ public static partial class Wording
     /// <summary>The caption above the Before branching choice, in its dialog and the wizard.</summary>
     public static string BeforeBranchingCaption => "What happens before a new worktree branches from origin (↑↓ then Space)";
 
+    /// <summary>The caption above the Sessions refresh and Worktrees refresh dialogs' box.</summary>
+    public static string RefreshCaption => string.Empty;
+
     /// <summary>The caption above the wizard's Before branching choice.</summary>
     public static string WizardBeforeBranchingCaption => "Before branching (↑↓ to change)";
 

@@ -11,4 +11,6 @@ public enum SettingsField
     Base,
     Place,
     BeforeBranching,
+    SessionsRefresh,
+    WorktreesRefresh,
 }

@@ -16,6 +16,10 @@ public abstract record SettingsScope(SettingsField Field)
 
     public sealed record BeforeBranching() : SettingsScope(SettingsField.BeforeBranching);
 
+    public sealed record SessionsRefresh() : SettingsScope(SettingsField.SessionsRefresh);
+
+    public sealed record WorktreesRefresh() : SettingsScope(SettingsField.WorktreesRefresh);
+
     /// <summary>The scope that edits a setting row; the update check and the setup rows have no dialog.</summary>
     public static SettingsScope For(ConfigRow row)
     {
