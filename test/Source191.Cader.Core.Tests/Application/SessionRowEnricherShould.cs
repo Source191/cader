@@ -417,7 +417,8 @@ public sealed class SessionRowEnricherShould : IDisposable
         release.SetResult();
     }
 
-    public void Dispose()    {
+    public void Dispose()
+    {
         catalogue.Dispose();
         accounts.Dispose();
     }
