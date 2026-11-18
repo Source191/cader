@@ -16,6 +16,7 @@ public sealed class WordingOfConfigShould
     {
         { new ConfigRow.RepositoryRoot(0, FolderPath.From(@"C:\Users\me\source\repos")), "Repository roots", @"C:\Users\me\source\repos" },
         { new ConfigRow.RepositoryRoot(1, FolderPath.From(@"D:\work")), string.Empty, @"D:\work" },
+        { new ConfigRow.RepositoryRoot(1, FolderPath.From(@"D:\work")) { Found = false }, string.Empty, @"D:\work (not found)" },
         { new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")), "Worktree root", @"C:\Users\me\source\worktrees" },
         { new ConfigRow.OpenFolderWith(EditorChoice.VsCode), "Open folder with", "VS Code" },
         { new ConfigRow.OpenFolderWith(EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"])), "Open folder with", @"C:\Tools\subl.exe -n {folder}" },
@@ -105,6 +106,7 @@ public sealed class WordingOfConfigShould
         Wording.ConfigDescription(new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees"))).ShouldBe("Where new worktrees go, each in a folder named <repository>-<slug> on a branch named <slug>.");
         Wording.ConfigDescription(new ConfigRow.Setup(SetupItem.ClaudeBell, new SetupState.Enabled())).ShouldBe("Claude's terminal bell, which rings when a session finishes or needs permission while you are away.");
         Wording.ConfigDescription(new ConfigRow.RepositoryRoot(1, FolderPath.From(@"D:\work"))).ShouldBe(Wording.ConfigDescription(new ConfigRow.RepositoryRoot(0, FolderPath.From(@"C:\Users\me\source\repos"))));
+        Wording.ConfigDescription(new ConfigRow.RepositoryRoot(1, FolderPath.From(@"D:\work")) { Found = false }).ShouldBe("This folder was not found, so the wizard offers nothing from it: create it, or remove the root; Enter edits every root, one per line.");
     }
 
     [Theory]

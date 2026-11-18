@@ -6,6 +6,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Added
 
+- The Config tab marks a repository root whose folder is not found as (not found), and its tooltip says to create the folder or remove the root, so a root the new-session wizard leaves out no longer just disappears
 - The new-session wizard lists each repository root under Folders (no repository), so a session for work across repositories can be started from the console, not only with cader here; the list is grouped under Recent, Folders (no repository) and Repositories, the selection steps over the headings, and a folder choice starts the session in the folder whatever Where says, fetching nothing (#335)
 - The diagnostic log, the crash file and a problem report now end their counts with a process now line giving how many handles and how much private memory Cader holds at that moment, so a console that slowly grows shows it between two 10-minute marks; a figure Windows will not give reads as unknown (#330)
 - A BRANCH column on the Worktrees tab flags each row's branch: ▲ left behind when it has commits after its pull request merged (squash merges included), ✗ gone when origin no longer has it as of your last fetch, ✗ closed when its pull request was closed without merging, and · no PR when its host has none; the detail pane gives the reason in full, a branch or origin row's pane shows its repository and the commits d would lose rather than the main checkout's changes, and the table's title counts worktrees and branches apart (#313)

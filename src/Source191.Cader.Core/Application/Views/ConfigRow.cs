@@ -9,7 +9,11 @@ namespace Source191.Cader.Application.Views;
 /// <param name="Key">The selection key, stable across a save so the row just edited stays selected.</param>
 public abstract record ConfigRow(string Key)
 {
-    public sealed record RepositoryRoot(int Index, FolderPath Path) : ConfigRow($"root:{Index}");
+    public sealed record RepositoryRoot(int Index, FolderPath Path) : ConfigRow($"root:{Index}")
+    {
+        /// <summary>False once the setup read found no folder at the path; true until then.</summary>
+        public bool Found { get; init; } = true;
+    }
 
     public sealed record WorktreeRoot(FolderPath Path) : ConfigRow("worktree-root");
 

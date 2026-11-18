@@ -54,6 +54,7 @@ public static partial class Wording
     /// <summary>What a Config row's setting does, or what its setup is for: the row's hover tooltip only.</summary>
     public static string ConfigDescription(ConfigRow row) => row switch
     {
+        ConfigRow.RepositoryRoot { Found: false } => "This folder was not found, so the wizard offers nothing from it: create it, or remove the root; Enter edits every root, one per line.",
         ConfigRow.RepositoryRoot => "A folder searched for git repositories; Enter edits every root, one per line.",
         ConfigRow.WorktreeRoot => "Where new worktrees go, each in a folder named <repository>-<slug> on a branch named <slug>.",
         ConfigRow.OpenFolderWith => "The program f opens a row's folder with: one of the known editors, or a program of your own.",
@@ -71,7 +72,7 @@ public static partial class Wording
     {
         return row switch
         {
-            ConfigRow.RepositoryRoot root => root.Path.Value,
+            ConfigRow.RepositoryRoot root => root.Found ? root.Path.Value : $"{root.Path.Value} (not found)",
             ConfigRow.WorktreeRoot worktreeRoot => worktreeRoot.Path.Value,
             ConfigRow.OpenFolderWith open => open.Editor.Preset == EditorPreset.Custom ? $"{open.Editor.Executable} {CommandArguments.Join(open.Editor.Arguments)}" : Describe(open.Editor.Preset),
             ConfigRow.DefaultBase defaultBase => Describe(defaultBase.Base),
