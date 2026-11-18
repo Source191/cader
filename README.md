@@ -18,7 +18,7 @@ Five Claude Code sessions. A dozen terminal tabs. One of them finished ten minut
 
 ![The Sessions tab in Windows Terminal, with five coloured session tabs beside it. Eight sessions are listed in Northwind repositories and Cader's own: one needs input, two are working, two are idle, one completed, one failed and one stopped, with GitHub and Azure DevOps pull requests beside them. The detail pane shows that the selected session is waiting for permission to run dotnet test.](https://raw.githubusercontent.com/Source191/cader/main/assets/readme/sessions.png)
 
-- **See every session at once:** its state, repository and pull request, on GitHub or Azure DevOps, whether it was started here or not.
+- **See every session at once:** grouped by repository, with its state and pull request, on GitHub or Azure DevOps, whether it was started here or not.
 - **Start each in a fresh worktree:** sessions never trip over each other's changes.
 - **One coloured tab per session:** Enter opens it, or switches to it when it is open.
 - **Hear when one needs you:** the bell rings and its row turns amber.

@@ -33,7 +33,7 @@ Each task is one red, green, refactor cycle with a commit per step; the test nam
 
 ## 5. Documents and release
 
-- [ ] 5.1 Describe the grouping in `docs\user-guide.md` (Sessions and Worktrees sections: headings, group order, attention within a group, the counts) and the README where it describes the tables; verify by reading them against the delta specs
+- [x] 5.1 Describe the grouping in `docs\user-guide.md` (Sessions and Worktrees sections: headings, group order, attention within a group, the counts) and the README where it describes the tables; verify by reading them against the delta specs
 - [x] 5.2 Remake `assets\readme\sessions.png` and `new-session.gif` with `tools\New-ReadmeScreenshot.ps1`; verify by eye that headings read as one line, nothing widens, and a 120-column terminal fits every column
 - [ ] 5.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` (minor: the Sessions order changes) and add the changelog entry; verify `Assert-VersionBumped.ps1` passes
 
