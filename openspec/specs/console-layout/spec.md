@@ -132,6 +132,10 @@ The last two rows of the screen SHALL be a key bar of items, each a key and a wo
 - **WHEN** the user presses ? on the Sessions or Worktrees tab
 - **THEN** the help lists f as opening the folder and s as opening its solution, and lists neither e nor v
 
+#### Scenario: The help names F5
+- **WHEN** the user presses ? on any tab
+- **THEN** the help lists F5 as refreshing this tab now, and the key bar has no F5 item
+
 ### Requirement: The settings take one line
 The first row SHALL show the versions, labels orange, values white, parts separated by a grey ·: Cader with its version and memory, then Claude and its version, with the update notice, in amber, and the below-minimum warning in their places. The repository roots and the worktree root SHALL be shown on the Config tab, not here.
 
@@ -278,3 +282,14 @@ In every dialog, the text of an unfocused input field and of a list's chosen row
 #### Scenario: A list's chosen row after focus moves on
 - **WHEN** a repository is chosen in the new-session wizard's list and focus moves to the next field
 - **THEN** the chosen row stays marked, white on a background that meets the same two ratios
+
+### Requirement: F5 refreshes the shown tab
+F5 on the console SHALL refresh the shown tab at once, with no spinner and no status message: the Sessions tab lists the sessions and the Worktrees tab rescans, neither while its own refresh is already running, and the Config tab rereads its setup as showing it does. Inside a dialog F5 SHALL keep the dialog's own meaning and refresh nothing.
+
+#### Scenario: F5 on Config
+- **WHEN** the user runs `cader setup-terminal` in another tab while the Config tab is shown, then presses F5
+- **THEN** the Windows Terminal profiles row reads installed
+
+#### Scenario: F5 in the wizard
+- **WHEN** the new-session wizard is open with a name typed and the user presses F5
+- **THEN** the session starts as before, and no tab is refreshed by the key

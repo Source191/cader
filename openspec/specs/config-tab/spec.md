@@ -6,11 +6,11 @@ The Config tab: a table of Cader's settings and of the setup it depends on, wher
 ## Requirements
 
 ### Requirement: The Config tab lists the settings
-The console SHALL have a third tab, titled Config, whose table has the columns SETTING and VALUE and a row per setting in this order: one row per repository root, the first labelled Repository roots and the others with SETTING blank, then Worktree root, Open folder with, Default base, Default place, Check for updates and Diagnostic log. Each value SHALL be shown whole where it fits and elided in the middle where it does not.
+The console SHALL have a third tab, titled Config, whose table has the columns SETTING and VALUE and a row per setting in this order: one row per repository root, the first labelled Repository roots and the others with SETTING blank, then Worktree root, Open folder with, Default base, Before branching, Default place, Sessions refresh, Worktrees refresh, Check for updates and Diagnostic log. Each value SHALL be shown whole where it fits and elided in the middle where it does not.
 
 #### Scenario: Default settings
 - **WHEN** `config.json` does not exist and the user shows the Config tab
-- **THEN** the rows read Repository roots C:\Users\me\source\repos, Worktree root C:\Users\me\source\worktrees, Open folder with VS Code, Default base origin's default branch, Default place New worktree, Check for updates on and Diagnostic log off
+- **THEN** the rows read Repository roots C:\Users\me\source\repos, Worktree root C:\Users\me\source\worktrees, Open folder with VS Code, Default base origin's default branch, Before branching Fetch origin, Default place New worktree, Sessions refresh every 5 seconds, Worktrees refresh every 15 seconds, Check for updates on and Diagnostic log off
 
 #### Scenario: Two roots
 - **WHEN** the roots are C:\Users\me\source\repos and D:\work
@@ -60,7 +60,7 @@ After the settings, under the Setup heading row, the table SHALL have a grey row
 - **THEN** the Diagnostic log file row shows 10.0 MB
 
 ### Requirement: A setting is edited a row at a time
-Enter on a Worktree root, Open folder with or Default base row SHALL open a dialog for that one value, and Enter on any repository root row a dialog holding every root, one per line, each showing the setting as saved; F5 or Save SHALL check it, name any problem and keep the dialog open, or write `config.json` and close; Esc SHALL close it unchanged. Enter on Check for updates or Diagnostic log SHALL turn it on or off and save at once.
+Enter on a Worktree root, Open folder with, Default base, Sessions refresh or Worktrees refresh row SHALL open a dialog for that one value, and Enter on any repository root row a dialog holding every root, one per line, each showing the setting as saved; F5 or Save SHALL check it, name any problem and keep the dialog open, or write `config.json` and close; Esc SHALL close it unchanged. Enter on Check for updates or Diagnostic log SHALL turn it on or off and save at once.
 
 #### Scenario: Change the worktree root
 - **WHEN** the user selects Worktree root, presses Enter, types D:\worktrees and presses F5
@@ -77,6 +77,14 @@ Enter on a Worktree root, Open folder with or Default base row SHALL open a dial
 #### Scenario: Turn the diagnostic log on
 - **WHEN** Diagnostic log is off and the user presses Enter on it
 - **THEN** it reads on, `config.json` says so, and the status line says the log is now written to the full path of `cader.log`
+
+#### Scenario: Change the worktrees refresh
+- **WHEN** the user presses Enter on Worktrees refresh, which reads every 15 seconds, types 60 and presses F5
+- **THEN** `config.json` holds `worktreesRefreshSeconds` of 60, the row reads every 60 seconds at once, and the status line says it was saved
+
+#### Scenario: The interval dialog opens on the saved value
+- **WHEN** Sessions refresh is off and the user presses Enter on it
+- **THEN** the dialog's box holds 0
 
 ### Requirement: Repository roots are added and removed in their dialog
 The repository roots dialog SHALL list every root, one per line; a line added SHALL add a root after the others and a line deleted SHALL remove that root when the dialog saves. A dialog left with no root, or with a root listed twice, SHALL be refused in the dialog. No other key SHALL add or remove a root.
@@ -109,7 +117,7 @@ Beside the tab titles the Config tab SHALL count its settings and, when any is m
 
 #### Scenario: Counts
 - **WHEN** there are two roots and the Windows Terminal profiles are not set up
-- **THEN** the counts read 9 settings · 1 to set up, the second part in amber
+- **THEN** the counts read 11 settings · 1 to set up, the second part in amber
 
 #### Scenario: Copy a long root
 - **WHEN** a repository root row's value is elided and the user presses c
@@ -142,6 +150,10 @@ Beside the tab titles the Config tab SHALL count its settings and, when any is m
 #### Scenario: The key bar names the clear
 - **WHEN** the user shows the Config tab
 - **THEN** the key bar's second row reads c Copy, f Open folder, d Clear log, / Filter, ? Help, ! Report and q Quit
+
+#### Scenario: c on an interval
+- **WHEN** the user presses c on Sessions refresh
+- **THEN** nothing is copied and the status line says the value is not a path, as for Default base
 
 ### Requirement: The Config tab reads the setup when it is shown
 The setup rows SHALL be read each time the Config tab is shown and after each save, off the UI thread, and the setting rows SHALL never wait for them; a setup row whose read fails SHALL say it could not be read.
@@ -250,7 +262,7 @@ Between the settings and the setup rows the Config tab's table SHALL have a head
 
 #### Scenario: The heading is not counted
 - **WHEN** there is one root and every piece of setup is in place
-- **THEN** the counts read 8 settings and the title counts 13 rows
+- **THEN** the counts read 10 settings and the title counts 15 rows
 
 ### Requirement: The Diagnostic log row names its file
 The Diagnostic log row's tooltip SHALL say what the setting does and that Enter turns it on or off, and SHALL NOT repeat the log file's path, which the Diagnostic log file row shows. Its VALUE SHALL read on or off and nothing else.
@@ -467,3 +479,18 @@ An account row's description, shown as its tooltip like every other row's, SHALL
 #### Scenario: Copy on an account row
 - **WHEN** the user presses c on Account work
 - **THEN** nothing is copied and the status line says the row holds no path
+
+### Requirement: The refresh rows read as intervals
+The Sessions refresh and Worktrees refresh rows SHALL read every second, every N seconds, or off for 0. Each row's tooltip SHALL say what the tab refreshes and when, that 0 turns the timer off while showing the tab, an action and F5 still refresh it, and that Enter changes it. The Sessions refresh tooltip SHALL also say that, while it is off, the bell for a session that starts waiting rings only at the next refresh.
+
+#### Scenario: One second
+- **WHEN** `sessionsRefreshSeconds` is 1
+- **THEN** the Sessions refresh row reads every second
+
+#### Scenario: Off
+- **WHEN** `worktreesRefreshSeconds` is 0
+- **THEN** the Worktrees refresh row reads off
+
+#### Scenario: Hover on Sessions refresh
+- **WHEN** the mouse rests on the Sessions refresh row
+- **THEN** the tooltip says how often the sessions are listed, that 0 turns the timer off, that a waiting session's bell then rings only at the next refresh, and that Enter changes it

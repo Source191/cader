@@ -101,7 +101,7 @@ The view SHALL order rows by display state: needs input first, then working, idl
 - **THEN** the needs-input row is first and the stopped row is last
 
 ### Requirement: The list refreshes without losing the selection
-Cader SHALL refresh the list automatically at least every five seconds and on demand, SHALL keep the selected session selected across a refresh when it still exists, and SHALL stay consistent when one refresh is still running as the next begins: a refresh SHALL never show rows older than the ones already shown, and rows that arrive while a dialog is open SHALL be kept when it closes. The timed refresh SHALL NOT start a listing while one is running; the refresh after an action SHALL always run.
+Cader SHALL refresh the list at the Sessions refresh interval (five seconds by default, no timer at 0) and on demand, SHALL keep the selected session selected across a refresh while it exists, and SHALL stay consistent when refreshes overlap: a refresh SHALL never show rows older than those shown, and rows that arrive while a dialog is open SHALL be kept when it closes. The timer and F5 SHALL NOT start a listing while one runs; the refresh after an action SHALL always run.
 
 #### Scenario: Selected session survives refresh
 - **WHEN** the user has selected a session and a refresh occurs
@@ -126,6 +126,26 @@ Cader SHALL refresh the list automatically at least every five seconds and on de
 #### Scenario: The timer waits for a running listing
 - **WHEN** a listing takes eight seconds
 - **THEN** the five-second timer starts no second `claude agents` process until it returns, and the refresh after a stop or delete still starts its own listing
+
+#### Scenario: A longer interval
+- **WHEN** Sessions refresh is 30 seconds
+- **THEN** the timer starts a listing 30 seconds after the last one started, not 5
+
+#### Scenario: The timer off
+- **WHEN** Sessions refresh is 0 and the console has been open for ten minutes with no key pressed
+- **THEN** the sessions were listed once, as the console opened
+
+#### Scenario: F5 lists now
+- **WHEN** the Sessions tab is shown, no listing is running and the user presses F5
+- **THEN** a listing starts at once, and the rows and the selection follow it as for a timed refresh
+
+#### Scenario: F5 during a listing
+- **WHEN** a listing is running and the user presses F5 three times
+- **THEN** no second `claude agents` process starts, and the running listing's rows are shown when it returns
+
+#### Scenario: F5 while typing a filter
+- **WHEN** the user is typing the filter fix and presses F5
+- **THEN** a listing starts, and the filter stays fix and still being typed
 
 ### Requirement: Rows can be filtered
 The view SHALL filter rows by a text typed after the filter key, matching case-insensitively against name, repository and branch. Whitespace, control and format characters at the start of the filter SHALL be ignored, so a filter holding only them shows every row; characters after the first visible one, spaces included, SHALL still count. The same rule SHALL hold for the Worktrees and Config tabs' filters.
