@@ -17,7 +17,24 @@ public sealed class SessionsViewShould
     private static readonly SessionsViewState Loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, Waiting])).State;
 
     [Fact]
-    public void ShowLoadedRowsOrderedByAttention()
+    public void KeepAttentionOrderWithinAGroup()
+    {
+        SessionRow stopped = Row(Job("stopped", DisplayState.Stopped, "Northwind.Orders", "aaaa0001"));
+        SessionRow failed = Row(Job("failed", DisplayState.Failed, "Northwind.Orders", "aaaa0002"));
+        SessionRow completed = Row(Job("completed", DisplayState.Completed, "Northwind.Orders", "aaaa0003"));
+        SessionRow idle = Row(Job("idle", DisplayState.Idle, "Northwind.Orders", "aaaa0004"));
+        SessionRow olderWorking = Row(Job("older-working", DisplayState.Working, "Northwind.Orders", "aaaa0005") with { StartedAt = Fixtures.Noon.AddHours(-2) });
+        SessionRow newerWorking = Row(Job("newer-working", DisplayState.Working, "Northwind.Orders", "aaaa0006"));
+        SessionRow waiting = Row(Job("waiting", DisplayState.NeedsInput, "Northwind.Orders", "aaaa0007"));
+        SessionRow billing = Row(Job("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", "aaaa0008"));
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([stopped, olderWorking, failed, idle, waiting, completed, newerWorking, billing]));
+
+        loaded.VisibleRows.ShouldBe([billing, waiting, newerWorking, olderWorking, idle, completed, failed, stopped]);
+    }
+
+    [Fact]
+    public void ShowLoadedRowsByGroupThenAttention()
     {
         Loaded.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("change-feed"), Listed.As("remove-sonar"), Listed.As("repos-93"), Listed.As("old-spike")]);
     }
