@@ -328,6 +328,13 @@ public sealed class WordingOfScreensShould
     }
 
     [Fact]
+    public void SayInTheWorktreeHelpThatTheHeadingNamesTheRepository()
+    {
+        Wording.WorktreeColumn.Meaning.ShouldBe("the folder's slug, or its label when not named after its repository, or a branch row's branch,\nunder a heading naming the repository");
+        Wording.WorktreeColumn.Meaning.ShouldNotContain("›");
+    }
+
+    [Fact]
     public void TipOnlyARowWhoseFolderHasGone()
     {
         SessionLocation gone = new SessionLocation.FolderGone("Northwind.Orders-fix-123");

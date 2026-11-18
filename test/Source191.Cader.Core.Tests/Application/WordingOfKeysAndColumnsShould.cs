@@ -204,7 +204,8 @@ public sealed class WordingOfKeysAndColumnsShould
             F5     refresh this tab now
 
             Columns
-            WORKTREE     the owning repository › the folder's slug, or its label when not named after it
+            WORKTREE     the folder's slug, or its label when not named after its repository, or a branch row's branch,
+                         under a heading naming the repository
             HEALTH       ✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),
                          ✗ broken (registration or owner gone), □ empty (a leftover folder),
                          ↗ elsewhere (a worktree of a repository outside the roots),
