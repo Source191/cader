@@ -53,10 +53,10 @@
 
 ## 9. Documentation and release
 
-- [ ] 9.1 Describe the ACCOUNT column, the pane's Account line and the Config tab's Accounts rows and rename in `docs\user-guide.md`, with the shared-organisation limit; verify by reading it beside the specs
-- [ ] 9.2 Add the `CHANGELOG.md` entry and raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` as CONTRIBUTING's Versions says; verify with `Assert-VersionBumped.ps1`
+- [x] 9.1 Describe the ACCOUNT column, the pane's Account line and the Config tab's Accounts rows and rename in `docs\user-guide.md`, with the shared-organisation limit; verify by reading it beside the specs
+- [x] 9.2 Add the `CHANGELOG.md` entry and raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` as CONTRIBUTING's Versions says; verify with `Assert-VersionBumped.ps1`
 - [ ] 9.3 Remake the README images with `tools\New-ReadmeScreenshot.ps1` if the new column changes `sessions.png`; verify the image shows the made-up accounts only
-- [ ] 9.4 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate show-session-account`; verify all pass
+- [x] 9.4 Run `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate show-session-account`; verify all pass
 
 ## Workflow follow-up
 
