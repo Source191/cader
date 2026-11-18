@@ -66,12 +66,12 @@ public static class WizardView
         return state with { SelectedIndex = index, Focus = WizardField.RepositoryList };
     }
 
-    /// <summary>The list's own keys or a click; one that lands on a heading moves on in the direction it came from.</summary>
+    /// <summary>The list's own keys or a click; one that lands on a heading moves on in the direction it came from, or down when nothing was selected.</summary>
     private static WizardState Selected(WizardState state, int index)
     {
         IReadOnlyList<WizardRow> rows = state.Rows;
 
-        return index >= 0 && index < rows.Count ? state with { SelectedIndex = Landing(rows, index, index - (state.SelectedIndex ?? -1)) } : state;
+        return index >= 0 && index < rows.Count ? state with { SelectedIndex = Landing(rows, index, index - (state.SelectedIndex ?? index)) } : state;
     }
 
     /// <summary>The target when it is a choice; otherwise the nearest choice in the direction of travel, or the nearest the other way when there is none.</summary>
@@ -79,20 +79,7 @@ public static class WizardView
     {
         int step = direction < 0 ? -1 : 1;
 
-        return Nearest(rows, target, step) ?? Nearest(rows, target, -step) ?? target;
-    }
-
-    private static int? Nearest(IReadOnlyList<WizardRow> rows, int from, int step)
-    {
-        for (int index = from; index >= 0 && index < rows.Count; index += step)
-        {
-            if (rows[index] is WizardRow.Offered)
-            {
-                return index;
-            }
-        }
-
-        return null;
+        return WizardState.Nearest(rows, target, step) ?? WizardState.Nearest(rows, target, -step) ?? target;
     }
 
     private static WizardState Confirmed(WizardState state)
