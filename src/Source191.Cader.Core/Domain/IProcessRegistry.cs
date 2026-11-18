@@ -33,4 +33,7 @@ public interface IProcessRegistry
 
     /// <summary>What a process uses now, or null when it has gone or refuses to be read.</summary>
     ProcessUsage? UsageOf(int processId);
+
+    /// <summary>How many handles a process holds now, or null when it has gone or refuses to be read.</summary>
+    int? HandleCountOf(int processId);
 }

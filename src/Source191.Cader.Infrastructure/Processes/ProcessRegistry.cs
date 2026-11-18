@@ -66,6 +66,12 @@ public sealed partial class ProcessRegistry : IProcessRegistry
             : null;
     }, whenGone: null);
 
+    /// <summary>
+    /// How many handles the process holds, as <see href="https://learn.microsoft.com/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesshandlecount">GetProcessHandleCount</see>
+    /// counts them, which the limited-rights handle allows; null when the process has gone or refuses.
+    /// </summary>
+    public int? HandleCountOf(int processId) => Opened<int?>(processId, handle => GetProcessHandleCount(handle, out uint count) ? (int)count : null, whenGone: null);
+
     /// <summary>The label of the program behind the handle, or empty when its name cannot be read.</summary>
     private static string LabelOf(SafeProcessHandle handle)
     {

@@ -58,6 +58,24 @@ public sealed class ProcessRegistryIntegrationShould
     }
 
     [Fact]
+    public void ReadThisProcesssHandleCount()
+    {
+        using Process current = Process.GetCurrentProcess();
+
+        int? actual = registry.HandleCountOf(Environment.ProcessId);
+
+        actual.ShouldNotBeNull();
+        actual.Value.ShouldBeGreaterThan(0);
+        actual.Value.ShouldBeInRange((int)(current.HandleCount * 0.9), (int)(current.HandleCount * 1.1) + 1);
+    }
+
+    [Fact]
+    public void ReportNoHandleCountForAProcessThatDoesNotExist()
+    {
+        registry.HandleCountOf(int.MaxValue - 7).ShouldBeNull();
+    }
+
+    [Fact]
     public void ReportNothingForAProcessThatDoesNotExist()
     {
         registry.StartTimeOf(int.MaxValue - 7).ShouldBeNull();

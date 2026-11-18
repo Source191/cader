@@ -74,9 +74,9 @@ public sealed class DiagnosticLogShould
         ProcessCounts counts = new();
         counts.Add(ChildCommand.For(new Ports.ProcessRequest("git", ["worktree", "list", "--porcelain"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
 
-        log.WriteCounts(new PerformanceCounts(counts, new RefreshCounts(clock, log), new StallCounts()));
+        log.WriteCounts(new PerformanceCounts(counts, new RefreshCounts(clock, log), new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry(), Environment.ProcessId)));
 
-        sink.Lines.ShouldBe([$"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts since start git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", $"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
+        sink.Lines.ShouldBe([$"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] counts since start git worktree list exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms", $"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls", $"2026-10-23T12:00:00.000Z [{Environment.ProcessId}] process now: unknown handles, unknown private memory"]);
         log.Snapshot().ShouldBeEmpty();
     }
 
@@ -91,12 +91,13 @@ public sealed class DiagnosticLogShould
         await refreshes.TimeAsync(RefreshPart.WorktreesScan, () => Taking(TimeSpan.FromMilliseconds(800)));
         clock.Advance(TimeSpan.FromMinutes(10));
 
-        log.WriteCounts(new PerformanceCounts(new ProcessCounts(), refreshes, new StallCounts()));
+        log.WriteCounts(new PerformanceCounts(new ProcessCounts(), refreshes, new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry(), Environment.ProcessId)));
 
         sink.Lines.ShouldBe([
             $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] refreshes since start sessions listing: 2 runs, median 1700 ms, p95 2200 ms, longest 2200 ms",
             $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] refreshes since start worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
             $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls",
+            $"2026-10-23T12:10:04.700Z [{Environment.ProcessId}] process now: unknown handles, unknown private memory",
         ]);
         log.Snapshot().ShouldBeEmpty();
     }

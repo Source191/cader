@@ -6,6 +6,7 @@ using Source191.Cader.Application.Views;
 using Source191.Cader.Core.Tests.Architecture;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using Source191.Cader.TestDoubles;
 using System.Diagnostics;
 
 namespace Source191.Cader.Core.Tests.Application.Diagnostics;
@@ -38,7 +39,7 @@ public sealed class DiagnosticLineShould
     {
         FakeTimeProvider clock = new(Fixtures.Noon);
         RefreshCounts refreshes = new(clock, new DiagnosticLog(clock, []));
-        PerformanceCounts counts = new(new ProcessCounts(), refreshes, new StallCounts());
+        PerformanceCounts counts = new(new ProcessCounts(), refreshes, new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry().Holding(Environment.ProcessId, 1240).Using(Environment.ProcessId, Fixtures.Noon, MemorySize.FromMegabytes(96)), Environment.ProcessId));
         counts.Processes.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(41));
         refreshes.Add(RefreshPart.WorktreesScan, TimeSpan.FromMilliseconds(800));
 
@@ -49,6 +50,7 @@ public sealed class DiagnosticLineShould
             "counts since start git status exit 0: 1 run, median 41 ms, p95 41 ms, longest 41 ms",
             "refreshes since start worktrees scan: 1 run, median 800 ms, p95 800 ms, longest 800 ms",
             "stalls since start ui thread: 0 stalls",
+            "process now: 1,240 handles, 96 MB private memory",
         ]);
     }
 
@@ -224,10 +226,19 @@ public sealed class DiagnosticLineShould
     }
 
     [Fact]
+    public void SayWhichFigureWindowsRefusedInTheProcessNowLine()
+    {
+        FakeProcessRegistry registry = new FakeProcessRegistry().Using(Environment.ProcessId, Fixtures.Noon, MemorySize.FromMegabytes(1500));
+        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])), new StallCounts(), new OwnProcessMeter(registry, Environment.ProcessId));
+
+        DiagnosticLine.Render(counts, At).ShouldContain($"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] process now: unknown handles, 1.5 GB private memory");
+    }
+
+    [Fact]
     public void RenderTheStallCountsEvenWithNone()
     {
         StallCounts stalls = new();
-        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])), stalls);
+        PerformanceCounts counts = new(new ProcessCounts(), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])), stalls, new OwnProcessMeter(new FakeProcessRegistry(), Environment.ProcessId));
         string[] none = [.. DiagnosticLine.Render(counts, At)];
 
         foreach (int milliseconds in (int[])[150, 180, 820])
@@ -235,8 +246,8 @@ public sealed class DiagnosticLineShould
             stalls.Add(TimeSpan.FromMilliseconds(milliseconds));
         }
 
-        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls"]);
-        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms"]);
+        none.ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls", $"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] process now: unknown handles, unknown private memory"]);
+        DiagnosticLine.Render(counts, At).ShouldBe([$"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] stalls since start ui thread: 3 stalls, median 180 ms, p95 820 ms, longest 820 ms", $"2026-10-29T14:03:12.345Z [{Environment.ProcessId}] process now: unknown handles, unknown private memory"]);
     }
 
     public static TheoryData<Type> EventTypes => DiagnosticEventsShould.EventTypes;

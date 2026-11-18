@@ -48,7 +48,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         SceneProcessRegistry processRegistry = new(listing, new ProcessRegistry());
         DiagnosticLog log = new(clock, []);
         ProcessCounts processCounts = new();
-        PerformanceCounts counts = new(processCounts, new RefreshCounts(clock, log), new StallCounts());
+        PerformanceCounts counts = new(processCounts, new RefreshCounts(clock, log), new StallCounts(), new OwnProcessMeter(processRegistry, Environment.ProcessId));
         RecordedProcessRunner realProcesses = new(new ProcessRunner(TimeSpan.FromSeconds(60)), log, processCounts, clock);
         SceneProcessRunner processes = new(listing, new ScenePullRequests(scene, clock), executables, realProcesses);
         string git = programs.Locate("git") is ProgramLocation.Found found ? found.Path : throw new InvalidOperationException("git is not on the PATH.");

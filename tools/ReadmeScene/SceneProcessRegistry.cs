@@ -35,5 +35,7 @@ public sealed class SceneProcessRegistry(SceneListing listing, IProcessRegistry 
 
     public ProcessUsage? UsageOf(int processId) => listing.UsageOf(processId) ?? real.UsageOf(processId);
 
+    public int? HandleCountOf(int processId) => real.HandleCountOf(processId);
+
     private bool IsScene(int processId) => listing.UsageOf(processId) is not null;
 }

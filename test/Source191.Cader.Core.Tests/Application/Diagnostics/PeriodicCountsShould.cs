@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
 
@@ -17,7 +18,7 @@ public sealed class PeriodicCountsShould
         log = new DiagnosticLog(clock, [sink]);
         ProcessCounts processes = new();
         processes.Add(ChildCommand.For(new ProcessRequest("git", ["status"], WorkingFolder.Inherit)), 0, TimeSpan.FromMilliseconds(12));
-        counts = new PerformanceCounts(processes, new RefreshCounts(clock, log), new StallCounts());
+        counts = new PerformanceCounts(processes, new RefreshCounts(clock, log), new StallCounts(), new OwnProcessMeter(new FakeProcessRegistry().Holding(Environment.ProcessId, 1240).Using(Environment.ProcessId, clock.GetUtcNow(), MemorySize.FromMegabytes(96)), Environment.ProcessId));
     }
 
     [Fact]
@@ -30,8 +31,10 @@ public sealed class PeriodicCountsShould
         sink.Lines.ShouldBe([
             $"2026-11-01T09:10:00.000Z [{Environment.ProcessId}] counts since start git status exit 0: 1 run, median 12 ms, p95 12 ms, longest 12 ms",
             $"2026-11-01T09:10:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls",
+            $"2026-11-01T09:10:00.000Z [{Environment.ProcessId}] process now: 1,240 handles, 96 MB private memory",
             $"2026-11-01T09:20:00.000Z [{Environment.ProcessId}] counts since start git status exit 0: 1 run, median 12 ms, p95 12 ms, longest 12 ms",
             $"2026-11-01T09:20:00.000Z [{Environment.ProcessId}] stalls since start ui thread: 0 stalls",
+            $"2026-11-01T09:20:00.000Z [{Environment.ProcessId}] process now: 1,240 handles, 96 MB private memory",
         ]);
         log.Snapshot().ShouldBeEmpty();
     }
