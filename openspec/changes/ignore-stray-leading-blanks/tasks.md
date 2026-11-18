@@ -12,7 +12,7 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 
 ## 3. The wizard's repository filter (Application)
 
-- [ ] 3.1 Red: `RepositoryCatalogueShould` (or the fact that already drives `RepositoryChoices.Matching`) asserts `" "` and `"​"` keep every choice in every group, `" orders"` keeps what `"orders"` keeps, and `"d o"` keeps `Northwind Orders` but not `Northwind.Orders`. Green: `RepositoryChoices.Matching` applies `WithoutInvisibleStart` once and passes the result to `RepositoryChoice.Matches`. Verify the Core suite passes.
+- [x] 3.1 Red: `RepositoryCatalogueShould` (or the fact that already drives `RepositoryChoices.Matching`) asserts `" "` and `"​"` keep every choice in every group, `" orders"` keeps what `"orders"` keeps, and `"d o"` keeps `Northwind Orders` but not `Northwind.Orders`. Green: `RepositoryChoices.Matching` applies `WithoutInvisibleStart` once and passes the result to `RepositoryChoice.Matches`. Verify the Core suite passes.
 - [ ] 3.2 Red: `WizardViewShould.ListEveryRepositoryForAStraySpace` (the filter receives `" "`; `Filter` is still `" "`, every choice row is listed and `Problem` is `WizardProblem.None`), replacing `ExplainAFilterOfInvisibleCharacters` and `ClearTheInvisibleFilterProblemOnlyWhenTheFilterShowsSomething`. Green: delete `WizardView.FilterProblem` so `Filtered` leaves `Problem` alone, then delete `WizardProblem.InvisibleFilter`, its arm in `Wording.Describe` with `WordingShould.DescribeAnInvisibleFilter`, and `CharacterKinds.AllInvisible` with `CallATextInvisibleOnlyWhenEveryCharacterIs`. Verify the Core suite passes, the reflection facts (`StatusTonesShould`, `WordingShould`) included.
 
 ## 4. Typed session names (Domain and Application)
