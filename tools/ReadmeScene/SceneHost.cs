@@ -101,7 +101,13 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, log);
         SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal"), clock), new ClaudeSettings(folders.ClaudeHome), store, logFiles, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, log);
-        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, fileFolders, accounts, counts.Refreshes);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, clock);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, clock);
+
+        // The scene's folders never change on their own, so its watches report nothing and the capture stays still.
+        using ChangeWatches watches = new(new QuietFolders(), sessionsRefresh, worktreesRefresh, log);
+        ConsoleLoads loads = new(new LatestSessions(claude), enricher, inventory, setup, settings, fileFolders, accounts, counts.Refreshes, watches, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)));
+        loads.FollowChanges();
 
         SessionActivity activity = new(clock);
         RunningLoads listings = new();
@@ -122,8 +128,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
             context,
             executables.Claude,
             folderLabels,
-            new RefreshSchedule(() => settings.Value.SessionsRefresh, clock),
-            new RefreshSchedule(() => settings.Value.WorktreesRefresh, clock));
+            sessionsRefresh,
+            worktreesRefresh);
         OwnTab ownTab = new(store, processRegistry, clock);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);
@@ -178,6 +184,20 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         {
             string owner = owners.TryGetValue(sessionId, out string? organisation) ? $$"""{"type":"session-owner","organizationUuid":"{{organisation}}","sessionId":"{{sessionId}}"}""" + "\n" : string.Empty;
             File.WriteAllText(Path.Combine(project, $"{sessionId}.jsonl"), owner);
+        }
+    }
+
+    /// <summary>Watches nothing: a scene's rows change only when its keys say so.</summary>
+    private sealed class QuietFolders : IFolderChanges
+    {
+        public IDisposable Watch(FolderPath folder, bool subfolders, Action<FolderChange> changed) => new Quiet();
+
+        private sealed class Quiet : IDisposable
+        {
+            public void Dispose()
+            {
+                // Nothing was watched, so nothing is released.
+            }
         }
     }
 }

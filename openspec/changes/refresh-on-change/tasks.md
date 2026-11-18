@@ -29,7 +29,7 @@
 
 ## 6. The screen
 
-- [ ] 6.1 Wiring: `ConsoleComposition` (and `tools\ReadmeScene\SceneHost`, with a fake that reports nothing) builds `FolderChanges`, `ChangeWatches` and the plan; `ChangeWatches.Follow` runs as the console opens and after each scan returns; the ticker starts a hidden Worktrees tab's scan when its schedule is due for a change. Untested wiring under the Tui rule; verify with `dotnet build -c Debug` and the full suite.
+- [x] 6.1 Wiring: `ConsoleComposition` (and `tools\ReadmeScene\SceneHost`, with a fake that reports nothing) builds `FolderChanges`, `ChangeWatches` and the plan; `ChangeWatches.Follow` runs as the console opens and after each scan returns; the ticker starts a hidden Worktrees tab's scan when its schedule is due for a change. Untested wiring under the Tui rule; verify with `dotnet build -c Debug` and the full suite.
 - [ ] 6.2 Manual, in a local install (`tools\install-local.ps1`, Claude Code variables cleared), with both intervals set to 0: on the Sessions tab, `git worktree add` in a shell, wait three seconds and show the Worktrees tab (listed at once); `git worktree remove` with the tab shown (row goes within about two seconds); start `claude` in another terminal (row appears); prompt a background session to ask for permission while the Worktrees tab is shown (bell rings); run `git fetch` and `git status` in a worktree and see no scan in the diagnostic log's counts. Record what was seen, the date and the build here.
 
 ## 7. Documents and release

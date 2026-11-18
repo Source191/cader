@@ -425,9 +425,10 @@ public sealed class ConsoleScreen(
         /// <summary>
         /// The sessions are listed at once, and the worktrees scanned once at once, whichever tab is shown (the scan waits
         /// for the first sessions listing). After that one ticker, at the heartbeat's interval, asks each tab's schedule
-        /// whether its timed refresh is due: the sessions' whether shown or not, the worktrees' only while their tab is
-        /// shown. The schedules read the interval from the current settings at each ask, so a saved interval applies on the
-        /// next tick. The heartbeat beats on its own timeout; Terminal.Gui keeps both running under a dialog too.
+        /// whether a refresh is due, on its timer or for a change a folder watch heard: the sessions' whether shown or not,
+        /// the worktrees' timer only while their tab is shown but a change whether shown or not, so a hidden tab is current
+        /// when shown. The schedules read the interval from the current settings at each ask, so a saved interval applies on
+        /// the next tick. The heartbeat beats on its own timeout; Terminal.Gui keeps both running under a dialog too.
         /// </summary>
         private void StartRefreshing()
         {
@@ -444,13 +445,15 @@ public sealed class ConsoleScreen(
                 ListSessions();
             }
 
-            if (Active == worktrees && IsDue(worktrees))
+            if (Active == worktrees ? IsDue(worktrees) : IsDueForChange(worktrees.Refresh))
             {
                 ScanWorktrees();
             }
         }
 
         private static bool IsDue(ITabBody body) => body.Refresh is TabRefresh.Every every && every.Schedule.IsDue();
+
+        private static bool IsDueForChange(TabRefresh refresh) => refresh is TabRefresh.Every every && every.Schedule.IsDueForChange();
 
         /// <summary>Tells the tab's schedule its refresh has started, from whatever cause, so the next timed one is a whole interval away.</summary>
         private static void Started(ITabBody body)
