@@ -6,11 +6,13 @@ namespace Source191.Cader.ReadmeScene;
 
 /// <summary>
 /// Reads <c>scene.json</c>. Only made-up repositories are allowed: a Northwind.* name whose remote belongs to the
-/// <c>northwind-demo</c> GitHub owner or Azure DevOps organisation, or this repository at its own GitHub address.
+/// <c>northwind-demo</c> GitHub owner or Azure DevOps organisation, or this repository at its own GitHub address; and only made-up accounts, at <c>northwind.example</c>.
 /// </summary>
 public static class SceneFile
 {
     public const string DemoOwner = "northwind-demo";
+
+    public const string MadeUpDomain = "northwind.example";
 
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {
@@ -26,7 +28,14 @@ public static class SceneFile
             Sessions = read.Sessions ?? [],
             AutomatedRuns = read.AutomatedRuns ?? [],
             PullRequests = read.PullRequests ?? [],
+            Accounts = read.Accounts ?? [],
         };
+        SceneAccount? realAccount = scene.Accounts.FirstOrDefault(account => !account.Email.EndsWith("@" + MadeUpDomain, StringComparison.Ordinal));
+        if (realAccount is not null)
+        {
+            throw new InvalidDataException($"{realAccount.Email} is not a made-up account: use an address at {MadeUpDomain}.");
+        }
+
         SceneRepository? real = scene.Repositories.FirstOrDefault(repository => !IsMadeUp(repository));
 
         return real is null ? scene : throw new InvalidDataException($"{real.Name} at {real.Remote} is not a made-up repository.");

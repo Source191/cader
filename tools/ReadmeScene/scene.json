@@ -10,6 +10,7 @@
   "sessions": [
     {
       "name": "fix-tax-rounding",
+      "account": "work",
       "repository": "Northwind.Orders",
       "worktree": "fix-tax-rounding",
       "kind": "background",
@@ -21,6 +22,7 @@
     },
     {
       "name": "invoice-pdf-export",
+      "account": "work",
       "repository": "Northwind.Billing",
       "worktree": "invoice-pdf-export",
       "kind": "background",
@@ -31,6 +33,7 @@
     },
     {
       "name": "stock-alerts",
+      "account": "work",
       "repository": "Northwind.Inventory",
       "worktree": "stock-alerts",
       "kind": "background",
@@ -41,6 +44,7 @@
     },
     {
       "name": "readme-front-page",
+      "account": "personal",
       "repository": "cader",
       "worktree": "readme-front-page",
       "kind": "background",
@@ -51,6 +55,7 @@
     },
     {
       "name": "portal-dark-mode",
+      "account": "work",
       "repository": "Northwind.Portal",
       "worktree": "portal-dark-mode",
       "kind": "background",
@@ -69,6 +74,7 @@
     },
     {
       "name": "retry-payment-webhook",
+      "account": "work",
       "repository": "Northwind.Billing",
       "worktree": "retry-payment-webhook",
       "kind": "background",
@@ -94,5 +100,9 @@
     { "repository": "cader", "branch": "readme-front-page", "number": 216, "state": "open", "openedDaysAgo": 0 },
     { "repository": "Northwind.Orders", "branch": "orders-api-v2", "number": 128, "state": "merged", "openedDaysAgo": 3 },
     { "repository": "Northwind.Billing", "branch": "retry-payment-webhook", "number": 305, "state": "open", "openedDaysAgo": 2 }
+  ],
+  "accounts": [
+    { "label": "work", "email": "dev@northwind.example", "organisation": "Northwind Traders", "organisationId": "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91", "loggedIn": true },
+    { "label": "personal", "email": "me@northwind.example", "organisation": "Personal", "organisationId": "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60" }
   ]
 }

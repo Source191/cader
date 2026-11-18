@@ -61,6 +61,20 @@ public sealed class SceneFileShould
     }
 
     [Fact]
+    public void ReadTheShippedScenesMadeUpAccounts()
+    {
+        Scene scene = SceneFile.Read(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "scene.json")));
+
+        scene.Accounts.Select(account => account.Label).ShouldBe(["work", "personal"]);
+        scene.Accounts.ShouldAllBe(account => account.Email.EndsWith("@northwind.example", StringComparison.Ordinal));
+        scene.Accounts.Count(account => account.LoggedIn).ShouldBe(1);
+    }
+
+    [Fact]
+    public void RefuseARealLookingAccount() =>
+        Should.Throw<InvalidDataException>(() => SceneFile.Read("""{ "claudeVersion": "2.1.316", "accounts": [ { "label": "work", "email": "someone@gmail.com", "organisation": "Work", "organisationId": "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91" } ] }"""));
+
+    [Fact]
     public void ReadTheShippedScene()
     {
         Scene scene = SceneFile.Read(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "scene.json")));
