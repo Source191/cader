@@ -140,18 +140,21 @@ internal sealed class ColumnSizing<TRow>
             return;
         }
 
+        // Asked at the right edge, which is always in a cell: the first cell starts after the box's left line.
+        int right = table.Viewport.Width - 1;
         for (int y = 0; y < table.Viewport.Height; y++)
         {
-            if (table.ScreenToCell(0, y) is { Y: int index } && source.LineAt(index) is TableLine<TRow>.Heading line)
+            if (table.ScreenToCell(right, y) is { Y: int index } && source.LineAt(index) is TableLine<TRow>.Heading line)
             {
-                DrawHeading(y, HeadingLine.For(heading(line.First), elasticWidth, table.Viewport.Width));
+                int x = Enumerable.Range(0, right + 1).First(column => table.ScreenToCell(column, y) is not null);
+                DrawHeading(x, y, HeadingLine.For(heading(line.First), elasticWidth, right - x));
             }
         }
     }
 
-    private void DrawHeading(int y, HeadingLine line)
+    private void DrawHeading(int x, int y, HeadingLine line)
     {
-        table.Move(0, y);
+        table.Move(x, y);
         table.SetAttribute(Palette.HeadingText);
         table.AddStr(line.Text);
         table.SetAttribute(Palette.HeadingRule);
