@@ -6,15 +6,15 @@ Shows every git worktree across the repository roots with its health and lets th
 ## Requirements
 
 ### Requirement: Worktrees are listed across all roots
-The worktrees view SHALL list every linked worktree of every git repository found directly under the configured roots, wherever the worktree's folder is (under the worktree root, beside the repository or elsewhere), using git's machine-readable worktree listing, each as a row whose WORKTREE cell names the repository and the folder, with its branch in the detail pane and its branch's flag in BRANCH.
+The worktrees view SHALL list every linked worktree of every git repository found directly under the configured roots, wherever the worktree's folder is (under the worktree root, beside the repository or elsewhere), using git's machine-readable worktree listing, each as a row under its repository's heading whose WORKTREE cell names the folder, with its branch in the detail pane and its branch's flag in BRANCH.
 
 #### Scenario: Two repositories with worktrees
 - **WHEN** two repositories under the roots each have one linked worktree
-- **THEN** the view shows two rows, each with a WORKTREE cell reading its repository › its folder's slug, and its branch on the pane's Branch line when selected
+- **THEN** the view shows two headings, each naming its repository, and under each one row whose WORKTREE cell reads its folder's slug, with its branch on the pane's Branch line when selected
 
 #### Scenario: Old and new placements together
 - **WHEN** Northwind.Orders has one worktree beside it from an earlier version and one under C:\Users\me\source\worktrees
-- **THEN** the view shows both rows, each reading Northwind.Orders › and its slug
+- **THEN** the view shows both rows under the Northwind.Orders heading, each reading its slug
 
 ### Requirement: Leftover folders are detected
 The view SHALL also show folders that git no longer recognises: a folder under a repository's .claude\worktrees that the listing omits is an orphan; a folder directly under a root or under the worktree root whose .git file points at a worktree registration that no longer exists is broken; an empty folder named with a .worktrees suffix directly under a root, and any empty folder directly under the worktree root, is empty.
@@ -37,7 +37,7 @@ The view SHALL also show folders that git no longer recognises: a folder under a
 
 #### Scenario: Empty folder under the worktree root
 - **WHEN** an empty folder C:\Users\me\source\worktrees\Northwind.Orders-fix-123 sits directly under the worktree root C:\Users\me\source\worktrees, which is not a repository root
-- **THEN** the view shows it with health empty, its WORKTREE cell naming the worktree root and the folder, and the remove key deletes it without asking
+- **THEN** the view shows it with health empty, under a heading naming the worktree root, its WORKTREE cell naming the folder, and the remove key deletes it without asking
 
 #### Scenario: A folder under the worktree root that holds files but no .git file
 - **WHEN** C:\Users\me\source\worktrees\Northwind.Notes holds a file and no .git file
@@ -45,7 +45,7 @@ The view SHALL also show folders that git no longer recognises: a folder under a
 
 #### Scenario: Worktree of a repository outside the roots
 - **WHEN** a folder under C:\Users\me\source\worktrees has a .git file naming the registration D:\other\Northwind.Ledger\.git\worktrees\fix, that registration exists, D:\other\Northwind.Ledger\.git exists, and D:\other is not a root
-- **THEN** the view shows it with health elsewhere, its repository as Northwind.Ledger, and the status line says its repository D:\other\Northwind.Ledger is not under the roots
+- **THEN** the view shows it with health elsewhere under the Northwind.Ledger heading, and the status line says its repository D:\other\Northwind.Ledger is not under the roots
 
 ### Requirement: Locked worktrees are marked
 A worktree that git reports as locked SHALL show health locked, its HEALTH cell reading ◆ locked and its row in amber, and the detail pane's Health line SHALL show the lock reason when git provides one.
@@ -292,31 +292,31 @@ For a row with health elsewhere, the remove and force-remove keys SHALL refuse, 
 - **THEN** nothing is deleted and the status line says the repository is not under the roots, without offering force-remove
 
 ### Requirement: One WORKTREE column names the worktree
-The worktrees table SHALL show the repository and the folder in one WORKTREE column, as the repository, › and the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label), elastic in width and elided in the middle of the repository name when too long, followed by HEALTH, LAST COMMIT and SESSION. LAST COMMIT SHALL be right-aligned, as AGE is on the Sessions tab, so its durations line up on their last character.
+The worktrees table SHALL show the folder in one WORKTREE column, under its repository's heading, as the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label) without the repository's name, elastic in width and cut at its end when too long, followed by HEALTH, LAST COMMIT and SESSION; a heading too long for the column SHALL lose its middle, marked with an ellipsis, and SHALL never widen a column. LAST COMMIT SHALL be right-aligned, as AGE is on the Sessions tab, so its durations line up on their last character.
 
 #### Scenario: A worktree Cader made
 - **WHEN** Northwind.Billing has the worktree C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf on branch invoice-pdf
-- **THEN** its WORKTREE cell reads Northwind.Billing › invoice-pdf, and the pane reads Branch invoice-pdf
+- **THEN** its row is under the Northwind.Billing heading, its WORKTREE cell reads invoice-pdf, and the pane reads Branch invoice-pdf
 
 #### Scenario: A leftover folder
 - **WHEN** a broken leftover C:\Users\me\source\worktrees\Northwind.Sales-republish once belonged to Northwind.Sales
-- **THEN** its WORKTREE cell reads Northwind.Sales › republish, its HEALTH cell reads ✗ broken and its row is red
+- **THEN** its row is under the Northwind.Sales heading, its WORKTREE cell reads republish, its HEALTH cell reads ✗ broken and its row is red
 
 #### Scenario: A folder that does not follow the naming
 - **WHEN** Northwind.Orders has a hand-made worktree at C:\Users\me\source\worktrees\spike on branch spike
-- **THEN** its WORKTREE cell reads Northwind.Orders › spike
+- **THEN** its row is under the Northwind.Orders heading and its WORKTREE cell reads spike
 
 #### Scenario: Filter by health
 - **WHEN** the user filters by broken
-- **THEN** the broken rows stay in the table, each with its HEALTH cell reading ✗ broken
+- **THEN** the broken rows stay in the table under their headings, each with its HEALTH cell reading ✗ broken
 
 #### Scenario: The help names the column
 - **WHEN** the help is shown on the worktrees view
-- **THEN** it lists WORKTREE with its meaning, and the header shows the same words on hover
+- **THEN** it lists WORKTREE with its meaning, saying the row's repository is its heading, and the header shows the same words on hover
 
 #### Scenario: Last commits line up at the right
 - **WHEN** Northwind.Billing-invoice-pdf last committed five minutes ago, Northwind.Orders-fix-123 three days and four hours ago, and an empty leftover folder has no commit
-- **THEN** the LAST COMMIT cells 5m, 3d4h and - each end at the column's right edge, and the WORKTREE cells start at its left edge
+- **THEN** the LAST COMMIT cells 5m, 3d4h and - each end at the column's right edge, and the WORKTREE cells start two cells in from its left edge, under their headings
 
 ### Requirement: A worktree of a repository outside the roots is elsewhere
 A folder directly under a root or under the worktree root whose .git file points at a folder that exists, and that no repository under the roots lists, SHALL be shown with health elsewhere, and its row SHALL name the repository the pointer leads to: the one holding the registration, a bare repository included, or the git directory itself when the pointer names no registration. A relative pointer SHALL be read from the .git file's own folder.
@@ -479,11 +479,11 @@ When the scan or a removal key counts a leftover folder's files, it SHALL NOT en
 - **THEN** the worktrees view still lists every row, that row counts two files, and no failure is shown
 
 ### Requirement: A branch checked out nowhere has a row
-The worktrees view SHALL list, for each repository under the roots, every local branch that is checked out neither in the main checkout nor in any linked worktree, as a row with the health ⑂ branch whose WORKTREE cell names the repository and the branch. The local branch whose upstream is origin's default branch SHALL NOT have such a row. Each such row SHALL be one row of its own, never merged with another row of the same repository.
+The worktrees view SHALL list, for each repository under the roots, every local branch that is checked out neither in the main checkout nor in any linked worktree, as a row with the health ⑂ branch under the repository's heading, whose WORKTREE cell names the branch. The local branch whose upstream is origin's default branch SHALL NOT have such a row. Each such row SHALL be one row of its own, never merged with another row of the same repository.
 
 #### Scenario: A branch with no worktree
 - **WHEN** Northwind.Orders's main checkout is on main, its one linked worktree is on fix-123, and it also has the local branch spike-refunds
-- **THEN** the view shows a row reading Northwind.Orders › spike-refunds with ⑂ branch in HEALTH, beside the fix-123 worktree's row
+- **THEN** the view shows a row reading spike-refunds with ⑂ branch in HEALTH under the Northwind.Orders heading, after the fix-123 worktree's row
 
 #### Scenario: The default branch checked out nowhere
 - **WHEN** Northwind.Orders's main checkout is on fix-123 and its local main tracks origin/main, origin's default branch
@@ -498,7 +498,7 @@ The worktrees view SHALL list a branch that exists on origin, as of the last fet
 
 #### Scenario: Left behind on origin
 - **WHEN** origin/c-new-bug has no local branch, its tip is yours, and its merged pull request #298's head is one commit behind it
-- **THEN** the view shows a row reading Northwind.Orders › c-new-bug with ○ origin in HEALTH and ▲ left behind in BRANCH
+- **THEN** the view shows a row reading c-new-bug with ○ origin in HEALTH and ▲ left behind in BRANCH, under the Northwind.Orders heading
 
 #### Scenario: Someone else's branch
 - **WHEN** origin/dependabot/nuget/bump has no local branch, its only pull request was closed, and its tip was authored by another email
@@ -663,3 +663,36 @@ Changes to a repository's index, objects, references, logs or lock files SHALL N
 #### Scenario: Cader's own scan
 - **WHEN** a scan reads every listed repository's status
 - **THEN** that scan starts no other scan
+
+### Requirement: Rows are grouped by repository
+The worktrees table SHALL group its rows by the repository each names (for a leftover, the repository it belonged to; for an empty leftover, the root it sits under), headed by a row reading the repository's name in bold orange, with a faint rule running across the rest of the row; the group's rows SHALL follow it with their WORKTREE cells indented by two cells.
+
+#### Scenario: A group's heading
+- **WHEN** Northwind.Orders has the worktrees fix-123 and spike
+- **THEN** one bold orange row reading Northwind.Orders, followed by a faint rule, comes before both rows, whose WORKTREE cells start two cells in
+
+### Requirement: Groups run A to Z
+Groups SHALL run A to Z by repository name ignoring case, two of one name in folder order. Within a group the worktree folders SHALL come before the branch and origin rows, each A to Z by name ignoring case.
+
+#### Scenario: Two repositories
+- **WHEN** Northwind.Orders has the worktree fix-123 and the branch spike-refunds checked out nowhere, and Northwind.Billing has the worktree invoice-pdf
+- **THEN** the table reads a Northwind.Billing heading and invoice-pdf, then a Northwind.Orders heading, fix-123 and spike-refunds
+
+#### Scenario: Case is ignored
+- **WHEN** the repositories cader and Northwind.Orders each have a worktree
+- **THEN** the cader group comes first
+
+#### Scenario: Repositories under two roots
+- **WHEN** Northwind.Zeta is under C:\Users\me\source\repos and Northwind.Alpha under D:\work
+- **THEN** the Northwind.Alpha group comes first
+
+### Requirement: A heading is never selected
+A heading SHALL never be selected: the arrow keys, a scan and a filter SHALL step over it as over no row, and the title and counts SHALL count no heading. A filter SHALL keep a heading only while at least one of its rows matches, and SHALL match rows as before, the repository's name included. A heading SHALL show no tooltip.
+
+#### Scenario: The selection steps over a heading
+- **WHEN** invoice-pdf, the last row of the Northwind.Billing group, is selected and the user presses Down
+- **THEN** fix-123, the first row under the Northwind.Orders heading, is selected
+
+#### Scenario: A filter by repository
+- **WHEN** the user filters by billing
+- **THEN** the Northwind.Billing heading and its rows stay, and no other heading shows
