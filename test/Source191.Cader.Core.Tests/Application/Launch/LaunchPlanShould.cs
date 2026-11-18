@@ -6,7 +6,7 @@ namespace Source191.Cader.Core.Tests.Application.Launch;
 public sealed class LaunchPlanShould
 {
     private static readonly RepositoryChoice Repository = new("Northwind.Orders", FolderPath.From(@"C:\repos\Northwind.Orders"), IsRepository: true);
-    private static readonly RepositoryChoice NoRepository = new("repos (no repository)", FolderPath.From(@"C:\repos"), IsRepository: false);
+    private static readonly RepositoryChoice NoRepository = new(@"C:\repos", FolderPath.From(@"C:\repos"), IsRepository: false);
 
     private static readonly FolderPath WorktreeRoot = FolderPath.From(@"C:\Users\me\source\worktrees");
 
@@ -73,11 +73,12 @@ public sealed class LaunchPlanShould
     }
 
     [Fact]
-    public void RefuseAWorktreeForTheNoRepositoryChoice()
+    public void StartAFolderChoiceInTheFolderWhateverWhereSays()
     {
-        LaunchPlanResult result = LaunchPlanBuilder.Build(Default with { Repository = NoRepository, Mode = LaunchMode.NewWorktree }, WorktreeRoot, _ => false);
+        LaunchPlan plan = LaunchPlanBuilder.Build(Default with { Repository = NoRepository, Mode = LaunchMode.NewWorktree }, WorktreeRoot, _ => false).ShouldBeOfType<LaunchPlanResult.Planned>().Plan;
 
-        result.ShouldBe(new LaunchPlanResult.Refused(new LaunchProblem.WorktreeNeedsRepository()));
+        plan.Directory.Value.ShouldBe(@"C:\repos");
+        plan.Place.ShouldBe(new LaunchPlace.CurrentBranch());
     }
 
     [Theory]

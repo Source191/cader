@@ -27,14 +27,10 @@ public static class LaunchPlanBuilder
             return new LaunchPlanResult.Refused(new LaunchProblem.PromptLooksLikeAnOption());
         }
 
-        if (request.Mode == LaunchMode.CurrentBranch)
+        // No worktree can be made from a folder that is not a repository, so it starts in the folder whatever Where says.
+        if (request.Mode == LaunchMode.CurrentBranch || !request.Repository.IsRepository)
         {
             return new LaunchPlanResult.Planned(new LaunchPlan(request.Repository.Path, name, new LaunchPlace.CurrentBranch(), request.Base, prompt, request.Repository, request.BeforeBranching));
-        }
-
-        if (!request.Repository.IsRepository)
-        {
-            return new LaunchPlanResult.Refused(new LaunchProblem.WorktreeNeedsRepository());
         }
 
         if (!WorktreeSlug.TryParse(name.Value, out WorktreeSlug? slug))

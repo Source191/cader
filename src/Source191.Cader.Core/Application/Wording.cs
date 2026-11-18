@@ -219,7 +219,6 @@ public static partial class Wording
         return problem switch
         {
             LaunchProblem.InvalidName invalid => Describe(invalid.Problem),
-            LaunchProblem.WorktreeNeedsRepository => "A worktree needs a repository; choose one or start on the current branch.",
             LaunchProblem.WorktreeNeedsLetters => "A worktree needs a name with some letters or digits in it.",
             LaunchProblem.PromptLooksLikeAnOption => "A prompt cannot start with a dash: Claude Code would read it as options. Start with a word.",
             _ => problem.ToString(),

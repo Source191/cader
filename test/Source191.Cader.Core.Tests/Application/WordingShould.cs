@@ -850,12 +850,6 @@ public sealed class WordingShould
     }
 
     [Fact]
-    public void SayAWorktreeNeedsARepository()
-    {
-        Wording.Describe(new LaunchProblem.WorktreeNeedsRepository()).ShouldBe("A worktree needs a repository; choose one or start on the current branch.");
-    }
-
-    [Fact]
     public void SayAWorktreeNeedsLettersOrDigits()
     {
         Wording.Describe(new LaunchProblem.WorktreeNeedsLetters()).ShouldBe("A worktree needs a name with some letters or digits in it.");
