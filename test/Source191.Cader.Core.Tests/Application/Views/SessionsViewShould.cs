@@ -23,6 +23,32 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void GroupRowsByRepositoryAToZIgnoringCase()
+    {
+        SessionRow orders = Row("fix-123", DisplayState.Working, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow cader = Row("tidy", DisplayState.Stopped, "cader", jobId: "aaaa0002");
+        SessionRow billing = Row("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", jobId: "aaaa0003");
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([orders, cader, billing]));
+
+        loaded.VisibleRows.ShouldBe([cader, billing, orders]);
+        loaded.Selected.ShouldBe(cader);
+    }
+
+    [Fact]
+    public void PutFolderGroupsAfterRepositories()
+    {
+        SessionRow orders = Row("fix-123", DisplayState.Stopped, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow notes = Row(Job("notes", DisplayState.NeedsInput, "notes", "aaaa0002")) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(Job("old", DisplayState.NeedsInput, "Northwind.Retired", "aaaa0003")) with { Location = new SessionLocation.FolderGone("Northwind.Retired") };
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([notes, gone, orders]));
+
+        loaded.VisibleRows[0].ShouldBe(orders);
+        loaded.VisibleRows.Skip(1).ShouldBe([notes, gone], ignoreOrder: true);
+    }
+
+    [Fact]
     public void RefreshTheTabOnF5()
     {
         SessionsView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);
