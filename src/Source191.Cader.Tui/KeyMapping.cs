@@ -17,6 +17,7 @@ internal static class KeyMapping
         (GuiKey.CursorLeft, Key.Left),
         (GuiKey.CursorRight, Key.Right),
         (GuiKey.Backspace, Key.Backspace),
+        (GuiKey.F5, Key.F5),
     ];
 
     /// <summary>Whether the reducers know this key (a named key, or a printable character), and the key they know it as.</summary>
