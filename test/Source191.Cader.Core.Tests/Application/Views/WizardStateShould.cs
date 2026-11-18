@@ -20,8 +20,8 @@ public sealed class WizardStateShould
     {
         WizardState opened = WizardState.Open(Catalogue, [], folders, TestSettings.For(Root), new WizardOrigin.Anywhere());
 
-        opened.Choices.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"]);
-        opened.SelectedIndex.ShouldBe(0);
+        opened.Choices.Select(choice => choice.Name).ShouldBe([Root, "Northwind.Billing"]);
+        opened.SelectedIndex.ShouldBe(1, "the first choice, after the Folders heading");
         opened.Prompt.ShouldBeEmpty();
     }
 
@@ -41,7 +41,7 @@ public sealed class WizardStateShould
     {
         WizardState opened = WizardState.Open(Catalogue, [], folders, TestSettings.For(Root), WizardOrigin.In(FolderPath.From(Billing)));
 
-        opened.AllChoices.ShouldBeEmpty();
+        opened.Rows.ShouldBeEmpty();
         opened.SelectedIndex.ShouldBeNull();
         opened.Prompt.ShouldBeEmpty();
     }

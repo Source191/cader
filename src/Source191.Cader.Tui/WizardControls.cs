@@ -44,7 +44,7 @@ internal sealed class WizardControls
 
     public TextField Filter { get; } = new() { X = LeftColumn, Y = 1, Width = ColumnWidth };
 
-    /// <summary>The repositories, taking every row between the filter and the form, never fewer than four.</summary>
+    /// <summary>The repositories and folders under their headings, taking every row between the filter and the form, never fewer than four.</summary>
     public ListView Repositories { get; } = new() { X = LeftColumn, Y = 2, Width = ColumnWidth, Height = Dim.Fill(FormRows, 4) };
 
     public Label Chosen { get; } = Text(LeftColumn, 1, Palette.Cyan, ColumnWidth);
@@ -93,7 +93,7 @@ internal sealed class WizardControls
 
         return
         [
-            Caption(LeftColumn, 0, "Repository (type to filter, ↑↓ to choose)"),
+            Caption(LeftColumn, 0, "Repository or folder (type to filter, ↑↓ to choose)"),
             Filter,
             Repositories,
             Caption(LeftColumn, Pos.AnchorEnd(FormRows), "Session name (required)"),

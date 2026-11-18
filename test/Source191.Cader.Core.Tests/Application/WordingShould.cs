@@ -850,12 +850,6 @@ public sealed class WordingShould
     }
 
     [Fact]
-    public void SayAWorktreeNeedsARepository()
-    {
-        Wording.Describe(new LaunchProblem.WorktreeNeedsRepository()).ShouldBe("A worktree needs a repository; choose one or start on the current branch.");
-    }
-
-    [Fact]
     public void SayAWorktreeNeedsLettersOrDigits()
     {
         Wording.Describe(new LaunchProblem.WorktreeNeedsLetters()).ShouldBe("A worktree needs a name with some letters or digits in it.");
@@ -1197,7 +1191,7 @@ public sealed class WordingShould
         FolderPath root = FolderPath.From(@"C:\Users\me\source\worktrees");
 
         Wording.PreviewCurrentBranch("Northwind.Orders").ShouldBe("Runs in Northwind.Orders on its current branch; the name is only the session's label.");
-        Wording.PreviewNeedsRepository.ShouldBe("A worktree needs a repository; this folder is not one.");
+        Wording.PreviewFolder(@"C:\repos").ShouldBe(@"Runs in C:\repos, which is not a repository, so Where does not apply.");
         Wording.PreviewBeforeAName("Northwind.Orders", root).ShouldBe(@"The name becomes the worktree folder Northwind.Orders-<name> under C:\Users\me\source\worktrees and its branch.");
         Wording.PreviewWorktree("Northwind.Orders-fix-123-flaky-tests", root, BranchName.From("fix-123-flaky-tests"))
             .ShouldBe(@"Worktree Northwind.Orders-fix-123-flaky-tests under C:\Users\me\source\worktrees, on branch fix-123-flaky-tests.");

@@ -5,25 +5,6 @@ Starts a named Claude Code session in a chosen repository, either on the branch 
 
 ## Requirements
 
-### Requirement: Repository is chosen from configured roots
-The wizard SHALL offer every git repository's main checkout found directly under the configured repository roots, the most recently used repositories first, and SHALL NOT offer a root folder itself or a linked worktree directly under a root.
-
-#### Scenario: Filtering the picker
-- **WHEN** the user types part of a repository name
-- **THEN** the picker narrows to repositories whose names contain that text, case-insensitively
-
-#### Scenario: Recently used first
-- **WHEN** the picker opens
-- **THEN** the ten most recently launched repositories appear before the rest
-
-#### Scenario: Old sibling worktree under a root
-- **WHEN** the root holds Northwind.Orders and its linked worktree Northwind.Orders-fix-123
-- **THEN** the picker offers Northwind.Orders and does not offer Northwind.Orders-fix-123
-
-#### Scenario: Roots are not choices
-- **WHEN** the picker opens with the root C:\Users\me\source\repos
-- **THEN** no "(no repository)" entry is listed; a session in the root folder itself is started with cader here from that folder
-
 ### Requirement: A session name is mandatory
 The wizard SHALL require a non-blank name, SHALL accept any other name, including one holding a semicolon or a double quote, and SHALL use the name exactly as typed as the session name, the tab title and the Remote Control name. A refused name SHALL be explained in a plain sentence, in the wizard and by `cader here`, with nothing after it.
 
@@ -63,8 +44,8 @@ The wizard opened from the overview SHALL start on the default place setting, a 
 - **THEN** Where reads Current branch and the session starts in the main checkout unless the user switches it
 
 #### Scenario: Default left in place for a folder that is not a repository
-- **WHEN** the user opens the wizard with `n`, chooses "(no repository)", names the session and starts without changing Where while it reads New worktree
-- **THEN** the wizard starts nothing and explains that a worktree needs a repository
+- **WHEN** the default place is New worktree and the user chooses C:\Users\me\source\repos, names the session "cross-repo notes" and presses F5 without changing Where
+- **THEN** the session starts in C:\Users\me\source\repos and no worktree is created
 
 #### Scenario: Wizard on a fixed folder
 - **WHEN** the default place is New worktree and the user starts a session with `n` on a worktree row
@@ -329,7 +310,7 @@ When a new worktree is created from origin's default branch and Before branching
 - **THEN** it is ended, and the launch carries on as for any failed fetch, the status line naming the limit
 
 ### Requirement: Nothing is fetched or pulled outside a new worktree from origin
-Cader SHALL NOT fetch or pull for a session started on the current branch, in a fixed folder, with `cader here`, in an existing worktree the wizard offered instead of creating one, or in a new worktree whose base is HEAD.
+Cader SHALL NOT fetch or pull for a session started on the current branch, in a fixed folder, in a folder choice, with `cader here`, in an existing worktree the wizard offered instead of creating one, or in a new worktree whose base is HEAD.
 
 #### Scenario: Current branch
 - **WHEN** Before branching is Pull default branch and the user starts a session on Current branch
@@ -341,6 +322,10 @@ Cader SHALL NOT fetch or pull for a session started on the current branch, in a 
 
 #### Scenario: cader here
 - **WHEN** Before branching is Pull default branch and the user runs cader here fix-tests
+- **THEN** no fetch or pull is made
+
+#### Scenario: A folder choice
+- **WHEN** Before branching is Pull default branch and the user starts a session in the folder choice C:\Users\me\source\repos while Where reads New worktree
 - **THEN** no fetch or pull is made
 
 ### Requirement: Pull also fast-forwards the local default branch
@@ -422,3 +407,64 @@ When the repository filter holds at least one character and every character in i
 #### Scenario: A filter that matches nothing visibly
 - **WHEN** the user types "zzz" and no repository name contains it
 - **THEN** the list is empty and the problem line does not show the invisible-filter message
+
+### Requirement: A repository or a root folder is chosen from configured roots
+The wizard SHALL offer every git repository's main checkout found directly under the configured repository roots, and each root that exists as a folder choice shown by its full path, grouped under the headings Recent (the most recently used repositories, most recent first), Folders (no repository) (the roots) and Repositories (the rest, alphabetically), in that order. It SHALL NOT offer a linked worktree directly under a root, and SHALL leave out a group with no choices, heading and all.
+
+#### Scenario: Filtering the picker
+- **WHEN** the user types part of a repository name
+- **THEN** the picker narrows to repositories whose names contain that text, case-insensitively
+
+#### Scenario: Recently used first
+- **WHEN** the picker opens
+- **THEN** the ten most recently launched repositories appear under Recent, before the rest
+
+#### Scenario: Old sibling worktree under a root
+- **WHEN** the root holds Northwind.Orders and its linked worktree Northwind.Orders-fix-123
+- **THEN** the picker offers Northwind.Orders and does not offer Northwind.Orders-fix-123
+
+#### Scenario: Roots are folder choices
+- **WHEN** the picker opens with the roots C:\Users\me\source\repos and D:\work, and Northwind.Templates was used recently
+- **THEN** it lists Recent with Northwind.Templates, then Folders (no repository) with C:\Users\me\source\repos and D:\work, then Repositories with the other repositories
+
+#### Scenario: A root that does not exist
+- **WHEN** a configured root folder does not exist
+- **THEN** it is not offered as a folder choice
+
+#### Scenario: A group the filter empties
+- **WHEN** the user types "Billing" and only Northwind.Billing matches
+- **THEN** the picker shows only the Repositories heading and Northwind.Billing
+
+#### Scenario: Filtering by a root's path
+- **WHEN** the user types "work" with the root D:\work
+- **THEN** D:\work stays listed under Folders (no repository)
+
+### Requirement: The picker's headings are never selected
+The wizard SHALL never rest its selection on a heading: it SHALL open, and reselect after the filter changes, on the first choice, and a move or click that lands on a heading SHALL move on to the nearest choice in the direction of the move, or back to the nearest choice the other way when there is none.
+
+#### Scenario: Opening on the most recent repository
+- **WHEN** the wizard opens with Northwind.Templates used recently
+- **THEN** Northwind.Templates is selected, not the Recent heading
+
+#### Scenario: Stepping down over a heading
+- **WHEN** the last Recent choice is selected and the user presses Down
+- **THEN** the first folder choice is selected
+
+#### Scenario: Stepping up over the first heading
+- **WHEN** the first choice is selected and the user presses Page Up
+- **THEN** the first choice stays selected
+
+#### Scenario: Clicking a heading
+- **WHEN** the user clicks the Repositories heading while a Recent choice is selected
+- **THEN** the first repository under Repositories is selected
+
+### Requirement: A folder choice starts in the folder whatever Where says
+A session started in a folder choice SHALL start in that folder, with no worktree made, whatever Where, the worktree base and Before branching say; they SHALL keep their values for the next choice, and the preview SHALL say the folder is not a repository and that Where does not apply.
+
+#### Scenario: The preview for a folder choice
+- **WHEN** the user selects C:\Users\me\source\repos
+- **THEN** the preview says it runs in C:\Users\me\source\repos, which is not a repository, so Where does not apply
+
+#### Scenario: Moving back to a repository
+- **WHEN** Where reads New worktree, the user selects C:\Users\me\source\repos and then Northwind.Orders
+- **THEN** Where still reads New worktree and the preview names the new worktree

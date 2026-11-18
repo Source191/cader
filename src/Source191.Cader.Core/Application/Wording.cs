@@ -58,7 +58,8 @@ public static partial class Wording
     /// <summary>The wizard's preview for a session that runs in the repository's current branch.</summary>
     public static string PreviewCurrentBranch(string repositoryName) => $"Runs in {repositoryName} on its current branch; the name is only the session's label.";
 
-    public static string PreviewNeedsRepository => "A worktree needs a repository; this folder is not one.";
+    /// <summary>The wizard's preview for a folder choice, which starts in the folder whatever Where says.</summary>
+    public static string PreviewFolder(string folderName) => $"Runs in {folderName}, which is not a repository, so Where does not apply.";
 
     /// <summary>The wizard's preview for a worktree whose name has not yielded a folder yet.</summary>
     public static string PreviewBeforeAName(string repositoryName, FolderPath worktreeRoot) => $"The name becomes the worktree folder {repositoryName}-<name> under {worktreeRoot} and its branch.";
@@ -219,7 +220,6 @@ public static partial class Wording
         return problem switch
         {
             LaunchProblem.InvalidName invalid => Describe(invalid.Problem),
-            LaunchProblem.WorktreeNeedsRepository => "A worktree needs a repository; choose one or start on the current branch.",
             LaunchProblem.WorktreeNeedsLetters => "A worktree needs a name with some letters or digits in it.",
             LaunchProblem.PromptLooksLikeAnOption => "A prompt cannot start with a dash: Claude Code would read it as options. Start with a word.",
             _ => problem.ToString(),
@@ -327,6 +327,21 @@ public static partial class Wording
     };
 
     public static string WizardChosenCaption(WizardState wizard) => wizard.ShowsChooser ? "Repository" : "Directory";
+
+    /// <summary>A row of the wizard's list: a group's heading, or a choice indented under it.</summary>
+    public static string WizardListRow(WizardRow row) => row switch
+    {
+        WizardRow.Heading heading => WizardHeading(heading.Group),
+        WizardRow.Offered offered => $"  {offered.Choice.Name}",
+        _ => throw new UnreachableException(),
+    };
+
+    public static string WizardHeading(ChoiceGroup group) => group switch
+    {
+        ChoiceGroup.Recent => "Recent",
+        ChoiceGroup.Folders => "Folders (no repository)",
+        ChoiceGroup.Repositories => "Repositories",
+    };
 
     public static string WizardChosen(WizardState wizard) => wizard.Chosen switch
     {

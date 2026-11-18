@@ -64,7 +64,7 @@ internal static class LaunchWizardDialog
         void Push()
         {
             binding = true;
-            IReadOnlyList<string> names = [.. state.Choices.Select(choice => choice.Name)];
+            IReadOnlyList<string> names = [.. state.Rows.Select(Wording.WizardListRow)];
             if (!names.SequenceEqual(listed))
             {
                 listed = names;

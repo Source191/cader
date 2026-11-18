@@ -1,3 +1,4 @@
+using Source191.Cader.Application;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
@@ -32,7 +33,9 @@ public sealed class WizardViewShould
     {
         WizardState opened = Opened;
 
-        opened.Choices.Select(choice => choice.Name).ShouldBe(["Northwind.Templates", "Northwind.Agents", "Northwind.Billing"]);
+        opened.Rows.Select(Wording.WizardListRow).ShouldBe(["Recent", "  Northwind.Templates", "Folders (no repository)", @"  C:\Users\me\source\repos", "Repositories", "  Northwind.Agents", "  Northwind.Billing"]);
+        opened.Choices.Select(choice => choice.Name).ShouldBe(["Northwind.Templates", Root, "Northwind.Agents", "Northwind.Billing"]);
+        opened.SelectedIndex.ShouldBe(1, "the selection never rests on a heading");
         opened.Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Templates");
         opened.Focus.ShouldBe(WizardField.RepositoryFilter);
         opened.Problem.ShouldBe(new WizardProblem.None());
@@ -47,8 +50,8 @@ public sealed class WizardViewShould
 
         WizardState narrowed = Reduce(moved, new WizardInput.FilterChanged("BILL"));
 
-        narrowed.Choices.Select(choice => choice.Name).ShouldBe(["Northwind.Billing"]);
-        narrowed.SelectedIndex.ShouldBe(0, "a new filter selects its first choice");
+        narrowed.Rows.ShouldBe([new WizardRow.Heading(ChoiceGroup.Repositories), new WizardRow.Offered(new RepositoryChoice("Northwind.Billing", FolderPath.From(Billing), IsRepository: true))], "a group the filter empties loses its heading");
+        narrowed.SelectedIndex.ShouldBe(1, "a new filter selects its first choice");
         narrowed.Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Billing");
         Reduce(narrowed, new WizardInput.FilterChanged("nothing matches")).ShouldSatisfyAllConditions(
             empty => empty.Choices.ShouldBeEmpty(),
@@ -76,7 +79,7 @@ public sealed class WizardViewShould
 
         Reduce(invisible, new WizardInput.FilterChanged(string.Empty)).ShouldSatisfyAllConditions(
             cleared => cleared.Problem.ShouldBe(new WizardProblem.None(), "Backspace to an empty filter clears it"),
-            cleared => cleared.Choices.Count.ShouldBe(3));
+            cleared => cleared.Choices.Count.ShouldBe(4));
         Reduce(invisible, new WizardInput.FilterChanged(" o")).Problem.ShouldBe(new WizardProblem.None(), "a visible character clears it");
         Reduce(Opened, new WizardInput.FilterChanged("zzz")).Problem.ShouldBe(new WizardProblem.None(), "a visible filter that matches nothing is not invisible");
         Reduce(refused, new WizardInput.FilterChanged("zz")).Problem.ShouldBe(new WizardProblem.NoRepository(), "another problem is kept by a filter change, as before");
@@ -85,11 +88,38 @@ public sealed class WizardViewShould
     [Fact]
     public void MoveAndPageTheListWithinBounds()
     {
-        Reduce(Opened, new WizardInput.ListMoved(1)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Agents");
+        Reduce(Opened, new WizardInput.ListMoved(1)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe(Root, "a move down steps over the Folders heading");
         Reduce(Opened, new WizardInput.ListMoved(20)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Billing", "a page past the end stops on the last choice");
         Reduce(Opened, new WizardInput.ListMoved(-1)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Templates", "the first choice is as far up as it goes");
-        Reduce(Opened, new WizardInput.ChoiceSelected(2)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Billing", "the list's own selection is the choice");
+        Reduce(Opened, new WizardInput.ChoiceSelected(6)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Billing", "the list's own selection is the choice");
         Reduce(Opened, new WizardInput.ChoiceSelected(9)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Templates", "an index outside the list changes nothing");
+    }
+
+    [Fact]
+    public void StepOverAHeading()
+    {
+        WizardState onTheRoot = Reduce(Opened, new WizardInput.ListMoved(2));
+
+        Reduce(Opened, new WizardInput.ChoiceSelected(2)).SelectedIndex.ShouldBe(3, "the list's own Down onto the Folders heading moves on to the root");
+        Reduce(onTheRoot, new WizardInput.ChoiceSelected(2)).SelectedIndex.ShouldBe(1, "its Up onto the heading moves on to the last recent repository");
+        Reduce(Opened, new WizardInput.ChoiceSelected(4)).Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Agents", "a click on the Repositories heading selects the first repository");
+        Reduce(Opened, new WizardInput.ChoiceSelected(0)).SelectedIndex.ShouldBe(1, "above the first heading there is no choice, so the first choice stays");
+        Reduce(onTheRoot, new WizardInput.ListMoved(-10)).SelectedIndex.ShouldBe(1, "Page Up to the top lands on the first choice");
+    }
+
+    [Fact]
+    public void StartAFolderChoiceInTheFolderKeepingWhere()
+    {
+        WizardState onTheRoot = Reduce(Reduce(Opened, new WizardInput.ListMoved(1)), new WizardInput.NameChanged("cross-repo notes"));
+
+        WizardUpdate started = WizardView.Reduce(onTheRoot, new WizardInput.Start());
+
+        onTheRoot.Mode.ShouldBe(LaunchMode.NewWorktree, "Where keeps its value");
+        onTheRoot.Preview.ShouldBe(Wording.PreviewFolder(Root));
+        LaunchPlan plan = started.Effect.ShouldBeOfType<WizardEffect.Launch>().Plan;
+        plan.Directory.Value.ShouldBe(Root);
+        plan.Place.ShouldBe(new LaunchPlace.CurrentBranch());
+        Reduce(onTheRoot, new WizardInput.ListMoved(1)).Preview.ShouldBe(@"Worktree Northwind.Agents-cross-repo-notes under C:\Users\me\source\worktrees, on branch cross-repo-notes.", "moving back to a repository still makes a worktree");
     }
 
     // 1.2 Confirming the repository.
@@ -134,7 +164,7 @@ public sealed class WizardViewShould
 
         opened.WorktreeRoot.ShouldBe(FolderPath.From(WorktreeRoot));
         opened.Base.ShouldBe(WorktreeBase.Head);
-        Reduce(opened, new WizardInput.NameChanged("fix 123"))
+        Reduce(Reduce(opened, new WizardInput.FilterChanged("agents")), new WizardInput.NameChanged("fix 123"))
             .Preview.ShouldBe(@"Worktree Northwind.Agents-fix-123 under D:\worktrees, on branch fix-123.");
     }
 
@@ -352,7 +382,7 @@ public sealed class WizardViewShould
     {
         WizardState inList = Reduce(Opened, new WizardInput.ListMoved(1));
         inList.Focus.ShouldBe(WizardField.RepositoryList);
-        inList.Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe("Northwind.Agents");
+        inList.Chosen.ShouldBeOfType<RepositoryPick.Picked>().Choice.Name.ShouldBe(Root);
 
         Reduce(inList, new WizardInput.FilterChanged("t")).Focus.ShouldBe(WizardField.RepositoryFilter);
 
@@ -390,7 +420,7 @@ public sealed class WizardViewShould
     {
         WizardState moved = Reduce(Reduce(Opened, new WizardInput.FilterChanged("north")), new WizardInput.ListMoved(2));
 
-        Reduce(moved, new WizardInput.FilterChanged("north")).SelectedIndex.ShouldBe(2);
+        Reduce(moved, new WizardInput.FilterChanged("north")).SelectedIndex.ShouldBe(3);
     }
 
     private static readonly WizardInput[] StateOnlyInputs =
@@ -434,7 +464,7 @@ public sealed class WizardViewShould
     {
         WizardState nothingShown = Opened with { Filter = "nothing matches" };
 
-        Reduce(nothingShown, new WizardInput.ListMoved(1)).SelectedIndex.ShouldBe(0);
+        Reduce(nothingShown, new WizardInput.ListMoved(1)).SelectedIndex.ShouldBe(Opened.SelectedIndex);
     }
 
     [Fact]
@@ -442,9 +472,9 @@ public sealed class WizardViewShould
     {
         WizardState onTheLast = Reduce(Opened, new WizardInput.ListMoved(2));
         WizardState first = Reduce(onTheLast, new WizardInput.ChoiceSelected(0));
-        WizardState beyond = Reduce(Opened, new WizardInput.ChoiceSelected(Opened.Choices.Count));
+        WizardState beyond = Reduce(Opened, new WizardInput.ChoiceSelected(Opened.Rows.Count));
 
-        first.SelectedIndex.ShouldBe(0);
-        beyond.SelectedIndex.ShouldBe(0);
+        first.SelectedIndex.ShouldBe(1);
+        beyond.SelectedIndex.ShouldBe(1);
     }
 }
