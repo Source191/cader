@@ -6,7 +6,7 @@
 
 - [x] 1.1 Red then green: `RefreshIntervalShould` (Core.Tests, Domain) states `From(0)` is `Off`, `From(3600)` is an hour, `From(-1)` and `From(3601)` throw, `TryFrom(null)` and `TryFrom(86400)` answer false, and `Every` is the seconds as a `TimeSpan`; add `Domain\RefreshInterval` (design decision 2).
 - [x] 1.2 Red then green: `SettingsShould` states `Resolve` carries both intervals, `ToText` shows them as their numbers, `Validate` accepts ` 30 ` and `0` and refuses `2.5`, `ten` and `3601` with `SettingsProblem.RefreshIntervalNotWholeSeconds` naming the field, and `Equals` compares them; extend `Settings`, `SettingsText` and `SettingsProblem` (`SealedTypesShould` and `ClosedHierarchiesShould` stay green).
-- [ ] 1.3 Red then green: `SettingsFileShould` states a file without the properties reads 5 and 15 seconds, `-1` and `86400` read as their defaults with `repositoryRoots` kept, and `ToConfig` always writes both; add the two `int?` members to `Ports\UserConfig` (`= null`, as its record allows) and resolve them in `SettingsFile` (decision 3). `JsonFileStoreShould` (Infrastructure.Tests) states `"sessionsRefreshSeconds": "fast"` reads as a corrupt file.
+- [x] 1.3 Red then green: `SettingsFileShould` states a file without the properties reads 5 and 15 seconds, `-1` and `86400` read as their defaults with `repositoryRoots` kept, and `ToConfig` always writes both; add the two `int?` members to `Ports\UserConfig` (`= null`, as its record allows) and resolve them in `SettingsFile` (decision 3). `JsonFileStoreShould` (Infrastructure.Tests) states `"sessionsRefreshSeconds": "fast"` reads as a corrupt file.
 
 ## 2. The schedule
 

@@ -185,7 +185,7 @@ public sealed class SettingsFileShould
 
         UserConfig config = SettingsFile.ToConfig(settings);
 
-        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false, BeforeBranching: BeforeBranching.None));
+        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false, BeforeBranching: BeforeBranching.None, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15));
         config.ShouldNotBe(config with { BeforeBranching = BeforeBranching.Pull });
         SettingsFile.From(config, Home).ShouldBe(settings);
     }
