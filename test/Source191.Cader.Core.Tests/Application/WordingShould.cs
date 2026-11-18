@@ -416,6 +416,22 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void ListF5InEveryTabsHelpButOnNoBar()
+    {
+        foreach (IReadOnlyList<KeyHelp> keys in new[] { Wording.SessionsKeys, Wording.WorktreesKeys, Wording.ConfigKeys })
+        {
+            KeyHelp f5 = keys.Single(key => key.Press == Key.F5);
+
+            $"{f5.HelpKey} {f5.Line}".ShouldBe("F5 refresh this tab now");
+            f5.Tip.ShouldBe("Refresh this tab now, as its timer would; nothing starts while it is refreshing.");
+            f5.OnBar.ShouldBeFalse();
+        }
+
+        KeyBar[] bars = [Wording.ConfigBar(updateKnown: true), Wording.WorktreesBar(updateKnown: true), Wording.SessionsBar(SessionsViewState.Empty, updateKnown: true)];
+        bars.SelectMany(bar => bar.First.Concat(bar.Second)).ShouldNotContain(item => item.Press == Key.F5);
+    }
+
+    [Fact]
     public void FitEveryColumnMeaningOnItsLines()
     {
         foreach (ColumnHelp column in Wording.SessionsColumns.Concat(Wording.WorktreesColumns))

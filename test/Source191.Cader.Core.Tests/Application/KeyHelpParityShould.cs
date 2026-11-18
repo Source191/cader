@@ -53,7 +53,7 @@ public sealed class KeyHelpParityShould
     }
 
     [Fact]
-    public void AnswerTheKeysOnlyTheHelpListsAsTabOrScrollKeys()
+    public void AnswerTheKeysOnlyTheHelpListsAsTabScrollOrRefreshKeys()
     {
         IEnumerable<KeyHelp> helpOnly = Wording.SessionsKeys.Concat(Wording.WorktreesKeys).Concat(Wording.ConfigKeys).Where(help => !help.OnBar);
 
@@ -61,7 +61,7 @@ public sealed class KeyHelpParityShould
         {
             Key key = KeyFor(help.Key);
 
-            (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _)).ShouldBeTrue($"{help.Key} is listed by the help alone and is neither a tab key nor a scroll key");
+            (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _) || RefreshKeys.TryFor(key, out _)).ShouldBeTrue($"{help.Key} is listed by the help alone and is neither a tab key, a scroll key nor the refresh key");
         }
     }
 
@@ -85,6 +85,7 @@ public sealed class KeyHelpParityShould
         "esc" => Key.Escape,
         "←" => Key.Left,
         "→" => Key.Right,
+        "f5" => Key.F5,
         _ => Key.Of(text.Single()),
     };
 
