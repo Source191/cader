@@ -15,4 +15,8 @@ public sealed class RefreshSchedule(Func<RefreshInterval> interval, TimeProvider
 
     /// <summary>The tab's refresh has just started, so the next timed one is a whole interval away.</summary>
     public void Started() => lastStarted = clock.GetUtcNow();
+
+    public bool IsDueForChange() => lastStarted == DateTimeOffset.MaxValue;
+
+    public void Changed() => lastStarted = lastStarted.AddTicks(0);
 }
