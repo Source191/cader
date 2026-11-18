@@ -143,7 +143,8 @@ public sealed class FolderChangesShould : IDisposable
         GC.KeepAlive(watches);
     }
 
-    public void Dispose()    {
+    public void Dispose()
+    {
         Directory.Delete(root, recursive: true);
     }
 
