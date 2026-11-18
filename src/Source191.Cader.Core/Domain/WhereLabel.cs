@@ -58,7 +58,7 @@ public abstract record WhereLabel
     }
 
     /// <summary>The label's part after the repository: nothing for the main checkout, the slug or inner path when the label starts with the repository, else the whole label.</summary>
-    private static string PlaceOf(string repository, string label)
+    public static string PlaceOf(string repository, string label)
     {
         if (string.Equals(label, repository, StringComparison.OrdinalIgnoreCase))
         {

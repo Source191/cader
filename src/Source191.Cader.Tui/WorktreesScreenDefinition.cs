@@ -23,8 +23,8 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
 
     public IReadOnlyList<TableColumn<WorktreeRow>> Columns { get; } =
     [
-        // The WORKTREE cell names the repository and the folder's slug, or a row with no folder's branch in the slug's place; BRANCH flags the branch, and the pane names it and gives the flag's reason.
-        TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => WhereOf(folders, row).Fit(width), new ColumnFit.Elastic()),
+        // The WORKTREE cell names the folder's slug, or a row with no folder's branch, under a heading naming the repository; BRANCH flags the branch, and the pane names it and gives the flag's reason.
+        TableColumn<WorktreeRow>.Plain(Wording.WorktreeColumn, (row, _, width) => TextFit.CutEnd(WorktreeOf(folders, row), width), new ColumnFit.Elastic()),
         TableColumn<WorktreeRow>.Plain(Wording.HealthColumn, (row, _, _) => Wording.HealthCell(row.Health.Kind), new ColumnFit.Natural()),
         new(Wording.BranchColumn, (row, _, _) => Wording.BranchCell(row.Flag), new ColumnFit.Natural(), FlagPaint),
         TableColumn<WorktreeRow>.Plain(Wording.LastCommitColumn, (row, now, _) => row.LastCommitAt is LastCommit.Made made ? Durations.Age(now - made.At) : "-", new ColumnFit.RightAligned()),
@@ -34,11 +34,14 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
     /// <summary>A flag keeps its own colour off the selected row; a blank cell takes the row's.</summary>
     private static CellPaint FlagPaint(WorktreeRow row) => row.Flag is BranchFlagKind.None ? new CellPaint.None() : new CellPaint.Text(Palette.ForTone(Wording.ToneOf(row.Flag)));
 
-    private static WhereLabel WhereOf(FolderLabels folders, WorktreeRow row) => (row.Placement, row.Head) switch
+    /// <summary>The folder's part after its repository, which the heading names, or a row with no folder's branch.</summary>
+    private static string WorktreeOf(FolderLabels folders, WorktreeRow row) => (row.Placement, row.Head) switch
     {
-        (Placement.NoFolder, Head.OnBranch on) => new WhereLabel.Inside(row.RepositoryName, on.Branch.Value),
-        _ => WhereLabel.For(row.RepositoryName, folders.For(row.Path), inRepository: true),
+        (Placement.NoFolder, Head.OnBranch on) => on.Branch.Value,
+        _ => WhereLabel.PlaceOf(row.RepositoryName, folders.For(row.Path)),
     };
+
+    public string Heading(WorktreeRow first) => first.RepositoryName;
 
     public Color RowColour(WorktreeRow row)
     {
