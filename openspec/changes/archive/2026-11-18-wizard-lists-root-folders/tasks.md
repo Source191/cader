@@ -19,7 +19,7 @@
 ## 4. The dialog (Tui) and the documents
 
 - [x] 4.1 `LaunchWizardDialog.Push` lists `state.Rows` through `Wording.WizardListRow`, and `WizardControls` captions the list "Repository or folder". Verify `dotnet build -c Debug` and `dotnet test -c Debug --no-build` pass.
-- [ ] 4.2 `docs\user-guide.md` (the wizard's grouped list and folder choices), a `CHANGELOG.md` entry under Unreleased, Added, and the version raised in `src\Source191.Cader\Source191.Cader.csproj`. Verify `dotnet format --verify-no-changes` and `openspec validate wizard-lists-root-folders` pass.
+- [x] 4.2 `docs\user-guide.md` (the wizard's grouped list and folder choices), a `CHANGELOG.md` entry under Unreleased, Added, and the version raised in `src\Source191.Cader\Source191.Cader.csproj`. Verify `dotnet format --verify-no-changes` and `openspec validate wizard-lists-root-folders` pass.
 
 ## Workflow follow-up
 
