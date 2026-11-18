@@ -86,6 +86,20 @@ public sealed class ConsoleLoadsShould : IDisposable
     }
 
     [Fact]
+    public async Task MarkARepositoryRootThatIsNotFound()
+    {
+        const string Missing = @"C:\temp\source\repos";
+        folders.WithDirectory(Root);
+        await settings.SaveAsync(TestSettings.For(Root, Missing));
+        ConsoleLoads loads = Loads();
+
+        IReadOnlyList<ConfigRow> read = (await loads.ReadConfigAsync(TestContext.Current.CancellationToken)).ShouldBeOfType<ConfigRowsLoaded>().Rows;
+
+        read.OfType<ConfigRow.RepositoryRoot>().Select(root => (root.Path.Value, root.Found)).ShouldBe([(Root, true), (Missing, false)]);
+        loads.ConfigRowsWhileReading().OfType<ConfigRow.RepositoryRoot>().ShouldAllBe(root => root.Found, "nothing is known to be missing before the read");
+    }
+
+    [Fact]
     public async Task ShowTheConfigRowsAsReadingFirst()
     {
         ConsoleLoads loads = Loads();
@@ -168,7 +182,7 @@ public sealed class ConsoleLoadsShould : IDisposable
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
-        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, refreshes);
+        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, refreshes);
     }
 
     public void Dispose()

@@ -129,7 +129,7 @@ internal static class ConsoleComposition
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
 
-        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, parts.Counts.Refreshes);
+        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, parts.Counts.Refreshes);
     }
 
     private static ConsoleScreen Screen(
