@@ -20,7 +20,7 @@ public sealed record WorktreesViewState(
 
     public WorktreeRow? Selected => List.Selected;
 
-    public IReadOnlyList<TableLine<WorktreeRow>> Lines => TableLines.Ungrouped(List.Visible);
+    public IReadOnlyList<TableLine<WorktreeRow>> Lines => TableLines.Grouped(List.Visible, row => row.Repository.Key);
 
     public TableTitle Title => List.Title("worktree", row => row.Name) with { Apart = new TitleCount(List.Rows.Count(row => row.Placement is Placement.NoFolder), "branch", "branches") };
 }

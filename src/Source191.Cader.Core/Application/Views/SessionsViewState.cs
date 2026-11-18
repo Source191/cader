@@ -28,7 +28,7 @@ public sealed record SessionsViewState(
 
     public TableTitle Title => List.Title("session", row => Wording.Name(row.Session.Name));
 
-    public IReadOnlyList<TableLine<SessionRow>> Lines => TableLines.Ungrouped(List.Visible);
+    public IReadOnlyList<TableLine<SessionRow>> Lines => TableLines.Grouped(List.Visible, row => GroupOf(row).Key);
 
     /// <summary>Grouped by where the rows run, each group a run of rows in attention order: the sort is stable, so the group keys keep the attention order within a group.</summary>
     private static IEnumerable<SessionRow> ByGroupThenAttention(IEnumerable<SessionRow> rows)
