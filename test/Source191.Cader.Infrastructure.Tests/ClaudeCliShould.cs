@@ -270,4 +270,62 @@ public sealed class ClaudeCliShould
 
         (await Cli.VersionAsync(CancellationToken.None)).ShouldBe(new ClaudeVersionReport.NotRead());
     }
+
+    private const string LoggedIn = """
+        {"loggedIn":true,"authMethod":"claude.ai","apiProvider":"firstParty","email":"me@northwind.example","orgId":"6F1C2A8E-4B7D-4C1E-9A3F-2D5E8B0C7A91","orgName":"Northwind Traders","subscriptionType":"max"}
+        """;
+
+    [Fact]
+    public async Task ReadTheLoginFromAuthStatus()
+    {
+        processes.AnswerAll(new ProcessResult(0, LoggedIn, string.Empty));
+
+        ClaudeLogin login = await Cli.LoginAsync(CancellationToken.None);
+
+        login.ShouldBe(new ClaudeLogin.LoggedIn(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders"));
+        processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
+            request => request.FileName.ShouldBe(Executable),
+            request => request.Arguments.ShouldBe(["auth", "status", "--json"]));
+    }
+
+    [Theory]
+    [InlineData("""{"loggedIn":false}""")]
+    [InlineData("""{"loggedIn":true,"authMethod":"apiKey"}""")]
+    [InlineData("""{"loggedIn":true,"email":"me@northwind.example","orgName":"Northwind Traders"}""")]
+    [InlineData("""{"loggedIn":true,"email":"me@northwind.example","orgId":"northwind","orgName":"Northwind Traders"}""")]
+    [InlineData("""{"loggedIn":true,"email":" ","orgId":"6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"}""")]
+    [InlineData("""{"loggedIn":"yes","email":"me@northwind.example","orgId":"6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"}""")]
+    public async Task AnswerLoggedOutForALoginWithNoAccount(string output)
+    {
+        processes.AnswerAll(new ProcessResult(0, output, string.Empty));
+
+        (await Cli.LoginAsync(CancellationToken.None)).ShouldBe(new ClaudeLogin.LoggedOut());
+    }
+
+    [Fact]
+    public async Task KeepALoginWithNoOrganisationName()
+    {
+        processes.AnswerAll(new ProcessResult(0, """{"loggedIn":true,"email":"me@northwind.example","orgId":"6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"}""", string.Empty));
+
+        (await Cli.LoginAsync(CancellationToken.None)).ShouldBe(new ClaudeLogin.LoggedIn(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", string.Empty));
+    }
+
+    [Theory]
+    [InlineData(0, "Not JSON")]
+    [InlineData(0, "[]")]
+    [InlineData(1, "")]
+    public async Task AnswerNotReadForAnAnswerItCannotRead(int exitCode, string output)
+    {
+        processes.AnswerAll(new ProcessResult(exitCode, output, string.Empty));
+
+        (await Cli.LoginAsync(CancellationToken.None)).ShouldBe(new ClaudeLogin.NotRead());
+    }
+
+    [Fact]
+    public async Task AnswerNotReadWhenTheLoginRunTimesOut()
+    {
+        processes.Fail(new ProcessTimedOutException("claude.exe", TimeSpan.FromSeconds(60)));
+
+        (await Cli.LoginAsync(CancellationToken.None)).ShouldBe(new ClaudeLogin.NotRead());
+    }
 }

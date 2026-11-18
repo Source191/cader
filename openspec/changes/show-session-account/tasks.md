@@ -13,15 +13,15 @@
 
 ## 3. Ports and test doubles
 
-- [ ] 3.1 Add `Ports\SessionOwner`, `Ports\ClaudeLogin`, `Ports\KnownAccount` and `Ports\IKnownAccounts`, `ITranscripts.OwnerOf` and `IClaudeCli.LoginAsync` with their convention comments; extend `FakeTranscripts`, `FakeClaudeCli` and `InMemoryState` in `test\Source191.Cader.TestDoubles`; verify the build passes with `ClosedHierarchiesShould`, `NullFreeModelsShould` and `PortParametersShould` green
+- [x] 3.1 Add `Ports\SessionOwner`, `Ports\ClaudeLogin`, `Ports\KnownAccount` and `Ports\IKnownAccounts`, `ITranscripts.OwnerOf` and `IClaudeCli.LoginAsync` with their convention comments; extend `FakeTranscripts`, `FakeClaudeCli` and `InMemoryState` in `test\Source191.Cader.TestDoubles`; verify the build passes with `ClosedHierarchiesShould`, `NullFreeModelsShould` and `PortParametersShould` green
 
 ## 4. Adapters
 
-- [ ] 4.1 `ClaudeTranscriptsShould` (temporary folder as the Claude folder): an owner line's `organizationUuid` is `Recorded`; no line, an unreadable id and no transcript are `NotRecorded`; a line after many messages is still found; then `ClaudeTranscripts.OwnerOf`; verify with the Infrastructure tests
-- [ ] 4.2 `ClaudeTranscriptsShould`: a `Recorded` owner is not read again after the file is deleted; a `NotRecorded` transcript is read again only after it changes; then the adapter's cache; verify with the Infrastructure tests
-- [ ] 4.3 `ClaudeCliShould` with a stub `IProcessRunner`: logged-in JSON is `LoggedIn`; `loggedIn` false, a missing email or `orgId`, non-JSON and a non-zero exit are `LoggedOut` or `NotRead` as the design says; the arguments are `auth status --json`; then `ClaudeCli.LoginAsync`; verify with the Infrastructure tests
-- [ ] 4.4 `JsonFileStoreShould` (temporary folder): accounts written are read back; a missing, null-holding or repeated-key `accounts.json` reads as none; then `IKnownAccounts` on `JsonFileStore` with `accounts.json` and its file record; verify with the Infrastructure tests
-- [ ] 4.5 `ChildCommandWordsShould`: `claude auth status --json` is named whole; then add `auth` and `status` to `ChildCommandWords.Claude`; verify with the Core tests
+- [x] 4.1 `ClaudeTranscriptsShould` (temporary folder as the Claude folder): an owner line's `organizationUuid` is `Recorded`; no line, an unreadable id and no transcript are `NotRecorded`; a line after many messages is still found; then `ClaudeTranscripts.OwnerOf`; verify with the Infrastructure tests
+- [x] 4.2 `ClaudeTranscriptsShould`: a `Recorded` owner is not read again after the file is deleted; a `NotRecorded` transcript is read again only after it changes; then the adapter's cache; verify with the Infrastructure tests
+- [x] 4.3 `ClaudeCliShould` with a stub `IProcessRunner`: logged-in JSON is `LoggedIn`; `loggedIn` false, a missing email or `orgId`, non-JSON and a non-zero exit are `LoggedOut` or `NotRead` as the design says; the arguments are `auth status --json`; then `ClaudeCli.LoginAsync`; verify with the Infrastructure tests
+- [x] 4.4 `JsonFileStoreShould` (temporary folder): accounts written are read back; a missing, null-holding or repeated-key `accounts.json` reads as none; then `IKnownAccounts` on `JsonFileStore` with `accounts.json` and its file record; verify with the Infrastructure tests
+- [x] 4.5 `ChildCommandWordsShould`: `claude auth status --json` is named whole; then add `auth` and `status` to `ChildCommandWords.Claude`; verify with the Core tests
 
 ## 5. Account catalogue and rows
 

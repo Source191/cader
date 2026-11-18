@@ -12,7 +12,7 @@ public static class ChildCommandWords
     // Stryker disable once Initializer, String : Accepted: a static initialiser runs once per test process and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so the mutant cannot be attributed; ChildCommandWordsShould pins every word of the list
     public static readonly IReadOnlySet<string> Claude = new HashSet<string>(StringComparer.Ordinal)
     {
-        "agents", "attach", "stop", "rm", "--version", "--bg", "--resume", "--json", "--all",
+        "agents", "attach", "stop", "rm", "--version", "--bg", "--resume", "--json", "--all", "auth", "status",
     };
 
     // Stryker disable once Initializer, String : Accepted: a static initialiser runs once per test process and Stryker's MTP runner switches mutants without restarting it (stryker-mutator/stryker-net#3742), so the mutant cannot be attributed; ChildCommandWordsShould pins every word of the list

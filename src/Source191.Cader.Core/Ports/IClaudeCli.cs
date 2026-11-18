@@ -7,7 +7,7 @@ namespace Source191.Cader.Ports;
 /// depends on. The files the console reads, such as transcripts and settings.json, have their own ports.
 /// The convention: ListSessionsAsync, StopAsync and RemoveAsync throw <see cref="ClaudeCliException"/> with claude's own
 /// words when claude exits with an error; StartBackgroundAsync and ResumeBackgroundAsync answer a result in every case;
-/// VersionAsync answers NotRead; AttachAsync answers the exit code.
+/// VersionAsync and LoginAsync answer NotRead; AttachAsync answers the exit code.
 /// </summary>
 public interface IClaudeCli
 {
@@ -31,4 +31,7 @@ public interface IClaudeCli
 
     /// <summary>The Claude Code version, such as "2.1.310", as printed; NotRead when the CLI cannot be run, is cancelled or prints none.</summary>
     Task<ClaudeVersionReport> VersionAsync(CancellationToken cancellationToken);
+
+    /// <summary>Who <c>claude auth status --json</c> says is logged in; never throws, answering NotRead when it cannot be run or read.</summary>
+    Task<ClaudeLogin> LoginAsync(CancellationToken cancellationToken);
 }

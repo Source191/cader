@@ -926,6 +926,52 @@ public sealed class JsonFileStoreShould : IDisposable
         }
         """;
 
+    private static readonly KnownAccount Work = new(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("work"));
+    private static readonly KnownAccount Personal = new(OrganisationId.From("0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60"), "me@home.example", "Personal", AccountLabel.From("2"));
+
+    [Fact]
+    public async Task ReadNoAccountsBeforeAnyIsWritten()
+    {
+        (await Store.ReadAccountsAsync()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ReadBackTheAccountsWritten()
+    {
+        await Store.WriteAccountsAsync([Work, Personal]);
+
+        (await Store.ReadAccountsAsync()).ShouldBe([Work, Personal]);
+        string written = await File.ReadAllTextAsync(Path.Combine(folder, "accounts.json"), TestContext.Current.CancellationToken);
+        written.ReplaceLineEndings("\n").ShouldContain("\"organisationId\": \"6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91\",\n      \"email\": \"me@northwind.example\",\n      \"organisationName\": \"Northwind Traders\",\n      \"label\": \"work\"");
+    }
+
+    [Theory]
+    [InlineData("{ not json")]
+    [InlineData("null")]
+    [InlineData("""{"accounts": null}""")]
+    [InlineData("""{"accounts": [], "accounts": []}""")]
+    [InlineData("""{"accounts": [{"organisationId": "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91", "email": "me@northwind.example", "label": "work"}]}""")]
+    public async Task ReadAnUnreadableAccountsFileAsNone(string json)
+    {
+        await WriteRawAsync("accounts.json", json);
+
+        (await Store.ReadAccountsAsync()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SkipAnAccountWhoseIdOrLabelIsNotOne()
+    {
+        await WriteRawAsync("accounts.json", """
+            {"accounts": [
+              {"organisationId": "northwind", "email": "me@northwind.example", "organisationName": "Northwind Traders", "label": "work"},
+              {"organisationId": "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60", "email": "me@home.example", "organisationName": "Personal", "label": "far too long"},
+              {"organisationId": "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91", "email": "me@northwind.example", "organisationName": "Northwind Traders", "label": "work"}
+            ]}
+            """);
+
+        (await Store.ReadAccountsAsync()).ShouldBe([Work]);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(folder))

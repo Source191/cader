@@ -5,4 +5,7 @@ namespace Source191.Cader.Ports;
 public interface ITranscripts
 {
     bool HasMessages(SessionId sessionId);
+
+    /// <summary>The organisation the first <c>session-owner</c> line names; NotRecorded without that line or a transcript.</summary>
+    SessionOwner OwnerOf(SessionId sessionId);
 }
