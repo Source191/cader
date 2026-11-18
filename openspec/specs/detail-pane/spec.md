@@ -6,7 +6,7 @@ A pane under the Sessions and Worktrees tables that shows the selected session o
 ## Requirements
 
 ### Requirement: The pane shows the selected session
-On the Sessions tab the pane SHALL show what the selected row does not, titled with its name: what it waits for, when it started and was last prompted, the full folder, the session id, the worktree, the branch, its tab, the folder's changes and its memory. A fact that cannot be read SHALL show as unavailable without hiding the rest.
+On the Sessions tab the pane SHALL show what the selected row does not, titled with its name: what it waits for, when it started and was last prompted, the full folder, the session id, the worktree, the branch, its tab, the folder's changes, its memory and the account it belongs to. A fact that cannot be read SHALL show as unavailable without hiding the rest.
 
 #### Scenario: A session at a permission prompt
 - **WHEN** fix-123 is selected, listed as waiting for a permission prompt, started at 14:02 today in a Cader tab coloured yellow, in the worktree Northwind.Orders-fix-123 on branch fix-123 with three changed files
@@ -14,7 +14,7 @@ On the Sessions tab the pane SHALL show what the selected row does not, titled w
 
 #### Scenario: Facts in two columns of five rows
 - **WHEN** a session is selected
-- **THEN** the pane's left column reads, top to bottom, Waiting, Folder, Worktree, Branch and Changes, and its right column Started, Prompted, Session, Tab and Memory, each fact beside the one in the same row
+- **THEN** the pane's left column reads, top to bottom, Waiting, Folder, Worktree, Branch and Changes, and its right column Started, Prompted, Session, Tab and Memory, each fact beside the one in the same row, and Account follows on a sixth row under the left column with nothing beside it
 
 #### Scenario: A session never sent a prompt
 - **WHEN** a session that needs input and has no transcript is selected
@@ -39,6 +39,22 @@ On the Sessions tab the pane SHALL show what the selected row does not, titled w
 #### Scenario: A terminal session
 - **WHEN** a plain claude session in its own terminal is selected
 - **THEN** the pane shows its facts and its Tab line reads its own terminal
+
+#### Scenario: A session under the current login
+- **WHEN** a session owned by the account labelled work, me@northwind.example in Northwind Traders, is selected while that account is logged in
+- **THEN** the pane's Account line reads work · me@northwind.example · Northwind Traders · logged in now
+
+#### Scenario: A session under another account
+- **WHEN** a session owned by the account labelled personal, me@home.example, is selected while another account is logged in
+- **THEN** the pane's Account line reads personal · me@home.example, followed by its organisation and log in as me@home.example to resume it
+
+#### Scenario: An owner not seen yet
+- **WHEN** a session whose owner Cader has never seen logged in is selected
+- **THEN** the pane's Account line says the account has not been seen logged in, and that logging in as it once lets Cader name it
+
+#### Scenario: No recorded owner
+- **WHEN** a session whose transcript has no `session-owner` line is selected
+- **THEN** the pane's Account line says Claude Code did not record the account for this session
 
 ### Requirement: The last prompt is the transition Cader saw
 The pane's Prompted line SHALL show the most recent time, while this Cader ran, that the session left needs input or idle for working, which is when a prompt or an answer reached it. When Cader has not seen such a transition for the session, the line SHALL say so rather than guess, and the transcript SHALL NOT be read for it.
