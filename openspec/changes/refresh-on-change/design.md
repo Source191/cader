@@ -35,6 +35,10 @@ What the disc shows (checked 18 November 2026, Claude Code 2.1.327, git 2.56, `F
 4. **`Application\WatchPlan` and `ChangeWatches` keep the watches in step.** `WatchPlan.For(settings, claudeFolder, repositories)` is a pure function answering the folders to watch, each with its filter and the schedule it feeds: the Claude `sessions` and `jobs` folders (Sessions), each listed repository's git folder and each repository root (Worktrees). The repositories come from the latest scan, so a root saved in settings or a repository cloned into a root is watched from the scan after it. `ChangeWatches.Follow(plan)` disposes watches no longer planned and starts new ones through `IFolderChanges`, and is called after each scan returns and once as the console opens. A linked worktree's records live in its main repository's git folder, so watching each repository covers its worktrees.
 5. **A watch that cannot start is recorded, not shown.** A missing folder is a no-op watch. A watch that throws as it starts, or overflows, adds a `DiagnosticEvent.WatchTrouble` with the watch's kind (Claude sessions, Claude jobs, repository, root) and the trouble (could not start, overflowed); no path, so the privacy rule holds. The timers carry on regardless.
 
+## Adaptations while implementing
+
+- **The Claude folder is never unset:** `Domain\ClaudeFolder` always names a folder (`Unset` is the default `.claude` under the profile), so `WatchPlan` always plans the two Claude watches, and task 2.2's "a Claude folder left unset plans no Claude watch" became "the folder `CLAUDE_CONFIG_DIR` names is the one watched". A Claude folder with no `sessions` or `jobs` folder is the adapter's no-op watch (decision 1).
+
 ## Risks / Trade-offs
 
 - [Claude Code changes where or how it writes these files] → the timers still refresh; the watchers are a hint, `claude-code.md` records what was seen so a re-verification can spot the change, and the contract tests are unaffected because nothing is parsed.

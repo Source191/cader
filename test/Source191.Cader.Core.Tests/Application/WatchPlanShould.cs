@@ -33,9 +33,9 @@ public sealed class WatchPlanShould
     {
         ClaudeFolder named = new ClaudeFolder.FromVariable(Folder(@"D:\claude"));
 
-        IReadOnlyList<PlannedWatch> plan = WatchPlan.For(TestSettings.For(), named, []);
+        IReadOnlyList<PlannedWatch> plan = WatchPlan.For(TestSettings.For(Repos), named, []);
 
-        plan.ShouldBe([new PlannedWatch(WatchKind.ClaudeSessions, Folder(@"D:\claude\sessions")), new PlannedWatch(WatchKind.ClaudeJobs, Folder(@"D:\claude\jobs"))]);
+        plan.Where(watch => watch.Feeds is RefreshedTab.Sessions).ShouldBe([new PlannedWatch(WatchKind.ClaudeSessions, Folder(@"D:\claude\sessions")), new PlannedWatch(WatchKind.ClaudeJobs, Folder(@"D:\claude\jobs"))]);
     }
 
     [Fact]

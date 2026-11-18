@@ -9,7 +9,7 @@
 ## 2. What counts and what is watched
 
 - [x] 2.1 Red then green: `ChangeFilterShould` (Core.Tests, Application) states, for each kind of watch, the counted and ignored paths of design decision 2, including `jobs\aba4b38e\state.json.tmp.4f0d6ab5` ignored and renamed to `state.json` counted, `worktrees\feature\index.lock` and `index` ignored, `worktrees\feature` deleted counted, and `Overflowed` always counted; add `Ports\FolderChange`, `FolderChangeKind` and `Application\ChangeFilter`.
-- [ ] 2.2 Red then green: `WatchPlanShould` states the plan for two roots, three repositories and a Claude folder (the two Claude folders for Sessions, each repository's git folder and each root for Worktrees, with their filters), and that a Claude folder left unset plans no Claude watch; add `Application\WatchPlan` (decision 4).
+- [x] 2.2 Red then green: `WatchPlanShould` states the plan for two roots, three repositories and a Claude folder (the two Claude folders for Sessions, each repository's git folder and each root for Worktrees, with their filters), and that a Claude folder left unset plans no Claude watch; add `Application\WatchPlan` (decision 4).
 
 ## 3. The schedule hears changes
 
