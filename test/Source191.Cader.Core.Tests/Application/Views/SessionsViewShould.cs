@@ -78,6 +78,25 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void PutAHeadingBeforeEachGroupsRows()
+    {
+        SessionRow ordersWorking = Row("fix-123", DisplayState.Working, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow ordersStopped = Row("spike", DisplayState.Stopped, "Northwind.Orders", jobId: "aaaa0002");
+        SessionRow billing = Row("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", jobId: "aaaa0003");
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([ordersStopped, billing, ordersWorking]));
+
+        loaded.Lines.ShouldBe(
+        [
+            new TableLine<SessionRow>.Heading(billing),
+            new TableLine<SessionRow>.Row(billing),
+            new TableLine<SessionRow>.Heading(ordersWorking),
+            new TableLine<SessionRow>.Row(ordersWorking),
+            new TableLine<SessionRow>.Row(ordersStopped),
+        ]);
+    }
+
+    [Fact]
     public void PutFolderGroupsAfterRepositories()
     {
         SessionRow orders = Row("fix-123", DisplayState.Stopped, "Northwind.Orders", jobId: "aaaa0001");

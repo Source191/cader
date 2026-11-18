@@ -70,6 +70,14 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
+    public void PutAHeadingBeforeEachRepositorysRows()
+    {
+        Loaded.Lines.OfType<TableLine<WorktreeRow>.Heading>().Select(heading => heading.First).ShouldBe([Empty, Orphan, Gone]);
+        Loaded.Lines.Count.ShouldBe(Loaded.VisibleRows.Count + 3);
+        Loaded.Lines[1].ShouldBe(new TableLine<WorktreeRow>.Row(Empty));
+    }
+
+    [Fact]
     public void KeepFoldersBeforeBranchesWithinAGroup()
     {
         WorktreeRow spike = BranchRow("spike-refunds");
