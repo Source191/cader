@@ -23,6 +23,9 @@ public sealed class ListSelectionShould
 
     private static readonly ListSelection<string> Loaded = Alphabetical.EmptyList().Load(["pear", "apple", "fig"]);
 
+    /// <summary>Rows grouped by their first letter, as the Sessions and Worktrees tabs group theirs by repository: a heading is a line, never a row.</summary>
+    private static readonly ListSelection<string> Grouped = Alphabetical.EmptyList().Load(["fig", "avocado", "apple", "kale"]);
+
     [Fact]
     public void SelectTheFirstVisibleRowOnFirstLoad()
     {
@@ -204,6 +207,41 @@ public sealed class ListSelectionShould
     }
 
     [Fact]
+    public void SelectTheFirstRowUnderTheFirstHeadingOnFirstLoadOfAGroupedList()
+    {
+        LinesOf(Grouped)[0].ShouldBe(new TableLine<string>.Heading("apple"));
+        Grouped.Selected.ShouldBe("apple");
+    }
+
+    [Fact]
+    public void StepFromTheLastRowOfAGroupToTheFirstRowUnderTheNextHeading()
+    {
+        ListSelection<string> onAvocado = Grouped.Move(+1);
+
+        onAvocado.Selected.ShouldBe("avocado");
+        onAvocado.Move(+1).Selected.ShouldBe("fig");
+        onAvocado.Move(+1).Move(-1).Selected.ShouldBe("avocado");
+    }
+
+    [Fact]
+    public void KeepTheSelectionOnARowWhenAGroupedListReloads()
+    {
+        ListSelection<string> onKale = Grouped.Move(+3);
+
+        onKale.Load(["fig", "apple", "avocado"]).Selected.ShouldBe("fig");
+    }
+
+    [Fact]
+    public void LeaveNoHeadingForAGroupTheFilterEmpties()
+    {
+        ListSelection<string> filtered = Grouped.StartFilter().EditFilter(Key.Of('a')).EditFilter(Key.Of('l'));
+
+        LinesOf(filtered).ShouldBe([new TableLine<string>.Heading("kale"), new TableLine<string>.Row("kale")]);
+        filtered.Selected.ShouldBe("kale");
+        filtered.Title("item", row => row).ShouldBe(new TableTitle("item", Shown: 1, Total: 4, Filter: "al", Selected: "kale"));
+    }
+
+    [Fact]
     public void StartWithNoFilterBeingEdited()
     {
         Alphabetical.EmptyList().FilterEditing.ShouldBeFalse();
@@ -247,4 +285,6 @@ public sealed class ListSelectionShould
         selected.Filter.Text.ShouldBeEmpty();
         selected.FilterEditing.ShouldBeFalse();
     }
+
+    private static IReadOnlyList<TableLine<string>> LinesOf(ListSelection<string> selection) => TableLines.Grouped(selection.Visible, row => row[..1]);
 }

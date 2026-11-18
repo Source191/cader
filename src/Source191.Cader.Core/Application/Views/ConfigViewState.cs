@@ -19,6 +19,8 @@ public sealed record ConfigViewState(
 
     public TableTitle Title => List.Title("row", Wording.ConfigSetting);
 
+    public IReadOnlyList<TableLine<ConfigRow>> Lines => [];
+
     /// <summary>A row's setting and its path when it has one, and an account's email and organisation; a heading has none, so any filter hides it.</summary>
     private static IReadOnlyList<string> FilterFieldsOf(ConfigRow row)
     {

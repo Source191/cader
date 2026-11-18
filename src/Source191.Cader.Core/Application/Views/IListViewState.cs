@@ -11,4 +11,7 @@ public interface IListViewState<TRow>
     StatusMessage Message { get; }
 
     TableTitle Title { get; }
+
+    /// <summary>The visible rows as the table draws them, with a heading before each group on a grouped view; a heading is never a row.</summary>
+    IReadOnlyList<TableLine<TRow>> Lines { get; }
 }

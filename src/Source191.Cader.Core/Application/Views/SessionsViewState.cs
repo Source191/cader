@@ -27,6 +27,8 @@ public sealed record SessionsViewState(
 
     public TableTitle Title => List.Title("session", row => Wording.Name(row.Session.Name));
 
+    public IReadOnlyList<TableLine<SessionRow>> Lines => [];
+
     private static IEnumerable<SessionRow> ByAttention(IEnumerable<SessionRow> rows)
     {
         List<SessionRow> matching = [.. rows];
