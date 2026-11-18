@@ -3,7 +3,7 @@
 ## 1. Domain
 
 - [x] 1.1 `TabTitleShould.NotShowASessionInAnyOtherTitle`: add `◐xfix-123`. Apply `""` for `" "` by hand on line 29 and see it fail, then revert. Commit.
-- [ ] 1.2 `TabTitle.FollowsOneGlyph`: remove the `glyphLength > 0` guard so `EndsWith` comes first (design 3); `TabTitleShould` stays green. Commit.
+- [x] 1.2 `TabTitle.FollowsOneGlyph`: remove the `glyphLength > 0` guard so `EndsWith` comes first (design 3); `TabTitleShould` stays green. Commit.
 
 ## 2. Wizard
 
@@ -18,7 +18,7 @@
 
 ## 4. Check
 
-- [ ] 4.1 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
+- [x] 4.1 Raise `Version` with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
 
