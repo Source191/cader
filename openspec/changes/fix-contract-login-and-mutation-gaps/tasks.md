@@ -13,7 +13,7 @@
 
 ## 3. Contract
 
-- [ ] 3.1 `ClaudeContractShould.ReadTheLoginFromAuthStatus`: expect exit 0 when `loggedIn` is true and 1 when false, and say in its summary why the runner sees no login. Run it with `CADER_CLAUDE_CONTRACT=1`, once as this machine's login and once with a scratch `CLAUDE_CONFIG_DIR` (logged out). Commit.
+- [x] 3.1 `ClaudeContractShould.ReadTheLoginFromAuthStatus`: expect exit 0 when `loggedIn` is true and 1 when false, and say in its summary why the runner sees no login. Run it with `CADER_CLAUDE_CONTRACT=1`, once as this machine's login and once with a scratch `CLAUDE_CONFIG_DIR` (logged out). Commit.
 - [ ] 3.2 `claude-code.md` Accounts: record the exit codes and the token's answer, replacing the "not yet known" note. Commit.
 
 ## 4. Check
