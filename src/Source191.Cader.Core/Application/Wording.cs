@@ -277,7 +277,6 @@ public static partial class Wording
         {
             WizardProblem.None => string.Empty,
             WizardProblem.NoRepository => "Choose a repository: type part of its name, then ↑↓.",
-            WizardProblem.InvisibleFilter => "The filter holds only blank or invisible characters; Backspace clears it.",
             WizardProblem.Refused refused => Describe(refused.Problem),
             _ => problem.ToString(),
         };

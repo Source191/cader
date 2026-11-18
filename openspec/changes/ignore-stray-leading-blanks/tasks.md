@@ -13,7 +13,7 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 ## 3. The wizard's repository filter (Application)
 
 - [x] 3.1 Red: `RepositoryCatalogueShould` (or the fact that already drives `RepositoryChoices.Matching`) asserts `" "` and `"​"` keep every choice in every group, `" orders"` keeps what `"orders"` keeps, and `"d o"` keeps `Northwind Orders` but not `Northwind.Orders`. Green: `RepositoryChoices.Matching` applies `WithoutInvisibleStart` once and passes the result to `RepositoryChoice.Matches`. Verify the Core suite passes.
-- [ ] 3.2 Red: `WizardViewShould.ListEveryRepositoryForAStraySpace` (the filter receives `" "`; `Filter` is still `" "`, every choice row is listed and `Problem` is `WizardProblem.None`), replacing `ExplainAFilterOfInvisibleCharacters` and `ClearTheInvisibleFilterProblemOnlyWhenTheFilterShowsSomething`. Green: delete `WizardView.FilterProblem` so `Filtered` leaves `Problem` alone, then delete `WizardProblem.InvisibleFilter`, its arm in `Wording.Describe` with `WordingShould.DescribeAnInvisibleFilter`, and `CharacterKinds.AllInvisible` with `CallATextInvisibleOnlyWhenEveryCharacterIs`. Verify the Core suite passes, the reflection facts (`StatusTonesShould`, `WordingShould`) included.
+- [x] 3.2 Red: `WizardViewShould.ListEveryRepositoryForAStraySpace` (the filter receives `" "`; `Filter` is still `" "`, every choice row is listed and `Problem` is `WizardProblem.None`), replacing `ExplainAFilterOfInvisibleCharacters` and `ClearTheInvisibleFilterProblemOnlyWhenTheFilterShowsSomething`. Green: delete `WizardView.FilterProblem` so `Filtered` leaves `Problem` alone, then delete `WizardProblem.InvisibleFilter`, its arm in `Wording.Describe` with `WordingShould.DescribeAnInvisibleFilter`, and `CharacterKinds.AllInvisible` with `CallATextInvisibleOnlyWhenEveryCharacterIs`. Verify the Core suite passes, the reflection facts (`StatusTonesShould`, `WordingShould`) included.
 
 ## 4. Typed session names (Domain and Application)
 
@@ -22,7 +22,7 @@ Implement with Claude Sonnet 5.5 (`claude-sonnet-5-5`) at medium effort (design.
 
 ## 5. Smoke check, rules and release notes
 
-- [ ] 5.1 `tools\HeadlessTerminal\SmokeScript.cs`: the Before branching step sends Esc instead of a space and the invisible-filter step goes; `SmokeScriptShould` follows (its step texts and indices). Verify `dotnet test tools\HeadlessTerminal.Tests -c Debug` passes.
+- [x] 5.1 `tools\HeadlessTerminal\SmokeScript.cs`: the Before branching step sends Esc instead of a space and the invisible-filter step goes; `SmokeScriptShould` follows (its step texts and indices). Verify `dotnet test tools\HeadlessTerminal.Tests -c Debug` passes.
 - [ ] 5.2 `.claude\rules\terminal-gui.md` (the decompiled `TextField` fact ends by saying leading invisible characters are ignored by both filters, not that the problem line explains them) and `.claude\rules\checks.md` (the smoke list no longer types a space into the wizard's filter). Verify `Grep InvisibleFilter` finds nothing outside `openspec\changes\archive` and this change.
 - [ ] 5.3 `CHANGELOG.md` under Unreleased, Fixed: a stray space typed with `n` no longer empties the new-session wizard's list, a table's `/` filter ignores spaces before the text, and a new session's name loses spaces at either end (#339); raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` as CONTRIBUTING's Versions says. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate ignore-stray-leading-blanks` pass.
 

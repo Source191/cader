@@ -35,7 +35,4 @@ public static class CharacterKinds
     }
 
     private static bool IsInvisible(Rune rune) => Of(rune) is CharacterKind.Whitespace or CharacterKind.Control or CharacterKind.Format;
-
-    /// <summary>Whether the text holds characters and none of them can be seen: each is whitespace, a control or a format character.</summary>
-    public static bool AllInvisible(string text) => text.Length > 0 && text.EnumerateRunes().All(rune => Of(rune) is CharacterKind.Whitespace or CharacterKind.Control or CharacterKind.Format);
 }
