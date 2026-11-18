@@ -42,11 +42,15 @@ public sealed class ConsoleLoadsShould : IDisposable
     private readonly AccountCatalogue accounts;
     private readonly DiagnosticLog log;
     private readonly RefreshCounts refreshes;
+    private readonly FakeFolderChanges changes = new();
+    private readonly ChangeWatches watches;
 
     public ConsoleLoadsShould()
     {
         log = new DiagnosticLog(clock, []);
         refreshes = new RefreshCounts(clock, log);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        watches = new ChangeWatches(changes, schedule, schedule, log);
         accounts = new AccountCatalogue(new ClaudeCli(new FakeProcessRunner(), Claude), store, clock);
         catalogue = new PullRequestCatalogue(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));
     }
@@ -172,6 +176,27 @@ public sealed class ConsoleLoadsShould : IDisposable
         after.OfType<ConfigRow.Setup>().Single(row => row.Item == SetupItem.DiagnosticLogFile).State.ShouldBe(new SetupState.LogOff(new FakeDiagnosticLogFiles().Read()));
     }
 
+    [Fact]
+    public void WatchTheClaudeFoldersAndTheRootsAsTheConsoleOpens()
+    {
+        Loads().FollowChanges();
+
+        changes.Live.Select(watch => watch.Folder.Value).ShouldBe([@"C:\Users\me\.claude\sessions", @"C:\Users\me\.claude\jobs", Root]);
+    }
+
+    [Fact]
+    public async Task WatchEachRepositoryTheScanFoundOnceItReturns()
+    {
+        ConsoleLoads loads = Loads();
+        loads.FollowChanges();
+        await loads.LoadSessionsAsync(TestContext.Current.CancellationToken);
+
+        await loads.ScanWorktreesAsync(TestContext.Current.CancellationToken);
+
+        changes.Live.Select(watch => watch.Folder.Value).ShouldContain(Path.Combine(Repository, ".git"));
+        changes.Live.Count.ShouldBe(4);
+    }
+
     private ConsoleLoads Loads()
     {
         return Loads(new FakeDiagnosticLogFiles());
@@ -184,12 +209,13 @@ public sealed class ConsoleLoadsShould : IDisposable
         WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
-        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, accounts, refreshes);
+        return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, accounts, refreshes, watches, TestSettings.DefaultClaudeFolder);
     }
 
     public void Dispose()
     {
         catalogue.Dispose();
         accounts.Dispose();
+        watches.Dispose();
     }
 }
