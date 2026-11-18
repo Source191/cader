@@ -28,6 +28,8 @@ public static class SettingsView
             SettingsInput.BaseChanged changed => Changed(state with { Text = state.Text with { Base = changed.Base } }),
             SettingsInput.PlaceChanged changed => Changed(state with { Text = state.Text with { Place = changed.Place } }),
             SettingsInput.BeforeBranchingChanged changed => Changed(state with { Text = state.Text with { BeforeBranching = changed.Choice } }),
+            SettingsInput.SessionsRefreshChanged changed => Changed(state with { Text = state.Text with { SessionsRefresh = changed.Text } }),
+            SettingsInput.WorktreesRefreshChanged changed => Changed(state with { Text = state.Text with { WorktreesRefresh = changed.Text } }),
             SettingsInput.FieldFocused focused => Changed(state with { Focus = focused.Field }),
             SettingsInput.Save => Saved(state),
             SettingsInput.Cancel => new SettingsUpdate(state, new SettingsEffect.Close()),
@@ -54,6 +56,8 @@ public static class SettingsView
             SettingsProblem.WorktreeRootNotFullPath => SettingsField.WorktreeRoot,
             SettingsProblem.NoExecutable or SettingsProblem.ExecutableNotFullPath or SettingsProblem.BatchFileExecutable or SettingsProblem.ExecutableMissing => SettingsField.Executable,
             SettingsProblem.NoFolderPlaceholder => SettingsField.Arguments,
+            SettingsProblem.RefreshIntervalNotWholeSeconds { Tab: RefreshedTab.Sessions } => SettingsField.SessionsRefresh,
+            SettingsProblem.RefreshIntervalNotWholeSeconds => SettingsField.WorktreesRefresh,
             _ => throw new UnreachableException(),
         };
     }

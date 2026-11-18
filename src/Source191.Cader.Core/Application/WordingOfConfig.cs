@@ -29,7 +29,7 @@ public static partial class Wording
     public static string BeforeBranchingCaption => "What happens before a new worktree branches from origin (↑↓ then Space)";
 
     /// <summary>The caption above the Sessions refresh and Worktrees refresh dialogs' box.</summary>
-    public static string RefreshCaption => string.Empty;
+    public static string RefreshCaption => $"Seconds between refreshes, from 0 to {RefreshInterval.MostSeconds}; 0 turns the timer off";
 
     /// <summary>The caption above the wizard's Before branching choice.</summary>
     public static string WizardBeforeBranchingCaption => "Before branching (↑↓ to change)";
@@ -110,6 +110,8 @@ public static partial class Wording
             SettingsScope.Base => "Worktree base",
             SettingsScope.Place => "Default place",
             SettingsScope.BeforeBranching => "Before branching",
+            SettingsScope.SessionsRefresh => "Sessions refresh",
+            SettingsScope.WorktreesRefresh => "Worktrees refresh",
             _ => scope.ToString(),
         };
     }

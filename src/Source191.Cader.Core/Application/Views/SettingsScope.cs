@@ -31,6 +31,8 @@ public abstract record SettingsScope(SettingsField Field)
             ConfigRow.DefaultBase => new Base(),
             ConfigRow.DefaultPlace => new Place(),
             ConfigRow.BeforeBranching => new BeforeBranching(),
+            ConfigRow.SessionsRefresh => new SessionsRefresh(),
+            ConfigRow.WorktreesRefresh => new WorktreesRefresh(),
             _ => throw new ArgumentException($"A {row.GetType().Name} row has no dialog.", nameof(row)),
         };
     }
