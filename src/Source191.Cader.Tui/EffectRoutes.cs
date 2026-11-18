@@ -13,6 +13,7 @@ internal static class EffectRoutes
             _ when effect.IsAssignableTo(typeof(ISwitchesTab)) => EffectRoute.Switch,
             _ when effect.IsAssignableTo(typeof(IConsultsSessions)) => EffectRoute.Consult,
             _ when effect.IsAssignableTo(typeof(IDialogEffect)) => EffectRoute.Dialog,
+            _ when effect.IsAssignableTo(typeof(IRefreshesTab)) => EffectRoute.Refresh,
             _ => EffectRoute.Dispatch,
         };
     }

@@ -211,6 +211,25 @@ public sealed class ConsoleScreen(
             };
         }
 
+        /// <summary>F5: the shown tab's refresh starts now, as its timer or a show would start it, unless one is already running.</summary>
+        public void RefreshShown()
+        {
+            switch (active)
+            {
+                case ConsoleTab.Sessions:
+                    ListSessions();
+                    break;
+                case ConsoleTab.Worktrees:
+                    ScanWorktrees();
+                    break;
+                case ConsoleTab.Config:
+                    ReadConfig();
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+        }
+
         public void FrameChanged()
         {
             ShowSettings();

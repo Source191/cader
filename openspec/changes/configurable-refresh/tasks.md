@@ -16,7 +16,7 @@
 
 - [x] 3.1 Red then green: `KeyMappingShould` states `GuiKey.F5` maps to `Key.F5`; add `KeyName.F5`, `Key.F5` and the mapping.
 - [x] 3.2 Red then green: `SessionsViewShould`, `WorktreesViewShould` and `ConfigViewShould` each state F5 answers `RefreshShownTab`, including while a filter is being typed, with the filter unchanged; add `RefreshShownTab` with its `IRefreshesTab` marker, `Application\Views\RefreshKeys`, and the arm in each reducer ahead of filter typing (decision 4).
-- [ ] 3.3 Red then green: `EffectRoutingShould` fails for a marked effect nothing routes until `TableBody` routes `IRefreshesTab` to `ITabHost.RefreshShown()`; add the member to `ITabHost` and its fakes.
+- [x] 3.3 Red then green: `EffectRoutingShould` fails for a marked effect nothing routes until `TableBody` routes `IRefreshesTab` to `ITabHost.RefreshShown()`; add the member to `ITabHost` and its fakes.
 - [ ] 3.4 Red then green: `WordingShould` states the help-only F5 line ("F5 refresh this tab now") and its tip are in `SessionsKeys`, `WorktreesKeys` and `ConfigKeys` and in no key bar; `KeyHelpParityShould` presses F5 on each loaded table and gets an answer (decision 5).
 
 ## 4. The Config rows and their dialog

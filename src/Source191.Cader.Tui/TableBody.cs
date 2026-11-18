@@ -243,24 +243,29 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         State = update.State;
         foreach (ViewEffect effect in update.Effects)
         {
-            switch (effect)
+            switch (EffectRoutes.Of(effect.GetType()))
             {
-                case ILeavesScreen:
+                case EffectRoute.Leave:
                     host.Leave(effect);
                     return;
-                case ISwitchesTab switching:
+                case EffectRoute.Switch:
                     Redraw();
-                    host.Switch(switching);
+                    host.Switch((ISwitchesTab)effect);
                     return;
-                case IConsultsSessions consulting:
-                    Follow(host.Consult(consulting));
+                case EffectRoute.Consult:
+                    Follow(host.Consult((IConsultsSessions)effect));
                     break;
-                case IDialogEffect:
+                case EffectRoute.Dialog:
                     dialogs.Show(this, effect);
                     break;
-                default:
+                case EffectRoute.Refresh:
+                    host.RefreshShown();
+                    break;
+                case EffectRoute.Dispatch:
                     Dispatch(effect);
                     break;
+                default:
+                    throw new UnreachableException();
             }
         }
 
