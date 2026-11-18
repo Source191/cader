@@ -68,6 +68,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             }
         }
 
+        latestRepositories.Replace([.. repositories]);
         IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
         candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
