@@ -191,6 +191,47 @@ public sealed class SettingsFileShould
     }
 
     [Fact]
+    public void ReadTheDefaultIntervalsFromAFileWithoutThem()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"]), Home);
+
+        settings.SessionsRefresh.ShouldBe(RefreshInterval.From(5));
+        settings.WorktreesRefresh.ShouldBe(RefreshInterval.From(15));
+    }
+
+    [Fact]
+    public void ReadIntervalsOutOfRangeAsTheirDefaultsAndKeepTheRest()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], SessionsRefreshSeconds: -1, WorktreesRefreshSeconds: 86400), Home);
+
+        settings.SessionsRefresh.ShouldBe(RefreshInterval.From(5));
+        settings.WorktreesRefresh.ShouldBe(RefreshInterval.From(15));
+        settings.RepositoryRoots.ShouldBe([FolderPath.From(@"D:\work")]);
+    }
+
+    [Fact]
+    public void ReadAndWriteTheIntervals()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], SessionsRefreshSeconds: 30, WorktreesRefreshSeconds: 0), Home);
+
+        settings.SessionsRefresh.ShouldBe(RefreshInterval.From(30));
+        settings.WorktreesRefresh.ShouldBe(RefreshInterval.Off);
+        SettingsFile.ToConfig(settings).SessionsRefreshSeconds.ShouldBe(30);
+        SettingsFile.ToConfig(settings).WorktreesRefreshSeconds.ShouldBe(0);
+    }
+
+    [Fact]
+    public void AlwaysWriteBothIntervals()
+    {
+        UserConfig config = SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home));
+
+        config.SessionsRefreshSeconds.ShouldBe(5);
+        config.WorktreesRefreshSeconds.ShouldBe(15);
+        config.ShouldNotBe(config with { SessionsRefreshSeconds = 6 });
+        config.ShouldNotBe(config with { WorktreesRefreshSeconds = 16 });
+    }
+
+    [Fact]
     public void WriteAPresetWithoutACommand()
     {
         SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home)).Editor.ShouldBe(new EditorSetting("VsCode", Executable: null, Arguments: null));

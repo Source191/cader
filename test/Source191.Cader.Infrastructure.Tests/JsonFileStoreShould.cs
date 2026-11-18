@@ -95,11 +95,13 @@ public sealed class JsonFileStoreShould : IDisposable
           "checkForUpdates": true,
           "defaultPlace": "NewWorktree",
           "diagnosticLog": false,
-          "beforeBranching": "Fetch"
+          "beforeBranching": "Fetch",
+          "sessionsRefreshSeconds": 5,
+          "worktreesRefreshSeconds": 15
         }
         """;
 
-    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false, BeforeBranching: BeforeBranching.Fetch);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false, BeforeBranching: BeforeBranching.Fetch, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
@@ -392,6 +394,28 @@ public sealed class JsonFileStoreShould : IDisposable
         await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "diagnosticLog": "yes" }""", TestContext.Current.CancellationToken);
 
         (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task ReadAConfigHoldingTextForARefreshIntervalAsMissing()
+    {
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), """{ "repositoryRoots": ["D:\\work"], "sessionsRefreshSeconds": "fast" }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task WriteTheRefreshIntervalsByName()
+    {
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), SessionsRefreshSeconds: 30, WorktreesRefreshSeconds: 0);
+
+        await Store.WriteConfigAsync(saved);
+
+        (await Store.ReadConfigAsync()).ShouldBe(saved);
+        string written = await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken);
+        written.ShouldContain("\"sessionsRefreshSeconds\": 30");
+        written.ShouldContain("\"worktreesRefreshSeconds\": 0");
     }
 
     [Fact]
