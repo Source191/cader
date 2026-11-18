@@ -36,5 +36,17 @@ public sealed class TextFitShould
     public void RefuseANegativeWidth()
     {
         Should.Throw<ArgumentOutOfRangeException>(() => TextFit.ElideMiddle("Northwind", -1)).ParamName.ShouldBe("width");
+        Should.Throw<ArgumentOutOfRangeException>(() => TextFit.CutEnd("Northwind", -1)).ParamName.ShouldBe("width");
+    }
+
+    [Theory]
+    [InlineData(22, "northwind-orders-spike")]
+    [InlineData(21, "northwind-orders-spi…")]
+    [InlineData(10, "northwind…")]
+    [InlineData(1, "…")]
+    [InlineData(0, "")]
+    public void CutAtTheEndWithAnEllipsis(int width, string expected)
+    {
+        TextFit.CutEnd("northwind-orders-spike", width).ShouldBe(expected);
     }
 }

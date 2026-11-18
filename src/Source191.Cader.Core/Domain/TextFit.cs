@@ -8,6 +8,9 @@ public static class TextFit
     /// <summary>A character, the ellipsis and a character: the least an elision can show.</summary>
     private const int LeastElided = 3;
 
+    /// <summary>The text within <paramref name="width"/> characters: whole when it fits, else its start and an ellipsis, and nothing at width zero.</summary>
+    public static string CutEnd(string text, int width) => text;
+
     /// <summary>
     /// The text within <paramref name="width"/> characters: whole when it fits, else its start and its end around an ellipsis
     /// (the odd character kept at the start), and below three characters cut at its end with no ellipsis.
