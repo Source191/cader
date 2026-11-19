@@ -42,7 +42,8 @@ public sealed class GitWorktreeRemoveShould : IDisposable
     /// <summary>A process whose working directory is the folder, as a tab's shell or a session's claude has.</summary>
     private static Process StartSleeperIn(string folder)
     {
-        ProcessStartInfo start = new("cmd.exe", ["/c", "ping.exe -n 60 127.0.0.1 > nul"]) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = folder };
+        // ping itself, not through cmd: killing a tree waits for its root only, and a child left exiting still holds the folder.
+        ProcessStartInfo start = new("ping.exe", ["-n", "60", "127.0.0.1"]) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, WorkingDirectory = folder };
 
         return Process.Start(start) ?? throw new InvalidOperationException("cmd did not start");
     }
