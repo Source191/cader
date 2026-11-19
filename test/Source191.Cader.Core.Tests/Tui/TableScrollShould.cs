@@ -91,6 +91,27 @@ public sealed class TableScrollShould : IDisposable
         table.RowOffset.ShouldBe(8);
     }
 
+    [Fact]
+    public void KeepTheNewLastRowOnScreenWhenTheSelectedLastRowGoes()
+    {
+        StepDownTo(99);
+
+        // ListSelection.Load selects the row nearest the one that went: the new last row.
+        Show(35, 34);
+
+        table.RowOffset.ShouldBe(23);
+    }
+
+    [Fact]
+    public void ShowAnEmptyTableFromItsTopWhenEveryRowGoes()
+    {
+        StepDownTo(30);
+
+        scroll.Show(Rows(0), 0, null, RowFilter.None);
+
+        table.RowOffset.ShouldBe(0);
+    }
+
     public void Dispose()
     {
         table.Dispose();
