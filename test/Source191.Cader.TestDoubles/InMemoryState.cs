@@ -20,6 +20,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     private LastRun lastRun = new LastRun.Never();
     private IReadOnlyList<KnownAccount> accounts = [];
     private Exception? nextRecordFailure;
+    private Task nextAccountWrite = Task.CompletedTask;
 
     public Task<IReadOnlyList<TabRegistration>> ReadTabsAsync()
     {
@@ -161,14 +162,29 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
         }
     }
 
-    public Task WriteAccountsAsync(IReadOnlyList<KnownAccount> accounts)
+    /// <summary>Makes the next <c>WriteAccountsAsync</c> wait for the task before writing, and fail if it faults, as a slow or refusing state file would.</summary>
+    public void HoldNextAccountWrite(Task until)
     {
+        lock (gate)
+        {
+            nextAccountWrite = until;
+        }
+    }
+
+    public async Task WriteAccountsAsync(IReadOnlyList<KnownAccount> accounts)
+    {
+        Task held;
+        lock (gate)
+        {
+            held = nextAccountWrite;
+            nextAccountWrite = Task.CompletedTask;
+        }
+
+        await held;
         lock (gate)
         {
             this.accounts = [.. accounts];
             AccountWrites++;
         }
-
-        return Task.CompletedTask;
     }
 }

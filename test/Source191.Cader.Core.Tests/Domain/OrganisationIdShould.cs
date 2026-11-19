@@ -29,7 +29,7 @@ public sealed class OrganisationIdShould
     [Fact]
     public void ThrowFromForTextThatIsNotAGuid()
     {
-        Should.Throw<ArgumentException>(() => OrganisationId.From("northwind"));
+        Should.Throw<ArgumentException>(() => OrganisationId.From("northwind")).Message.ShouldStartWith("northwind is not an organisation id: a GUID.");
     }
 
     [Fact]

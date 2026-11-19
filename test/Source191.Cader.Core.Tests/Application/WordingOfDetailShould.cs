@@ -311,6 +311,7 @@ public sealed class WordingOfDetailShould
 
         DetailLine changes = Wording.Detail(NothingRead(row), Now, TimeZoneInfo.Utc).Facts[3][0];
 
+        changes.Label.ShouldBe("Changes");
         changes.Text.ShouldBe(text);
         changes.Tone.ShouldBe(tone);
     }
@@ -406,7 +407,7 @@ public sealed class WordingOfDetailShould
 
         DetailLine account = Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single();
 
-        (account.Text, account.Tone).ShouldBe(("personal · me@home.example · log in as me@home.example to resume it", TextTone.Amber));
+        (account.Label, account.Text, account.Tone).ShouldBe(("Account", "personal · me@home.example · log in as me@home.example to resume it", TextTone.Amber));
     }
 
     [Fact]
@@ -414,7 +415,9 @@ public sealed class WordingOfDetailShould
     {
         SessionRow row = Row(DisplayState.Idle, process: new JobProcess.None()) with { Account = new RowAccount.Unseen() };
 
-        Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single().Text.ShouldBe("not yet seen logged in; log in as its account once and Cader names it");
+        DetailLine account = Wording.Detail(Detail(row), Now, TimeZoneInfo.Utc).Facts[5].Single();
+
+        (account.Label, account.Text).ShouldBe(("Account", "not yet seen logged in; log in as its account once and Cader names it"));
     }
 
     [Fact]

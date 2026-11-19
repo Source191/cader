@@ -61,4 +61,10 @@ public sealed class AccountLabelShould
         AccountLabel.TryParse(text, out AccountLabel? label).ShouldBe(parses);
         (label is not null).ShouldBe(parses);
     }
+
+    [Fact]
+    public void NameTheTextFromRefuses()
+    {
+        Should.Throw<ArgumentException>(() => AccountLabel.From("northwind")).Message.ShouldStartWith("Not an account label: northwind.");
+    }
 }
