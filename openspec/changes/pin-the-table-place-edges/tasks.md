@@ -4,12 +4,12 @@
 
 ## 1. The facts
 
-- [ ] 1.1 `TableScrollShould.KeepTheNewLastRowOnScreenWhenTheSelectedLastRowGoes`; verify it passes, and fails with `EnsureValidScrollOffsets` removed from `TableScroll.Show` by hand (then revert).
-- [ ] 1.2 `TableScrollShould.ShowAnEmptyTableFromItsTopWhenEveryRowGoes`; verify it passes.
+- [x] 1.1 `TableScrollShould.KeepTheNewLastRowOnScreenWhenTheSelectedLastRowGoes`; verify it passes. Removing `EnsureValidScrollOffsets` from `TableScroll.Show` by hand leaves it green, because `View`'s `Viewport` setter keeps the offset within the content as well (checked in a throwaway program: `RowOffset` set to 88 on 35 rows reads 23); record that in `terminal-gui.md`.
+- [x] 1.2 `TableScrollShould.ShowAnEmptyTableFromItsTopWhenEveryRowGoes`; verify it passes.
 
 ## 2. Check
 
-- [ ] 2.1 Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
+- [x] 2.1 Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass.
 
 ## Workflow follow-up
 
