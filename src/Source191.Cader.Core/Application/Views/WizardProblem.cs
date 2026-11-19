@@ -10,9 +10,6 @@ public abstract record WizardProblem
 
     public sealed record NoRepository : WizardProblem;
 
-    /// <summary>The filter holds characters, and none of them can be seen, so it matches nothing for no visible reason.</summary>
-    public sealed record InvisibleFilter : WizardProblem;
-
     /// <summary>The plan builder said no, for its own reason.</summary>
     public sealed record Refused(LaunchProblem Problem) : WizardProblem;
 }

@@ -25,11 +25,13 @@ public sealed record SessionName : ITextValue<SessionName>
 
     public string Value { get; }
 
-    /// <summary>Checks typed text, which is refused only when blank.</summary>
+    /// <summary>Checks typed text, which loses blanks at both ends and is refused only when nothing is left.</summary>
     public static SessionNameValidation Validate(string text)
     {
-        return IsName(text)
-            ? new SessionNameValidation.Valid(SessionName.From(text))
+        string name = text.Trim();
+
+        return IsName(name)
+            ? new SessionNameValidation.Valid(SessionName.From(name))
             : new SessionNameValidation.Refused(NameProblem.Missing);
     }
 

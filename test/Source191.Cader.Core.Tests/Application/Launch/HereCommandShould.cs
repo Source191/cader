@@ -63,6 +63,12 @@ public sealed class HereCommandShould
     }
 
     [Fact]
+    public void PlanATypedNameWithoutTheBlanksAroundIt()
+    {
+        HereCommand.Plan(Directory, new HereName.Typed(" fix-login"), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("fix-login");
+    }
+
+    [Fact]
     public void PlanANameWithASemicolonOrDoubleQuote()
     {
         HereCommand.Plan(Directory, new HereName.Typed("a;b"), prompt: string.Empty).ShouldBeOfType<LaunchPlanResult.Planned>().Plan.Name.Value.ShouldBe("a;b");

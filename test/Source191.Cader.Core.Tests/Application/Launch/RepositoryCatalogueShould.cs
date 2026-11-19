@@ -63,6 +63,30 @@ public sealed class RepositoryCatalogueShould
         choices.Folders.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("​")]
+    public void KeepEveryChoiceForAFilterOfInvisibleCharacters(string invisible)
+    {
+        RepositoryChoices all = Catalogue.Choices(recent: [FolderPath.From(Path.Combine(Root, "Northwind.Agents"))]);
+
+        RepositoryChoices choices = all.Matching(invisible);
+
+        choices.Recent.ShouldBe(all.Recent);
+        choices.Folders.ShouldBe(all.Folders);
+        choices.Repositories.ShouldBe(all.Repositories);
+    }
+
+    [Fact]
+    public void IgnoreBlanksBeforeTheFilterButNotInsideIt()
+    {
+        RepositoryChoices all = Catalogue.Choices(recent: []);
+
+        all.Matching(" bill").Repositories.ShouldBe(all.Matching("bill").Repositories);
+        all.Matching(" bill").Repositories.ShouldNotBeEmpty();
+        all.Matching("d b").Repositories.ShouldBeEmpty("a space inside the filter is not a dot");
+    }
+
     [Fact]
     public void FilterAFolderChoiceByItsPath()
     {

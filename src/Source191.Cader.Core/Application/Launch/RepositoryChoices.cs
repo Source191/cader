@@ -1,3 +1,5 @@
+using Source191.Cader.Domain;
+
 namespace Source191.Cader.Application.Launch;
 
 /// <summary>
@@ -12,7 +14,12 @@ public sealed record RepositoryChoices(IReadOnlyList<RepositoryChoice> Recent, I
     public int RepositoryCount => Recent.Count + Repositories.Count;
 
     /// <summary>The choices the filter typed in the wizard keeps, in the same groups.</summary>
-    public RepositoryChoices Matching(string filter) => new(Keep(Recent, filter), Keep(Folders, filter), Keep(Repositories, filter));
+    public RepositoryChoices Matching(string filter)
+    {
+        string visible = CharacterKinds.WithoutInvisibleStart(filter);
+
+        return new(Keep(Recent, visible), Keep(Folders, visible), Keep(Repositories, visible));
+    }
 
     private static IReadOnlyList<RepositoryChoice> Keep(IReadOnlyList<RepositoryChoice> choices, string filter) => [.. choices.Where(choice => choice.Matches(filter))];
 }
