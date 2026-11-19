@@ -104,9 +104,18 @@ public sealed class TableScrollShould : IDisposable
         }
     }
 
-    private void Show(int count, int selected) => scroll.Show(Rows(count), selected, Key(selected), RowFilter.None);
+    private void Show(int count, int selected)
+    {
+        scroll.Show(Rows(count), selected, Key(selected), RowFilter.None);
+    }
 
-    private static string Key(int row) => $"row {row}";
+    private static string Key(int row)
+    {
+        return $"row {row}";
+    }
 
-    private static EnumerableTableSource<int> Rows(int count) => new(Enumerable.Range(0, count), new Dictionary<string, Func<int, object>> { ["NAME"] = row => Key(row) });
+    private static EnumerableTableSource<int> Rows(int count)
+    {
+        return new(Enumerable.Range(0, count), new Dictionary<string, Func<int, object>> { ["NAME"] = row => Key(row) });
+    }
 }
