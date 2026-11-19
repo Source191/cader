@@ -105,9 +105,12 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         hosts.Answer(Orders, Listing(("c-new-bug", PullRequestState.Closed, new HeadCommit.NotRecorded())));
         MainCheckoutOnly();
         Branches(Origin("c-new-bug"));
+        // Held, so the lookup the scan starts and never awaits cannot land before the scan reads its rows.
+        hosts.Hold();
 
         IReadOnlyList<WorktreeRow> rows = await Inventory.ScanAsync([], CancellationToken.None);
         await hosts.WhenCalledAsync(1).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        hosts.Release();
 
         rows.ShouldBeEmpty();
         hosts.Requests.ShouldBe([(Orders, BranchName.From("c-new-bug"))]);
