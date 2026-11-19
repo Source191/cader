@@ -10,16 +10,103 @@ public sealed class SessionsViewShould
     private static readonly SessionRow Working = Row("remove-sonar", DisplayState.Working, "Northwind.Templates", jobId: "aaaa1111");
     private static readonly Session.Background WaitingJob = Job("change-feed", DisplayState.NeedsInput, "Northwind.Shipping", "bbbb2222");
     private static readonly SessionRow Waiting = Row(WaitingJob);
-    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Northwind.Archive", jobId: "cccc3333");
-    private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "repos");
+    private static readonly SessionRow Stopped = Row("old-spike", DisplayState.Stopped, "Northwind.Warehouse", jobId: "cccc3333");
+    private static readonly Session.Interactive InteractiveTerminal = Terminal("repos-93", DisplayState.Idle, "Northwind.Tools");
     private static readonly SessionRow Interactive = Row(InteractiveTerminal);
 
     private static readonly SessionsViewState Loaded = SessionsView.Reduce(SessionsViewState.Empty, new RowsLoaded([Stopped, Working, Interactive, Waiting])).State;
 
     [Fact]
-    public void ShowLoadedRowsOrderedByAttention()
+    public void KeepAttentionOrderWithinAGroup()
+    {
+        SessionRow stopped = Row(Job("stopped", DisplayState.Stopped, "Northwind.Orders", "aaaa0001"));
+        SessionRow failed = Row(Job("failed", DisplayState.Failed, "Northwind.Orders", "aaaa0002"));
+        SessionRow completed = Row(Job("completed", DisplayState.Completed, "Northwind.Orders", "aaaa0003"));
+        SessionRow idle = Row(Job("idle", DisplayState.Idle, "Northwind.Orders", "aaaa0004"));
+        SessionRow olderWorking = Row(Job("older-working", DisplayState.Working, "Northwind.Orders", "aaaa0005") with { StartedAt = Fixtures.Noon.AddHours(-2) });
+        SessionRow newerWorking = Row(Job("newer-working", DisplayState.Working, "Northwind.Orders", "aaaa0006"));
+        SessionRow waiting = Row(Job("waiting", DisplayState.NeedsInput, "Northwind.Orders", "aaaa0007"));
+        SessionRow billing = Row(Job("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", "aaaa0008"));
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([stopped, olderWorking, failed, idle, waiting, completed, newerWorking, billing]));
+
+        loaded.VisibleRows.ShouldBe([billing, waiting, newerWorking, olderWorking, idle, completed, failed, stopped]);
+    }
+
+    [Fact]
+    public void KeepFolderGoneApartFromTheLiveFolder()
+    {
+        FolderPath notes = FolderPath.From(@"C:\Users\me\scratch\notes");
+        SessionRow liveWaiting = Row(Job("live-waiting", DisplayState.NeedsInput, "notes", "aaaa0001") with { WorkingDirectory = notes }) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(Job("gone", DisplayState.NeedsInput, "notes", "aaaa0002") with { WorkingDirectory = notes }) with { Location = new SessionLocation.FolderGone("notes") };
+        SessionRow liveStopped = Row(Job("live-stopped", DisplayState.Stopped, "notes", "aaaa0003") with { WorkingDirectory = notes }) with { Location = new SessionLocation.Outside("notes") };
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([liveStopped, gone, liveWaiting]));
+
+        loaded.VisibleRows.ShouldBe([liveWaiting, liveStopped, gone]);
+    }
+
+    [Fact]
+    public void TellTwoRepositoriesOfOneNameApartByCheckout()
+    {
+        SessionRow reposWorking = Row(Job("repos-working", DisplayState.Working, "Northwind.Orders", "aaaa0001"));
+        SessionRow workWaiting = Row(Job("work-waiting", DisplayState.NeedsInput, "Northwind.Orders", "aaaa0002") with { WorkingDirectory = FolderPath.From(@"D:\work\Northwind.Orders") });
+        SessionRow reposStopped = Row(Job("repos-stopped", DisplayState.Stopped, "Northwind.Orders", "aaaa0003"));
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([reposStopped, workWaiting, reposWorking]));
+
+        loaded.VisibleRows.ShouldBe([reposWorking, reposStopped, workWaiting]);
+    }
+
+    [Fact]
+    public void ShowLoadedRowsByGroupThenAttention()
     {
         Loaded.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("change-feed"), Listed.As("remove-sonar"), Listed.As("repos-93"), Listed.As("old-spike")]);
+    }
+
+    [Fact]
+    public void GroupRowsByRepositoryAToZIgnoringCase()
+    {
+        SessionRow orders = Row("fix-123", DisplayState.Working, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow cader = Row("tidy", DisplayState.Stopped, "cader", jobId: "aaaa0002");
+        SessionRow billing = Row("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", jobId: "aaaa0003");
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([orders, cader, billing]));
+
+        loaded.VisibleRows.ShouldBe([cader, billing, orders]);
+        loaded.Selected.ShouldBe(cader);
+    }
+
+    [Fact]
+    public void PutAHeadingBeforeEachGroupsRows()
+    {
+        SessionRow ordersWorking = Row("fix-123", DisplayState.Working, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow ordersStopped = Row("spike", DisplayState.Stopped, "Northwind.Orders", jobId: "aaaa0002");
+        SessionRow billing = Row("invoice-pdf", DisplayState.NeedsInput, "Northwind.Billing", jobId: "aaaa0003");
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([ordersStopped, billing, ordersWorking]));
+
+        loaded.Lines.ShouldBe(
+        [
+            new TableLine<SessionRow>.Heading(billing),
+            new TableLine<SessionRow>.Row(billing),
+            new TableLine<SessionRow>.Heading(ordersWorking),
+            new TableLine<SessionRow>.Row(ordersWorking),
+            new TableLine<SessionRow>.Row(ordersStopped),
+        ]);
+    }
+
+    [Fact]
+    public void PutFolderGroupsAfterRepositories()
+    {
+        SessionRow orders = Row("fix-123", DisplayState.Stopped, "Northwind.Orders", jobId: "aaaa0001");
+        SessionRow notes = Row(Job("notes", DisplayState.NeedsInput, "notes", "aaaa0002")) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(Job("old", DisplayState.NeedsInput, "Northwind.Retired", "aaaa0003")) with { Location = new SessionLocation.FolderGone("Northwind.Retired") };
+
+        SessionsViewState loaded = Reduce(SessionsViewState.Empty, new RowsLoaded([notes, gone, orders]));
+
+        loaded.VisibleRows[0].ShouldBe(orders);
+        loaded.VisibleRows.Skip(1).ShouldBe([notes, gone], ignoreOrder: true);
     }
 
     [Fact]
@@ -126,11 +213,11 @@ public sealed class SessionsViewShould
     [Fact]
     public void FilterRowsAsTheFilterTextIsTyped()
     {
-        SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l')));
+        SessionsViewState typing = Press(Press(Press(Loaded, Key.Slash), Key.Of('o'), Key.Of('l'), Key.Of('d')));
 
         typing.List.FilterEditing.ShouldBeTrue();
         typing.VisibleRows.Select(row => row.Session.Name).ShouldBe([Listed.As("old-spike")]);
-        typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "ol", Selected: "old-spike"));
+        typing.Title.ShouldBe(new TableTitle("session", Shown: 1, Total: 4, Filter: "old", Selected: "old-spike"));
     }
 
     [Fact]
@@ -147,13 +234,13 @@ public sealed class SessionsViewShould
     [Fact]
     public void CommitTheFilterWithEnterAndClearItWithEscape()
     {
-        SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('n'), Key.Of('o'), Key.Of('r'), Key.Enter);
+        SessionsViewState committed = Press(Loaded, Key.Slash, Key.Of('l'), Key.Enter);
         committed.List.FilterEditing.ShouldBeFalse();
         committed.VisibleRows.Count.ShouldBe(3);
 
         SessionsViewState cleared = Press(committed, Key.Escape);
         cleared.VisibleRows.Count.ShouldBe(4);
-        cleared.Title.ShouldBe(new TableTitle("session", Shown: 4, Total: 4, Filter: string.Empty, Selected: "change-feed"));
+        cleared.Title.ShouldBe(new TableTitle("session", Shown: 4, Total: 4, Filter: string.Empty, Selected: "remove-sonar"));
     }
 
     [Fact]

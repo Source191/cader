@@ -47,14 +47,13 @@ One Windows Terminal tab with three tabs of its own; Left and Right step between
 
 ### The Sessions tab
 
-Every Claude Code session on the machine, whether it was started here or not.
+Every Claude Code session on the machine, whether it was started here or not, grouped by where it runs: an orange heading names each repository (or, outside a repository, the folder's label, after folder gone: when the folder no longer exists), with a faint rule across the line, and its sessions sit beneath it. Repositories run A to Z, ignoring case, and folders outside any repository come after them. Within a group the sessions needing input come first, then working, idle, completed, failed and stopped, the most recently started first within each. A session needing input in a repository late in the alphabet can sit below the visible rows, so the counts beside the tabs still say how many need input. The arrow keys step over the headings, and a filter keeps a heading only while one of its sessions matches.
 
 | Column | What it shows |
 | --- | --- |
-| NAME | The session name given at launch, or the folder name for an unnamed one |
+| NAME | The session name given at launch, or the folder name for an unnamed one; it takes the width the other columns leave, and a long name is cut at its end |
 | TAB | A block in the tab's colour while a Cader tab shows the session; ▯ grey for a plain `claude` in its own terminal |
 | STATE | ◐ needs input (amber), ● working (cyan), ○ idle (white), ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey) |
-| REPOSITORY | The repository it runs in, or the folder's label outside a repository, with folder gone: before the label when the folder no longer exists |
 | PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
 | ACCOUNT | The label of the Claude account the session belongs to: ● before it for the account logged in now, ? for one Cader has not yet seen logged in, blank when Claude Code did not record it (sessions from before Claude Code 2.1.325) |
 | AGE | Time since the session started |
@@ -63,14 +62,14 @@ The detail pane shows, in its left column, what the session is waiting for, its 
 
 ### The Worktrees tab
 
-Every git worktree under your repository roots, with or without a session, then each repository's branches that have no worktree:
+Every git worktree under your repository roots, with or without a session, grouped under an orange heading for each repository, A to Z ignoring case (a leftover under the repository it belonged to, an empty leftover under its root); within a group the worktrees come first, then the repository's branches that have no worktree. The arrow keys step over the headings, and a filter keeps a heading only while one of its rows matches:
 
 - **Branch rows (⑂ branch):** a local branch checked out neither in the main checkout nor in any worktree, except the one that tracks origin's default branch.
 - **Origin rows (○ origin):** a branch only on origin, with no local branch of its name, whose newest commit is yours (by your git `user.email`) and which is flagged left behind or closed. It appears a scan after its pull request has been looked up.
 
 | Column | What it shows |
 | --- | --- |
-| WORKTREE | The owning repository › the folder's slug, or its label when not named after it; on a branch or origin row, the repository › the branch |
+| WORKTREE | The folder's slug, or its label when not named after its repository; on a branch or origin row, the branch. The heading above names the repository |
 | HEALTH | ✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten), ✗ broken (registration or owner gone), □ empty (a leftover folder), ↗ elsewhere (a worktree of a repository outside the roots), ⑂ branch (no worktree), ○ origin (only on origin) |
 | BRANCH | The branch's most urgent flag: ▲ left behind (red: work after its pull request merged that main lacks), ✗ gone (amber: deleted on origin), ✗ closed (amber: its pull request closed without merging), · no PR (grey: none on its host); blank when none applies or the pull request is not yet known |
 | LAST COMMIT | Time since the last commit |
@@ -95,7 +94,7 @@ The settings (see [Configuration](#configuration)), then a Setup heading with wh
 - **Stop:** `x` stops a session; it stays listed and can be resumed.
 - **Rename:** `r` gives a session a new name. It restarts under the new name and keeps its conversation.
 - **Delete:** `d` deletes a session, and its worktree too when no work would be lost: never one with uncommitted changes, unpushed commits, a lock or another live session.
-- **When its folder has gone:** a session whose folder was deleted reads folder gone: in REPOSITORY and in its detail pane, and resting the pointer on its row says so. Enter (on one without a process), `r` and `R` leave it alone, because a resume cannot land in a folder that no longer exists; `d` deletes it.
+- **When its folder has gone:** a session whose folder was deleted sits under a heading reading folder gone: and the folder's label, after the repositories, and its detail pane says so too, and resting the pointer on its row says so. Enter (on one without a process), `r` and `R` leave it alone, because a resume cannot land in a folder that no longer exists; `d` deletes it.
 - **Adopt:** `b` moves a plain `claude` started in its own tab under Cader's supervision, so it survives the tab closing.
 - **Close empty tabs:** `C` closes the tabs of terminal sessions that were never sent a message.
 - **From a folder you are already in:** `cader here [name] [--prompt <text>]` starts a supervised session there, on the current branch, in the same tab, and lists it on the Sessions tab. Ctrl+Z detaches; the session keeps running.

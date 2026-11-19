@@ -24,6 +24,12 @@ public sealed class ConfigViewShould
     private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, []))).State;
 
     [Fact]
+    public void DrawOneLinePerVisibleRowWithNoGroupHeadings()
+    {
+        Loaded.Lines.ShouldBe([.. Loaded.List.Visible.Select(row => new TableLine<ConfigRow>.Row(row))]);
+    }
+
+    [Fact]
     public void RefreshTheTabOnF5()
     {
         ConfigView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);

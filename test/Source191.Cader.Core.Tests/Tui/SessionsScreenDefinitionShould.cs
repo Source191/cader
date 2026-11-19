@@ -31,18 +31,26 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
-    public void ListItsColumnsAsWordingDoesWithRepositoryElastic()
+    public void ListItsColumnsAsWordingDoes()
     {
         definition.Columns.Select(column => column.Help).ShouldBe(Wording.SessionsColumns);
-        definition.Columns.Single(column => column.Fit is ColumnFit.Elastic).Help.ShouldBeSameAs(Wording.RepositoryColumn);
     }
 
     [Fact]
-    public void CapNameAtTwentyEightCells()
+    public void HaveNoRepositoryColumn()
     {
-        TableColumn<SessionRow> name = definition.Columns.Single(column => column.Help == Wording.NameColumn);
+        definition.Columns.Select(column => column.Help.Name).ShouldNotContain("REPOSITORY");
+    }
 
-        name.Fit.ShouldBe(new ColumnFit.Capped(28));
+    [Fact]
+    public void MakeNameTheElasticColumn()
+    {
+        TableColumn<SessionRow> name = definition.Columns.Single(column => column.Fit is ColumnFit.Elastic);
+        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("northwind-orders-cosmos-change-feed-monitoring-spike"), Folder, Fixtures.Noon, DisplayState.Idle, new JobProcess.None()), new LiveTab.None());
+
+        name.Help.ShouldBeSameAs(Wording.NameColumn);
+        name.Cell(row, Fixtures.Noon, 20).ShouldBe("northwind-orders-co…");
+        name.Cell(row, Fixtures.Noon, 60).ShouldBe("northwind-orders-cosmos-change-feed-monitoring-spike");
     }
 
     [Fact]
@@ -75,7 +83,6 @@ public sealed class SessionsScreenDefinitionShould
             "fix-123",
             Wording.TabBlock,
             $"{Wording.StateGlyph(DisplayStateKind.Idle)} {Wording.StateWord(DisplayState.Idle)}",
-            @"~\source\worktrees\Northwind.Billing-invoice-pdf",
             string.Empty,
             string.Empty,
             "3h00m",
@@ -83,13 +90,17 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
-    public void MarkTheRepositoryCellOfASessionWhoseFolderHasGone()
+    public void NameAHeadingByRepositoryFolderOrFolderGone()
     {
-        SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Stopped, new JobProcess.None()), new LiveTab.None()) with { Location = new SessionLocation.FolderGone("Northwind.Billing-invoice-pdf") };
-        TableColumn<SessionRow> repository = definition.Columns.Single(column => column.Help == Wording.RepositoryColumn);
+        Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Stopped, new JobProcess.None());
+        SessionRow inRepository = Row(session, new LiveTab.None()) with { Location = new SessionLocation.InRepository("Northwind.Billing", FolderPath.From(@"C:\Users\me\source\repos\Northwind.Billing")) };
+        SessionRow outside = Row(session with { WorkingDirectory = FolderPath.From(@"C:\Users\me\scratch\notes") }, new LiveTab.None()) with { Location = new SessionLocation.Outside("notes") };
+        SessionRow gone = Row(session, new LiveTab.None()) with { Location = new SessionLocation.FolderGone("Northwind.Billing-invoice-pdf") };
+        IScreenDefinition<SessionsViewState, SessionRow> screen = definition;
 
-        repository.Cell(row, Fixtures.Noon, int.MaxValue).ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Billing-invoice-pdf");
-        repository.Cell(row, Fixtures.Noon, 20).ShouldBe(@"folder gone: ~\sour…");
+        screen.Heading(inRepository).ShouldBe("Northwind.Billing");
+        screen.Heading(outside).ShouldBe(@"~\scratch\notes");
+        screen.Heading(gone).ShouldBe(@"folder gone: ~\source\worktrees\Northwind.Billing-invoice-pdf");
     }
 
     [Fact]

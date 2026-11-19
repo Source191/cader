@@ -74,3 +74,11 @@ Implement with **Claude Opus 5.5 (`claude-opus-5-5`) at high effort**. The chang
 ## Migration Plan
 
 None: no state file, setting or port changes. The README images (`tools\New-ReadmeScreenshot.ps1`) and `docs\user-guide.md` are updated in the same pull request; rolling back is reverting it.
+
+## Adaptations made while building
+
+- **Drawing a heading:** the cells of a heading are left empty and `ColumnSizing` draws the heading across its line from the table's `DrawComplete` (`HeadingLine`: the text elided in the middle to the elastic column's width, then a space and a rule to the right edge). Terminal.Gui 2.5.0's `TableView` writes a blank at every column's last cell, so a rule drawn cell by cell broke between columns and did not read as one line. The heading's text is therefore drawn at the left edge whatever the column offset, so `>` no longer hides it; the risk above is gone rather than accepted. The rule takes its own faint grey, `Palette.Rule`.
+- **Folder groups:** ordered by the folder's path, ignoring case, not by its label, because the label depends on the roots, which only the screen reads per redraw; the order of view states stays free of settings. The delta spec says so.
+- **WhereLabel:** with the repository in the heading, nothing used `Inside`, `Outside` or `Fit`, so `WhereLabel` is now only `PlaceOf` (no longer blank for a label equal to the repository's name: the whole label shows), and cutting at the end moved to `TextFit.CutEnd`, which NAME and WORKTREE share.
+- **Task order:** removing `Wording.RepositoryColumn` (3.1) removed the column from `SessionsScreenDefinition` and made NAME elastic in the same step, so 4.1's facts came with it, and the heading (4.2) was built before it, to keep the folder gone words in use.
+- **Config:** its `Lines` are `TableLines.Ungrouped`, one row per line; a view with no heading indents nothing, so the Config tab is drawn as before.

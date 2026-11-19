@@ -264,15 +264,13 @@ public static partial class Wording
     /// <summary>A health's word, the one the HEALTH cell, the counts and the pane's Health line all use.</summary>
     private static string HealthWord(WorktreeHealthKind kind) => kind.ToString().ToLowerInvariant();
 
-    public static ColumnHelp NameColumn { get; } = new("NAME", "the session name given at launch, or the folder name for an unnamed one");
+    public static ColumnHelp NameColumn { get; } = new("NAME", $"the session name given at launch, or the folder name for an unnamed one, under a heading\nnaming its repository, or the folder's label outside a repository, after {FolderGoneWords}:\nwhen the folder no longer exists");
 
     public static ColumnHelp TabColumn { get; } = new("TAB", $"a block in the tab's colour, faded as the tab looks from the console's own tab,\nwhile a tab opened here shows the session; {TerminalSwatch} grey for a plain claude in its own terminal");
 
     public static ColumnHelp StateColumn { get; } = new("STATE", "◐ needs input (amber), ● working (cyan), ○ idle (white),\n✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey)");
 
-    public static ColumnHelp RepositoryColumn { get; } = new("REPOSITORY", $"the repository it runs in, or the folder's label outside a repository,\nwith {FolderGoneWords}: before the label when the folder no longer exists");
-
-    /// <summary>The REPOSITORY cell of a session whose folder has gone: the mark first, so a narrow column cuts the label and keeps it.</summary>
+    /// <summary>The heading of a session whose folder has gone: the mark first, so a narrow column elides the label and keeps it.</summary>
     public static string FolderGone(string label) => $"{FolderGoneWords}: {label}";
 
     /// <summary>A Sessions row's hover tip: only a session whose folder has gone has one, and only a background one can be deleted with d.</summary>
@@ -289,7 +287,7 @@ public static partial class Wording
 
     public static ColumnHelp AgeColumn { get; } = new("AGE", "time since the session started");
 
-    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the owning repository › the folder's slug, or its label when not named after it");
+    public static ColumnHelp WorktreeColumn { get; } = new("WORKTREE", "the folder's slug, or its label when not named after its repository, or a branch row's branch,\nunder a heading naming the repository");
 
     public static ColumnHelp HealthColumn { get; } = new("HEALTH", "✓ ok, ◆ locked (by another tool), △ orphan (a folder git has forgotten),\n✗ broken (registration or owner gone), □ empty (a leftover folder),\n↗ elsewhere (a worktree of a repository outside the roots),\n⑂ branch (no worktree), ○ origin (only on origin); the pane gives the reason");
 
@@ -304,7 +302,7 @@ public static partial class Wording
 
     public static ColumnHelp SessionColumn { get; } = new("SESSION", "the session running in it, if any");
 
-    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, RepositoryColumn, PullRequestColumn, AccountColumn, AgeColumn];
+    public static IReadOnlyList<ColumnHelp> SessionsColumns { get; } = [NameColumn, TabColumn, StateColumn, PullRequestColumn, AccountColumn, AgeColumn];
 
     public static IReadOnlyList<ColumnHelp> WorktreesColumns { get; } = [WorktreeColumn, HealthColumn, BranchColumn, LastCommitColumn, SessionColumn];
 

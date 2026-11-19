@@ -14,7 +14,7 @@ public sealed class WorktreesViewShould
     private static readonly WorktreeRow Dirty = Row(@"C:\repos\Northwind.Orders-fix-2", On("fix-2"), WorktreeHealthKind.Ok) with { DirtyFiles = 5, UnpushedCommits = 2 };
     private static readonly WorktreeRow Locked = Row(@"C:\repos\Northwind.Orders-locked", On("maintenance"), WorktreeHealthKind.Locked, new HealthReason.Locked("another tool is using it"));
     private static readonly WorktreeRow Orphan = Row(@"C:\repos\Northwind.Orders\.claude\worktrees\fix-service-tests", new Head.Unknown(), WorktreeHealthKind.Orphan) with { LeftoverFileCount = 12 };
-    private static readonly WorktreeRow Empty = Row(@"C:\repos\Northwind.Orders.worktrees", new Head.Unknown(), WorktreeHealthKind.Empty) with { Repository = FolderPath.From(@"C:\repos") };
+    private static readonly WorktreeRow Empty = Row(@"C:\code\Northwind.Orders.worktrees", new Head.Unknown(), WorktreeHealthKind.Empty) with { Repository = FolderPath.From(@"C:\code") };
     private static readonly WorktreeRow Gone = Row(@"C:\repos\Northwind.Retired-republish", new Head.Unknown(), WorktreeHealthKind.Broken) with { Repository = FolderPath.From(@"C:\repos\Northwind.Retired"), OwnerExists = false };
     private static readonly WorktreeRow Busy = Row(@"C:\repos\Northwind.Orders-fix-3", On("fix-3"), WorktreeHealthKind.Ok) with { Session = new WorktreeSession.Running(SessionId.From("sess-fix-3"), Listed.As("fix-the-tests")) };
     private static readonly WorktreeRow Elsewhere = Row(@"C:\Users\me\source\worktrees\Northwind.Ledger-fix", On("fix"), WorktreeHealthKind.Elsewhere, new HealthReason.RepositoryOutsideRoots(FolderPath.From(@"D:\other\Northwind.Ledger"))) with { Repository = FolderPath.From(@"D:\other\Northwind.Ledger"), DirtyFiles = 3 };
@@ -50,11 +50,42 @@ public sealed class WorktreesViewShould
     }
 
     [Fact]
-    public void OrderRowsByRepositoryThenPathAndSelectTheFirst()
+    public void OrderRowsByRepositoryNameThenPathAndSelectTheFirst()
     {
         Loaded.VisibleRows.Select(row => row.FolderName).ShouldBe(["Northwind.Orders.worktrees", "fix-service-tests", "Northwind.Orders-fix-1", "Northwind.Orders-fix-2", "Northwind.Orders-fix-3", "Northwind.Orders-locked", "Northwind.Retired-republish"]);
         Loaded.Selected.ShouldBe(Empty);
         Loaded.Title.ShouldBe(new TableTitle("worktree", Shown: 7, Total: 7, Filter: string.Empty, Selected: "Northwind.Orders.worktrees") with { Apart = NoBranches });
+    }
+
+    [Fact]
+    public void GroupRowsByRepositoryNameAcrossRoots()
+    {
+        WorktreeRow zeta = Row(@"C:\Users\me\source\worktrees\Northwind.Zeta-fix", On("fix"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"C:\Users\me\source\repos\Northwind.Zeta") };
+        WorktreeRow alpha = Row(@"D:\work\Northwind.Alpha-fix", On("fix"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"D:\work\Northwind.Alpha") };
+        WorktreeRow lowerCase = Row(@"D:\work\cader-tidy", On("tidy"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"D:\work\cader") };
+
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([zeta, alpha, lowerCase]));
+
+        loaded.VisibleRows.ShouldBe([lowerCase, alpha, zeta]);
+    }
+
+    [Fact]
+    public void PutAHeadingBeforeEachRepositorysRows()
+    {
+        Loaded.Lines.OfType<TableLine<WorktreeRow>.Heading>().Select(heading => heading.First).ShouldBe([Empty, Orphan, Gone]);
+        Loaded.Lines.Count.ShouldBe(Loaded.VisibleRows.Count + 3);
+        Loaded.Lines[1].ShouldBe(new TableLine<WorktreeRow>.Row(Empty));
+    }
+
+    [Fact]
+    public void KeepFoldersBeforeBranchesWithinAGroup()
+    {
+        WorktreeRow spike = BranchRow("spike-refunds");
+        WorktreeRow invoice = Row(@"C:\repos\Northwind.Billing-invoice-pdf", On("invoice-pdf"), WorktreeHealthKind.Ok) with { Repository = FolderPath.From(@"C:\repos\Northwind.Billing") };
+
+        WorktreesViewState loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([spike, Clean, invoice]));
+
+        loaded.VisibleRows.ShouldBe([invoice, Clean, spike]);
     }
 
     [Fact]

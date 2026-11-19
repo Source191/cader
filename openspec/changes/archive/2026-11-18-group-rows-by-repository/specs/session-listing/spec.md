@@ -8,7 +8,7 @@ The sessions table SHALL group its rows by where they run: one group per reposit
 - **THEN** one bold orange row reading Northwind.Orders, followed by a faint rule, comes before both rows, whose names start two cells in
 
 ### Requirement: Groups run A to Z with attention first within a group
-Repository groups SHALL run A to Z by name ignoring case, two of one name in checkout order, then the folder groups A to Z by label ignoring case. Within a group the rows SHALL be ordered by display state: needs input first, then working, idle, completed, failed, stopped, and within a state by most recently started first.
+Repository groups SHALL run A to Z by name ignoring case, two of one name in checkout order, then the folder groups A to Z by the folder's path ignoring case, a folder that has gone after a live folder of the same path. Within a group the rows SHALL be ordered by display state: needs input first, then working, idle, completed, failed, stopped, and within a state by most recently started first.
 
 #### Scenario: Two repositories
 - **WHEN** the list holds a stopped and a working session in Northwind.Orders and a needs-input session in Northwind.Billing
@@ -106,7 +106,7 @@ A table column header SHALL show what the column shows as a tooltip while the mo
 - **THEN** the tooltip says the column shows the session's name, under a heading naming its repository, the folder's label outside a repository, or folder gone before the label when the folder no longer exists
 
 ### Requirement: Long names never hide columns
-The sessions table SHALL give NAME the width its other columns leave and SHALL fit every column on a 120-column terminal; a name too long for its width SHALL be cut at its end with an ellipsis, and a heading too long for the NAME column SHALL lose its middle, marked with an ellipsis. The row SHALL keep the full values for every key that uses them, and < and > SHALL scroll the table on a narrower terminal, Left and Right being the tab keys. The key bar SHALL show every key that applies within 120 columns, with its words.
+The sessions table SHALL give NAME the width its other columns leave and SHALL fit every column on a 120-column terminal; a name too long SHALL be cut at its end and a heading too long for the NAME column SHALL lose its middle, each marked with an ellipsis. The row SHALL keep the full values for every key that uses them, < and > SHALL scroll the table on a narrower terminal, and the key bar SHALL show every key that applies within 120 columns, with its words.
 
 #### Scenario: Long repository name in the sessions view
 - **WHEN** a session runs in a worktree of Northwind.Integration.CosmosDb.ChangeFeedMonitoring and the terminal is 120 columns wide

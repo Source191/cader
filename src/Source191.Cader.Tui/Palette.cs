@@ -28,6 +28,14 @@ internal static class Palette
     public static readonly Color White = new(230, 230, 230);
     public static readonly Color Orange = new(247, 99, 12);
 
+    /// <summary>The rule after a group's heading: a faint grey that marks where a group starts without drawing the eye from the rows.</summary>
+    public static readonly Color Rule = new(68, 66, 65);
+
+    /// <summary>A group's heading in a table, bold orange as the Config tab's headings are orange.</summary>
+    public static readonly Attribute HeadingText = new(Orange, Background, TextStyle.Bold);
+
+    public static readonly Attribute HeadingRule = new(Rule, Background);
+
     public static Scheme Plain(Color foreground)
     {
         Attribute attribute = new(foreground, Background);

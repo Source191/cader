@@ -9,7 +9,7 @@ public sealed record WorktreesViewState(
     private static readonly ListPolicy<WorktreeRow> Policy = new(
         KeyOf: row => row.Key,
         FilterFields: row => [row.RepositoryName, row.FolderName, .. FilterText.Of(row.Head), row.Health.Kind.ToString()],
-        Order: rows => rows.OrderBy(row => row.Repository.Key, StringComparer.Ordinal).ThenBy(row => row.Placement).ThenBy(row => row.FolderName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Key, StringComparer.Ordinal),
+        Order: rows => rows.OrderBy(row => row.RepositoryName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Repository.Key, StringComparer.Ordinal).ThenBy(row => row.Placement).ThenBy(row => row.FolderName, StringComparer.OrdinalIgnoreCase).ThenBy(row => row.Key, StringComparer.Ordinal),
         KeyComparison: StringComparison.Ordinal,
         Selectable: _ => true);
 
@@ -19,6 +19,8 @@ public sealed record WorktreesViewState(
     public IReadOnlyList<WorktreeRow> VisibleRows => List.Visible;
 
     public WorktreeRow? Selected => List.Selected;
+
+    public IReadOnlyList<TableLine<WorktreeRow>> Lines => TableLines.Grouped(List.Visible, row => row.Repository.Key);
 
     public TableTitle Title => List.Title("worktree", row => row.Name) with { Apart = new TitleCount(List.Rows.Count(row => row.Placement is Placement.NoFolder), "branch", "branches") };
 }
