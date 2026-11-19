@@ -6,23 +6,18 @@ Lets the user take a row's folder, in the sessions view or the worktrees view, s
 ## Requirements
 
 ### Requirement: The folder is shown relative to its root
-Both table views SHALL show where a row's folder is in the heading of the row's group and, on the Worktrees tab, the WORKTREE column, not a FOLDER column. A session's heading SHALL read its repository's name, or the folder's label outside a repository; a worktree's heading SHALL read its repository's name, and its WORKTREE cell the folder's slug, its inner path, or its label when not named after it. A label SHALL be the path relative to the deepest root holding it, else ~\ and the path under home, else in full. Neither a heading nor a cell SHALL show the branch, except a branch or origin row's WORKTREE cell, which names its branch.
+Both table views SHALL show where a row's folder is in the heading of the row's group and, on the Worktrees tab, the WORKTREE column, not a FOLDER column. A session's heading SHALL read its repository's name, or the folder's label outside a repository; a worktree's heading SHALL read its repository's name, and its WORKTREE cell the folder's slug, its inner path, or its label when not named after it.
 
 #### Scenario: Worktree under the worktree root
 - **WHEN** the worktrees view lists C:\Users\me\source\worktrees\Northwind.Orders-fix-123, a worktree of Northwind.Orders on branch fix-123, and the worktree root is C:\Users\me\source\worktrees
 - **THEN** its row is under the Northwind.Orders heading and its WORKTREE cell reads fix-123
 
-#### Scenario: Session in a worktree
-- **WHEN** a session runs in C:\Users\me\source\worktrees\Northwind.Orders-fix-123 on branch fix-123
-- **THEN** its row is under the Northwind.Orders heading, which has no slug and no branch
-
 #### Scenario: Repository under a repository root
 - **WHEN** a session runs in C:\Users\me\source\repos\Northwind.Orders\src\Api and the repository root is C:\Users\me\source\repos
 - **THEN** its row is under the Northwind.Orders heading, which has no inner path and no branch
 
-#### Scenario: Session in the main checkout
-- **WHEN** a session runs in the main checkout C:\Users\me\source\repos\Northwind.Orders on branch main
-- **THEN** its row is under the Northwind.Orders heading, which has no branch
+### Requirement: A folder's label is relative to its root
+A label SHALL be the path relative to the deepest root holding it, else ~\ and the path under home, else in full.
 
 #### Scenario: Folder outside every root
 - **WHEN** a session runs in C:\Users\me\scratch\notes, which is not a repository
@@ -36,6 +31,17 @@ Both table views SHALL show where a row's folder is in the heading of the row's 
 - **WHEN** a session started with cader here runs in the repository root C:\Users\me\source\repos
 - **THEN** its row is under a heading reading ~\source\repos
 
+### Requirement: Headings and cells do not show the branch
+Neither a heading nor a cell SHALL show the branch, except a branch or origin row's WORKTREE cell, which names its branch.
+
+#### Scenario: Session in a worktree
+- **WHEN** a session runs in C:\Users\me\source\worktrees\Northwind.Orders-fix-123 on branch fix-123
+- **THEN** its row is under the Northwind.Orders heading, which has no slug and no branch
+
+#### Scenario: Session in the main checkout
+- **WHEN** a session runs in the main checkout C:\Users\me\source\repos\Northwind.Orders on branch main
+- **THEN** its row is under the Northwind.Orders heading, which has no branch
+
 ### Requirement: The copy key puts the full folder path on the clipboard
 In both table views the copy key SHALL place the selected row's full folder path on the Windows clipboard as plain text and SHALL say in the status line what it copied.
 
@@ -48,11 +54,22 @@ In both table views the copy key SHALL place the selected row's full folder path
 - **THEN** nothing is copied and the status line says the clipboard was busy and to try again
 
 ### Requirement: The editor key opens the folder in the chosen editor
-In both table views the editor key SHALL open the selected row's folder in the editor chosen in settings, without waiting for the editor to close, without passing Cader's Claude Code session markers to it, without the folder path ever being read by a command shell, and without anything the editor writes reaching Cader's screen. When the chosen editor, preset or Custom, cannot be found or will not start, nothing SHALL be started and the status line SHALL say so in Cader's words and that the Config tab's Open folder with row chooses another.
+In both table views the editor key SHALL open the selected row's folder in the editor chosen in settings, without waiting for the editor to close, without passing Cader's Claude Code session markers to it, without the folder path ever being read by a command shell, and without anything the editor writes reaching Cader's screen.
 
 #### Scenario: Open in VS Code
 - **WHEN** the editor setting is VS Code and the user presses the editor key on a row
 - **THEN** VS Code opens a window on that row's folder and the status line names the folder and the editor
+
+#### Scenario: Folder with shell characters
+- **WHEN** the folder is C:\Users\me\source\repos\Northwind & Co's tools
+- **THEN** the editor opens that folder and no part of its name is run as a command
+
+#### Scenario: An editor that prints as it starts
+- **WHEN** the editor setting is VS Code and VS Code writes a deprecation warning to its standard error as it starts
+- **THEN** VS Code opens the folder, and Cader's screen shows no line of that warning, before or after its next redraw
+
+### Requirement: The editor key says when the editor cannot be used
+When the chosen editor, preset or Custom, cannot be found or will not start, nothing SHALL be started and the status line SHALL say so in Cader's words and that the Config tab's Open folder with row chooses another.
 
 #### Scenario: Editor not installed
 - **WHEN** the chosen editor's executable cannot be found
@@ -66,17 +83,9 @@ In both table views the editor key SHALL open the selected row's folder in the e
 - **WHEN** the chosen editor's executable exists but Windows refuses to start it
 - **THEN** the status line, as a failure, names the editor, gives Windows' reason and says that Open folder with on the Config tab chooses another
 
-#### Scenario: Folder with shell characters
-- **WHEN** the folder is C:\Users\me\source\repos\Northwind & Co's tools
-- **THEN** the editor opens that folder and no part of its name is run as a command
-
 #### Scenario: Folder gone
 - **WHEN** the selected session's working directory no longer exists
 - **THEN** nothing is started and the status line says the folder no longer exists
-
-#### Scenario: An editor that prints as it starts
-- **WHEN** the editor setting is VS Code and VS Code writes a deprecation warning to its standard error as it starts
-- **THEN** VS Code opens the folder, and Cader's screen shows no line of that warning, before or after its next redraw
 
 ### Requirement: The solution key opens the folder's solution
 In both table views the solution key SHALL look for files ending `.sln` or `.slnx` directly in the selected row's folder and, when none are there, directly in its `src` folder. One solution found SHALL be opened; several SHALL open the one whose name matches the row's repository name, else ask the user which to open from a list of their paths relative to the folder, in a dialog whose tab title names it; none SHALL be reported in the status line.
