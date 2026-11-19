@@ -107,11 +107,18 @@ A sound given with `--sound` or `--session-sound` that is not an existing `.wav`
 - **THEN** the command prints the usage, writes nothing and exits 2
 
 ### Requirement: Setup can turn on Claude Code's terminal bell
-The setup command SHALL offer to set `preferredNotifChannel` to `terminal_bell` in the `settings.json` of the Claude folder Cader is using (the folder `CLAUDE_CONFIG_DIR` names, or `~\.claude` when it is not set), naming that file in its plan, creating it when it is missing, keeping every other setting and its order, and writing bare LF line endings. When the setting already has that value the command SHALL say so and leave the file untouched; when the file is not valid JSON it SHALL leave it untouched and say why.
+The setup command SHALL offer to set `preferredNotifChannel` to `terminal_bell` in the `settings.json` of the Claude folder Cader is using (the folder `CLAUDE_CONFIG_DIR` names, or `~\.claude` when it is not set), naming that file in its plan, creating it when it is missing, keeping every other setting and its order, and writing bare LF line endings.
 
 #### Scenario: Other settings kept
 - **WHEN** settings.json holds a model and a permissions block and the user accepts
 - **THEN** settings.json holds the same model and permissions block in the same order, plus `"preferredNotifChannel": "terminal_bell"`, with LF line endings only
+
+#### Scenario: The account CLAUDE_CONFIG_DIR names
+- **WHEN** the user runs `cader setup-terminal` in a shell where `CLAUDE_CONFIG_DIR` is `C:\Users\me\.claude-personal`, and accepts the bell
+- **THEN** the plan names `C:\Users\me\.claude-personal\settings.json`, that file holds `"preferredNotifChannel": "terminal_bell"`, and `C:\Users\me\.claude\settings.json` is unchanged
+
+### Requirement: Setup leaves Claude Code's settings alone when it need not or cannot change them
+When the setting already has that value the command SHALL say so and leave the file untouched; when the file is not valid JSON it SHALL leave it untouched and say why.
 
 #### Scenario: Already set
 - **WHEN** settings.json already sets `preferredNotifChannel` to `terminal_bell`
@@ -121,28 +128,16 @@ The setup command SHALL offer to set `preferredNotifChannel` to `terminal_bell` 
 - **WHEN** settings.json is not valid JSON
 - **THEN** the file is unchanged, the output says it could not be read, and the profiles are still written
 
-#### Scenario: The account CLAUDE_CONFIG_DIR names
-- **WHEN** the user runs `cader setup-terminal` in a shell where `CLAUDE_CONFIG_DIR` is `C:\Users\me\.claude-personal`, and accepts the bell
-- **THEN** the plan names `C:\Users\me\.claude-personal\settings.json`, that file holds `"preferredNotifChannel": "terminal_bell"`, and `C:\Users\me\.claude\settings.json` is unchanged
-
 ### Requirement: Setup can be undone
-`cader setup-terminal --remove` SHALL delete Cader's fragment folder and, from Windows Terminal's settings file, only the entries that are exactly the entry setup adds (a Cader profile's `guid`, `"hidden": false`, its `name` and the `source` `Cader`, and no other property), after showing them and asking (or with `--yes`), through the same guarded write as adding one. It SHALL keep every other byte of the file, SHALL leave an entry with any other property alone, SHALL leave `~\.claude\settings.json` alone, and SHALL report when there was nothing to remove.
+`cader setup-terminal --remove` SHALL delete Cader's fragment folder and, from Windows Terminal's settings file, only the entries that are exactly the entry setup adds (a Cader profile's `guid`, `"hidden": false`, its `name` and the `source` `Cader`, and no other property), after showing them and asking (or with `--yes`), through the same guarded write as adding one.
 
 #### Scenario: Remove
 - **WHEN** the fragment exists and the user runs `cader setup-terminal --remove`
 - **THEN** the fragment folder is gone, `~\.claude\settings.json` is unchanged, and the output says to restart Windows Terminal
 
-#### Scenario: Nothing installed
-- **WHEN** no fragment exists, Terminal's settings file holds no entry setup added, and the user runs `cader setup-terminal --remove`
-- **THEN** nothing changes, the output says there was nothing to remove, and the command exits 0
-
 #### Scenario: The entries setup added are taken out
 - **WHEN** setup added the "Cader session" entry to Terminal's settings file and the user runs `cader setup-terminal --remove --yes`
 - **THEN** that entry and the comma setup added with it are gone, every other byte of the file is as it was before setup added it, the output names the backup, and the command exits 0
-
-#### Scenario: A customised entry is kept
-- **WHEN** Terminal's settings file holds the "Cader" entry with a `colorScheme` added, and the user runs `cader setup-terminal --remove --yes`
-- **THEN** that entry is unchanged and nothing is offered for taking out
 
 #### Scenario: Declined
 - **WHEN** Terminal's settings file holds an entry setup added and the user answers n
@@ -156,6 +151,17 @@ The setup command SHALL offer to set `preferredNotifChannel` to `terminal_bell` 
 - **WHEN** the entry setup added is the first, a middle, the last or the only element of the profile list
 - **THEN** after it is taken out the file is still read as JSON and its profile list holds every other element, in order
 
+### Requirement: Undoing setup keeps everything it did not add
+`cader setup-terminal --remove` SHALL keep every other byte of the file, SHALL leave an entry with any other property alone, SHALL leave `~\.claude\settings.json` alone, and SHALL report when there was nothing to remove.
+
+#### Scenario: Nothing installed
+- **WHEN** no fragment exists, Terminal's settings file holds no entry setup added, and the user runs `cader setup-terminal --remove`
+- **THEN** nothing changes, the output says there was nothing to remove, and the command exits 0
+
+#### Scenario: A customised entry is kept
+- **WHEN** Terminal's settings file holds the "Cader" entry with a `colorScheme` added, and the user runs `cader setup-terminal --remove --yes`
+- **THEN** that entry is unchanged and nothing is offered for taking out
+
 ### Requirement: The profiles' icon lives in Cader's fragment folder
 The setup command SHALL copy the icon file into Cader's fragment folder, so that removing the folder removes it; when the tool carries no icon file the profiles SHALL be written without an icon and setup SHALL still succeed.
 
@@ -164,7 +170,7 @@ The setup command SHALL copy the icon file into Cader's fragment folder, so that
 - **THEN** a copy of the icon sits in the fragment's own folder and both profiles name that copy
 
 ### Requirement: Setup leaves Windows Terminal's own settings alone
-The setup command SHALL NOT change the user's Windows Terminal settings file except to add, once the user agrees, an entry for a Cader profile Windows Terminal is hiding as deleted, or, with `--remove`, to take out such an entry it added; it SHALL NOT give the "Cader" profile a tab colour, and SHALL tell the user to restart Windows Terminal. Every change SHALL be written beside the file and checked before it replaces it: the new file SHALL be read back with the same reader and SHALL hold every element of the profile list in order plus exactly the entries added (or minus exactly those taken out), and the settings file SHALL be read again just before it is replaced. When either check fails, nothing SHALL be written and the command SHALL say why and exit 1. Before replacing the file the command SHALL keep a copy of it beside it, named `settings.json.<yyyy-MM-ddTHH-mm-ss>.cader.backup` with the UTC time, and SHALL name that copy in its output.
+The setup command SHALL NOT change the user's Windows Terminal settings file except to add, once the user agrees, an entry for a Cader profile Windows Terminal is hiding as deleted, or, with `--remove`, to take out such an entry it added; it SHALL NOT give the "Cader" profile a tab colour, and SHALL tell the user to restart Windows Terminal.
 
 #### Scenario: Settings file and tab colour untouched
 - **WHEN** the user runs `cader setup-terminal --yes` and Windows Terminal is hiding neither Cader profile
@@ -174,9 +180,8 @@ The setup command SHALL NOT change the user's Windows Terminal settings file exc
 - **WHEN** the user runs `cader setup-terminal --yes` and Windows Terminal is hiding the "Cader" profile
 - **THEN** the only change to Windows Terminal's settings file is the one entry added for "Cader", and the fragment's "Cader" profile still has no tab colour
 
-#### Scenario: A backup is kept
-- **WHEN** the user adds a hidden profile's entry at 09:30:15 UTC on 15 November 2026
-- **THEN** `settings.json.2026-11-15T09-30-15.cader.backup` beside the settings file holds the file as it was, the settings file keeps its creation time and permissions, and the output names the backup
+### Requirement: Setup checks a change to Windows Terminal's settings before writing it
+Every change SHALL be written beside the file and checked before it replaces it: the new file SHALL be read back with the same reader and SHALL hold every element of the profile list in order plus exactly the entries added (or minus exactly those taken out), and the settings file SHALL be read again just before it is replaced. When either check fails, nothing SHALL be written and the command SHALL say why and exit 1.
 
 #### Scenario: Windows Terminal saves the file meanwhile
 - **WHEN** Windows Terminal saves its settings file after setup has read it and before setup replaces it
@@ -185,6 +190,13 @@ The setup command SHALL NOT change the user's Windows Terminal settings file exc
 #### Scenario: The new file does not check out
 - **WHEN** Terminal's settings file names `profiles` twice, so the entry would land in a list the reader does not use
 - **THEN** nothing is written, the error output says the new file did not hold the profile list expected, and the command exits 1
+
+### Requirement: Setup keeps a backup of Windows Terminal's settings
+Before replacing the file the command SHALL keep a copy of it beside it, named `settings.json.<yyyy-MM-ddTHH-mm-ss>.cader.backup` with the UTC time, and SHALL name that copy in its output.
+
+#### Scenario: A backup is kept
+- **WHEN** the user adds a hidden profile's entry at 09:30:15 UTC on 15 November 2026
+- **THEN** `settings.json.2026-11-15T09-30-15.cader.backup` beside the settings file holds the file as it was, the settings file keeps its creation time and permissions, and the output names the backup
 
 ### Requirement: Setup reports a Cader profile Windows Terminal is hiding
 Once the fragment exists, `cader setup-terminal` SHALL report each Cader profile that Windows Terminal is hiding as deleted: one whose id Terminal's state file lists among the profiles it has generated and that has no entry with that id in Terminal's settings file. A profile Terminal has not loaded yet, or one with an entry, SHALL NOT be reported. When Terminal's files are missing or cannot be read, the command SHALL write nothing to them and SHALL carry on.
@@ -214,7 +226,7 @@ Once the fragment exists, `cader setup-terminal` SHALL report each Cader profile
 - **THEN** nothing is reported as hidden and Windows Terminal's settings file is unchanged
 
 ### Requirement: Setup can show a hidden profile again
-When a Cader profile is hidden, the setup command SHALL show the entries it will add and ask before writing; on yes, or with `--yes`, it SHALL add to the profile list in Terminal's settings file one entry for each hidden profile only, holding that profile's id, `"hidden": false`, its name and the source `Cader`, and SHALL leave every other character of the file as it was. A failed write SHALL be reported with the file's path and exit 1, and a settings file that is a link, or is read-only, SHALL NOT be written: the command SHALL say which, give the entries to add by hand and exit 1.
+When a Cader profile is hidden, the setup command SHALL show the entries it will add and ask before writing; on yes, or with `--yes`, it SHALL add to the profile list in Terminal's settings file one entry for each hidden profile only, holding that profile's id, `"hidden": false`, its name and the source `Cader`, and SHALL leave every other character of the file as it was.
 
 #### Scenario: Show it again
 - **WHEN** Windows Terminal is hiding "Cader session" and the user answers y
@@ -231,6 +243,9 @@ When a Cader profile is hidden, the setup command SHALL show the entries it will
 #### Scenario: Declined
 - **WHEN** Windows Terminal is hiding "Cader" and the user answers n
 - **THEN** Terminal's settings file is unchanged and the command exits 0
+
+### Requirement: Setup does not write a settings file it cannot
+A failed write SHALL be reported with the file's path and exit 1, and a settings file that is a link, or is read-only, SHALL NOT be written: the command SHALL say which, give the entries to add by hand and exit 1.
 
 #### Scenario: The settings file cannot be written
 - **WHEN** Windows Terminal is hiding "Cader", the user answers y and Terminal's settings file is in use by a program that will not share it

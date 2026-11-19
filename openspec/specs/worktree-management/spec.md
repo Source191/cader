@@ -62,7 +62,7 @@ For every registered worktree the view SHALL show the age of the last commit and
 - **THEN** the pane's Changes line reads 5 changed files · 2 unpushed commits, in amber
 
 ### Requirement: Removal refuses to destroy work
-Removal SHALL be refused when the worktree has changed or untracked files, unpushed commits, a lock, or a live session inside it, and the refusal SHALL name the reason. When git cannot delete the folder because a tab or program still has it as its working directory, git has already removed the worktree's registration and contents, so Cader SHALL try to delete what is left for about five seconds, then finish the removal as for any other (the branch dealt with as the branch rules say) whether or not the folder went, and SHALL name a folder it had to leave.
+Removal SHALL be refused when the worktree has changed or untracked files, unpushed commits, a lock, or a live session inside it, and the refusal SHALL name the reason.
 
 #### Scenario: Unpushed commits
 - **WHEN** the user presses remove on a worktree with unpushed commits
@@ -71,6 +71,9 @@ Removal SHALL be refused when the worktree has changed or untracked files, unpus
 #### Scenario: Clean worktree
 - **WHEN** the user presses remove on a worktree with no changes, no unpushed commits, no lock and no session
 - **THEN** the worktree is removed from git and from disc
+
+### Requirement: Removal copes with a folder still in use
+When git cannot delete the folder because a tab or program still has it as its working directory, git has already removed the worktree's registration and contents, so Cader SHALL try to delete what is left for about five seconds, then finish the removal as for any other (the branch dealt with as the branch rules say) whether or not the folder went, and SHALL name a folder it had to leave.
 
 #### Scenario: Folder released while Cader waits
 - **WHEN** the user presses remove on a clean worktree whose folder a closing program releases two seconds after git fails to delete it
@@ -292,7 +295,7 @@ For a row with health elsewhere, the remove and force-remove keys SHALL refuse, 
 - **THEN** nothing is deleted and the status line says the repository is not under the roots, without offering force-remove
 
 ### Requirement: One WORKTREE column names the worktree
-The worktrees table SHALL show the folder in one WORKTREE column, under its repository's heading, as the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label) without the repository's name, elastic in width and cut at its end when too long, followed by HEALTH, LAST COMMIT and SESSION; a heading too long for the column SHALL lose its middle, marked with an ellipsis, and SHALL never widen a column. LAST COMMIT SHALL be right-aligned, as AGE is on the Sessions tab, so its durations line up on their last character.
+The worktrees table SHALL show the folder in one WORKTREE column, under its repository's heading, as the folder's part after the repository (the slug of a folder named `<repository>-<slug>`, else the folder's label) without the repository's name, elastic in width and cut at its end when too long, followed by HEALTH, LAST COMMIT and SESSION.
 
 #### Scenario: A worktree Cader made
 - **WHEN** Northwind.Billing has the worktree C:\Users\me\source\worktrees\Northwind.Billing-invoice-pdf on branch invoice-pdf
@@ -313,6 +316,16 @@ The worktrees table SHALL show the folder in one WORKTREE column, under its repo
 #### Scenario: The help names the column
 - **WHEN** the help is shown on the worktrees view
 - **THEN** it lists WORKTREE with its meaning, saying the row's repository is its heading, and the header shows the same words on hover
+
+### Requirement: A heading too long for the column loses its middle
+A heading too long for the column SHALL lose its middle, marked with an ellipsis, and SHALL never widen a column.
+
+#### Scenario: A long heading
+- **WHEN** a repository's name is too long for the WORKTREE column
+- **THEN** its heading loses its middle, marked with an ellipsis, and the column keeps its width
+
+### Requirement: LAST COMMIT is right-aligned
+LAST COMMIT SHALL be right-aligned, as AGE is on the Sessions tab, so its durations line up on their last character.
 
 #### Scenario: Last commits line up at the right
 - **WHEN** Northwind.Billing-invoice-pdf last committed five minutes ago, Northwind.Orders-fix-123 three days and four hours ago, and an empty leftover folder has no commit
@@ -366,23 +379,11 @@ The branch, the pull request, the changed files and the unpushed commits SHALL b
 - **THEN** the row stays in the table though no cell shows the branch, and the pane reads Branch feature/refund-retry
 
 ### Requirement: The worktrees are scanned as the console opens
-The console SHALL start one worktrees scan as it opens, whichever tab is shown, and that scan SHALL wait until the first sessions listing has returned, whether it succeeded, failed or was ended at its time limit. After it, the worktrees SHALL be rescanned each time their tab is shown, on F5 while it is shown, and at the Worktrees refresh interval while it is shown (every 15 seconds by default, and never on a timer when it is 0), never on a timer while it is hidden, and never while another scan is running. A scan's rows SHALL never replace those of a later scan.
-
-#### Scenario: Never opened
-- **WHEN** the console has been open for ten minutes on the Sessions tab
-- **THEN** the worktrees have been scanned exactly once
+The console SHALL start one worktrees scan as it opens, whichever tab is shown, and that scan SHALL wait until the first sessions listing has returned, whether it succeeded, failed or was ended at its time limit.
 
 #### Scenario: Opened during the first scan
 - **WHEN** the user shows the Worktrees tab before the start-up scan has returned
 - **THEN** the Worktrees tab waits for that scan, and no second scan starts
-
-#### Scenario: A slow scan
-- **WHEN** the Worktrees tab is shown and a scan of fifty repositories takes forty seconds
-- **THEN** the 15-second timer starts no other scan until it returns
-
-#### Scenario: Shown again
-- **WHEN** the user leaves the Worktrees tab, runs `git worktree remove` on one of its worktrees in a shell and shows the Worktrees tab again
-- **THEN** the tab shows its earlier rows at once and drops the removed worktree when the rescan returns
 
 #### Scenario: The sessions listing failed
 - **WHEN** the first sessions listing fails as the console opens
@@ -392,9 +393,20 @@ The console SHALL start one worktrees scan as it opens, whichever tab is shown, 
 - **WHEN** the first sessions listing has not exited after the child program time limit
 - **THEN** the listing is ended and the start-up scan then runs, listing the worktrees with no sessions inside them
 
-#### Scenario: A reload after an action overlaps the timer's scan
-- **WHEN** the 15-second scan is running, the user removes a worktree, the rescan after the removal returns without it, and then the earlier scan returns with the worktree still listed
-- **THEN** the removed worktree stays gone
+### Requirement: The worktrees are rescanned while their tab is shown
+After the first scan, the worktrees SHALL be rescanned each time their tab is shown, on F5 while it is shown, and at the Worktrees refresh interval while it is shown (every 15 seconds by default, and never on a timer when it is 0), never on a timer while it is hidden, and never while another scan is running.
+
+#### Scenario: Never opened
+- **WHEN** the console has been open for ten minutes on the Sessions tab
+- **THEN** the worktrees have been scanned exactly once
+
+#### Scenario: A slow scan
+- **WHEN** the Worktrees tab is shown and a scan of fifty repositories takes forty seconds
+- **THEN** the 15-second timer starts no other scan until it returns
+
+#### Scenario: Shown again
+- **WHEN** the user leaves the Worktrees tab, runs `git worktree remove` on one of its worktrees in a shell and shows the Worktrees tab again
+- **THEN** the tab shows its earlier rows at once and drops the removed worktree when the rescan returns
 
 #### Scenario: A longer interval
 - **WHEN** Worktrees refresh is 60 seconds and the Worktrees tab is shown
@@ -411,6 +423,13 @@ The console SHALL start one worktrees scan as it opens, whichever tab is shown, 
 #### Scenario: F5 during a scan
 - **WHEN** a scan is running and the user presses F5
 - **THEN** no second scan starts
+
+### Requirement: A scan's rows never replace those of a later scan
+A scan's rows SHALL never replace those of a later scan.
+
+#### Scenario: A reload after an action overlaps the timer's scan
+- **WHEN** the 15-second scan is running, the user removes a worktree, the rescan after the removal returns without it, and then the earlier scan returns with the worktree still listed
+- **THEN** the removed worktree stays gone
 
 ### Requirement: A worktrees scan reuses the sessions listing
 A worktrees scan SHALL take the sessions inside each worktree from the latest sessions listing the console already holds, and SHALL NOT run a Claude Code listing of its own. When no listing has succeeded yet, the scan SHALL treat every worktree as having no session.
