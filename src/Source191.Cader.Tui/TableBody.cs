@@ -32,6 +32,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
     private readonly TableView table;
     private readonly WaitingIndicator waiting;
     private readonly ColumnSizing<TRow> sizing;
+    private readonly TableScroll scroll;
     private readonly DetailReader<TRow> detail;
     private readonly LoadSequence sequence = new();
     private bool isShown;
@@ -69,6 +70,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         table.Style.HeaderScheme = Palette.Plain(Palette.White);
         table.Style.ExpandLastColumn = true;
         table.SetScheme(Palette.Plain(Palette.Grey));
+        scroll = new TableScroll(table);
         sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, definition.Heading, app);
         TableToolTips<TRow> toolTips = new(table, app, [.. definition.Columns.Select(column => column.Help)], definition.RowTip);
         detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, context.Heartbeat, host);
@@ -217,14 +219,10 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         IReadOnlyList<TableLine<TRow>> lines = State.Lines;
         TRow? selected = State.List.Selected;
         sizing.Selected(selected);
-        table.Table = sizing.Source(lines, now);
+        // The cursor sits on the selected row's line, which a heading never is.
+        int index = selected is null ? 0 : Math.Max(lines.ToList().FindIndex(line => line is TableLine<TRow>.Row row && Equals(row.Item, selected)), 0);
+        scroll.Show(sizing.Source(lines, now), index, State.List.SelectedKey, State.List.Filter);
         sizing.RestoreOffset();
-        if (lines.Count > 0)
-        {
-            // The cursor sits on the selected row's line, which a heading never is.
-            int index = selected is null ? 0 : Math.Max(lines.ToList().FindIndex(line => line is TableLine<TRow>.Row row && Equals(row.Item, selected)), 0);
-            table.SetSelection(0, index, false, null);
-        }
 
         waiting.Show(isShown && !State.List.Loaded && State.Banner is LoadBanner.None);
         AskForDetail(refreshed: false);
