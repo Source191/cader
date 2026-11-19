@@ -80,6 +80,7 @@ public static class DiagnosticLine
 
         ProcessSlow slow => $"slow {slow.Command} exit {slow.ExitCode} in {Milliseconds(slow.Duration)}",
         RefreshSlow slow => $"slow refresh {Name(slow.Part)} in {Milliseconds(slow.Duration)}",
+        WatchTrouble trouble => $"watch {trouble.Watch} {trouble.Trouble}",
         UiThreadStalled stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}, no marked work",
         UiThreadStalledRunning stalled => $"stalled ui thread for {Milliseconds(stalled.Lateness)}, longest marked work {stalled.Work} {Milliseconds(stalled.Took)}",
         ProcessTimedOut timedOut => $"timed out {timedOut.Command} after {Milliseconds(timedOut.Limit)}",

@@ -51,8 +51,14 @@ internal static class ConsoleComposition
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
-        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests, accounts);
-        ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels, settings);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System);
+
+        // Disposed as this returns, after the console has closed; changes reach the schedules on pool threads until then.
+        using ChangeWatches watches = new(new FolderChanges(), sessionsRefresh, worktreesRefresh, parts.Log);
+        ConsoleLoads loads = Loads(parts, launch, settings, folders, transcripts, pullRequests, accounts, watches);
+        loads.FollowChanges();
+        ConsoleScreen consoleScreen = Screen(parts, launch, loads, context, dialogs, dispatcher, folderLabels, sessionsRefresh, worktreesRefresh);
         OwnTab ownTab = new(parts.Store, parts.ProcessRegistry, TimeProvider.System);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
         WhatsNewOnStart whatsNew = new(parts.Version, parts.Store, new PackagedReleaseNotes(parts.OwnFolder), parts.Log);
@@ -124,7 +130,8 @@ internal static class ConsoleComposition
         Folders folders,
         ClaudeTranscripts transcripts,
         PullRequestCatalogue pullRequests,
-        AccountCatalogue accounts)
+        AccountCatalogue accounts,
+        ChangeWatches watches)
     {
         SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
@@ -133,7 +140,7 @@ internal static class ConsoleComposition
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
         LatestSessions latestSessions = new(launch.Claude);
 
-        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, accounts, parts.Counts.Refreshes);
+        return new ConsoleLoads(latestSessions, enricher, inventory, setup, settings, folders, accounts, parts.Counts.Refreshes, watches, parts.ClaudeFolder);
     }
 
     private static ConsoleScreen Screen(
@@ -144,7 +151,8 @@ internal static class ConsoleComposition
         DialogEffects dialogs,
         EffectDispatcher dispatcher,
         FolderLabels folderLabels,
-        CurrentSettings settings)
+        RefreshSchedule sessionsRefresh,
+        RefreshSchedule worktreesRefresh)
     {
         StateTransitionNotifier notifier = new(Console.Out);
         SessionActivity activity = new(TimeProvider.System);
@@ -169,7 +177,7 @@ internal static class ConsoleComposition
             context,
             launch.Programs.Claude,
             folderLabels,
-            new RefreshSchedule(() => settings.Value.SessionsRefresh, TimeProvider.System),
-            new RefreshSchedule(() => settings.Value.WorktreesRefresh, TimeProvider.System));
+            sessionsRefresh,
+            worktreesRefresh);
     }
 }

@@ -21,6 +21,8 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
     private readonly OncePerFolder unreadableBranches = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
     private readonly OncePerFolder uncountableBranches = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
 
+    private readonly SharedSnapshot<IReadOnlyList<FolderPath>> latestRepositories = new([]);
+
     private const string GitDirPrefix = "gitdir:";
 
     // A git read is mostly process start-up (about 80 ms); eight at once brings a scan of about 120 reads under the 3-second slow line without crowding the machine.
@@ -34,6 +36,9 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         EmptyLeftover,
         Other,
     }
+
+    /// <summary>The repositories under the roots that the latest scan found, in name order; none before the first scan.</summary>
+    public IReadOnlyList<FolderPath> Repositories => latestRepositories.Value;
 
     public async Task<IReadOnlyList<WorktreeRow>> ScanAsync(IReadOnlyList<Session> sessions, CancellationToken cancellationToken)
     {
@@ -63,6 +68,7 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
             }
         }
 
+        latestRepositories.Replace([.. repositories]);
         IReadOnlyList<FolderPath> underWorktreeRoot = [.. WorktreeRootChildren(snapshot)];
         candidates.AddRange(underWorktreeRoot.Where(child => folders.FileExists(IOPath.Combine(child.Value, ".git"))));
 
