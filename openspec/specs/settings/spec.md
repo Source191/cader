@@ -6,11 +6,18 @@ Lets the user see and change where Cader looks for repositories, where it puts n
 ## Requirements
 
 ### Requirement: Settings live in one file with defaults
-Cader SHALL keep its settings in `config.json` in its state folder: the repository roots, the worktree root, the editor, the default worktree base, the default place for a new session, whether the diagnostic log is written to a file, and the Sessions and Worktrees refresh intervals. A missing, corrupt or unreadable file, a number where a base or place name belongs, or a missing property SHALL read as the default: roots `<home>\source\repos`, worktree root `worktrees` beside the first repository root, editor VS Code, base the remote default branch, place a new worktree, diagnostic log off, sessions every 5 seconds and worktrees every 15 seconds.
+Cader SHALL keep its settings in `config.json` in its state folder: the repository roots, the worktree root, the editor, the default worktree base, the default place for a new session, whether the diagnostic log is written to a file, and the Sessions and Worktrees refresh intervals.
 
-#### Scenario: No settings file
-- **WHEN** Cader starts and `config.json` does not exist
-- **THEN** it scans `C:\Users\me\source\repos`, puts new worktrees under `C:\Users\me\source\worktrees`, opens folders in VS Code, branches new worktrees from origin's default branch, opens the wizard on New worktree, lists the sessions every 5 seconds and rescans the shown Worktrees tab every 15 seconds
+#### Scenario: The default place by hand
+- **WHEN** `config.json` holds `defaultPlace` of `CurrentBranch`
+- **THEN** the wizard opened with n starts on Current branch
+
+#### Scenario: The diagnostic log by hand
+- **WHEN** `config.json` holds `diagnosticLog` of `true`
+- **THEN** Cader writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log` from its first event, and the Config tab's Diagnostic log row reads on
+
+### Requirement: A setting that cannot be read falls back to its default
+A missing, corrupt or unreadable file, a number where a base or place name belongs, or a missing property SHALL read as the default.
 
 #### Scenario: File from an earlier version
 - **WHEN** `config.json` holds only `repositoryRoots` of `D:\work` and `defaultBase` of `Head`
@@ -24,10 +31,6 @@ Cader SHALL keep its settings in `config.json` in its state folder: the reposito
 - **WHEN** `config.json` holds `repositoryRoots` of `C:\Users\me\source\repos` and a second root whose text holds a NUL character, and a `worktreeRoot` whose text holds one too
 - **THEN** Cader starts, scans `C:\Users\me\source\repos` alone, puts new worktrees under `C:\Users\me\source\worktrees`, and does not exit
 
-#### Scenario: The default place by hand
-- **WHEN** `config.json` holds `defaultPlace` of `CurrentBranch`
-- **THEN** the wizard opened with n starts on Current branch
-
 #### Scenario: A number where a name belongs
 - **WHEN** `config.json` holds `repositoryRoots` of `D:\work` and `defaultBase` of `7`
 - **THEN** Cader starts with every default, as it does for a corrupt file, the Config tab draws and the wizard opens, and nothing exits
@@ -36,13 +39,16 @@ Cader SHALL keep its settings in `config.json` in its state folder: the reposito
 - **WHEN** `config.json` exists but the user's account is denied reading its contents
 - **THEN** Cader starts with every default and does not exit
 
-#### Scenario: The diagnostic log by hand
-- **WHEN** `config.json` holds `diagnosticLog` of `true`
-- **THEN** Cader writes its diagnostic log to `%LOCALAPPDATA%\Cader\cader.log` from its first event, and the Config tab's Diagnostic log row reads on
-
 #### Scenario: Not a true or false
 - **WHEN** `config.json` holds `diagnosticLog` of `"yes"`
 - **THEN** Cader starts with every default, as it does for a corrupt file, and writes no log file
+
+### Requirement: The defaults
+The defaults SHALL be: roots `<home>\source\repos`, worktree root `worktrees` beside the first repository root, editor VS Code, base the remote default branch, place a new worktree, diagnostic log off, sessions every 5 seconds and worktrees every 15 seconds.
+
+#### Scenario: No settings file
+- **WHEN** Cader starts and `config.json` does not exist
+- **THEN** it scans `C:\Users\me\source\repos`, puts new worktrees under `C:\Users\me\source\worktrees`, opens folders in VS Code, branches new worktrees from origin's default branch, opens the wizard on New worktree, lists the sessions every 5 seconds and rescans the shown Worktrees tab every 15 seconds
 
 ### Requirement: The editor is a preset or a custom command
 The editor setting SHALL be one of the presets VS Code, Visual Studio, Rider and Explorer, or a custom executable, named by its full path, with arguments in which `{folder}` stands for the folder to open. Visual Studio SHALL open the folder in the newest installed Visual Studio.
