@@ -202,6 +202,65 @@ public sealed class AccountCatalogueShould : IDisposable
     }
 
     [Fact]
+    public async Task RenameOnlyThatAccount()
+    {
+        await state.WriteAccountsAsync([Work, Home]);
+        await catalogue.LoadAsync();
+
+        await catalogue.RenameAsync(Contoso, AccountLabel.From("personal"));
+
+        (await state.ReadAccountsAsync()).ShouldBe([Work, Home with { Label = AccountLabel.From("personal") }]);
+    }
+
+    [Fact]
+    public async Task UpdateOnlyTheAccountLoggedIn()
+    {
+        await state.WriteAccountsAsync([Work, Home]);
+        await catalogue.LoadAsync();
+        LogIn(Northwind, "orders@northwind.example", "Northwind Traders");
+
+        await catalogue.RefreshStaleAsync();
+
+        (await state.ReadAccountsAsync()).ShouldBe([Work with { Email = "orders@northwind.example" }, Home]);
+    }
+
+    [Fact]
+    public async Task WriteASecondRenameAfterTheFirst()
+    {
+        await state.WriteAccountsAsync([Work, Home]);
+        await catalogue.LoadAsync();
+
+        await RenameBothWhileTheFirstWriteIsHeld();
+
+        (await state.ReadAccountsAsync()).ShouldBe([Work with { Label = AccountLabel.From("office") }, Home with { Label = AccountLabel.From("personal") }]);
+    }
+
+    [Fact]
+    public async Task WriteASecondRenameAfterTheFirstOnceARefreshHasRun()
+    {
+        await state.WriteAccountsAsync([Work, Home]);
+        await catalogue.LoadAsync();
+        processes.AnswerAll(new ProcessResult(0, """{"loggedIn":false}""", string.Empty));
+        await catalogue.RefreshStaleAsync();
+
+        await RenameBothWhileTheFirstWriteIsHeld();
+
+        (await state.ReadAccountsAsync()).ShouldBe([Work with { Label = AccountLabel.From("office") }, Home with { Label = AccountLabel.From("personal") }]);
+    }
+
+    [Fact]
+    public async Task KeepALoginInMemoryWhenItsWriteFails()
+    {
+        state.HoldNextAccountWrite(Task.FromException(new IOException("The state file is locked.")));
+        LogIn(Northwind, "me@northwind.example", "Northwind Traders");
+
+        await catalogue.RefreshStaleAsync();
+
+        catalogue.Accounts.ShouldBe([new RowAccount.Known(new KnownAccount(Northwind, "me@northwind.example", "Northwind Traders", AccountLabel.From("1")), LoggedInNow: true)]);
+        state.AccountWrites.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task RenameNothingForAnAccountNotRemembered()
     {
         (await catalogue.RenameAsync(Contoso, AccountLabel.From("personal"))).ShouldBeFalse();
@@ -210,6 +269,18 @@ public sealed class AccountCatalogueShould : IDisposable
     }
 
     public void Dispose() => catalogue.Dispose();
+
+    private async Task RenameBothWhileTheFirstWriteIsHeld()
+    {
+        TaskCompletionSource release = new();
+        state.HoldNextAccountWrite(release.Task);
+
+        Task first = catalogue.RenameAsync(Northwind, AccountLabel.From("office"));
+        Task second = catalogue.RenameAsync(Contoso, AccountLabel.From("personal"));
+        release.SetResult();
+
+        await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+    }
 
     private void LogIn(OrganisationId organisation, string email, string name)
     {
