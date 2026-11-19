@@ -41,4 +41,16 @@ public sealed class WordingOfAccountsShould
             meaning => meaning.ShouldContain("? not yet seen logged in"),
             meaning => meaning.ShouldContain("Config lists and renames them"));
     }
+
+    [Fact]
+    public void TitleTheRenameDialog()
+    {
+        Wording.AccountLabelTitle.ShouldBe("Rename account");
+    }
+
+    [Fact]
+    public void AskForALabelNamingTheAccountInFull()
+    {
+        Wording.AccountLabelPrompt(Work).ShouldBe("A label of up to 8 characters for work · me@northwind.example · Northwind Traders:");
+    }
 }
