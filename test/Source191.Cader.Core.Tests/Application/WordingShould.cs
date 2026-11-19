@@ -416,6 +416,22 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void ListF5InEveryTabsHelpButOnNoBar()
+    {
+        foreach (IReadOnlyList<KeyHelp> keys in new[] { Wording.SessionsKeys, Wording.WorktreesKeys, Wording.ConfigKeys })
+        {
+            KeyHelp f5 = keys.Single(key => key.Press == Key.F5);
+
+            $"{f5.HelpKey} {f5.Line}".ShouldBe("F5 refresh this tab now");
+            f5.Tip.ShouldBe("Refresh this tab now, as its timer would; nothing starts while it is refreshing.");
+            f5.OnBar.ShouldBeFalse();
+        }
+
+        KeyBar[] bars = [Wording.ConfigBar(updateKnown: true), Wording.WorktreesBar(updateKnown: true), Wording.SessionsBar(SessionsViewState.Empty, updateKnown: true)];
+        bars.SelectMany(bar => bar.First.Concat(bar.Second)).ShouldNotContain(item => item.Press == Key.F5);
+    }
+
+    [Fact]
     public void FitEveryColumnMeaningOnItsLines()
     {
         foreach (ColumnHelp column in Wording.SessionsColumns.Concat(Wording.WorktreesColumns))
@@ -775,6 +791,7 @@ public sealed class WordingShould
         Wording.Describe(new SettingsProblem.BatchFileExecutable()).ShouldBe("A batch file cannot be used as the editor: cmd.exe would read the folder path as commands.");
         Wording.Describe(new SettingsProblem.NoFolderPlaceholder()).ShouldBe("A custom editor's arguments need {folder} where the folder goes.");
         Wording.Describe(new SettingsProblem.ExecutableMissing(@"C:\Tools\subl.exe")).ShouldBe(@"C:\Tools\subl.exe does not exist.");
+        Wording.Describe(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Sessions)).ShouldBe("The interval is a whole number of seconds from 0 to 3600, where 0 turns the timer off.");
     }
 
     [Fact]

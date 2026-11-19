@@ -31,6 +31,12 @@ public abstract record SettingsInput
 
     public sealed record BeforeBranchingChanged(BeforeBranching Choice) : SettingsInput;
 
+    /// <summary>The Sessions refresh interval's seconds, as typed.</summary>
+    public sealed record SessionsRefreshChanged(string Text) : SettingsInput;
+
+    /// <summary>The Worktrees refresh interval's seconds, as typed.</summary>
+    public sealed record WorktreesRefreshChanged(string Text) : SettingsInput;
+
     /// <summary>A field took focus, by Tab, a click or the dialog itself.</summary>
     public sealed record FieldFocused(SettingsField Field) : SettingsInput;
 

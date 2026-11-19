@@ -18,6 +18,7 @@ public sealed record KeyHelp(Views.Key Press, string Hint, string Line, string T
         Views.KeyName.Left => "←",
         Views.KeyName.Right => "→",
         Views.KeyName.Backspace => "backspace",
+        Views.KeyName.F5 => "f5",
     };
 
     /// <summary>Whether the key has a word for the key bar; a key only the help lists has none.</summary>

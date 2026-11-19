@@ -74,6 +74,6 @@ public sealed class OpenFileInEditorHandlerShould
 
     private static CurrentSettings CurrentWith(EditorChoice editor)
     {
-        return TestSettings.Current(Settings.Resolve([FolderPath.From(@"C:\Users\me\source\repos")], new WorktreeRootChoice.BesideFirstRoot(), editor, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset));
+        return TestSettings.Current(Settings.Resolve([FolderPath.From(@"C:\Users\me\source\repos")], new WorktreeRootChoice.BesideFirstRoot(), editor, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset));
     }
 }

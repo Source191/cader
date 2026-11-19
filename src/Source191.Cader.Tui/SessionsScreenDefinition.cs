@@ -8,12 +8,12 @@ using Terminal.Gui.Drawing;
 namespace Source191.Cader.Tui;
 
 /// <summary>The sessions view as the shared table screen shows it: its layout, columns, colours and the effects its keys raise.</summary>
-internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier, SessionActivity activity, string claudeExecutable, FolderLabels folders, IDetailSource<SessionRow> detail)
+internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier, SessionActivity activity, string claudeExecutable, FolderLabels folders, IDetailSource<SessionRow> detail, RefreshSchedule schedule)
     : IScreenDefinition<SessionsViewState, SessionRow>
 {
     public ConsoleTab Tab => ConsoleTab.Sessions;
 
-    public TabRefresh Refresh => new TabRefresh.Every(TimeSpan.FromSeconds(5));
+    public TabRefresh Refresh => new TabRefresh.Every(schedule);
 
     public TableDetail<SessionRow> Detail => new TableDetail<SessionRow>.Pane(detail);
 

@@ -193,9 +193,9 @@ public sealed class WordingOfScreensShould
     {
         SetupFacts facts = new(new SetupState.At(@"C:\Users\me\AppData\Local\Cader\config.json"), new SetupState.Folder(TestSettings.DefaultClaudeFolder), new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).Read()), new SetupState.NotSetUp(), new SetupState.Enabled(), new SetupState.Never());
 
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts, [])).ShouldBe([new TextPart("9 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() }, [])).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
-        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.HiddenByTerminal(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json") }, [])).ShouldBe([new TextPart("8 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos", @"D:\work"), facts, [])).ShouldBe([new TextPart("11 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.Enabled() }, [])).ShouldBe([new TextPart("10 settings", TextTone.Plain)]);
+        Wording.ConfigCounts(ConfigRows.For(Roots(@"C:\Users\me\source\repos"), facts with { TerminalProfiles = new SetupState.HiddenByTerminal(@"C:\Users\me\AppData\Local\Microsoft\Windows Terminal\Fragments\Cader\cader.json") }, [])).ShouldBe([new TextPart("10 settings", TextTone.Plain), new TextPart("1 to set up", TextTone.Amber)]);
     }
 
     [Fact]
@@ -350,7 +350,7 @@ public sealed class WordingOfScreensShould
 
     private static string Text(IReadOnlyList<TextPart> row) => string.Concat(row.Select(part => part.Text));
 
-    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"), checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+    private static Settings Roots(params string[] roots) => Settings.Resolve([.. roots.Select(root => FolderPath.From(root))], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, FolderPath.From(@"C:\Users\me"), checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
     private static WorktreeRow WorktreeIn(WorktreeHealthKind health, int index, int dirty = 0, int unpushed = 0)
     {

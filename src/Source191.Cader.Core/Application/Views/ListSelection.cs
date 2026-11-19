@@ -87,6 +87,7 @@ public sealed record ListSelection<TRow>(
             KeyName.Down => this,
             KeyName.Left => this,
             KeyName.Right => this,
+            KeyName.F5 => this,
         };
     }
 

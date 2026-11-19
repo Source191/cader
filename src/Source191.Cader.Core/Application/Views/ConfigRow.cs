@@ -25,6 +25,10 @@ public abstract record ConfigRow(string Key)
 
     public sealed record DefaultPlace(LaunchMode Place) : ConfigRow("default-place");
 
+    public sealed record SessionsRefresh(RefreshInterval Interval) : ConfigRow("sessions-refresh");
+
+    public sealed record WorktreesRefresh(RefreshInterval Interval) : ConfigRow("worktrees-refresh");
+
     public sealed record CheckForUpdates(bool On) : ConfigRow("check-for-updates");
 
     public sealed record DiagnosticLog(bool On) : ConfigRow("diagnostic-log");

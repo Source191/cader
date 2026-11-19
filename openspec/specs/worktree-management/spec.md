@@ -366,7 +366,7 @@ The branch, the pull request, the changed files and the unpushed commits SHALL b
 - **THEN** the row stays in the table though no cell shows the branch, and the pane reads Branch feature/refund-retry
 
 ### Requirement: The worktrees are scanned as the console opens
-The console SHALL start one worktrees scan as it opens, whichever tab is shown, and that scan SHALL wait until the first sessions listing has returned, whether it succeeded, failed or was ended at its time limit. After it, the worktrees SHALL be rescanned each time their tab is shown and every 15 seconds while it is shown, never while it is hidden, and never while another scan is running. A scan's rows SHALL never replace those of a later scan.
+The console SHALL start one worktrees scan as it opens, whichever tab is shown, and that scan SHALL wait until the first sessions listing has returned, whether it succeeded, failed or was ended at its time limit. After it, the worktrees SHALL be rescanned each time their tab is shown, on F5 while it is shown, and at the Worktrees refresh interval while it is shown (every 15 seconds by default, and never on a timer when it is 0), never on a timer while it is hidden, and never while another scan is running. A scan's rows SHALL never replace those of a later scan.
 
 #### Scenario: Never opened
 - **WHEN** the console has been open for ten minutes on the Sessions tab
@@ -395,6 +395,22 @@ The console SHALL start one worktrees scan as it opens, whichever tab is shown, 
 #### Scenario: A reload after an action overlaps the timer's scan
 - **WHEN** the 15-second scan is running, the user removes a worktree, the rescan after the removal returns without it, and then the earlier scan returns with the worktree still listed
 - **THEN** the removed worktree stays gone
+
+#### Scenario: A longer interval
+- **WHEN** Worktrees refresh is 60 seconds and the Worktrees tab is shown
+- **THEN** the timer starts a scan 60 seconds after the last one started, not 15
+
+#### Scenario: The timer off
+- **WHEN** Worktrees refresh is 0 and the Worktrees tab has been shown for five minutes with no key pressed
+- **THEN** the worktrees were scanned once, when the tab was shown
+
+#### Scenario: F5 rescans now
+- **WHEN** the user runs `git worktree add` in a shell while the Worktrees tab is shown, then presses F5
+- **THEN** a scan starts at once with no spinner, and the new worktree is listed when it returns
+
+#### Scenario: F5 during a scan
+- **WHEN** a scan is running and the user presses F5
+- **THEN** no second scan starts
 
 ### Requirement: A worktrees scan reuses the sessions listing
 A worktrees scan SHALL take the sessions inside each worktree from the latest sessions listing the console already holds, and SHALL NOT run a Claude Code listing of its own. When no listing has succeeded yet, the scan SHALL treat every worktree as having no session.

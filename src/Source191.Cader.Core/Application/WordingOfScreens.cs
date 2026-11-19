@@ -119,13 +119,14 @@ public static partial class Wording
         };
     }
 
-    /// <summary>The keys every tab shares for moving between tabs and scrolling a table too wide for the terminal; only the help lists them.</summary>
+    /// <summary>The keys every tab shares for moving between tabs, scrolling a table too wide for the terminal and refreshing now; only the help lists them.</summary>
     private static readonly KeyHelp[] TabKeyHelp =
     [
         KeyHelp.HelpOnly(Key.Left, "the tab to the left", tip: "Show the tab to the left of this one."),
         KeyHelp.HelpOnly(Key.Right, "the tab to the right", tip: "Show the tab to the right of this one."),
         KeyHelp.HelpOnly(Key.Of('<'), "scroll the columns left", tip: "Scroll a table too wide for the terminal to the left."),
         KeyHelp.HelpOnly(Key.Of('>'), "scroll the columns right", tip: "Scroll a table too wide for the terminal to the right."),
+        KeyHelp.HelpOnly(Key.F5, "refresh this tab now", tip: "Refresh this tab now, as its timer would; nothing starts while it is refreshing."),
     ];
 
     public static IReadOnlyList<KeyHelp> SessionsKeys { get; } =
@@ -353,7 +354,7 @@ public static partial class Wording
         static string Entry(KeyHelp key) => $"{key.HelpKey.PadRight(keyWidth)}{key.Line}";
         int width = keys.Where((_, index) => index % 2 == 0).Max(key => Entry(key).Length) + 3;
 
-        return string.Join('\n', keys.Chunk(2).Select(pair => Entry(pair[0]).PadRight(width) + string.Concat(pair.Skip(1).Select(Entry))));
+        return string.Join('\n', keys.Chunk(2).Select(pair => pair.Length == 2 ? Entry(pair[0]).PadRight(width) + Entry(pair[1]) : Entry(pair[0])));
     }
 
     /// <summary>The keys, the columns, and the pane's lines when the view has a pane.</summary>

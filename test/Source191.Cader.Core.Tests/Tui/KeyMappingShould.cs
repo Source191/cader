@@ -15,6 +15,7 @@ public sealed class KeyMappingShould
         { GuiKey.CursorLeft, Key.Left },
         { GuiKey.CursorRight, Key.Right },
         { GuiKey.Backspace, Key.Backspace },
+        { GuiKey.F5, Key.F5 },
     };
 
     [Theory]

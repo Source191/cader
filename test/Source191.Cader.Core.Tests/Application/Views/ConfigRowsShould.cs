@@ -25,7 +25,7 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, []);
 
-        rows.Take(8).ShouldBe(
+        rows.Take(10).ShouldBe(
         [
             new ConfigRow.RepositoryRoot(0, FolderPath.From(Repos)),
             new ConfigRow.WorktreeRoot(FolderPath.From(@"C:\Users\me\source\worktrees")),
@@ -33,6 +33,8 @@ public sealed class ConfigRowsShould
             new ConfigRow.DefaultBase(WorktreeBase.RemoteDefault),
             new ConfigRow.BeforeBranching(BeforeBranching.Fetch),
             new ConfigRow.DefaultPlace(LaunchMode.NewWorktree),
+            new ConfigRow.SessionsRefresh(RefreshInterval.From(5)),
+            new ConfigRow.WorktreesRefresh(RefreshInterval.From(15)),
             new ConfigRow.CheckForUpdates(On: true),
             new ConfigRow.DiagnosticLog(On: false),
         ]);
@@ -105,7 +107,7 @@ public sealed class ConfigRowsShould
     {
         SetupFacts facts = AllSetUp with { DiagnosticLogFile = new SetupState.LogFile(new FakeDiagnosticLogFiles().WithCurrent(300).WithOlder(10_485_700).Read()) };
 
-        Wording.ConfigCounts(ConfigRows.For(TestSettings.For(Repos), facts, [])).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
+        Wording.ConfigCounts(ConfigRows.For(TestSettings.For(Repos), facts, [])).ShouldBe([new TextPart("10 settings", TextTone.Plain)]);
     }
 
     [Fact]
@@ -121,7 +123,7 @@ public sealed class ConfigRowsShould
     public void CarryACustomEditor()
     {
         EditorChoice subl = EditorChoice.Custom(@"C:\Tools\subl.exe", ["-n", "{folder}"]);
-        Settings settings = Settings.Resolve([FolderPath.From(Repos)], new WorktreeRootChoice.BesideFirstRoot(), subl, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Repos)], new WorktreeRootChoice.BesideFirstRoot(), subl, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         ConfigRows.For(settings, AllSetUp, []).OfType<ConfigRow.OpenFolderWith>().Single().Editor.ShouldBe(subl);
     }
@@ -141,7 +143,7 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, []);
 
-        rows.Skip(9).ShouldBe(
+        rows.Skip(11).ShouldBe(
         [
             new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)),
             new ConfigRow.Setup(SetupItem.ClaudeFolder, new SetupState.Folder(TestSettings.DefaultClaudeFolder)),
@@ -159,11 +161,11 @@ public sealed class ConfigRowsShould
         IReadOnlyList<ConfigRow> saved = ConfigRows.For(TestSettings.For([Repos], @"D:\worktrees"), AllSetUp, []);
 
         rows.OfType<ConfigRow.Heading>().Count().ShouldBe(1);
-        rows[6].ShouldBeOfType<ConfigRow.CheckForUpdates>();
-        rows[7].ShouldBeOfType<ConfigRow.DiagnosticLog>();
-        rows[8].ShouldBeOfType<ConfigRow.Heading>();
-        rows[9].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
-        saved[8].Key.ShouldBe(rows[8].Key);
+        rows[8].ShouldBeOfType<ConfigRow.CheckForUpdates>();
+        rows[9].ShouldBeOfType<ConfigRow.DiagnosticLog>();
+        rows[10].ShouldBeOfType<ConfigRow.Heading>();
+        rows[11].ShouldBe(new ConfigRow.Setup(SetupItem.SettingsFile, new SetupState.At(SettingsFile)));
+        saved[10].Key.ShouldBe(rows[10].Key);
     }
 
     private static readonly RowAccount.Known Work = new(new KnownAccount(OrganisationId.From("6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91"), "me@northwind.example", "Northwind Traders", AccountLabel.From("work")), LoggedInNow: true);
@@ -189,8 +191,8 @@ public sealed class ConfigRowsShould
     {
         IReadOnlyList<ConfigRow> rows = ConfigRows.For(TestSettings.For(Repos), AllSetUp, [Personal, Work]);
 
-        Wording.ConfigCounts(rows).ShouldBe([new TextPart("8 settings", TextTone.Plain)]);
-        ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(rows)).State.List.Rows.Count(row => row is not ConfigRow.Heading).ShouldBe(16);
+        Wording.ConfigCounts(rows).ShouldBe([new TextPart("10 settings", TextTone.Plain)]);
+        ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(rows)).State.List.Rows.Count(row => row is not ConfigRow.Heading).ShouldBe(18);
     }
 
     [Fact]

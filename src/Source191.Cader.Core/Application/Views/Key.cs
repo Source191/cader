@@ -10,6 +10,7 @@ public sealed record Key(KeyName Name, char Character)
     public static readonly Key Left = new(KeyName.Left, '\0');
     public static readonly Key Right = new(KeyName.Right, '\0');
     public static readonly Key Backspace = new(KeyName.Backspace, '\0');
+    public static readonly Key F5 = new(KeyName.F5, '\0');
     public static readonly Key Slash = new(KeyName.Character, '/');
 
     public static Key Of(char character) => new(KeyName.Character, character);

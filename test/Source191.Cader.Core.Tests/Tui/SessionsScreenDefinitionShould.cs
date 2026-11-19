@@ -18,6 +18,7 @@ public sealed class SessionsScreenDefinitionShould
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
     private readonly System.Text.StringBuilder terminal = new();
     private readonly SessionsScreenDefinition definition;
+    private readonly RefreshSchedule schedule;
 
     public SessionsScreenDefinitionShould()
     {
@@ -25,7 +26,8 @@ public sealed class SessionsScreenDefinitionShould
         SessionActivity activity = new(clock);
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), activity, new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
-        definition = new SessionsScreenDefinition(new StateTransitionNotifier(new StringWriter(terminal)), activity, @"C:\Users\me\.local\bin\claude.exe", folders, new SessionDetails(loader, clock));
+        schedule = new RefreshSchedule(() => Settings.SessionsRefreshWhenUnset, clock);
+        definition = new SessionsScreenDefinition(new StateTransitionNotifier(new StringWriter(terminal)), activity, @"C:\Users\me\.local\bin\claude.exe", folders, new SessionDetails(loader, clock), schedule);
     }
 
     [Fact]
@@ -156,9 +158,9 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
-    public void RefreshEveryFiveSeconds()
+    public void RefreshOnTheScheduleItWasGiven()
     {
-        definition.Refresh.ShouldBe(new TabRefresh.Every(TimeSpan.FromSeconds(5)));
+        definition.Refresh.ShouldBe(new TabRefresh.Every(schedule));
     }
 
     private static SessionRow Row(Session session, LiveTab tab) => new(session, new SessionLocation.Outside("Northwind.Billing"), new Head.OnBranch(BranchName.From("invoice-pdf")), tab, HasTranscript: true);

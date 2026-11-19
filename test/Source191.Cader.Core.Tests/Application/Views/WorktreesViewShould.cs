@@ -24,6 +24,24 @@ public sealed class WorktreesViewShould
     private static readonly WorktreesViewState Loaded = Reduce(WorktreesViewState.Empty, new WorktreeRowsLoaded([Gone, Busy, Empty, Orphan, Locked, Dirty, Clean]));
 
     [Fact]
+    public void RefreshTheTabOnF5()
+    {
+        WorktreesView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);
+    }
+
+    [Fact]
+    public void RefreshTheTabOnF5WhileAFilterIsBeingTyped()
+    {
+        WorktreesViewState typing = Press(Loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'));
+
+        ViewUpdate<WorktreesViewState> update = WorktreesView.Reduce(typing, new KeyPressed(Key.F5));
+
+        update.Effects.ShouldBe([new RefreshShownTab()]);
+        update.State.List.Filter.Text.ShouldBe("fix");
+        update.State.List.FilterEditing.ShouldBeTrue();
+    }
+
+    [Fact]
     public void ChooseATabWithTheTabKeys()
     {
         WorktreesView.Reduce(Loaded, new KeyPressed(Key.Of('2'))).Effects.OfType<SelectTab>().ShouldBeEmpty();

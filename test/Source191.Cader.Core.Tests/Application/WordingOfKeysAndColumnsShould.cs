@@ -5,7 +5,7 @@ namespace Source191.Cader.Core.Tests.Application;
 
 public sealed class WordingOfKeysAndColumnsShould
 {
-    private static readonly string[] TabKeys = ["← ", "→ ", "< ", "> "];
+    private static readonly string[] TabKeys = ["← ", "→ ", "< ", "> ", "f5 "];
 
     [Fact]
     public void NameEachColumnOnce()
@@ -147,6 +147,7 @@ public sealed class WordingOfKeysAndColumnsShould
             U      update in a new tab                           !      report a problem on GitHub
             ←      the tab to the left                           →      the tab to the right
             <      scroll the columns left                       >      scroll the columns right
+            F5     refresh this tab now
 
             Columns
             NAME        the session name given at launch, or the folder name for an unnamed one
@@ -200,6 +201,7 @@ public sealed class WordingOfKeysAndColumnsShould
             U      update in a new tab                           !      report a problem on GitHub
             ←      the tab to the left                           →      the tab to the right
             <      scroll the columns left                       >      scroll the columns right
+            F5     refresh this tab now
 
             Columns
             WORKTREE     the owning repository › the folder's slug, or its label when not named after it
@@ -248,6 +250,7 @@ public sealed class WordingOfKeysAndColumnsShould
             U      update in a new tab                            !      report a problem on GitHub
             ←      the tab to the left                            →      the tab to the right
             <      scroll the columns left                        >      scroll the columns right
+            F5     refresh this tab now
 
             Columns
             SETTING  a setting kept in config.json, or, under the Setup heading, setup it reads but does not change

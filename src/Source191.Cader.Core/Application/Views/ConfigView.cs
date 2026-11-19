@@ -20,6 +20,7 @@ public static class ConfigView
             UpdateTabOpened => Effect(state, new Quit()),
             AccountLabelConfirmed confirmed => RenameAccountWith(state, confirmed),
             AccountLabelCancelled => Unchanged(state with { Message = new StatusMessage.RenameCancelled() }),
+            KeyPressed pressed when RefreshKeys.TryFor(pressed.Key, out ViewEffect? refresh) => Effect(state, refresh),
             KeyPressed pressed when state.List.FilterEditing => Unchanged(state with { List = state.List.EditFilter(pressed.Key), Message = StatusMessage.None }),
             KeyPressed pressed => Act(state, pressed.Key),
             _ => Unchanged(state),

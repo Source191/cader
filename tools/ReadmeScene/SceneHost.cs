@@ -121,7 +121,9 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
             clock,
             context,
             executables.Claude,
-            folderLabels);
+            folderLabels,
+            new RefreshSchedule(() => settings.Value.SessionsRefresh, clock),
+            new RefreshSchedule(() => settings.Value.WorktreesRefresh, clock));
         OwnTab ownTab = new(store, processRegistry, clock);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);

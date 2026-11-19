@@ -23,6 +23,24 @@ public sealed class SessionsViewShould
     }
 
     [Fact]
+    public void RefreshTheTabOnF5()
+    {
+        SessionsView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);
+    }
+
+    [Fact]
+    public void RefreshTheTabOnF5WhileAFilterIsBeingTyped()
+    {
+        SessionsViewState typing = Press(Loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'));
+
+        ViewUpdate<SessionsViewState> update = SessionsView.Reduce(typing, new KeyPressed(Key.F5));
+
+        update.Effects.ShouldBe([new RefreshShownTab()]);
+        update.State.List.Filter.Text.ShouldBe("fix");
+        update.State.List.FilterEditing.ShouldBeTrue();
+    }
+
+    [Fact]
     public void KnowWhetherTheFirstListingHasArrived()
     {
         SessionsViewState.Empty.List.Loaded.ShouldBeFalse();

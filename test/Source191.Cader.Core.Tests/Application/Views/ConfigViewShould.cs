@@ -24,6 +24,24 @@ public sealed class ConfigViewShould
     private static readonly ConfigViewState Loaded = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos, Work), Facts, []))).State;
 
     [Fact]
+    public void RefreshTheTabOnF5()
+    {
+        ConfigView.Reduce(Loaded, new KeyPressed(Key.F5)).Effects.ShouldBe([new RefreshShownTab()]);
+    }
+
+    [Fact]
+    public void RefreshTheTabOnF5WhileAFilterIsBeingTyped()
+    {
+        ConfigViewState typing = Press(Loaded, Key.Slash, Key.Of('f'), Key.Of('i'), Key.Of('x'));
+
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(typing, new KeyPressed(Key.F5));
+
+        update.Effects.ShouldBe([new RefreshShownTab()]);
+        update.State.List.Filter.Text.ShouldBe("fix");
+        update.State.List.FilterEditing.ShouldBeTrue();
+    }
+
+    [Fact]
     public void LoadTheRowsWithTheFirstSelected()
     {
         Loaded.List.Loaded.ShouldBeTrue();
@@ -78,6 +96,13 @@ public sealed class ConfigViewShould
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.SetupAdvice(item));
+    }
+
+    [Fact]
+    public void EditEitherRefreshIntervalInItsOwnDialog()
+    {
+        ConfigView.Reduce(At("sessions-refresh"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new EditSetting(new SettingsScope.SessionsRefresh())]);
+        ConfigView.Reduce(At("worktrees-refresh"), new KeyPressed(Key.Enter)).Effects.ShouldBe([new EditSetting(new SettingsScope.WorktreesRefresh())]);
     }
 
     [Theory]
@@ -241,15 +266,17 @@ public sealed class ConfigViewShould
     {
         ConfigViewState filtered = Press(Loaded, Key.Slash, Key.Of('w'), Key.Of('o'), Key.Of('r'), Key.Of('k'), Key.Enter);
 
-        filtered.List.Visible.Select(row => row.Key).ShouldBe(["root:1", "worktree-root"]);
+        filtered.List.Visible.Select(row => row.Key).ShouldBe(["root:1", "worktree-root", "worktrees-refresh"]);
     }
 
     [Theory]
-    [InlineData('c')]
-    [InlineData('f')]
-    public void SayWhenTheValueIsNotAPath(char key)
+    [InlineData('c', "open-folder-with")]
+    [InlineData('f', "open-folder-with")]
+    [InlineData('c', "sessions-refresh")]
+    [InlineData('f', "worktrees-refresh")]
+    public void SayWhenTheValueIsNotAPath(char key, string row)
     {
-        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At("open-folder-with"), new KeyPressed(Key.Of(key)));
+        ViewUpdate<ConfigViewState> update = ConfigView.Reduce(At(row), new KeyPressed(Key.Of(key)));
 
         update.Effects.ShouldBeEmpty();
         update.State.Message.ShouldBe(new StatusMessage.NoPathHere());
@@ -376,8 +403,8 @@ public sealed class ConfigViewShould
     {
         ConfigViewState oneRoot = ConfigView.Reduce(ConfigViewState.Empty, new ConfigRowsLoaded(ConfigRows.For(TestSettings.For(Repos), Facts, []))).State;
 
-        oneRoot.Title.Shown.ShouldBe(14);
-        oneRoot.Title.Total.ShouldBe(14);
+        oneRoot.Title.Shown.ShouldBe(16);
+        oneRoot.Title.Total.ShouldBe(16);
     }
 
     [Fact]

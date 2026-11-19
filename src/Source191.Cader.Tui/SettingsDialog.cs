@@ -58,6 +58,8 @@ internal static class SettingsDialog
             Apply(new SettingsInput.WorktreeRootChanged(controls.WorktreeRoot.Text));
             Apply(new SettingsInput.ExecutableChanged(controls.Executable.Text));
             Apply(new SettingsInput.ArgumentsChanged(controls.Arguments.Text));
+            Apply(new SettingsInput.SessionsRefreshChanged(controls.SessionsRefresh.Text));
+            Apply(new SettingsInput.WorktreesRefreshChanged(controls.WorktreesRefresh.Text));
             Apply(new SettingsInput.Save());
         }
 
@@ -155,6 +157,8 @@ internal static class SettingsDialog
         controls.Editor.ValueChanged += (_, _) => Apply(new SettingsInput.PresetChanged(OptionSelectors.At<EditorPreset>(controls.Editor.Value)));
         controls.Executable.TextChanging += (_, changing) => Apply(new SettingsInput.ExecutableChanged(changing.Result ?? string.Empty));
         controls.Arguments.TextChanging += (_, changing) => Apply(new SettingsInput.ArgumentsChanged(changing.Result ?? string.Empty));
+        controls.SessionsRefresh.TextChanging += (_, changing) => Apply(new SettingsInput.SessionsRefreshChanged(changing.Result ?? string.Empty));
+        controls.WorktreesRefresh.TextChanging += (_, changing) => Apply(new SettingsInput.WorktreesRefreshChanged(changing.Result ?? string.Empty));
         controls.BaseRef.ValueChanged += (_, _) => Apply(new SettingsInput.BaseChanged(OptionSelectors.At<WorktreeBase>(controls.BaseRef.Value)));
         controls.Before.ValueChanged += (_, _) => Apply(new SettingsInput.BeforeBranchingChanged(OptionSelectors.At<BeforeBranching>(controls.Before.Value)));
         controls.Place.ValueChanged += (_, _) => Apply(new SettingsInput.PlaceChanged(OptionSelectors.At<LaunchMode>(controls.Place.Value)));
@@ -162,6 +166,8 @@ internal static class SettingsDialog
         controls.WorktreeRoot.Accepting += (_, accepting) => accepting.Handled = true;
         controls.Executable.Accepting += (_, accepting) => accepting.Handled = true;
         controls.Arguments.Accepting += (_, accepting) => accepting.Handled = true;
+        controls.SessionsRefresh.Accepting += (_, accepting) => accepting.Handled = true;
+        controls.WorktreesRefresh.Accepting += (_, accepting) => accepting.Handled = true;
         dialog.KeyDown += (_, key) => key.Handled = (key == GuiKey.F5 && DialogButtons.Handled(Save)) || (key == GuiKey.F3 && state.Browses != SettingsBrowse.No && DialogButtons.Handled(Browse));
         if (scope is SettingsScope.Roots or SettingsScope.WorktreeRoot or SettingsScope.Editor)
         {

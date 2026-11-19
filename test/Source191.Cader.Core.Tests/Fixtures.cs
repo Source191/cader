@@ -56,6 +56,7 @@ internal static class Fixtures
             _ when type == typeof(ViewEffect) => new Quit(),
             _ when type == typeof(Outcome) => new StopSessionOutcome.Stopped(Listed.As("fix-123"), TabClosed: false),
             _ when type == typeof(SetupItem) => SetupItem.TerminalProfiles,
+            _ when type == typeof(RefreshedTab) => RefreshedTab.Worktrees,
             _ when type == typeof(ConfigRow) => new ConfigRow.CheckForUpdates(On: true),
             _ => throw new InvalidOperationException($"A field of type {type.Name} needs a placeholder."),
         };

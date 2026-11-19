@@ -28,6 +28,8 @@ internal sealed class SettingsControls
         BaseRef.Value = OptionSelectors.Index(text.Base);
         Place.Value = OptionSelectors.Index(text.Place);
         Before.Value = OptionSelectors.Index(text.BeforeBranching);
+        SessionsRefresh.Text = text.SessionsRefresh;
+        WorktreesRefresh.Text = text.WorktreesRefresh;
         Custom = [Caption(RightColumn, 1, "Executable (full path, not a .cmd or .bat)"), Executable, Caption(RightColumn, 4, $"Arguments ({EditorChoice.FolderPlaceholder} is the folder)"), Arguments];
         (IReadOnlyDictionary<SettingsField, View> Fields, View[] All, int Height) layout = state.Scope switch
         {
@@ -55,6 +57,14 @@ internal sealed class SettingsControls
                 new Dictionary<SettingsField, View> { [SettingsField.BeforeBranching] = Before },
                 [Caption(LeftColumn, 0, Wording.BeforeBranchingCaption), Before, Placed(Problem, 5)],
                 11),
+            SettingsScope.SessionsRefresh => (
+                new Dictionary<SettingsField, View> { [SettingsField.SessionsRefresh] = SessionsRefresh },
+                [Caption(LeftColumn, 0, Wording.RefreshCaption), SessionsRefresh, Placed(Problem, 3)],
+                10),
+            SettingsScope.WorktreesRefresh => (
+                new Dictionary<SettingsField, View> { [SettingsField.WorktreesRefresh] = WorktreesRefresh },
+                [Caption(LeftColumn, 0, Wording.RefreshCaption), WorktreesRefresh, Placed(Problem, 3)],
+                10),
             _ => throw new UnreachableException($"{state.Scope.GetType().Name} has no controls."),
         };
         (Fields, All, Height) = layout;
@@ -78,6 +88,10 @@ internal sealed class SettingsControls
     public OptionSelector Place { get; } = OptionSelectors.For<LaunchMode>(LeftColumn, 1, Wording.Describe);
 
     public OptionSelector Before { get; } = OptionSelectors.For<BeforeBranching>(LeftColumn, 1, Wording.Describe);
+
+    public TextField SessionsRefresh { get; } = new() { X = LeftColumn, Y = 1, Width = 10 };
+
+    public TextField WorktreesRefresh { get; } = new() { X = LeftColumn, Y = 1, Width = 10 };
 
     public Label Problem { get; } = Text(LeftColumn, Palette.Red, Dim.Fill(1));
 

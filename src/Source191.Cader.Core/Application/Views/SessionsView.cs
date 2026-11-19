@@ -18,6 +18,7 @@ public static class SessionsView
             RenameConfirmed confirmed => RenameWith(state, confirmed),
             RenameCancelled => Unchanged(state with { Message = new StatusMessage.RenameCancelled() }),
             UpdateTabOpened => Effect(state, new Quit()),
+            KeyPressed pressed when RefreshKeys.TryFor(pressed.Key, out ViewEffect? refresh) => Effect(state, refresh),
             KeyPressed pressed when state.List.FilterEditing => Unchanged(state with { List = state.List.EditFilter(pressed.Key), Message = StatusMessage.None }),
             KeyPressed pressed => Act(state, pressed.Key),
             _ => Unchanged(state),

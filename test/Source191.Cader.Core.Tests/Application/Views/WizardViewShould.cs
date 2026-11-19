@@ -159,7 +159,7 @@ public sealed class WizardViewShould
     [InlineData(LaunchMode.NewWorktree)]
     public void OpenOnTheDefaultPlace(LaunchMode place)
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, new WizardOrigin.Anywhere()).Mode.ShouldBe(place);
     }
@@ -169,7 +169,7 @@ public sealed class WizardViewShould
     [InlineData(LaunchMode.NewWorktree)]
     public void OpenAFixedFolderOnItsCurrentBranchWhateverTheDefaultPlace(LaunchMode place)
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: place, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
 
         WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, WizardOrigin.In(FolderPath.From(Billing))).Mode.ShouldBe(LaunchMode.CurrentBranch);
     }
@@ -280,7 +280,7 @@ public sealed class WizardViewShould
     [InlineData(BeforeBranching.None)]
     public void StartWithTheSavedBeforeBranching(BeforeBranching choice)
     {
-        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: choice);
+        Settings settings = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: choice, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
         WizardState opened = WizardState.Open(new RepositoryCatalogue(folders, TestSettings.Current(Root)), [], folders, settings, new WizardOrigin.Anywhere());
 
         WizardUpdate started = WizardView.Reduce(Reduce(opened, new WizardInput.NameChanged("Fix 123")), new WizardInput.Start());

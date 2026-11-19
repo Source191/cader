@@ -10,4 +10,5 @@ public enum KeyName
     Left,
     Right,
     Backspace,
+    F5,
 }
