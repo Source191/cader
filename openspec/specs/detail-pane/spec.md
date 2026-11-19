@@ -68,7 +68,7 @@ The pane's Prompted line SHALL show the most recent time, while this Cader ran, 
 - **THEN** its Prompted line reads not seen since the console started
 
 ### Requirement: The pane shows the selected worktree
-On the Worktrees tab the pane SHALL show, for the selected row and titled with its folder's name: the health with its reason in full, the branch and its merge state against origin's default branch, or the branch's flag's reason in place of the merge state when the branch is flagged, the pull request, the full folder, whether and when Cader created it, its changed files and unpushed commits, and beneath them its unpushed commits as far as five, or its changed files when none are unpushed, then how many more. For a branch row or an origin row the pane SHALL be titled with the branch, SHALL read no git, and SHALL show the health with its reason, the branch with its flag's reason, the pull request, the repository's folder in place of the folder and Created, and the branch's unpushed commits (or that an origin row has no local branch), with nothing listed beneath.
+On the Worktrees tab the pane SHALL show, for the selected row and titled with its folder's name: the health with its reason in full, the branch and its merge state against origin's default branch (or the branch's flag's reason in place of the merge state when the branch is flagged), the pull request, the full folder, whether and when Cader created it, and its changed files and unpushed commits. Beneath them it SHALL list its unpushed commits as far as five, or its changed files when none are unpushed, then how many more.
 
 #### Scenario: A worktree with unpushed commits
 - **WHEN** Northwind.Billing-invoice-pdf, created by Cader on 23 October, with twelve unpushed commits on invoice-pdf, is selected
@@ -89,6 +89,9 @@ On the Worktrees tab the pane SHALL show, for the selected row and titled with i
 #### Scenario: A flagged worktree
 - **WHEN** the worktree Northwind.Orders-fix-123, whose branch's upstream is gone, is selected
 - **THEN** the pane reads Branch fix-123 · origin no longer has it, as of the last fetch
+
+### Requirement: The pane shows a branch row or an origin row
+For a branch row or an origin row the pane SHALL be titled with the branch, SHALL read no git, and SHALL show the health with its reason, the branch with its flag's reason, the pull request, the repository's folder in place of the folder and Created, and the branch's unpushed commits (or that an origin row has no local branch), with nothing listed beneath.
 
 #### Scenario: A branch row
 - **WHEN** the branch row spike-refunds of Northwind.Orders, with two commits on no remote branch and no pull request, is selected
