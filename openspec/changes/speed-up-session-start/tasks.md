@@ -14,9 +14,9 @@ Each task is red, green, refactor, with a commit per step. Tests run the real `G
 
 ## 2. Hold refreshes during a launch
 
-- [ ] 2.1 `LaunchHoldShould.BeHeldWhileAnyHoldIsOpen`, `BeReleasedWhenTheLastHoldEnds` and `ReleaseOnceWhenDisposedTwice`: `Application\LaunchHold` behind a `Lock` (design 3). Commit.
-- [ ] 2.2 `RefreshScheduleShould.NotBeDueWhileHeld` (timer and change), `NotBeDueForAChangeWhileHeld`, `KeepAChangeSeenWhileHeld` and `BeDueOnceTheHoldEnds`: `RefreshSchedule` takes the hold; the existing facts pass with an unheld hold. Commit.
-- [ ] 2.3 `StartSessionHandlerShould.HoldRefreshesWhileItLaunches` (held during `claude --bg`, read through `WhileRunning`), `ReleaseTheHoldAfterAFailedLaunch` and `ReleaseTheHoldWhenTheLaunchThrows`: the handler takes the hold in a `using`. Commit.
+- [x] 2.1 `LaunchHoldShould.BeHeldWhileAnyHoldIsOpen`, `BeReleasedWhenTheLastHoldEnds` and `ReleaseOnceWhenDisposedTwice`: `Application\LaunchHold` behind a `Lock` (design 3). Commit.
+- [x] 2.2 `RefreshScheduleShould.NotBeDueWhileHeld` (timer and change), `NotBeDueForAChangeWhileHeld`, `KeepAChangeSeenWhileHeld` and `BeDueOnceTheHoldEnds`: `RefreshSchedule` takes the hold; the existing facts pass with an unheld hold. Commit.
+- [x] 2.3 `StartSessionHandlerShould.HoldRefreshesWhileItLaunches` (held during `claude --bg`, read through `WhileRunning`), `ReleaseTheHoldAfterAFailedLaunch` and `ReleaseTheHoldWhenTheLaunchThrows`: the handler takes the hold in a `using`. Commit.
 
 ## 3. Fetch while the wizard is open
 
