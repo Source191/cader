@@ -42,6 +42,15 @@ public sealed class SettingsViewShould
         opened.Text.Roots.ShouldBe($"{Root}\n{Work}");
     }
 
+    [Theory]
+    [MemberData(nameof(Scopes))]
+    public void NameTheFieldsEachDialogShows(SettingsScope scope, SettingsField field)
+    {
+        SettingsField[] expected = scope is SettingsScope.Editor ? [SettingsField.Editor, SettingsField.Executable, SettingsField.Arguments] : [field];
+
+        scope.Fields.ShouldBe(expected);
+    }
+
     [Fact]
     public void FollowEachControlChange()
     {
