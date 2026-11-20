@@ -51,8 +51,8 @@ internal static class ConsoleComposition
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
-        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System);
-        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System, launch.Hold);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System, launch.Hold);
 
         // Disposed as this returns, after the console has closed; changes reach the schedules on pool threads until then.
         using ChangeWatches watches = new(new FolderChanges(), sessionsRefresh, worktreesRefresh, parts.Log);
@@ -94,7 +94,7 @@ internal static class ConsoleComposition
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
+        return HandlerComposition.Handlers(ports, launch.Launches, launch.Progress, launch.Hold, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
     }
 
     private static DialogEffects Dialogs(
@@ -110,7 +110,7 @@ internal static class ConsoleComposition
         EditorPresets presets = new(new EditorLocator(folders, parts.Processes, EditorFolders.ForCurrentUser()));
 
         return new DialogEffects(
-            repositories, parts.Store, folders, settings, solutions, updates, deleteSession, removeWorktree, reports, parts.ProcessRegistry, presets, TimeProvider.System);
+            repositories, parts.Store, folders, settings, solutions, updates, deleteSession, removeWorktree, reports, parts.ProcessRegistry, presets, TimeProvider.System, launch.Fetches);
     }
 
     private static ScreenContext Context(SharedParts parts, ClaudeVersionReport claudeVersionReport, UpdateCheck updates, ScreenClipboard clipboard)
@@ -178,6 +178,7 @@ internal static class ConsoleComposition
             launch.Programs.Claude,
             folderLabels,
             sessionsRefresh,
-            worktreesRefresh);
+            worktreesRefresh,
+            launch.Progress);
     }
 }

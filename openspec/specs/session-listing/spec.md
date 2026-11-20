@@ -636,7 +636,7 @@ The Sessions table SHALL have an ACCOUNT column between PR and AGE showing the l
 - **THEN** the text says the column shows the label of the account the session belongs to, that ● marks the account logged in now, that ? is an account not yet seen logged in, and that the Config tab lists and renames the accounts
 
 ### Requirement: The list refreshes when Claude Code records a change
-Whichever tab is shown, Cader SHALL list the sessions within about two seconds of Claude Code writing, adding or removing a session's record in the `sessions` folder or a job's `state.json` in the `jobs` folder of the Claude folder Cader uses. Changes in a burst SHALL start at most one listing a second, never two at once, and a change seen during a listing SHALL start one more after it. Cader SHALL NOT open or read those files.
+Whichever tab is shown, Cader SHALL list the sessions within about two seconds of Claude Code writing, adding or removing a session's record in the `sessions` folder or a job's `state.json` in the `jobs` folder of the Claude folder Cader uses. Changes in a burst SHALL start at most one listing a second, never two at once, and a change seen during a listing SHALL start one more after it. Cader SHALL NOT open or read those files. While a session started from the wizard is being launched, a change SHALL be kept rather than start a listing, and the sessions SHALL be listed after the launch ends.
 
 #### Scenario: A session starts waiting while another tab is shown
 - **WHEN** Sessions refresh is 0, the Worktrees tab is shown, and a background session stops to ask for permission
@@ -657,6 +657,10 @@ Whichever tab is shown, Cader SHALL list the sessions within about two seconds o
 #### Scenario: Temporary and key files
 - **WHEN** Claude Code writes `state.json.tmp.4f0d6ab5` and then renames it to `state.json`
 - **THEN** one listing follows, started by the rename
+
+#### Scenario: A change during a launch
+- **WHEN** a session started from the wizard writes its record while its launch is still running
+- **THEN** no listing starts until the launch ends, and a listing starts after it
 
 ### Requirement: Rows are grouped by repository
 The sessions table SHALL group its rows by where they run: one group per repository, keyed by its main checkout, and one per folder label outside any repository or whose folder has gone. Each group SHALL be headed by a row reading the repository's name, or the folder's label, or folder gone: and the folder's label, in bold orange, with a faint rule across the rest of the row; the group's rows SHALL follow it, their NAME cells indented by two cells.

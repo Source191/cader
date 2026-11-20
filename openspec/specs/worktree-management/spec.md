@@ -642,7 +642,7 @@ On a branch row or an origin row, p SHALL open its pull request, c SHALL copy th
 - **THEN** pull request #298 opens in the browser
 
 ### Requirement: The worktrees are rescanned when git records a change
-Whether or not the Worktrees tab is shown, Cader SHALL rescan within about two seconds of a listed repository's git folder gaining or losing a worktree's record, of a checkout changing a branch in its main or a linked worktree, and of a folder appearing in or leaving a repository root's top level. Changes in a burst SHALL start at most one scan a second, never two at once, and a change seen during a scan SHALL start one more after it.
+Whether or not the Worktrees tab is shown, Cader SHALL rescan within about two seconds of a listed repository's git folder gaining or losing a worktree's record, of a checkout changing a branch in its main or a linked worktree, and of a folder appearing in or leaving a repository root's top level. Changes in a burst SHALL start at most one scan a second, never two at once, and a change seen during a scan SHALL start one more after it. While a session started from the wizard is being launched, a change SHALL be kept rather than start a scan, and the worktrees SHALL be scanned after the launch ends.
 
 #### Scenario: Up to date when shown
 - **WHEN** the Sessions tab is shown and the user runs `git worktree add` in a shell, waits three seconds and shows the Worktrees tab
@@ -671,6 +671,10 @@ Whether or not the Worktrees tab is shown, Cader SHALL rescan within about two s
 #### Scenario: A watched repository deleted
 - **WHEN** a listed repository's folder is deleted
 - **THEN** a rescan drops it, no error is shown, and it is no longer watched
+
+#### Scenario: A worktree the wizard creates
+- **WHEN** a launch from the wizard creates the worktree fix-123 in Northwind.Orders
+- **THEN** no scan starts while the launch runs, and fix-123 is listed by the scan that starts after it
 
 ### Requirement: Git's housekeeping starts no scan
 Changes to a repository's index, objects, references, logs or lock files SHALL NOT start a scan, so git's everyday work in a shell and Cader's own git reads never make the worktrees rescan.

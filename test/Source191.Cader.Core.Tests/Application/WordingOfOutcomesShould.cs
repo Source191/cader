@@ -612,7 +612,7 @@ public sealed class WordingOfOutcomesShould
     [Fact]
     public void SayWhereHereStartedTheSession()
     {
-        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders"), new BaseUpdate.Current()), "fix-tests", @"C:\repos\Northwind.Orders")
+        Wording.Here(new LaunchOutcome.Listed(JobId.From("81cdb0f9"), SessionTestData.Job(@"C:\repos\Northwind.Orders"), new BaseUpdate.Current(), LaunchSteps.WithoutANewWorktree(SessionName.From("fix-tests"))), "fix-tests", @"C:\repos\Northwind.Orders")
             .ShouldBe(@"Started fix-tests (81cdb0f9) in C:\repos\Northwind.Orders.");
     }
 

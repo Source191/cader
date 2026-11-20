@@ -57,7 +57,10 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
 
         ClaudeCli claude = new(processes, executables.Claude);
         GitCli gitCli = new(processes, git);
-        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli), store, store, new WorktreeIncludeCopier(gitCli), clock);
+        LaunchProgress progress = new();
+        LaunchHold hold = new();
+        BaseFetches fetches = new(gitCli, clock);
+        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli, fetches), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
         FolderPath home = FolderPath.From(folders.Home);
         CurrentSettings settings = await CurrentSettings.LoadAsync(store, home);
         ClaudeTranscripts transcripts = new(folders.ClaudeHome);
@@ -84,7 +87,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         EffectPorts ports = new(claude, gitCli, processRegistry, transcripts, terminal, store, clock, clipboard, desktop, editors, fileFolders, crashFile, logFiles);
         TabScripts tabScripts = new(executables.Claude, ownPath);
         OwnProcess own = new(Environment.ProcessId, home, new ProgramLocation.Missing());
-        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, accounts, own, log, Path.Combine(folders.State, "cader.log"));
+        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, progress, hold, tabScripts, settings, accounts, own, log, Path.Combine(folders.State, "cader.log"));
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);
@@ -93,7 +96,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         RemoveWorktreeHandler removeWorktree = new(gitCli, store, fileFolders, remover);
         DialogEffects dialogs = new(
             new RepositoryCatalogue(fileFolders, settings), store, fileFolders, settings, new SolutionFinder(fileFolders), updates, deleteSession, removeWorktree, reports, processRegistry,
-            new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock);
+            new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock, fetches);
 
         HeaderSettingsRow header = new(version, ClaudeCodeSupport.Check(claudeVersion), updates, processRegistry, Environment.ProcessId);
         ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log));
@@ -101,8 +104,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, new OriginPruner(gitCli, clock, log), log);
         SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal"), clock), new ClaudeSettings(folders.ClaudeHome), store, logFiles, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, log);
-        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, clock);
-        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, clock);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, clock, hold);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, clock, hold);
 
         // The scene's folders never change on their own, so its watches report nothing and the capture stays still.
         using ChangeWatches watches = new(new QuietFolders(), sessionsRefresh, worktreesRefresh, log);
@@ -129,7 +132,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
             executables.Claude,
             folderLabels,
             sessionsRefresh,
-            worktreesRefresh);
+            worktreesRefresh,
+            progress);
         OwnTab ownTab = new(store, processRegistry, clock);
         TerminalConsole console = new(Console.Out, Wording.TabTitle);
         WhatsNewOnStart whatsNew = new(version, store, new PackagedReleaseNotes(folders.Bin), log);

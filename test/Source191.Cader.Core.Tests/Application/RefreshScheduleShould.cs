@@ -7,11 +7,12 @@ namespace Source191.Cader.Core.Tests.Application;
 public sealed class RefreshScheduleShould
 {
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
+    private readonly LaunchHold hold = new();
 
     [Fact]
     public void BeDueOnceItsIntervalHasPassedSinceItStarted()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
 
         schedule.Started();
         clock.Advance(TimeSpan.FromSeconds(4.75));
@@ -24,7 +25,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void CountFromWhenItWasMadeUntilItFirstStarts()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
 
         clock.Advance(TimeSpan.FromSeconds(4));
         schedule.IsDue().ShouldBeFalse();
@@ -36,7 +37,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void NeverBeDueWhileOff()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
 
         schedule.Started();
         clock.Advance(TimeSpan.FromMinutes(10));
@@ -48,7 +49,7 @@ public sealed class RefreshScheduleShould
     public void PickUpANewIntervalOnTheNextAsk()
     {
         RefreshInterval interval = RefreshInterval.From(5);
-        RefreshSchedule schedule = new(() => interval, clock);
+        RefreshSchedule schedule = new(() => interval, clock, hold);
         schedule.Started();
         clock.Advance(TimeSpan.FromSeconds(10));
         schedule.IsDue().ShouldBeTrue();
@@ -66,7 +67,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void BeDueHalfASecondAfterAChangeEvenWhileOff()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
         schedule.Started();
         clock.Advance(TimeSpan.FromSeconds(2));
 
@@ -83,7 +84,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void WaitASecondAfterTheLastStartBeforeRefreshingForAChange()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
         schedule.Started();
 
         schedule.Changed();
@@ -97,7 +98,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void CountFromTheFirstChangeNotTheLatest()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
         clock.Advance(TimeSpan.FromSeconds(2));
 
         schedule.Changed();
@@ -111,7 +112,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void ForgetAChangeOnceStartedAndHearTheNextOne()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
         schedule.Changed();
         clock.Advance(TimeSpan.FromSeconds(2));
         schedule.IsDueForChange().ShouldBeTrue();
@@ -128,7 +129,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void NotCountATimedRefreshAsAChange()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
         schedule.Started();
         clock.Advance(TimeSpan.FromSeconds(10));
 
@@ -139,7 +140,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void RefreshABusyFolderAtMostOnceASecondAndAfterItsLastChange()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
         schedule.Started();
         List<DateTimeOffset> starts = [];
         DateTimeOffset lastChange = clock.GetUtcNow();
@@ -170,7 +171,7 @@ public sealed class RefreshScheduleShould
     [Fact]
     public void PushTheNextDueTimeBackAWholeIntervalWhenStartedForAnyCause()
     {
-        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
         schedule.Started();
 
         clock.Advance(TimeSpan.FromSeconds(4));
@@ -180,5 +181,68 @@ public sealed class RefreshScheduleShould
 
         clock.Advance(TimeSpan.FromSeconds(1));
         schedule.IsDue().ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NotBeDueWhileHeld()
+    {
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
+        schedule.Started();
+
+        using (hold.Hold())
+        {
+            schedule.Changed();
+            clock.Advance(TimeSpan.FromSeconds(9));
+
+            schedule.IsDue().ShouldBeFalse("neither the timer nor the change starts a refresh during a launch");
+        }
+    }
+
+    [Fact]
+    public void NotBeDueForAChangeWhileHeld()
+    {
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
+        schedule.Started();
+
+        using (hold.Hold())
+        {
+            schedule.Changed();
+            clock.Advance(TimeSpan.FromSeconds(2));
+
+            schedule.IsDueForChange().ShouldBeFalse();
+        }
+    }
+
+    [Fact]
+    public void KeepAChangeSeenWhileHeld()
+    {
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, hold);
+        schedule.Started();
+
+        using (hold.Hold())
+        {
+            clock.Advance(TimeSpan.FromSeconds(2));
+            schedule.Changed();
+            clock.Advance(TimeSpan.FromSeconds(9));
+        }
+
+        schedule.IsDueForChange().ShouldBeTrue();
+        schedule.IsDue().ShouldBeTrue();
+    }
+
+    [Fact]
+    public void BeDueOnceTheHoldEnds()
+    {
+        RefreshSchedule schedule = new(() => RefreshInterval.From(5), clock, hold);
+        schedule.Started();
+        IDisposable launch = hold.Hold();
+        clock.Advance(TimeSpan.FromSeconds(9));
+        schedule.IsDue().ShouldBeFalse();
+
+        launch.Dispose();
+
+        schedule.IsDue().ShouldBeTrue();
+        schedule.Started();
+        schedule.IsDue().ShouldBeFalse("one refresh after the launch, then the timer counts again");
     }
 }

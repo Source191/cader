@@ -34,7 +34,7 @@ public static partial class Wording
             StatusMessage.UpToDate => StatusTone.Success,
             StatusMessage.NoPullRequest { Gap: PullRequestGap.Failed } => StatusTone.Failure,
             StatusMessage.NoDialogFor or StatusMessage.Failed => StatusTone.Failure,
-            StatusMessage.Working => StatusTone.Working,
+            StatusMessage.Working or StatusMessage.Launching => StatusTone.Working,
             StatusMessage.Reported reported => ToneOf(reported.Outcome),
             StatusMessage.BranchKept kept => ToneOf(kept.Removal),
             StatusMessage.Followed followed => ToneOf(followed.Then),

@@ -26,6 +26,8 @@ public sealed class StartSessionHandlerShould
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty));
     private readonly FakeWindowsTerminal terminal = new();
+    private readonly LaunchProgress progress = new();
+    private readonly LaunchHold hold = new();
 
     private static LaunchPlan Plan => new(
         FolderPath.From(Repository), SessionName.From("Fix flaky tests"), new LaunchPlace.CurrentBranch(),
@@ -38,10 +40,10 @@ public sealed class StartSessionHandlerShould
             InMemoryState store = new();
             GitCli git = new(processes, "git");
             FakeTimeProvider clock = new(Fixtures.Noon);
-            LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
+            LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, clock)), store, store, new WorktreeIncludeCopier(git), clock, progress);
             OpenTabHandler tabs = new(store, new FakeProcessRegistry(), terminal, clock, new TabScripts(Claude, OwnExecutable));
 
-            return new StartSessionHandler(service, tabs, terminal, new TabScripts(Claude, OwnExecutable));
+            return new StartSessionHandler(service, tabs, terminal, new TabScripts(Claude, OwnExecutable), progress, hold);
         }
     }
 
@@ -54,6 +56,19 @@ public sealed class StartSessionHandlerShould
         TabLaunch tab = terminal.Opened.Single();
         tab.Title.ShouldBe("Fix flaky tests");
         tab.Script.ShouldContain($"& '{Claude}' 'attach' '81cdb0f9'");
+    }
+
+    [Fact]
+    public async Task ReportOpeningTheTabAsTheLastStep()
+    {
+        List<(LaunchStep Step, int TabsOpened)> heard = [];
+        progress.Follow(() => heard.Add((progress.Latest, terminal.Opened.Count)));
+
+        await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
+
+        LaunchSteps steps = LaunchSteps.WithoutANewWorktree(Plan.Name);
+        heard.Select(step => step.Step).ShouldBe([LaunchStep.None, steps.Step(LaunchStage.StartingClaude), steps.Step(LaunchStage.FindingSession), steps.Step(LaunchStage.OpeningTab)]);
+        heard[^1].ShouldBe((new LaunchStep(Plan.Name, LaunchStage.OpeningTab, 3, 3, new LaunchBase.None()), 0));
     }
 
     [Fact]
@@ -150,5 +165,59 @@ public sealed class StartSessionHandlerShould
         await Should.ThrowAsync<TerminalException>(() => Handler.HandleAsync(new StartSession(Plan), CancellationToken.None));
 
         processes.CapturedRequests.ShouldContain(request => request.Arguments.Contains("--bg"));
+    }
+
+    [Fact]
+    public async Task HoldRefreshesWhileItLaunches()
+    {
+        bool heldWhileStarting = false;
+        processes.WhileRunning = request =>
+        {
+            heldWhileStarting |= request.Arguments.Contains("--bg") && hold.IsHeld;
+            return Task.CompletedTask;
+        };
+
+        await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
+
+        heldWhileStarting.ShouldBeTrue();
+        hold.IsHeld.ShouldBeFalse("the hold ends with the launch");
+    }
+
+    [Fact]
+    public async Task ReleaseTheHoldAfterAFailedLaunch()
+    {
+        processes.Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(1, string.Empty, "supervisor not running"));
+
+        Outcome outcome = await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
+
+        outcome.ShouldBeOfType<StartSessionOutcome.Failed>();
+        hold.IsHeld.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ReleaseTheHoldWhenTheLaunchThrows()
+    {
+        processes.Throw(request => request.Arguments.Contains("--bg"), new ProcessTimedOutException("claude.exe", TimeSpan.FromSeconds(60)));
+
+        await Should.ThrowAsync<ProcessTimedOutException>(() => Handler.HandleAsync(new StartSession(Plan), CancellationToken.None));
+
+        hold.IsHeld.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ForgetAnEarlierLaunchsStepAsItBegins()
+    {
+        processes.Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(1, string.Empty, "supervisor not running"));
+        await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+        LaunchStep? beforeAnyStep = null;
+        processes.WhileRunning = request =>
+        {
+            beforeAnyStep ??= progress.Latest;
+            return Task.CompletedTask;
+        };
+
+        await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+
+        beforeAnyStep.ShouldBe(LaunchStep.None, "a retry under the same name shows its plain words until its own first step, never the failed launch's last");
     }
 }

@@ -23,20 +23,21 @@ public sealed class LaunchServiceShould
         .Answer(request => request.FileName == "git" && request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty));
 
     private readonly InMemoryState store = new();
+    private readonly LaunchProgress progress = new();
 
     private LaunchService Service
     {
         get
         {
             GitCli git = new(processes, "git");
-            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon));
+            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress);
         }
     }
 
     private LaunchService ServiceWith(FakeWorktreeIncludeCopier copier)
     {
         GitCli git = new(processes, "git");
-        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, copier, new FakeTimeProvider(Fixtures.Noon));
+        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, copier, new FakeTimeProvider(Fixtures.Noon), progress);
     }
 
     private static readonly PlannedWorktree FlakyTests = new(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"), BranchName.From("fix-flaky-tests"));
@@ -263,4 +264,93 @@ public sealed class LaunchServiceShould
         outcome.ShouldBeOfType<LaunchOutcome.Failed>().Message.ShouldContain("already checked out");
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("--bg"));
     }
+
+    [Fact]
+    public async Task ReportEachStepItRunsForAFetchedNewWorktree()
+    {
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(NewWorktree);
+
+        reported.ShouldBe(Steps(LaunchSteps.ForNewWorktree(NewWorktree.Name, RemoteBranch.From("origin/main"), BeforeBranching.Fetch), LaunchStage.Fetching, LaunchStage.CreatingWorktree, LaunchStage.StartingClaude, LaunchStage.FindingSession));
+    }
+
+    [Fact]
+    public async Task ReportEachStepItRunsForANewWorktreeWithNothingToUpdate()
+    {
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(NewWorktree with { BeforeBranching = BeforeBranching.None });
+
+        reported.ShouldBe(Steps(LaunchSteps.ForNewWorktree(NewWorktree.Name, RemoteBranch.From("origin/main"), BeforeBranching.None), LaunchStage.CreatingWorktree, LaunchStage.StartingClaude, LaunchStage.FindingSession));
+    }
+
+    [Fact]
+    public async Task ReportEachStepItRunsWithoutANewWorktree()
+    {
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(CurrentBranch);
+
+        reported.ShouldBe(Steps(LaunchSteps.WithoutANewWorktree(CurrentBranch.Name), LaunchStage.StartingClaude, LaunchStage.FindingSession));
+    }
+
+    [Fact]
+    public async Task ReportEachStepAsItBegins()
+    {
+        List<(LaunchStage Stage, int RunsBefore)> heard = [];
+        progress.Follow(() => heard.Add((progress.Latest.Stage, processes.CapturedRequests.Count)));
+
+        await Service.LaunchAsync(NewWorktree, CancellationToken.None);
+
+        IReadOnlyList<ProcessRequest> requests = processes.CapturedRequests;
+        heard.Single(step => step.Stage == LaunchStage.Fetching).RunsBefore.ShouldBe(Index(requests, IsFetchFromOrigin));
+        heard.Single(step => step.Stage == LaunchStage.CreatingWorktree).RunsBefore.ShouldBe(Index(requests, request => request.Arguments.Contains("add")));
+        heard.Single(step => step.Stage == LaunchStage.StartingClaude).RunsBefore.ShouldBe(Index(requests, request => request.Arguments.Contains("--bg")));
+        heard.Single(step => step.Stage == LaunchStage.FindingSession).RunsBefore.ShouldBe(Index(requests, request => request.Arguments.Contains("agents")));
+    }
+
+    [Fact]
+    public async Task CarryItsStepsOnTheListedOutcome()
+    {
+        LaunchOutcome outcome = await Service.LaunchAsync(NewWorktree with { BeforeBranching = BeforeBranching.Pull }, CancellationToken.None);
+
+        outcome.ShouldBeOfType<LaunchOutcome.Listed>().Steps.Step(LaunchStage.OpeningTab).ShouldBe(new LaunchStep(NewWorktree.Name, LaunchStage.OpeningTab, 5, 5, new LaunchBase.Remote(RemoteBranch.From("origin/main"))));
+    }
+
+    [Fact]
+    public async Task ReportNoFetchStepWithoutOriginHead()
+    {
+        processes.Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(128, string.Empty, "fatal: ref refs/remotes/origin/HEAD is not a symbolic ref"));
+
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(NewWorktree);
+
+        reported.ShouldBe(Steps(LaunchSteps.ForNewWorktree(NewWorktree.Name), LaunchStage.CreatingWorktree, LaunchStage.StartingClaude, LaunchStage.FindingSession));
+    }
+
+    [Fact]
+    public async Task ReportNothingAfterAFailedStart()
+    {
+        processes.Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(1, string.Empty, "Couldn't start the background service"));
+
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(CurrentBranch);
+
+        reported.ShouldBe(Steps(LaunchSteps.WithoutANewWorktree(CurrentBranch.Name), LaunchStage.StartingClaude));
+    }
+
+    [Fact]
+    public async Task ReportNothingAfterAWorktreeGitRefused()
+    {
+        processes.Answer(request => request.Arguments.Contains("add"), new ProcessResult(128, string.Empty, "fatal: 'fix-flaky-tests' is already checked out"));
+
+        IReadOnlyList<LaunchStep> reported = await ReportedAsync(NewWorktree);
+
+        reported.Select(step => step.Stage).ShouldBe([LaunchStage.Fetching, LaunchStage.CreatingWorktree]);
+    }
+
+    private async Task<IReadOnlyList<LaunchStep>> ReportedAsync(LaunchPlan plan)
+    {
+        List<LaunchStep> reported = [];
+        progress.Follow(() => reported.Add(progress.Latest));
+
+        await Service.LaunchAsync(plan, CancellationToken.None);
+
+        return reported;
+    }
+
+    private static IReadOnlyList<LaunchStep> Steps(LaunchSteps steps, params LaunchStage[] stages) => [.. stages.Select(steps.Step)];
 }

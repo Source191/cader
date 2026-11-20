@@ -7,18 +7,19 @@ namespace Source191.Cader.Application.Launch;
 /// <summary>
 /// Carries out a launch plan: brings origin's default branch up to date and creates the planned worktree from it when one
 /// is wanted, copies the include files, starts the named background session, and records what the console needs to
-/// remember about it. A base that could not be updated never stops the launch; the outcome says so.
+/// remember about it. A base that could not be updated never stops the launch; the outcome says so. Each step is
+/// reported to <see cref="LaunchProgress"/> as it begins, numbered out of the steps this launch runs.
 /// </summary>
-public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock)
+public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock, LaunchProgress progress)
 {
     public async Task<LaunchOutcome> LaunchAsync(LaunchPlan plan, CancellationToken cancellationToken)
     {
-        BaseUpdate update = new BaseUpdate.Current();
+        Prepared prepared = new(LaunchSteps.WithoutANewWorktree(plan.Name), new BaseUpdate.Current());
         try
         {
             if (plan.Place is LaunchPlace.NewWorktree fresh)
             {
-                update = await CreateWorktreeAsync(plan, fresh.Worktree, cancellationToken);
+                prepared = await CreateWorktreeAsync(plan, fresh.Worktree, cancellationToken);
             }
         }
         catch (Exception failure) when (failure is GitException or IOException or UnauthorizedAccessException)
@@ -26,45 +27,68 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updat
             return new LaunchOutcome.Failed(failure.Message);
         }
 
+        progress.Report(prepared.Steps.Step(LaunchStage.StartingClaude));
         StartResult start = await claude.StartBackgroundAsync(plan.Directory, plan.Name, plan.OpeningPrompt, cancellationToken);
 
         return start switch
         {
-            StartResult.Started started => await StartedAsync(plan, started.JobId, update, cancellationToken),
+            StartResult.Started started => await StartedAsync(plan, started.JobId, prepared, cancellationToken),
             StartResult.WorkspaceNotTrusted => new LaunchOutcome.WorkspaceNotTrusted(),
             StartResult.Failed failed => new LaunchOutcome.Failed(failed.Message),
             _ => throw new UnreachableException(),
         };
     }
 
-    private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, BaseUpdate update, CancellationToken cancellationToken)
+    private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, Prepared prepared, CancellationToken cancellationToken)
     {
+        progress.Report(prepared.Steps.Step(LaunchStage.FindingSession));
         await recent.RecordRecentRepositoryAsync(plan.Repository.Path);
         Session.Background? listed = await ListedSessionAsync(jobId, cancellationToken);
 
-        return listed is null ? new LaunchOutcome.NotListedYet(jobId, update) : new LaunchOutcome.Listed(jobId, listed, update);
+        return listed is null ? new LaunchOutcome.NotListedYet(jobId, prepared.Update) : new LaunchOutcome.Listed(jobId, listed, prepared.Update, prepared.Steps);
     }
 
     /// <summary>Origin's default branch is brought up to date only when the worktree branches from it; HEAD, or no origin/HEAD, is branched from as it is.</summary>
-    private async Task<BaseUpdate> CreateWorktreeAsync(LaunchPlan plan, PlannedWorktree worktree, CancellationToken cancellationToken)
+    private async Task<Prepared> CreateWorktreeAsync(LaunchPlan plan, PlannedWorktree worktree, CancellationToken cancellationToken)
     {
         FolderPath repository = plan.Repository.Path;
         string? remoteDefault = plan.Base == WorktreeBase.RemoteDefault ? await git.DefaultRemoteBranchAsync(repository.Value, cancellationToken) : null;
         if (!RemoteBranch.TryParse(remoteDefault, out RemoteBranch? remoteBranch))
         {
-            await AddWorktreeAsync(repository, worktree, "HEAD", cancellationToken);
+            LaunchSteps fromHead = LaunchSteps.ForNewWorktree(plan.Name);
+            await AddWorktreeAsync(repository, worktree, "HEAD", fromHead, cancellationToken);
 
-            return new BaseUpdate.Current();
+            return new Prepared(fromHead, new BaseUpdate.Current());
         }
 
+        LaunchSteps steps = LaunchSteps.ForNewWorktree(plan.Name, remoteBranch, plan.BeforeBranching);
+        ReportUpdate(steps, plan.BeforeBranching);
         BaseUpdate update = await updater.UpdateAsync(repository, remoteBranch, plan.BeforeBranching, cancellationToken);
-        await AddWorktreeAsync(repository, worktree, remoteBranch.Value, cancellationToken);
+        await AddWorktreeAsync(repository, worktree, remoteBranch.Value, steps, cancellationToken);
 
-        return update;
+        return new Prepared(steps, update);
     }
 
-    private async Task AddWorktreeAsync(FolderPath repository, PlannedWorktree worktree, string baseRef, CancellationToken cancellationToken)
+    private void ReportUpdate(LaunchSteps steps, BeforeBranching choice)
     {
+        switch (choice)
+        {
+            case BeforeBranching.Fetch:
+                progress.Report(steps.Step(LaunchStage.Fetching));
+                break;
+            case BeforeBranching.Pull:
+                progress.Report(steps.Step(LaunchStage.Pulling));
+                break;
+            case BeforeBranching.None:
+                break;
+            default:
+                throw new UnreachableException();
+        }
+    }
+
+    private async Task AddWorktreeAsync(FolderPath repository, PlannedWorktree worktree, string baseRef, LaunchSteps steps, CancellationToken cancellationToken)
+    {
+        progress.Report(steps.Step(LaunchStage.CreatingWorktree));
         await git.AddWorktreeAsync(repository.Value, worktree.Path.Value, worktree.Branch.Value, baseRef, cancellationToken);
         await created.RecordCreatedWorktreeAsync(new CreatedWorktree(worktree.Path, worktree.Branch, repository, clock.GetUtcNow()));
         await copier.CopyAsync(repository, worktree.Path, cancellationToken);
@@ -77,4 +101,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updat
 
         return listing.Sessions.OfType<Session.Background>().FirstOrDefault(session => session.JobId == jobId);
     }
+
+    /// <summary>The steps this launch runs and what bringing its base up to date came to, once its worktree, if any, is made.</summary>
+    private sealed record Prepared(LaunchSteps Steps, BaseUpdate Update);
 }

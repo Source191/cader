@@ -195,7 +195,7 @@ public sealed class DiagnosticsPrivacyShould : IDisposable
     {
         FakeFolderChanges changes = new();
         changes.Refused.Add(FolderPath.From(Repository).Combine(".git"));
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, new LaunchHold());
         using ChangeWatches watches = new(changes, schedule, schedule, log);
 
         watches.Follow(WatchPlan.For(TestSettings.For(RepositoryRoot), TestSettings.DefaultClaudeFolder, [FolderPath.From(Repository)]));
@@ -263,10 +263,10 @@ public sealed class DiagnosticsPrivacyShould : IDisposable
     private EffectDispatcher Dispatcher(ClaudeCli claude, GitCli git)
     {
         InMemoryState store = new();
-        LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock);
+        LaunchService launches = new(claude, git, new BaseUpdater(git, new BaseFetches(git, clock)), store, store, new WorktreeIncludeCopier(git), clock, new LaunchProgress());
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile(), new FakeDiagnosticLogFiles());
 
-        return Composition.Handlers(ports, launches, new TabScripts(Claude, OwnExecutable), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
+        return Composition.Handlers(ports, launches, new LaunchProgress(), new LaunchHold(), new TabScripts(Claude, OwnExecutable), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
     }
 
     private async Task StartASessionWithAPromptAsync(ClaudeCli claude, GitCli git)

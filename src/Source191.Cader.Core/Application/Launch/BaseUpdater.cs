@@ -7,9 +7,10 @@ namespace Source191.Cader.Application.Launch;
 /// <summary>
 /// Brings origin's default branch up to date before a new worktree branches from it, as Before branching says. Nothing
 /// here fails a launch: git's refusals and the time limit every captured child shares become a <see cref="BaseUpdate"/>
-/// whose words say what was not updated, and their messages are shown only to say what failed.
+/// whose words say what was not updated, and their messages are shown only to say what failed. The fetch goes through
+/// <see cref="BaseFetches"/>, so it joins one the wizard started early; the fast-forward only ever runs here.
 /// </summary>
-public sealed class BaseUpdater(IGit git)
+public sealed class BaseUpdater(IGit git, BaseFetches fetches)
 {
     public async Task<BaseUpdate> UpdateAsync(FolderPath repository, RemoteBranch remoteBranch, BeforeBranching choice, CancellationToken cancellationToken)
     {
@@ -72,7 +73,7 @@ public sealed class BaseUpdater(IGit git)
     {
         try
         {
-            await git.FetchBranchAsync(repository, remoteBranch, cancellationToken);
+            await fetches.FetchAsync(repository, remoteBranch, cancellationToken);
 
             return new BaseUpdate.Current();
         }

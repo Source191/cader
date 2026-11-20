@@ -1,4 +1,5 @@
 using Source191.Cader.Application.Launch;
+using Source191.Cader.Domain;
 using System.Diagnostics;
 
 namespace Source191.Cader.Application.Views;
@@ -9,26 +10,35 @@ namespace Source191.Cader.Application.Views;
 /// and Enter confirms the repository and moves to the name. Enter in the other one-line fields moves on; only Start
 /// (F5) launches, starting the session and opening its tab, so a stray Enter never starts a half-filled session in a
 /// new worktree. A fixed folder (n on a worktree row) is the exception: its form is the name and the prompt, so Enter
-/// in the name starts the session and opens its tab, as F5 does.
+/// in the name starts the session and opens its tab, as F5 does. Once a repository is confirmed and the form says a new
+/// worktree from origin's default branch with something to do before branching, the wizard asks once per repository for
+/// its base to be fetched early, so the fetch runs while the name is typed.
 /// </summary>
 public static class WizardView
 {
     public static WizardUpdate Reduce(WizardState state, WizardInput input)
     {
+        WizardUpdate update = Reduced(state, input);
+
+        return update.Effect is WizardEffect.None ? FetchingEarly(update.State) : update;
+    }
+
+    private static WizardUpdate Reduced(WizardState state, WizardInput input)
+    {
         return input switch
         {
-            WizardInput.FilterChanged changed => Changed(Filtered(state, changed.Text)),
-            WizardInput.ListMoved moved => Changed(Moved(state, moved.Delta)),
-            WizardInput.ChoiceSelected selected => Changed(Selected(state, selected.Index)),
+            WizardInput.FilterChanged changed => Changed(Filtered(state, changed.Text) with { RepositoryConfirmed = false }),
+            WizardInput.ListMoved moved => Changed(Moved(state, moved.Delta) with { RepositoryConfirmed = false }),
+            WizardInput.ChoiceSelected selected => Changed(Selected(state, selected.Index) with { RepositoryConfirmed = false }),
             WizardInput.NameChanged changed => Changed(state with { Name = changed.Text }),
             WizardInput.ModeChanged changed => Changed(state with { Mode = changed.Mode }),
             WizardInput.BaseChanged changed => Changed(state with { Base = changed.Base }),
             WizardInput.BeforeBranchingChanged changed => Changed(state with { BeforeBranching = changed.Choice }),
             WizardInput.PromptChanged changed => Changed(state with { Prompt = changed.Text }),
-            WizardInput.FieldFocused focused => Changed(state with { Focus = focused.Field }),
+            WizardInput.FieldFocused focused => Changed(state with { Focus = focused.Field, RepositoryConfirmed = state.RepositoryConfirmed || focused.Field is not (WizardField.RepositoryFilter or WizardField.RepositoryList) }),
             WizardInput.ConfirmRepository => Changed(Confirmed(state)),
             WizardInput.NextField when state is { Focus: WizardField.Name, ShowsChooser: false } => Started(state),
-            WizardInput.NextField => Changed(state with { Focus = Next(state) }),
+            WizardInput.NextField => Changed(state with { Focus = Next(state), RepositoryConfirmed = state.RepositoryConfirmed || state.Focus is WizardField.RepositoryList }),
             WizardInput.Start => Started(state),
             WizardInput.Cancel => new WizardUpdate(state, new WizardEffect.Close()),
             _ => Changed(state),
@@ -77,7 +87,7 @@ public static class WizardView
     {
         return state.Chosen is RepositoryPick.None
             ? state with { Problem = new WizardProblem.NoRepository(), Focus = WizardField.RepositoryFilter }
-            : state with { Problem = new WizardProblem.None(), Focus = WizardField.Name };
+            : state with { Problem = new WizardProblem.None(), Focus = WizardField.Name, RepositoryConfirmed = true };
     }
 
     /// <summary>
@@ -114,6 +124,22 @@ public static class WizardView
             LaunchPlanResult.Refused refused => Changed(state with { Problem = new WizardProblem.Refused(refused.Problem), Focus = WizardField.Name }),
             _ => throw new UnreachableException(),
         };
+    }
+
+    /// <summary>The early fetch for a confirmed repository whose form says a new worktree from origin's default branch, fetched or pulled first; asked once per repository.</summary>
+    private static WizardUpdate FetchingEarly(WizardState state)
+    {
+        return state is
+        {
+            RepositoryConfirmed: true,
+            ShowsChooser: true,
+            Mode: LaunchMode.NewWorktree,
+            Base: WorktreeBase.RemoteDefault,
+            BeforeBranching: BeforeBranching.Fetch or BeforeBranching.Pull,
+            Chosen: RepositoryPick.Picked { Choice: { IsRepository: true } choice },
+        } && !state.Prefetched.Contains(choice.Path)
+            ? new WizardUpdate(state with { Prefetched = [.. state.Prefetched, choice.Path] }, new WizardEffect.Prefetch(choice.Path))
+            : Changed(state);
     }
 
     private static WizardUpdate Changed(WizardState state) => new(state, new WizardEffect.None());

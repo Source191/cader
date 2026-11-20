@@ -26,7 +26,7 @@ public sealed class SessionsScreenDefinitionShould
         SessionActivity activity = new(clock);
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), activity, new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
-        schedule = new RefreshSchedule(() => Settings.SessionsRefreshWhenUnset, clock);
+        schedule = new RefreshSchedule(() => Settings.SessionsRefreshWhenUnset, clock, new LaunchHold());
         definition = new SessionsScreenDefinition(new StateTransitionNotifier(new StringWriter(terminal)), activity, @"C:\Users\me\.local\bin\claude.exe", folders, new SessionDetails(loader, clock), schedule);
     }
 

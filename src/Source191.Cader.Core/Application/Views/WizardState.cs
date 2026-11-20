@@ -8,6 +8,8 @@ namespace Source191.Cader.Application.Views;
 /// <summary>
 /// Everything the new-session wizard shows. The repositories are read once when it opens; the choices, the chosen
 /// repository and the preview follow from the filter, the selection, the name and the mode, so they are never stale.
+/// <paramref name="RepositoryConfirmed"/> says the chosen repository was confirmed (Enter, or moving on from the list) and
+/// not moved from since; <paramref name="Prefetched"/> are the repositories this wizard has asked to fetch early.
 /// </summary>
 public sealed record WizardState(
     RepositoryChoices AllChoices,
@@ -22,7 +24,9 @@ public sealed record WizardState(
     WizardProblem Problem,
     FolderPath WorktreeRoot,
     WizardField Focus,
-    BeforeBranching BeforeBranching)
+    BeforeBranching BeforeBranching,
+    bool RepositoryConfirmed,
+    IReadOnlyList<FolderPath> Prefetched)
 {
     /// <summary>The wizard as it opens, with the default place, the worktree root, the default base and what happens before branching from the settings saved now. Fixed on a folder (n on a Worktrees row) the session starts there on its current branch: no repository list, no worktree choice.</summary>
     public static WizardState Open(RepositoryCatalogue catalogue, IReadOnlyList<FolderPath> recent, IFolders folders, Settings settings, WizardOrigin origin)
@@ -43,7 +47,9 @@ public sealed record WizardState(
             Problem: new WizardProblem.None(),
             settings.WorktreeRoot,
             anywhere ? WizardField.RepositoryFilter : WizardField.Name,
-            settings.BeforeBranching);
+            settings.BeforeBranching,
+            RepositoryConfirmed: false,
+            Prefetched: []);
     }
 
     /// <summary>False for a fixed directory: the filter, the list and the worktree choices are hidden.</summary>

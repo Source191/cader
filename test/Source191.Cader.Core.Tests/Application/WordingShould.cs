@@ -342,6 +342,20 @@ public sealed class WordingShould
         Wording.Describe(new StatusMessage.Working(new StopSession(Job))).ShouldBe("Stopping...");
     }
 
+    [Theory]
+    [InlineData(LaunchStage.Fetching, BeforeBranching.Fetch, "Starting fix-123: fetching origin/main (1 of 5)...")]
+    [InlineData(LaunchStage.Pulling, BeforeBranching.Pull, "Starting fix-123: pulling origin/main (1 of 5)...")]
+    [InlineData(LaunchStage.CreatingWorktree, BeforeBranching.Fetch, "Starting fix-123: creating the worktree (2 of 5)...")]
+    [InlineData(LaunchStage.StartingClaude, BeforeBranching.Fetch, "Starting fix-123: starting Claude Code (3 of 5)...")]
+    [InlineData(LaunchStage.FindingSession, BeforeBranching.Fetch, "Starting fix-123: finding the new session (4 of 5)...")]
+    [InlineData(LaunchStage.OpeningTab, BeforeBranching.Fetch, "Starting fix-123: opening its tab (5 of 5)...")]
+    public void SayALaunchStep(LaunchStage stage, BeforeBranching choice, string words)
+    {
+        LaunchSteps steps = LaunchSteps.ForNewWorktree(SessionName.From("fix-123"), RemoteBranch.From("origin/main"), choice);
+
+        Wording.Describe(new StatusMessage.Launching(steps.Step(stage))).ShouldBe(words);
+    }
+
     [Fact]
     public void SayWhatAHandlerDid()
     {
