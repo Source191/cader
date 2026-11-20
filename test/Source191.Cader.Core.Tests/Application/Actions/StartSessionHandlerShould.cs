@@ -202,4 +202,21 @@ public sealed class StartSessionHandlerShould
 
         hold.IsHeld.ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task ForgetAnEarlierLaunchsStepAsItBegins()
+    {
+        processes.Answer(request => request.Arguments.Contains("--bg"), new ProcessResult(1, string.Empty, "supervisor not running"));
+        await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+        LaunchStep? beforeAnyStep = null;
+        processes.WhileRunning = request =>
+        {
+            beforeAnyStep ??= progress.Latest;
+            return Task.CompletedTask;
+        };
+
+        await Handler.HandleAsync(new StartSession(InANewWorktree), CancellationToken.None);
+
+        beforeAnyStep.ShouldBe(LaunchStep.None, "a retry under the same name shows its plain words until its own first step, never the failed launch's last");
+    }
 }
