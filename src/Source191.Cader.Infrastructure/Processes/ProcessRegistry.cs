@@ -131,7 +131,7 @@ public sealed partial class ProcessRegistry : IProcessRegistry
         bool more = Process32FirstW(snapshot, ref entry);
         while (more)
         {
-            entries.Add(new ProcessFacts((int)entry.ProcessId, (int)entry.ParentProcessId, Path.GetFileNameWithoutExtension(entry.ExeFile.ToString())));
+            entries.Add(new ProcessFacts((int)entry.ProcessId, (int)entry.ParentProcessId, entry.ExeFile.FileNameWithoutExtension()));
             more = Process32NextW(snapshot, ref entry);
         }
 

@@ -57,13 +57,14 @@ public sealed partial class ProcessRegistry
     {
         public ushort Unit;
 
-        public override readonly string ToString()
+        /// <summary>The name up to its first zero, without its extension, as the one string an entry keeps.</summary>
+        public readonly string FileNameWithoutExtension()
         {
             ReadOnlySpan<ushort> units = this;
             ReadOnlySpan<char> text = MemoryMarshal.Cast<ushort, char>(units);
             int end = text.IndexOf('\0');
 
-            return new string(end < 0 ? text : text[..end]);
+            return new string(Path.GetFileNameWithoutExtension(end < 0 ? text : text[..end]));
         }
     }
 
