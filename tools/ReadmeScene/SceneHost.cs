@@ -96,7 +96,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         RemoveWorktreeHandler removeWorktree = new(gitCli, store, fileFolders, remover);
         DialogEffects dialogs = new(
             new RepositoryCatalogue(fileFolders, settings), store, fileFolders, settings, new SolutionFinder(fileFolders), updates, deleteSession, removeWorktree, reports, processRegistry,
-            new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock);
+            new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock, fetches);
 
         HeaderSettingsRow header = new(version, ClaudeCodeSupport.Check(claudeVersion), updates, processRegistry, Environment.ProcessId);
         ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log));

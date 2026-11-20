@@ -15,12 +15,13 @@ namespace Source191.Cader.Tui;
 /// <summary>
 /// The new-session dialog: <see cref="WizardControls"/> bound to <see cref="WizardView"/>, which holds every rule. Each
 /// control event becomes a <see cref="WizardInput"/>; after each reduce the state is pushed back to the controls, and the
-/// events that pushing raises are ignored. Nothing is started here; the screen runs the plan so the dialog closes at once.
+/// events that pushing raises are ignored. Nothing is started here but the early fetch the wizard asks for, which runs on
+/// a pool thread and is never awaited; the screen runs the plan so the dialog closes at once.
 /// </summary>
 internal static class LaunchWizardDialog
 {
     /// <summary>The effect the wizard ended on: <see cref="WizardEffect.Launch"/> with the plan, or <see cref="WizardEffect.Close"/>.</summary>
-    public static WizardEffect Show(IApplication app, DiagnosticLog log, TimeProvider clock, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin)
+    public static WizardEffect Show(IApplication app, DiagnosticLog log, TimeProvider clock, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin, BaseFetches fetches)
     {
         // Read once, on a pool thread: Terminal.Gui installs a synchronisation context while it runs, so awaiting
         // on the UI thread and then blocking for the result would deadlock (it did, after every attach-and-return).
@@ -51,7 +52,12 @@ internal static class LaunchWizardDialog
 
             WizardUpdate update = WizardView.Reduce(state, input);
             state = update.State;
-            if (update.Effect is not WizardEffect.None)
+            if (update.Effect is WizardEffect.Prefetch prefetch)
+            {
+                _ = fetches.Begin(prefetch.Repository);
+            }
+
+            if (update.Effect is not (WizardEffect.None or WizardEffect.Prefetch))
             {
                 result = update.Effect;
                 app.RequestStop(dialog);
