@@ -185,7 +185,7 @@ public sealed class SettingsFileShould
 
         UserConfig config = SettingsFile.ToConfig(settings);
 
-        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false, BeforeBranching: BeforeBranching.None, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15));
+        config.ShouldBe(new UserConfig([@"C:\repos", @"D:\work"], WorktreeBase.Head, @"E:\trees", new EditorSetting("Custom", @"C:\Tools\subl.exe", ["-n", "{folder}"]), CheckForUpdates: true, DefaultPlace: LaunchMode.CurrentBranch, DiagnosticLog: false, BeforeBranching: BeforeBranching.None, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15, SessionsDetailRows: 6, WorktreesDetailRows: 10));
         config.ShouldNotBe(config with { BeforeBranching = BeforeBranching.Pull });
         SettingsFile.From(config, Home).ShouldBe(settings);
     }
@@ -235,5 +235,43 @@ public sealed class SettingsFileShould
     public void WriteAPresetWithoutACommand()
     {
         SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home)).Editor.ShouldBe(new EditorSetting("VsCode", Executable: null, Arguments: null));
+    }
+
+    [Fact]
+    public void ReadTheDefaultPaneHeightsFromAFileWithoutThem()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"]), Home);
+
+        settings.RepositoryRoots.ShouldBe([FolderPath.From(@"D:\work")]);
+        settings.PaneHeights.ShouldBe(new PaneHeights(Sessions: 6, Worktrees: 10));
+    }
+
+    [Fact]
+    public void ReadAPaneHeightSetByHand()
+    {
+        SettingsFile.From(new UserConfig([@"D:\work"], WorktreesDetailRows: 20), Home).PaneHeights.ShouldBe(new PaneHeights(Sessions: 6, Worktrees: 20));
+    }
+
+    [Fact]
+    public void ReadPaneHeightsOutOfRangeAsTheirDefaultsAndKeepTheRest()
+    {
+        Settings settings = SettingsFile.From(new UserConfig([@"D:\work"], SessionsDetailRows: 9, WorktreesDetailRows: 0), Home);
+
+        settings.PaneHeights.ShouldBe(new PaneHeights(Sessions: 6, Worktrees: 10));
+        settings.RepositoryRoots.ShouldBe([FolderPath.From(@"D:\work")]);
+    }
+
+    [Fact]
+    public void AlwaysWriteBothPaneHeights()
+    {
+        UserConfig defaults = SettingsFile.ToConfig(SettingsFile.From(UserConfig.Missing, Home));
+        UserConfig resized = SettingsFile.ToConfig(SettingsFile.From(new UserConfig([@"D:\work"], SessionsDetailRows: 4, WorktreesDetailRows: 200), Home));
+
+        defaults.SessionsDetailRows.ShouldBe(6);
+        defaults.WorktreesDetailRows.ShouldBe(10);
+        resized.SessionsDetailRows.ShouldBe(4);
+        resized.WorktreesDetailRows.ShouldBe(200);
+        defaults.ShouldNotBe(defaults with { SessionsDetailRows = 5 });
+        defaults.ShouldNotBe(defaults with { WorktreesDetailRows = 11 });
     }
 }

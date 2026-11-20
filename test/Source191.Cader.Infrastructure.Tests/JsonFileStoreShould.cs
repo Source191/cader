@@ -97,11 +97,13 @@ public sealed class JsonFileStoreShould : IDisposable
           "diagnosticLog": false,
           "beforeBranching": "Fetch",
           "sessionsRefreshSeconds": 5,
-          "worktreesRefreshSeconds": 15
+          "worktreesRefreshSeconds": 15,
+          "sessionsDetailRows": 6,
+          "worktreesDetailRows": 10
         }
         """;
 
-    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false, BeforeBranching: BeforeBranching.Fetch, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15);
+    private static readonly UserConfig SavedConfig = new([@"C:\Users\me\source\repos", @"D:\work"], WorktreeBase.RemoteDefault, @"C:\Users\me\source\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), CheckForUpdates: true, DefaultPlace: LaunchMode.NewWorktree, DiagnosticLog: false, BeforeBranching: BeforeBranching.Fetch, SessionsRefreshSeconds: 5, WorktreesRefreshSeconds: 15, SessionsDetailRows: 6, WorktreesDetailRows: 10);
 
     private readonly string folder = Path.Combine(Path.GetTempPath(), "test-state-" + Guid.NewGuid().ToString("N"));
     private readonly FakeTimeProvider clock = new(Noon);
@@ -1002,5 +1004,29 @@ public sealed class JsonFileStoreShould : IDisposable
         {
             Directory.Delete(folder, recursive: true);
         }
+    }
+
+    [Theory]
+    [InlineData("\"tall\"")]
+    [InlineData("12.5")]
+    public async Task ReadAConfigHoldingAPaneHeightThatIsNotAWholeNumberAsMissing(string held)
+    {
+        Directory.CreateDirectory(folder);
+        await File.WriteAllTextAsync(Path.Combine(folder, "config.json"), $$"""{ "repositoryRoots": ["D:\\work"], "worktreesDetailRows": {{held}} }""", TestContext.Current.CancellationToken);
+
+        (await Store.ReadConfigAsync()).ShouldBe(UserConfig.Missing);
+    }
+
+    [Fact]
+    public async Task WriteThePaneHeightsByName()
+    {
+        UserConfig saved = new([@"C:\repos"], WorktreeBase.RemoteDefault, @"C:\worktrees", new EditorSetting("VsCode", Executable: null, Arguments: null), SessionsDetailRows: 4, WorktreesDetailRows: 18);
+
+        await Store.WriteConfigAsync(saved);
+
+        (await Store.ReadConfigAsync()).ShouldBe(saved);
+        string written = await File.ReadAllTextAsync(Path.Combine(folder, "config.json"), TestContext.Current.CancellationToken);
+        written.ShouldContain("\"sessionsDetailRows\": 4");
+        written.ShouldContain("\"worktreesDetailRows\": 18");
     }
 }

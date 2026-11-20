@@ -4,9 +4,9 @@ namespace Source191.Cader.Ports;
 
 /// <summary>
 /// config.json as written: every member is optional and may be missing or null, as it is in a file from an earlier version or one edited by
-/// hand, and <c>SettingsFile</c> resolves what is missing to its default. A file written by this version names all ten.
+/// hand, and <c>SettingsFile</c> resolves what is missing to its default. A file written by this version names all twelve.
 /// </summary>
-public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, WorktreeBase? DefaultBase = null, string? WorktreeRoot = null, EditorSetting? Editor = null, bool? CheckForUpdates = null, LaunchMode? DefaultPlace = null, bool? DiagnosticLog = null, BeforeBranching? BeforeBranching = null, int? SessionsRefreshSeconds = null, int? WorktreesRefreshSeconds = null)
+public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, WorktreeBase? DefaultBase = null, string? WorktreeRoot = null, EditorSetting? Editor = null, bool? CheckForUpdates = null, LaunchMode? DefaultPlace = null, bool? DiagnosticLog = null, BeforeBranching? BeforeBranching = null, int? SessionsRefreshSeconds = null, int? WorktreesRefreshSeconds = null, int? SessionsDetailRows = null, int? WorktreesDetailRows = null)
 {
     /// <summary>No config.json, or one that cannot be read: every member missing, so every setting reads as its default.</summary>
     public static readonly UserConfig Missing = new();
@@ -23,8 +23,10 @@ public sealed record UserConfig(IReadOnlyList<string>? RepositoryRoots = null, W
             && BeforeBranching == other.BeforeBranching
             && SessionsRefreshSeconds == other.SessionsRefreshSeconds
             && WorktreesRefreshSeconds == other.WorktreesRefreshSeconds
+            && SessionsDetailRows == other.SessionsDetailRows
+            && WorktreesDetailRows == other.WorktreesDetailRows
             && (RepositoryRoots ?? []).SequenceEqual(other.RepositoryRoots ?? []);
     }
 
-    public override int GetHashCode() => HashCode.Combine(DefaultBase, WorktreeRoot, CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, RepositoryRoots?.Count);
+    public override int GetHashCode() => HashCode.Combine(DefaultBase, WorktreeRoot, CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, HashCode.Combine(RepositoryRoots?.Count, SessionsDetailRows, WorktreesDetailRows));
 }

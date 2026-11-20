@@ -25,7 +25,7 @@ public static class SettingsFile
             config.DiagnosticLog ?? Settings.DiagnosticLogWhenUnset,
             DefinedOr(config.BeforeBranching, Settings.BeforeBranchingWhenUnset),
             IntervalOr(config.SessionsRefreshSeconds, Settings.SessionsRefreshWhenUnset),
-            IntervalOr(config.WorktreesRefreshSeconds, Settings.WorktreesRefreshWhenUnset));
+            IntervalOr(config.WorktreesRefreshSeconds, Settings.WorktreesRefreshWhenUnset)).WithPaneHeights(PaneHeights.FromFile(config.SessionsDetailRows, config.WorktreesDetailRows));
     }
 
     public static UserConfig ToConfig(Settings settings)
@@ -35,7 +35,7 @@ public static class SettingsFile
             ? new EditorSetting(editor.Preset.ToString(), editor.Executable, editor.Arguments)
             : new EditorSetting(editor.Preset.ToString(), Executable: null, Arguments: null);
 
-        return new UserConfig([.. settings.RepositoryRoots.Select(root => root.Value)], settings.DefaultBase, settings.WorktreeRoot.Value, setting, settings.CheckForUpdates, settings.DefaultPlace, settings.DiagnosticLog, settings.BeforeBranching, settings.SessionsRefresh.Seconds, settings.WorktreesRefresh.Seconds);
+        return new UserConfig([.. settings.RepositoryRoots.Select(root => root.Value)], settings.DefaultBase, settings.WorktreeRoot.Value, setting, settings.CheckForUpdates, settings.DefaultPlace, settings.DiagnosticLog, settings.BeforeBranching, settings.SessionsRefresh.Seconds, settings.WorktreesRefresh.Seconds, settings.PaneHeights.Sessions, settings.PaneHeights.Worktrees);
     }
 
     private static TEnum DefinedOr<TEnum>(TEnum? value, TEnum fallback)
