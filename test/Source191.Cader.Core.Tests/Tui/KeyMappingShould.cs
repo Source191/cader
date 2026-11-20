@@ -31,6 +31,8 @@ public sealed class KeyMappingShould
     [InlineData('d')]
     [InlineData(' ')]
     [InlineData('<')]
+    [InlineData('+')]
+    [InlineData('-')]
     [InlineData('/')]
     [InlineData('?')]
     public void MapAPrintableCharacter(char character)
