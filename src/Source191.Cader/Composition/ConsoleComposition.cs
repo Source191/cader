@@ -94,7 +94,7 @@ internal static class ConsoleComposition
         TabScripts tabScripts = new(launch.Programs.Claude, parts.ConsoleExecutable);
         OwnProcess own = new(Environment.ProcessId, home, parts.Programs.Locate("winget"));
 
-        return HandlerComposition.Handlers(ports, launch.Launches, launch.Progress, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
+        return HandlerComposition.Handlers(ports, launch.Launches, launch.Progress, launch.Hold, tabScripts, settings, accounts, own, parts.Log, parts.LogFile);
     }
 
     private static DialogEffects Dialogs(

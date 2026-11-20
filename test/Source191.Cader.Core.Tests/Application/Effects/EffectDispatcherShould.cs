@@ -79,7 +79,7 @@ public sealed class EffectDispatcherShould
         LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock, new LaunchProgress());
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile(), new FakeDiagnosticLogFiles());
         using AccountCatalogue accounts = new(claude, store, clock);
-        EffectDispatcher dispatcher = Composition.Handlers(ports, launches, new LaunchProgress(), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
+        EffectDispatcher dispatcher = Composition.Handlers(ports, launches, new LaunchProgress(), new LaunchHold(), new TabScripts(Claude, @"C:\Users\me\.dotnet\tools\cader.exe"), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
         // A dialog effect that is dispatched itself once its dialog has been answered.
         Type[] dispatchedAfterTheirDialog = [typeof(CloseEmptyTerminals), typeof(ClearDiagnosticLog)];
 
