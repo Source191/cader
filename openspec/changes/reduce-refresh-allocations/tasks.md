@@ -19,7 +19,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 
 - [x] 3.1 Red: `GitWorktreeListingShould.ParseWithoutCopyingTheOutput`: a three-block listing (main, a locked worktree, a detached prunable one) parses within a budget set from what the kept strings and entries need. Commit.
 - [x] 3.2 Green: `Parse` walks `EnumerateLines`, matches keys as spans and makes strings only of kept values, the path through `string.Create` (design 5); 3.1 and the twelve existing facts pass unchanged. Commit.
-- [ ] 3.3 `GitWorktreeListingShould.ReadWindowsLineEndings`: the same listing with `\r\n` parses to the same entries (held today by the `Replace`; it must stay green before and after). Commit.
+- [x] 3.3 `GitWorktreeListingShould.ReadWindowsLineEndings`: the same listing with `\r\n` parses to the same entries (held today by the `Replace`; it must stay green before and after). Commit.
 
 ## 4. Transcripts
 

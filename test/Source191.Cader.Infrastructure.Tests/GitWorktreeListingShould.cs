@@ -123,6 +123,14 @@ public sealed class GitWorktreeListingShould
         entries[1].Path.ShouldBe(string.Empty);
     }
 
+    [Fact]
+    public void ReadWindowsLineEndings()
+    {
+        IReadOnlyList<GitWorktreeEntry> windows = GitWorktreeListing.Parse(Capture.ReplaceLineEndings("\r\n"));
+
+        windows.ShouldBe(GitWorktreeListing.Parse(Capture.ReplaceLineEndings("\n")));
+    }
+
     /// <summary>
     /// A main, a locked and a detached prunable worktree. What the answer keeps comes to about 1.6 KB: three entries
     /// (72 bytes each), three paths and three commits (at most 160 bytes each), two branch names (a string and its value,
