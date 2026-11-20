@@ -73,6 +73,20 @@ public sealed class OriginPrunerShould
         log.Snapshot().Count.ShouldBe(1, "a repository that keeps failing is recorded once");
     }
 
+    [Fact]
+    public async Task ClaimARepositoryOnceWhenTwoCallsOverlap()
+    {
+        TaskCompletionSource held = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        processes.WhileRunning = _ => held.Task;
+
+        Task first = pruner.PruneDueAsync([Orders]);
+        Task second = pruner.PruneDueAsync([Orders]);
+        held.SetResult();
+        await Task.WhenAll(first, second);
+
+        PrunedFolders().ShouldBe([Orders.Value]);
+    }
+
     private IReadOnlyList<string> PrunedFolders()
     {
         return [.. processes.CapturedRequests
