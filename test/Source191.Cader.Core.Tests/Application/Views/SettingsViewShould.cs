@@ -97,6 +97,31 @@ public sealed class SettingsViewShould
     }
 
     [Fact]
+    public void SaveAnotherSettingWhenASavedRootHasGone()
+    {
+        Settings saved = TestSettings.For([Root, @"D:\gone"], @"D:\worktrees");
+        SettingsState state = Reduce(SettingsState.Open(saved, new SettingsScope.SessionsRefresh(), Exists, Installed), new SettingsInput.SessionsRefreshChanged("2"));
+
+        Settings result = SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        result.SessionsRefresh.ShouldBe(RefreshInterval.From(2));
+        result.RepositoryRoots.ShouldBe([FolderPath.From(Root), FolderPath.From(@"D:\gone")]);
+    }
+
+    [Fact]
+    public void SaveAnotherSettingWhenASavedCustomEditorHasGone()
+    {
+        EditorChoice gone = EditorChoice.Custom(@"E:\Tools\subl.exe", ["-n", "{folder}"]);
+        Settings saved = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), gone, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
+        SettingsState state = Reduce(SettingsState.Open(saved, new SettingsScope.Place(), Exists, Installed), new SettingsInput.PlaceChanged(LaunchMode.CurrentBranch));
+
+        Settings result = SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        result.DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
+        result.Editor.ShouldBe(gone);
+    }
+
+    [Fact]
     public void SaveARootAddedOnANewLine()
     {
         SettingsState state = Reduce(Opened(new SettingsScope.Roots()), new SettingsInput.RootsChanged($"{Root}\n{Work}"));
