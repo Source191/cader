@@ -1,5 +1,6 @@
 using Source191.Cader.Application;
 using Source191.Cader.Domain;
+using System.Collections.Concurrent;
 using Terminal.Gui.Drawing;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
@@ -36,12 +37,18 @@ internal static class Palette
 
     public static readonly Attribute HeadingRule = new(Rule, Background);
 
-    public static Scheme Plain(Color foreground)
+    // Every table cell and row asks for a scheme on every draw. A scheme's roles are init-only (Terminal.Gui 2.5.0), so
+    // one per colour is shared; the colours are the palette's and the tab shades, so the caches stay small.
+    private static readonly ConcurrentDictionary<Color, Scheme> PlainSchemes = new();
+    private static readonly ConcurrentDictionary<Color, Scheme> SelectedRowSchemes = new();
+
+    /// <summary>One shared scheme per colour, as every cell of that colour draws with it.</summary>
+    public static Scheme Plain(Color foreground) => PlainSchemes.GetOrAdd(foreground, static colour =>
     {
-        Attribute attribute = new(foreground, Background);
+        Attribute attribute = new(colour, Background);
 
         return new Scheme { Normal = attribute, Focus = attribute, HotNormal = attribute, HotFocus = attribute, Disabled = attribute };
-    }
+    });
 
     /// <summary>
     /// For views that take focus: the focused field or list row is black on cyan, and a list's selected row stays
@@ -93,12 +100,12 @@ internal static class Palette
     public static Scheme SelectedRow() => SelectedRow(SelectionText);
 
     /// <summary>The selected row's scheme for a cell that keeps its own colour there, such as the TAB block.</summary>
-    public static Scheme SelectedRow(Color foreground)
+    public static Scheme SelectedRow(Color foreground) => SelectedRowSchemes.GetOrAdd(foreground, static colour =>
     {
-        Attribute attribute = new(foreground, SelectionBackground, TextStyle.Bold);
+        Attribute attribute = new(colour, SelectionBackground, TextStyle.Bold);
 
         return new Scheme { Normal = attribute, Focus = attribute, HotNormal = attribute, HotFocus = attribute, Active = attribute, HotActive = attribute, Disabled = attribute };
-    }
+    });
 
     public static Scheme Pair(Color foreground, Color background)
     {

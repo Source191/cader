@@ -1,6 +1,7 @@
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -120,5 +121,44 @@ public sealed class GitWorktreeListingShould
         IReadOnlyList<GitWorktreeEntry> entries = GitWorktreeListing.Parse("worktree C:/Users/me/source/repos/Northwind.Billing\nHEAD b7b91cb\nbranch refs/heads/main\n\nHEAD ab1044d\nbranch refs/heads/fix-123\n");
 
         entries[1].Path.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void ReadWindowsLineEndings()
+    {
+        IReadOnlyList<GitWorktreeEntry> windows = GitWorktreeListing.Parse(Capture.ReplaceLineEndings("\r\n"));
+
+        windows.ShouldBe(GitWorktreeListing.Parse(Capture.ReplaceLineEndings("\n")));
+    }
+
+    /// <summary>
+    /// A main, a locked and a detached prunable worktree. What the answer keeps comes to about 1.6 KB: three entries
+    /// (72 bytes each), three paths and three commits (at most 160 bytes each), two branch names (a string and its value,
+    /// at most 104 bytes), their heads and locks and a lock reason (24 to 56 bytes each) and the answer's array; the
+    /// budget leaves room for the enumerator and the result's collection.
+    /// </summary>
+    [Fact]
+    public void ParseWithoutCopyingTheOutput()
+    {
+        const string listing = """
+            worktree C:/Users/me/source/repos/Northwind.Billing
+            HEAD b7b91cb0000000000000000000000000000000000
+            branch refs/heads/main
+
+            worktree C:/Users/me/tools/worktrees/Northwind.Billing-fix
+            HEAD ab1044d0000000000000000000000000000000000
+            branch refs/heads/fix
+            locked kept for review
+
+            worktree C:/Users/me/source/repos/Northwind.Billing-study
+            HEAD 70bcf2c0000000000000000000000000000000000
+            detached
+            prunable gitdir file points to non-existent location
+
+            """;
+
+        long allocated = Allocations.Of(() => GitWorktreeListing.Parse(listing));
+
+        allocated.ShouldBeLessThan(2560);
     }
 }

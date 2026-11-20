@@ -43,14 +43,18 @@ internal sealed class ColumnSizing<TRow>
     /// <summary>The row the colour getters draw highlighted, kept so they do not recompute the visible rows per cell.</summary>
     public void Selected(TRow? row) => selected = row;
 
-    /// <summary>The lines as the table's source, the elastic column's cells fitted to the width it has left after any indent.</summary>
+    /// <summary>
+    /// The lines as the table's source, the elastic column's cells fitted to the width it has left after any indent. The other
+    /// columns are measured from the source's own cells, which the table then draws, and the elastic column's cells are asked
+    /// for only by the table, once its width is known.
+    /// </summary>
     public TableSource<TRow> Source(IReadOnlyList<TableLine<TRow>> lines, DateTimeOffset now)
     {
-        IReadOnlyList<TRow> rows = [.. lines.OfType<TableLine<TRow>.Row>().Select(line => line.Item)];
         int indent = TableSource<TRow>.IndentOf(lines);
-        elasticWidth = ElasticWidth(rows, now, indent);
+        TableSource<TRow> source = new(lines, columnNames, (row, column) => columns[column].Cell(row, now, column == elasticColumn ? elasticWidth - IndentIn(column, indent) : int.MaxValue));
+        elasticWidth = ElasticWidth(source);
 
-        return new TableSource<TRow>(lines, columnNames, (row, column) => columns[column].Cell(row, now, column == elasticColumn ? elasticWidth - IndentIn(column, indent) : int.MaxValue));
+        return source;
     }
 
     /// <summary>Puts the kept offset back: the table loses its offset on every source swap.</summary>
@@ -99,7 +103,7 @@ internal sealed class ColumnSizing<TRow>
     /// The cells the elastic column may have: the table's content width minus the other columns' widest visible cells (capped as the
     /// styles cap them) and a separator per column, never below the floor. The elastic column's style is held to it, both ways.
     /// </summary>
-    private int ElasticWidth(IReadOnlyList<TRow> rows, DateTimeOffset now, int indent)
+    private int ElasticWidth(TableSource<TRow> source)
     {
         int contentWidth = table.Viewport.Width > 0 ? table.Viewport.Width : app.Screen.Width - 2;
         int others = 0;
@@ -107,7 +111,7 @@ internal sealed class ColumnSizing<TRow>
         {
             if (column != elasticColumn)
             {
-                others += WidestCell(rows, column, now, indent);
+                others += WidestCell(source, column);
             }
         }
 
@@ -121,9 +125,9 @@ internal sealed class ColumnSizing<TRow>
     }
 
     /// <summary>A column's widest cell among the rows, never a heading's, which is drawn across the line instead.</summary>
-    private int WidestCell(IReadOnlyList<TRow> rows, int column, DateTimeOffset now, int indent)
+    private int WidestCell(TableSource<TRow> source, int column)
     {
-        int widest = Math.Max(columnNames[column].Length, rows.Count == 0 ? 0 : IndentIn(column, indent) + rows.Max(row => columns[column].Cell(row, now, int.MaxValue).Length));
+        int widest = Math.Max(columnNames[column].Length, source.Widest(column));
         ColumnStyle? style = table.Style.GetColumnStyleIfAny(column);
 
         return style?.MaxWidth is int cap ? Math.Min(widest, cap) : widest;

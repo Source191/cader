@@ -1,3 +1,4 @@
+using Source191.Cader.TestDoubles;
 using Source191.Cader.Tui;
 using Terminal.Gui.Drawing;
 
@@ -15,6 +16,21 @@ public sealed class PaletteShould
     public void SetAFieldAtLeastThreeToOneApartFromTheConsolesBackground()
     {
         ContrastRatio(Palette.FieldBackground, Palette.Background).ShouldBeGreaterThanOrEqualTo(3.0);
+    }
+
+    [Fact]
+    public void HandOutOneSchemePerColour()
+    {
+        Palette.Plain(Palette.Amber).ShouldBeSameAs(Palette.Plain(Palette.Amber));
+        Palette.SelectedRow(Palette.Amber).ShouldBeSameAs(Palette.SelectedRow(Palette.Amber));
+
+        long allocated = Allocations.Of(() =>
+        {
+            Palette.Plain(Palette.Amber);
+            Palette.SelectedRow(Palette.Amber);
+        });
+
+        allocated.ShouldBe(0);
     }
 
     /// <summary>The WCAG 2.2 contrast ratio between two colours, from their relative luminance.</summary>

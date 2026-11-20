@@ -2,6 +2,7 @@ using Source191.Cader.Adapters.Processes;
 using Source191.Cader.Domain;
 using Source191.Cader.TestDoubles;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -55,6 +56,30 @@ public sealed class ProcessRegistryIntegrationShould
         }
 
         clock.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void NameAParentWithoutABufferPerCall()
+    {
+        long allocated = Allocations.Of(() => registry.ParentOf(Environment.ProcessId));
+
+        allocated.ShouldBeLessThan(512);
+    }
+
+    /// <summary>
+    /// The budget is what the answer itself holds: each entry (32 bytes), its name's string, the list and every array it
+    /// grew through (under sixteen bytes a slot of its final capacity), and 4 KB for the snapshot's own handle and calls.
+    /// </summary>
+    [Fact]
+    public void ListTheTableWithOneStringPerProcess()
+    {
+        IReadOnlyList<ProcessFacts> table = [];
+
+        long allocated = Allocations.Of(() => table = registry.Snapshot());
+
+        long names = table.Sum(entry => (22 + (2L * entry.Name.Length) + 7) & ~7L);
+        long capacity = (long)BitOperations.RoundUpToPowerOf2((uint)Math.Max(table.Count, 4));
+        allocated.ShouldBeLessThanOrEqualTo((32L * table.Count) + names + (16L * capacity) + 4096);
     }
 
     [Fact]
