@@ -136,6 +136,19 @@ public sealed class SettingsViewShould
         editorSaved.State.Focus.ShouldBe(SettingsField.Arguments);
     }
 
+    [Theory]
+    [MemberData(nameof(Scopes))]
+    public void NeverFocusAFieldTheDialogDoesNotShow(SettingsScope scope, SettingsField field)
+    {
+        SettingsState state = SettingsState.Open(TestSettings.For(Root, Root), scope, Exists, Installed);
+
+        SettingsState refused = SettingsView.Reduce(state, new SettingsInput.Save()).State;
+
+        refused.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        scope.Fields.ShouldContain(refused.Focus);
+        refused.Focus.ShouldBe(scope is SettingsScope.Roots ? SettingsField.Roots : field);
+    }
+
     [Fact]
     public void SaveARootAddedOnANewLine()
     {
