@@ -69,3 +69,9 @@ The facts go into `terminal-gui.md` with the date and version. **Chosen (spike, 
 ## Migration Plan
 
 A `config.json` from an earlier version has no heights and reads as today's heights; the first save writes both. An earlier version reading a newer file ignores the two properties (`settings`: a property Cader does not know is ignored), and a save from it drops them, so the panes read as their defaults again. No rollback steps.
+
+## As built
+
+- **Names:** the pending heights are `Application\SettlingPaneHeights` (`TryTakeDue`), beside `Domain\PaneHeights`, so no two types share a name, and the tick's save is `Application\PaneHeightSaves`; the Tui's height rule is `Tui\PaneSizing`, which `DetailReader` owns.
+- **Serialised saves:** `CurrentSettings` chains each save after the one before instead of a `SemaphoreSlim` (which would have made it disposable, CA1001), and `SaveAsync` itself keeps the heights it finds when it writes, so the settings dialog and both toggles keep them without `SaveSettingsHandler` knowing of them.
+- **Detail sources:** `IDetailSource.Rows` became `MostRows` (6 and 200) and `Wording.DetailListedItems` is gone.
