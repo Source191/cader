@@ -430,7 +430,10 @@ public sealed class WizardViewShould
     [MemberData(nameof(InputsThatOnlyChangeState))]
     public void GiveNoEffectForAnyInputButStartAndCancel(WizardInput input)
     {
-        WizardView.Reduce(Opened, input).Effect.ShouldBe(new WizardEffect.None());
+        // With nothing to do before branching, so confirming the repository asks for no early fetch either.
+        WizardState nothingBefore = Reduce(Opened, new WizardInput.BeforeBranchingChanged(BeforeBranching.None));
+
+        WizardView.Reduce(nothingBefore, input).Effect.ShouldBe(new WizardEffect.None());
     }
 
     private static WizardState Fill(WizardState state)
@@ -470,5 +473,93 @@ public sealed class WizardViewShould
 
         first.SelectedIndex.ShouldBe(1);
         beyond.SelectedIndex.ShouldBe(1);
+    }
+
+    // The early fetch.
+
+    [Fact]
+    public void AskToFetchWhenTheRepositoryIsConfirmed()
+    {
+        WizardEffect.Prefetch inAgents = new(FolderPath.From(Agents));
+
+        WizardView.Reduce(InAgents, new WizardInput.ConfirmRepository()).Effect.ShouldBe(inAgents, "Enter on it");
+        WizardView.Reduce(InAgents, new WizardInput.FieldFocused(WizardField.Name)).Effect.ShouldBe(inAgents, "Tab from the list");
+        WizardView.Reduce(InAgents, new WizardInput.FieldFocused(WizardField.Prompt)).Effect.ShouldBe(inAgents, "a click on a later field");
+        WizardView.Reduce(Reduce(InAgents, new WizardInput.FieldFocused(WizardField.RepositoryList)), new WizardInput.NextField()).Effect.ShouldBe(inAgents, "moving on from the list");
+    }
+
+    [Fact]
+    public void AskOncePerRepository()
+    {
+        WizardState confirmed = Reduce(InAgents, new WizardInput.ConfirmRepository());
+
+        WizardView.Reduce(confirmed, new WizardInput.FieldFocused(WizardField.Mode)).Effect.ShouldBe(new WizardEffect.None());
+        WizardView.Reduce(confirmed, new WizardInput.NameChanged("fix-123")).Effect.ShouldBe(new WizardEffect.None());
+        WizardView.Reduce(Reduce(Reduce(confirmed, new WizardInput.FilterChanged("agents ")), new WizardInput.FilterChanged("agents")), new WizardInput.ConfirmRepository()).Effect.ShouldBe(new WizardEffect.None(), "confirmed again");
+    }
+
+    [Fact]
+    public void AskAgainForAnotherRepository()
+    {
+        WizardState confirmed = Reduce(InAgents, new WizardInput.ConfirmRepository());
+
+        WizardUpdate billing = WizardView.Reduce(Reduce(confirmed, new WizardInput.FilterChanged("billing")), new WizardInput.ConfirmRepository());
+
+        billing.Effect.ShouldBe(new WizardEffect.Prefetch(FolderPath.From(Billing)));
+    }
+
+    [Fact]
+    public void NotAskWhileTheCursorMoves()
+    {
+        WizardInput[] moves = [new WizardInput.ListMoved(1), new WizardInput.ListMoved(1), new WizardInput.ChoiceSelected(6), new WizardInput.ListMoved(-1), new WizardInput.FilterChanged("north")];
+        WizardState state = Reduce(InAgents, new WizardInput.ConfirmRepository());
+
+        foreach (WizardInput move in moves)
+        {
+            WizardUpdate update = WizardView.Reduce(state, move);
+            update.Effect.ShouldBe(new WizardEffect.None(), move.ToString());
+            state = update.State;
+        }
+    }
+
+    [Theory]
+    [InlineData(LaunchMode.CurrentBranch, WorktreeBase.RemoteDefault, BeforeBranching.Fetch)]
+    [InlineData(LaunchMode.NewWorktree, WorktreeBase.Head, BeforeBranching.Pull)]
+    [InlineData(LaunchMode.NewWorktree, WorktreeBase.RemoteDefault, BeforeBranching.None)]
+    public void NotAskForCurrentBranchHeadOrNothing(LaunchMode mode, WorktreeBase worktreeBase, BeforeBranching choice)
+    {
+        WizardState chosen = new WizardInput[]
+        {
+            new WizardInput.ModeChanged(mode),
+            new WizardInput.BaseChanged(worktreeBase),
+            new WizardInput.BeforeBranchingChanged(choice),
+        }.Aggregate(InAgents, Reduce);
+
+        WizardView.Reduce(chosen, new WizardInput.ConfirmRepository()).Effect.ShouldBe(new WizardEffect.None());
+    }
+
+    [Fact]
+    public void AskWhenBeforeBranchingTurnsToFetchAfterConfirming()
+    {
+        WizardState confirmed = Reduce(Reduce(InAgents, new WizardInput.BeforeBranchingChanged(BeforeBranching.None)), new WizardInput.ConfirmRepository());
+
+        WizardView.Reduce(confirmed, new WizardInput.BeforeBranchingChanged(BeforeBranching.Pull)).Effect.ShouldBe(new WizardEffect.Prefetch(FolderPath.From(Agents)));
+    }
+
+    [Fact]
+    public void NotAskForAFolderChoice()
+    {
+        WizardState onTheRoot = Reduce(Opened, new WizardInput.ListMoved(1));
+
+        WizardView.Reduce(onTheRoot, new WizardInput.ConfirmRepository()).Effect.ShouldBe(new WizardEffect.None());
+    }
+
+    [Fact]
+    public void NotAskOnAFixedFolder()
+    {
+        WizardState inBilling = Reduce(FixedInBilling, new WizardInput.BaseChanged(WorktreeBase.RemoteDefault));
+
+        WizardView.Reduce(inBilling, new WizardInput.FieldFocused(WizardField.Prompt)).Effect.ShouldBe(new WizardEffect.None());
+        WizardView.Reduce(inBilling, new WizardInput.ModeChanged(LaunchMode.NewWorktree)).Effect.ShouldBe(new WizardEffect.None());
     }
 }
