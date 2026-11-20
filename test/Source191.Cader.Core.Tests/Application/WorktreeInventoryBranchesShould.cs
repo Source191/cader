@@ -34,14 +34,27 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
 
     private readonly FakePullRequests hosts = new();
     private readonly PullRequestCatalogue catalogue;
+    private readonly OriginPruner pruner;
+    private readonly List<ProcessRequest> started = [];
 
     public WorktreeInventoryBranchesShould()
     {
         FakeProcessRunner origin = new FakeProcessRunner().Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
         catalogue = new(new GitCli(origin, "git"), hosts, new FakeTimeProvider(Fixtures.Noon), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])));
+        pruner = new(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
+        // Recorded as each run starts, on the caller's path, so a prune the scan starts and never awaits is seen as the scan returns.
+        processes.WhileRunning = request =>
+        {
+            lock (started)
+            {
+                started.Add(request);
+            }
+
+            return Task.CompletedTask;
+        };
     }
 
-    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
+    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, pruner, new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
 
     [Fact]
     public async Task ListABranchCheckedOutNowhereAsARowOfItsOwnWithNoFolder()
@@ -284,8 +297,52 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
         processes.CapturedRequests.ShouldNotContain(request => request.Arguments.Contains("fetch") || request.Arguments.Contains("pull") || request.Arguments.Contains("ls-remote"));
     }
 
+    [Fact]
+    public async Task PruneTheRepositoryOfAnOriginRowAfterTheScan()
+    {
+        hosts.Answer(Orders, Listing(("c-new-bug", PullRequestState.Closed, new HeadCommit.NotRecorded())));
+        MainCheckoutOnly();
+        Branches(Origin("c-new-bug"));
+        await Landed("c-new-bug");
+
+        WorktreeRow row = (await Inventory.ScanAsync([], CancellationToken.None)).Single();
+
+        row.Health.Kind.ShouldBe(WorktreeHealthKind.Origin);
+        Prunes().ShouldBe([Repository]);
+    }
+
+    [Fact]
+    public async Task PruneNothingForAnOriginCandidateThatIsNotShown()
+    {
+        hosts.Answer(Orders, Listing(("c-new-bug", PullRequestState.Open, new HeadCommit.NotRecorded())));
+        MainCheckoutOnly();
+        Branches(Origin("c-new-bug"));
+        await Landed("c-new-bug");
+
+        (await Inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
+
+        Prunes().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task PruneNothingWhenTheScanShowsOnlyWorktreeAndBranchRows()
+    {
+        Branches(Local("main", "refs/remotes/origin/main"), Local("fix-123", "refs/remotes/origin/fix-123"), Local("spike-refunds", string.Empty));
+
+        (await Inventory.ScanAsync([], CancellationToken.None)).Count.ShouldBe(2);
+
+        Prunes().ShouldBeEmpty();
+    }
+
     public void Dispose() => catalogue.Dispose();
 
+    private IReadOnlyList<string> Prunes()
+    {
+        lock (started)
+        {
+            return [.. started.Where(request => request.Arguments.SequenceEqual(["remote", "prune", "origin"])).Select(request => request.WorkingDirectory.ShouldBeOfType<WorkingFolder.At>().Path)];
+        }
+    }
     private void MainCheckoutOnly() =>
         processes.Answer(request => request.Arguments.Contains("--porcelain"), new ProcessResult(0, "worktree C:/Users/me/source/repos/Northwind.Orders\nHEAD a\nbranch refs/heads/main\n", string.Empty));
 
