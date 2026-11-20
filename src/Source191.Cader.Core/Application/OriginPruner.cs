@@ -31,6 +31,6 @@ public sealed class OriginPruner(IGit git, TimeProvider clock, DiagnosticLog log
             : attempts.TryAdd(repository, now);
 
     // The scan's token ends with the scan; the process runner's time limit bounds the prune.
-    private Task<bool> PruneAsync(FolderPath repository) =>
-        failures.RunAsync(repository, async () => { await git.PruneOriginAsync(repository, CancellationToken.None); return true; }, exception => exception is GitException, _ => false);
+    private Task<FolderPath> PruneAsync(FolderPath repository) =>
+        failures.RunAsync(repository, async () => { await git.PruneOriginAsync(repository, CancellationToken.None); return repository; }, exception => exception is GitException, _ => repository);
 }
