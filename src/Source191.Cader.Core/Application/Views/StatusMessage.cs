@@ -1,4 +1,5 @@
 using Source191.Cader.Application.Effects;
+using Source191.Cader.Application.Launch;
 using Source191.Cader.Domain;
 
 namespace Source191.Cader.Application.Views;
@@ -97,6 +98,9 @@ public abstract record StatusMessage
 
     /// <summary>The effect is running off the UI thread.</summary>
     public sealed record Working(ViewEffect Effect) : StatusMessage;
+
+    /// <summary>A session started from the console is being launched, and has begun this step.</summary>
+    public sealed record Launching(LaunchStep Step) : StatusMessage;
 
     /// <summary>What a handler did.</summary>
     public sealed record Reported(Outcome Outcome) : StatusMessage;
