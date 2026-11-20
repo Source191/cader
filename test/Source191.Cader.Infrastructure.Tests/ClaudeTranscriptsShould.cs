@@ -210,6 +210,49 @@ public sealed class ClaudeTranscriptsShould : IDisposable
         allocated.ShouldBeLessThan(32 * 1024);
     }
 
+    [Fact]
+    public void ReadATranscriptThatStartsWithAByteOrderMark()
+    {
+        string path = WriteTranscript(string.Empty);
+        File.WriteAllBytes(path, [0xEF, 0xBB, 0xBF, .. System.Text.Encoding.UTF8.GetBytes(UserLine + "\n")]);
+
+        new ClaudeTranscripts(home).HasMessages(Session).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReadLinesThatEndWithACarriageReturnAndALineFeed()
+    {
+        WriteTranscript(TitleAndName.ReplaceLineEndings("\r\n") + UserLine + "\r\n");
+
+        new ClaudeTranscripts(home).HasMessages(Session).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReadATypeWrittenWithAnEscape()
+    {
+        WriteTranscript("""{"type":"user"}""" + "\n");
+
+        new ClaudeTranscripts(home).HasMessages(Session).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("""{"type":"summary","type":"user"}""", true)]
+    [InlineData("""{"type":"user","type":"summary"}""", false)]
+    public void TakeTheLastTypeOfALineThatNamesItTwice(string line, bool expected)
+    {
+        WriteTranscript(line + "\n");
+
+        new ClaudeTranscripts(home).HasMessages(Session).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void CountNothingForALineWithTextAfterItsObject()
+    {
+        WriteTranscript("""{"type":"user"} and more""" + "\n");
+
+        new ClaudeTranscripts(home).HasMessages(Session).ShouldBeFalse();
+    }
+
     private const string NorthwindOrganisation = "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91";
     private const string ContosoOrganisation = "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60";
 

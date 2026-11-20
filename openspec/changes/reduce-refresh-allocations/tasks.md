@@ -25,7 +25,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 
 - [x] 4.1 Red: `ClaudeTranscriptsShould.FindAMessageAfterALongLineWithoutDecodingIt`: a transcript whose first line is a 200 KB `summary` line and whose second is a `user` line has messages, and `HasMessages` allocates under 32 KB. Commit.
 - [x] 4.2 Green: the byte reader and `Utf8JsonReader` for `HasMessages` (design 6); 4.1 and every existing transcript fact pass. Commit.
-- [ ] 4.3 Facts that hold today's reading and stay green: a byte order mark before the first line, `\r\n` endings, a `type` written with an escape (`"user"`), a line naming `type` twice (the last wins), and a `user` line with text after its object (counts as nothing). Commit.
+- [x] 4.3 Facts that hold today's reading and stay green: a byte order mark before the first line, `\r\n` endings, a `type` written with an escape (`"user"`), a line naming `type` twice (the last wins), and a `user` line with text after its object (counts as nothing). Commit.
 - [ ] 4.4 Red then green: `ClaudeTranscriptsShould.ReadTheOwnerWithoutDecodingMessages`: an owner line after a 200 KB message line is read within 32 KB; `ReadOwner` moves onto the same reader, keeping its byte search for `"session-owner"`. The existing owner facts pass. Commit.
 - [ ] 4.5 Refactor: remove `StreamReader`, `Lines` and `JsonDocument` from `ClaudeTranscripts` and check its summary still says what it reads. Verify `dotnet test test\Source191.Cader.Infrastructure.Tests -c Debug --no-build`. Commit.
 
