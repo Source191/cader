@@ -253,6 +253,18 @@ public sealed class ClaudeTranscriptsShould : IDisposable
         new ClaudeTranscripts(home).HasMessages(Session).ShouldBeFalse();
     }
 
+    [Fact]
+    public void ReadTheOwnerWithoutDecodingMessages()
+    {
+        WriteTranscript(LongLine("user") + OwnerLine(NorthwindOrganisation));
+        SessionOwner owner = new SessionOwner.NotRecorded();
+
+        long allocated = Allocations.Of(() => owner = new ClaudeTranscripts(home).OwnerOf(Session));
+
+        owner.ShouldBe(new SessionOwner.Recorded(OrganisationId.From(NorthwindOrganisation)));
+        allocated.ShouldBeLessThan(32 * 1024);
+    }
+
     private const string NorthwindOrganisation = "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91";
     private const string ContosoOrganisation = "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60";
 
