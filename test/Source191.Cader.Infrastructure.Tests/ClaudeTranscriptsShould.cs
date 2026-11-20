@@ -1,6 +1,7 @@
 using Source191.Cader.Adapters.Claude;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Infrastructure.Tests;
 
@@ -196,12 +197,28 @@ public sealed class ClaudeTranscriptsShould : IDisposable
         transcripts.OwnerOf(Session).ShouldBe(new SessionOwner.Recorded(OrganisationId.From(NorthwindOrganisation)));
     }
 
+    [Fact]
+    public void FindAMessageAfterALongLineWithoutDecodingIt()
+    {
+        WriteTranscript(LongLine("summary") + UserLine + "\n");
+        ClaudeTranscripts transcripts = new(home);
+        bool found = false;
+
+        long allocated = Allocations.Of(() => found = transcripts.HasMessages(Session));
+
+        found.ShouldBeTrue();
+        allocated.ShouldBeLessThan(32 * 1024);
+    }
+
     private const string NorthwindOrganisation = "6f1c2a8e-4b7d-4c1e-9a3f-2d5e8b0c7a91";
     private const string ContosoOrganisation = "0b9d4e2f-7a6c-4f3e-8d1b-5c2a9e7f4b60";
 
     private static readonly SessionId Session = SessionId.From("5a4a7350-31ac-49b6-899f-c7d832d8ef63");
 
     private static string OwnerLine(string organisation) => $$"""{"type":"session-owner","accountUuid":"a1b2c3d4-0000-4000-8000-000000000001","organizationUuid":"{{organisation}}","sessionId":"5a4a7350-31ac-49b6-899f-c7d832d8ef63"}""" + "\n";
+
+    /// <summary>A line of about 200 KB of the given type, as a long pasted message or summary makes.</summary>
+    private static string LongLine(string type) => $$"""{"type":"{{type}}","text":"{{new string('x', 200 * 1024)}}"}""" + "\n";
 
     private string WriteTranscript(string text)
     {
