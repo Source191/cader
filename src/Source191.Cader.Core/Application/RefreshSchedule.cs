@@ -9,9 +9,11 @@ namespace Source191.Cader.Application;
 /// second has passed since the first pending one, so a burst lands as one refresh, and a second since the last start,
 /// so a folder that changes steadily refreshes at most once a second and is never put off for good. Starting clears the
 /// pending change, so a change during a refresh is followed by one more. The console asks and starts on the UI thread;
-/// changes arrive on pool threads, so everything sits behind one lock.
+/// changes arrive on pool threads, so everything sits behind one lock. While a session started from the console is being
+/// launched (<see cref="LaunchHold"/>) neither half is due; a change seen meanwhile is kept and the timer keeps counting,
+/// so the first tick after the launch finds the refresh due.
 /// </summary>
-public sealed class RefreshSchedule(Func<RefreshInterval> interval, TimeProvider clock)
+public sealed class RefreshSchedule(Func<RefreshInterval> interval, TimeProvider clock, LaunchHold hold)
 {
     private static readonly TimeSpan Gathering = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan Spacing = TimeSpan.FromSeconds(1);
@@ -29,7 +31,7 @@ public sealed class RefreshSchedule(Func<RefreshInterval> interval, TimeProvider
         {
             DateTimeOffset now = clock.GetUtcNow();
 
-            return ChangeDue(now) || (!current.IsOff && now - lastStarted >= current.Every);
+            return !hold.IsHeld && (ChangeDue(now) || (!current.IsOff && now - lastStarted >= current.Every));
         }
     }
 
@@ -38,7 +40,7 @@ public sealed class RefreshSchedule(Func<RefreshInterval> interval, TimeProvider
     {
         lock (gate)
         {
-            return ChangeDue(clock.GetUtcNow());
+            return !hold.IsHeld && ChangeDue(clock.GetUtcNow());
         }
     }
 

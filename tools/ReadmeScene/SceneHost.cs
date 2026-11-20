@@ -58,6 +58,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         ClaudeCli claude = new(processes, executables.Claude);
         GitCli gitCli = new(processes, git);
         LaunchProgress progress = new();
+        LaunchHold hold = new();
         LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
         FolderPath home = FolderPath.From(folders.Home);
         CurrentSettings settings = await CurrentSettings.LoadAsync(store, home);
@@ -102,8 +103,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, new OriginPruner(gitCli, clock, log), log);
         SetupFactsReader setup = new(fragment, new TerminalSettings(Path.Combine(folders.State, "WindowsTerminal"), clock), new ClaudeSettings(folders.ClaudeHome), store, logFiles, new ClaudeFolder.Unset(FolderPath.From(folders.ClaudeHome)), store.ConfigFile, log);
-        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, clock);
-        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, clock);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, clock, hold);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, clock, hold);
 
         // The scene's folders never change on their own, so its watches report nothing and the capture stays still.
         using ChangeWatches watches = new(new QuietFolders(), sessionsRefresh, worktreesRefresh, log);

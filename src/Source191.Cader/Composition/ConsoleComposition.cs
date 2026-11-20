@@ -51,8 +51,8 @@ internal static class ConsoleComposition
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
         ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
-        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System);
-        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System);
+        RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System, launch.Hold);
+        RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System, launch.Hold);
 
         // Disposed as this returns, after the console has closed; changes reach the schedules on pool threads until then.
         using ChangeWatches watches = new(new FolderChanges(), sessionsRefresh, worktreesRefresh, parts.Log);
