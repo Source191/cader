@@ -122,6 +122,21 @@ public sealed class SettingsViewShould
     }
 
     [Fact]
+    public void KeepFocusInTheDialogWhenAnotherSettingIsRefused()
+    {
+        SettingsState refresh = Reduce(SettingsState.Open(TestSettings.For(Root, Root), new SettingsScope.WorktreesRefresh(), Exists, Installed), new SettingsInput.FieldFocused(SettingsField.WorktreesRefresh));
+        SettingsState editor = Reduce(Reduce(SettingsState.Open(TestSettings.For(Root, Root), new SettingsScope.Editor(), Exists, Installed), new SettingsInput.PresetChanged(EditorPreset.Custom)), new SettingsInput.FieldFocused(SettingsField.Arguments));
+
+        SettingsUpdate refreshSaved = SettingsView.Reduce(refresh, new SettingsInput.Save());
+        SettingsUpdate editorSaved = SettingsView.Reduce(Reduce(editor, new SettingsInput.ExecutableChanged(@"C:\Tools\subl.exe")), new SettingsInput.Save());
+
+        refreshSaved.State.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        refreshSaved.State.Focus.ShouldBe(SettingsField.WorktreesRefresh);
+        editorSaved.State.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        editorSaved.State.Focus.ShouldBe(SettingsField.Arguments);
+    }
+
+    [Fact]
     public void SaveARootAddedOnANewLine()
     {
         SettingsState state = Reduce(Opened(new SettingsScope.Roots()), new SettingsInput.RootsChanged($"{Root}\n{Work}"));
