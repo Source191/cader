@@ -20,10 +20,10 @@ Each task is red, green, refactor, with a commit per step. Tests run the real `G
 
 ## 3. Fetch while the wizard is open
 
-- [ ] 3.1 `BaseFetchesShould.FetchOriginsDefaultBranchWhenBegun`, `StartNoSecondFetchWhileOneRuns`, `JoinARunningFetch`, `JoinAFetchThatSucceededWithinAMinute`, `FetchAgainAfterAMinute`, `FetchAgainAfterAFailedEarlyFetch`, `FetchAgainForAnotherRemoteBranch`, `FetchNothingWithoutOriginHead` and `NeverFaultWhenGitFails`: `Application\Launch\BaseFetches` (design 4). Commit.
-- [ ] 3.2 `BaseUpdaterShould.JoinAnEarlyFetch` and `FastForwardOnlyAfterTheLaunchAsks` (Pull with a finished early fetch: no `merge`, `fetch` or `branch -f` before `UpdateAsync`); `BaseUpdater` fetches through `BaseFetches`; the existing facts pass. Commit.
-- [ ] 3.3 `WizardViewShould.AskToFetchWhenTheRepositoryIsConfirmed` (Enter, Tab from the list, focus on a later field), `AskOncePerRepository`, `AskAgainForAnotherRepository`, `NotAskWhileTheCursorMoves`, `NotAskForCurrentBranchHeadOrNothing`, `AskWhenBeforeBranchingTurnsToFetchAfterConfirming`, `NotAskForAFolderChoice` and `NotAskOnAFixedFolder`: `WizardState`'s confirmed flag and last asked repository, and `WizardEffect.Prefetch(FolderPath)`. Commit.
-- [ ] 3.4 `LaunchWizardDialog` handles `WizardEffect.Prefetch` by calling `BaseFetches.Begin` and pushing the state as for `None` (Tui binder; covered by 3.3 and the smoke check). Commit.
+- [x] 3.1 `BaseFetchesShould.FetchOriginsDefaultBranchWhenBegun`, `StartNoSecondFetchWhileOneRuns`, `JoinARunningFetch`, `JoinAFetchThatSucceededWithinAMinute`, `FetchAgainAfterAMinute`, `FetchAgainAfterAFailedEarlyFetch`, `FetchAgainForAnotherRemoteBranch`, `FetchNothingWithoutOriginHead` and `NeverFaultWhenGitFails`: `Application\Launch\BaseFetches` (design 4). Commit.
+- [x] 3.2 `BaseUpdaterShould.JoinAnEarlyFetch` and `FastForwardOnlyAfterTheLaunchAsks` (Pull with a finished early fetch: no `merge`, `fetch` or `branch -f` before `UpdateAsync`); `BaseUpdater` fetches through `BaseFetches`; the existing facts pass. Commit.
+- [x] 3.3 `WizardViewShould.AskToFetchWhenTheRepositoryIsConfirmed` (Enter, Tab from the list, focus on a later field), `AskOncePerRepository`, `AskAgainForAnotherRepository`, `NotAskWhileTheCursorMoves`, `NotAskForCurrentBranchHeadOrNothing`, `AskWhenBeforeBranchingTurnsToFetchAfterConfirming`, `NotAskForAFolderChoice` and `NotAskOnAFixedFolder`: `WizardState`'s confirmed flag and last asked repository, and `WizardEffect.Prefetch(FolderPath)`. Commit.
+- [x] 3.4 `LaunchWizardDialog` handles `WizardEffect.Prefetch` by calling `BaseFetches.Begin` and pushing the state as for `None` (Tui binder; covered by 3.3 and the smoke check). Commit.
 
 ## 4. Screen and wiring
 
