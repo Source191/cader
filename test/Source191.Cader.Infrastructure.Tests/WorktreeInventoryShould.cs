@@ -32,7 +32,7 @@ public sealed class WorktreeInventoryShould : IDisposable
         catalogue = new PullRequestCatalogue(new GitCli(remotes, "git"), hosts, TimeProvider.System, new RefreshCounts(TimeProvider.System, new DiagnosticLog(TimeProvider.System, [])));
     }
 
-    private WorktreeInventory Inventory => new(new GitCli(new ProcessRunner(TimeSpan.FromMinutes(1)), "git"), new Folders(), TestSettings.Current(TestSettings.For([root.Path], root.WorktreeRoot)), catalogue, new DiagnosticLog(TimeProvider.System, []));
+    private WorktreeInventory Inventory => new(new GitCli(new ProcessRunner(TimeSpan.FromMinutes(1)), "git"), new Folders(), TestSettings.Current(TestSettings.For([root.Path], root.WorktreeRoot)), catalogue, new OriginPruner(new GitCli(remotes, "git"), TimeProvider.System, new DiagnosticLog(TimeProvider.System, [])), new DiagnosticLog(TimeProvider.System, []));
 
     [Fact]
     public async Task CarryEachRowsPullRequest()

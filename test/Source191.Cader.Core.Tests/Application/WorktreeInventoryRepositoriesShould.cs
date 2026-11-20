@@ -25,7 +25,7 @@ public sealed class WorktreeInventoryRepositoriesShould : IDisposable
     public WorktreeInventoryRepositoriesShould()
     {
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
-        inventory = new WorktreeInventory(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
+        inventory = new WorktreeInventory(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
     }
 
     [Fact]
