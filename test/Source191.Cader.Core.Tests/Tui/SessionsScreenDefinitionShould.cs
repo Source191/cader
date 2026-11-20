@@ -74,6 +74,25 @@ public sealed class SessionsScreenDefinitionShould
     }
 
     [Fact]
+    public void PaintTheTabCellWithOnePaintPerColourOnceSeen()
+    {
+        TableColumn<SessionRow> tab = definition.Columns.Single(column => column.Help == Wording.TabColumn);
+        SessionRow open = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon, DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));
+        SessionRow plain = Row(new Session.Interactive(SessionId.From("81cdb0f9-0000-4000-8000-000000000002"), Listed.As("plain"), Folder, Fixtures.Noon, DisplayState.Idle, ProcessId: 4242), new LiveTab.None());
+        SessionRow none = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000003"), JobId.From("81cdb0f9"), Listed.As("fix-456"), Folder, Fixtures.Noon, DisplayState.Idle, new JobProcess.None()), new LiveTab.None());
+        SessionRow[] rows = [open, plain, none];
+
+        rows.ShouldAllBe(row => ReferenceEquals(tab.Paint(row), tab.Paint(row)));
+        Allocations.Of(() =>
+        {
+            foreach (SessionRow row in rows)
+            {
+                tab.Paint(row);
+            }
+        }).ShouldBe(0);
+    }
+
+    [Fact]
     public void ShowEveryColumnOfARow()
     {
         SessionRow row = Row(new Session.Background(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("fix-123"), Folder, Fixtures.Noon.AddHours(-3), DisplayState.Idle, new JobProcess.None()), new LiveTab.Open(new TabColour("Yellow", "#FFB900")));

@@ -116,6 +116,22 @@ public sealed class WorktreesScreenDefinitionShould
     }
 
     [Fact]
+    public void PaintEachFlagWithOnePaintOnceSeen()
+    {
+        TableColumn<WorktreeRow> branch = definition.Columns.Single(column => column.Help == Wording.BranchColumn);
+        WorktreeRow[] rows = [.. Enum.GetValues<BranchFlagKind>().Select(flag => Row(new LastCommit.Unknown()) with { Flag = flag })];
+
+        rows.ShouldAllBe(row => ReferenceEquals(branch.Paint(row), branch.Paint(row)));
+        Allocations.Of(() =>
+        {
+            foreach (WorktreeRow row in rows)
+            {
+                branch.Paint(row);
+            }
+        }).ShouldBe(0);
+    }
+
+    [Fact]
     public void FitTheBranchColumnToItsWidestFlag()
     {
         TableColumn<WorktreeRow> branch = definition.Columns.Single(column => column.Help == Wording.BranchColumn);
