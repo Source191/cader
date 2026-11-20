@@ -19,8 +19,8 @@ This is an investigation: no task changes `src`, `test` or `tools`, so there is 
 
 ## 3. Recommend
 
-- [ ] 3.1 Mock up options A, B and C at 120 x 36 and at 80 columns from the spike's findings (headless captures or text mock-ups); verify each shows the Sessions tab with need input, working and failed rows.
-- [ ] 3.2 Add a Findings section to `design.md`: each option scored on design 5's criteria, the recommended option and why, and its cost; for A, B or C, the follow-up change's name and the `console-layout` requirements and scenarios it would modify. Verify `openspec validate investigate-counts-in-tab-titles` passes. Commit.
+- [x] 3.1 Mock up options A, B and C at 120 x 36 and at 80 columns from the spike's findings (headless captures or text mock-ups); verify each shows the Sessions tab with need input, working and failed rows.
+- [x] 3.2 Add a Findings section to `design.md`: each option scored on design 5's criteria, the recommended option and why, and its cost; for A, B or C, the follow-up change's name and the `console-layout` requirements and scenarios it would modify. Verify `openspec validate investigate-counts-in-tab-titles` passes. Commit.
 
 ## Workflow follow-up
 
