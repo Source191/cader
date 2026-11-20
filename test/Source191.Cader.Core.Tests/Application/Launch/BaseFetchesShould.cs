@@ -136,7 +136,7 @@ public sealed class BaseFetchesShould
 
         await fetches.Begin(Orders);
 
-        processes.CapturedRequests.ShouldNotContain(IsFetch);
+        processes.CapturedRequests.ShouldNotContain(request => IsFetch(request));
     }
 
     [Fact]
