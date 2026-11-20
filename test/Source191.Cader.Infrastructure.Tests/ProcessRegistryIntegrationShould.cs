@@ -58,6 +58,14 @@ public sealed class ProcessRegistryIntegrationShould
     }
 
     [Fact]
+    public void NameAParentWithoutABufferPerCall()
+    {
+        long allocated = Allocations.Of(() => registry.ParentOf(Environment.ProcessId));
+
+        allocated.ShouldBeLessThan(512);
+    }
+
+    [Fact]
     public void ReadThisProcesssHandleCount()
     {
         using Process current = Process.GetCurrentProcess();
