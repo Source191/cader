@@ -6,7 +6,7 @@ Each code task is red, green, refactor with a commit per step; the test is named
 
 ## 1. Spike
 
-- [ ] 1.1 Throwaway program (not committed) with a `TableView` and a pane of `Arrangement = ViewArrangement.TopResizable` and a top-only border inside a `Tabs` tab, run in the headless terminal (SGR mouse press, motion, release) and in a real Windows Terminal: record whether the drag works, what it leaves in `Y` and `Height`, which event reports it, whether anything is drawn on the border, whether the arrange mode can be entered by a key the console uses, and what a window resize does after a drag (design 1). Verify: the facts are in `.claude\rules\terminal-gui.md` with the date and version, and the choice (`TopResizable` or the fallback) is noted in design.md. Commit.
+- [x] 1.1 Throwaway program (not committed) with a `TableView` and a pane of `Arrangement = ViewArrangement.TopResizable` and a top-only border inside a `Tabs` tab, run in the headless terminal (SGR mouse press, motion, release) and in a real Windows Terminal: record whether the drag works, what it leaves in `Y` and `Height`, which event reports it, whether anything is drawn on the border, whether the arrange mode can be entered by a key the console uses, and what a window resize does after a drag (design 1). Verify: the facts are in `.claude\rules\terminal-gui.md` with the date and version, and the choice (`TopResizable` or the fallback) is noted in design.md. Commit. (Run in the headless terminal; the real Windows Terminal run is part of 7.2's check by hand.)
 
 ## 2. Settings
 

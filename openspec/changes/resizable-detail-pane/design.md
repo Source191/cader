@@ -25,7 +25,7 @@ Before any production code, a throwaway program in `tools\HeadlessTerminal` (or 
 - whether the arrange mode's keyboard entry (`Arranger.EnterArrangeMode`) can be reached by a key the console uses;
 - how the pane behaves when the window is resized after a drag.
 
-The facts go into `terminal-gui.md` with the date and version. **Fallback**, if `TopResizable` does not work inside `Tabs` or draws something the console cannot hide: the pane handles its own mouse on its divider row (press on row 0 grabs the mouse, position reports while pressed give the new top, release ends it), using the same height rule below. Either way only the Tui layer differs.
+The facts go into `terminal-gui.md` with the date and version. **Chosen (spike, 20 November 2026):** `TopResizable`. The drag works inside `Tabs` and draws nothing extra, but leaves `Y` and `Height` absolute and overwrites anything set from `FrameChanged`, so the pane's `FrameChanged` re-applies the clamped height from a zero timeout (`app.AddTimeout(TimeSpan.Zero, ...)`), after the arranger's own write. **Fallback**, if `TopResizable` does not work inside `Tabs` or draws something the console cannot hide: the pane handles its own mouse on its divider row (press on row 0 grabs the mouse, position reports while pressed give the new top, release ends it), using the same height rule below. Either way only the Tui layer differs.
 
 ### 2. The height rule is one Application value
 
