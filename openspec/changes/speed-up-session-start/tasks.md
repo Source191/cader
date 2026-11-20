@@ -33,7 +33,7 @@ Each task is red, green, refactor, with a commit per step. Tests run the real `G
 
 ## 5. Docs, version and archive
 
-- [ ] 5.1 `docs\user-guide.md`'s new-session section names the status line's steps and the early fetch; `.claude\rules\console-screen.md` records the hold on the refresh schedules and the launch progress holder. Commit.
+- [x] 5.1 `docs\user-guide.md`'s new-session section names the status line's steps and the early fetch; `.claude\rules\console-screen.md` records the hold on the refresh schedules and the launch progress holder. Commit.
 - [ ] 5.2 `Version` rises one preview step in `src\Source191.Cader\Source191.Cader.csproj`; `CHANGELOG.md` gets a Changed entry (the steps on the status line, refreshes waiting for a launch, the early fetch). Commit.
 - [ ] 5.3 `openspec validate speed-up-session-start --strict`, then archive the change in the same pull request. Commit.
 - [ ] 5.4 After a day's use, compare `claude --bg`'s median and the `StartSession` effect time in `cader.log` against the proposal's figures, and record them in the pull request (design 5).
