@@ -92,24 +92,22 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
 
     private static SessionOwner ReadOwner(string transcript)
     {
-        using FileStream stream = Open(transcript);
-        using StreamReader reader = new(stream);
-
-        // Only a line naming the type is parsed: message lines can be large, and most are messages.
-        string? line = Lines(reader).FirstOrDefault(text => text.Contains("\"session-owner\"", StringComparison.Ordinal) && TypeOf(text) is "session-owner");
-
-        return line is not null && OrganisationOf(line) is OrganisationId organisation ? new SessionOwner.Recorded(organisation) : new SessionOwner.NotRecorded();
-    }
-
-    private static FileStream Open(string transcript) => new(transcript, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-
-    private static IEnumerable<string> Lines(StreamReader reader)
-    {
-        while (reader.ReadLine() is string line)
+        using TranscriptLines lines = new(transcript);
+        while (lines.TryNext(out ReadOnlySpan<byte> line))
         {
-            yield return line;
+            // Only a line naming the type is read: message lines can be large, and most are messages.
+            if (line.IndexOf("\"session-owner\""u8) >= 0 && TryReadString(line, "type"u8, out Utf8JsonReader type) && type.ValueTextEquals("session-owner"u8))
+            {
+                return OwnerOn(line);
+            }
         }
+
+        return new SessionOwner.NotRecorded();
     }
+
+    private static SessionOwner OwnerOn(ReadOnlySpan<byte> line) => TryReadString(line, "organizationUuid"u8, out Utf8JsonReader value) && OrganisationId.TryParse(value.GetString(), out OrganisationId? organisation)
+        ? new SessionOwner.Recorded(organisation)
+        : new SessionOwner.NotRecorded();
 
     private static bool IsMessage(ReadOnlySpan<byte> line) => TryReadString(line, "type"u8, out Utf8JsonReader type) && (type.ValueTextEquals("user"u8) || type.ValueTextEquals("assistant"u8));
 
@@ -145,28 +143,6 @@ public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
         catch (JsonException)
         {
             return false;
-        }
-    }
-
-    private static string? TypeOf(string line) => StringProperty(line, "type");
-
-    private static OrganisationId? OrganisationOf(string line) => OrganisationId.TryParse(StringProperty(line, "organizationUuid"), out OrganisationId? organisation) ? organisation : null;
-
-    private static string? StringProperty(string line, string name)
-    {
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(line);
-
-            return document.RootElement.ValueKind is JsonValueKind.Object
-                && document.RootElement.TryGetProperty(name, out JsonElement value)
-                && value.ValueKind is JsonValueKind.String
-                ? value.GetString()
-                : null;
-        }
-        catch (JsonException)
-        {
-            return null;
         }
     }
 
