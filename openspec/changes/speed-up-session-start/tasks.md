@@ -27,8 +27,8 @@ Each task is red, green, refactor, with a commit per step. Tests run the real `G
 
 ## 4. Screen and wiring
 
-- [ ] 4.1 `ConsoleScreen.ShowStatus` passes each message through `LaunchProgress.Shown`, and registers `Follow` once to redraw the status line through `app.Invoke`. Commit.
-- [ ] 4.2 `Composition\LaunchParts` builds `LaunchProgress`, `LaunchHold` and `BaseFetches` once; `ConsoleComposition` hands them to `RefreshSchedule`, `StartSessionHandler`, `ConsoleScreen` and the wizard; `tools\ReadmeScene\SceneHost` copies the change. `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes`. Commit.
+- [x] 4.1 `ConsoleScreen.ShowStatus` passes each message through `LaunchProgress.Shown`, and registers `Follow` once to redraw the status line through `app.Invoke`. Commit.
+- [x] 4.2 `Composition\LaunchParts` builds `LaunchProgress`, `LaunchHold` and `BaseFetches` once; `ConsoleComposition` hands them to `RefreshSchedule`, `StartSessionHandler`, `ConsoleScreen` and the wizard; `tools\ReadmeScene\SceneHost` copies the change. `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes`. Commit.
 - [ ] 4.3 Smoke check of a local install (`tools\install-local.ps1`, then `dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`): exit 0. Then by hand, a launch in a scratch repository shows each step on the status line. Commit nothing unless a step fails.
 
 ## 5. Docs, version and archive
