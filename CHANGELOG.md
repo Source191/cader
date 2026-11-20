@@ -36,6 +36,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- Saving a setting on the Config tab no longer crashes Cader, or is refused, because a repository root's folder or a custom editor's program has gone; each is checked only in the dialog that edits it (#358)
 - A refresh no longer throws a long table back to its top: the Sessions, Worktrees and Config tables keep the rows you were looking at on screen when they refresh, and moving the selection past the last row on screen now scrolls the table to keep it in view (#351)
 - A stray space typed along with n no longer empties the new-session wizard's list: the wizard's filter and the tables' / filter ignore spaces and invisible characters before the text, and a new session's name loses spaces at either end (#339, #345)
 - Renaming a session just moved to the background with /bg no longer loses it: Claude Code gives such a session a transcript with no messages until its next turn, so rename now says it has no messages yet and to send it something first, instead of removing it and starting a copy that fails with "source session not found" (#327)
