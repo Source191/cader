@@ -134,7 +134,7 @@ internal static class ConsoleComposition
         ChangeWatches watches)
     {
         SessionRowEnricher enricher = new(launch.Git, folders, parts.Store, parts.ProcessRegistry, TimeProvider.System, transcripts, pullRequests, accounts);
-        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, parts.Log);
+        WorktreeInventory inventory = new(launch.Git, folders, settings, pullRequests, new OriginPruner(launch.Git, TimeProvider.System, parts.Log), parts.Log);
         SetupFactsReader setup = new(parts.TerminalFragment, parts.TerminalSettings, new ClaudeSettings(parts.ClaudeFolder.Folder.Value), parts.Store, parts.LogFiles, parts.ClaudeFolder, parts.Store.ConfigFile, parts.Log);
 
         // The Sessions tab's listing is held for the worktrees scan, which waits for the first and runs none of its own.
