@@ -26,6 +26,7 @@ public sealed class StartSessionHandlerShould
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty));
     private readonly FakeWindowsTerminal terminal = new();
+    private readonly LaunchProgress progress = new();
 
     private static LaunchPlan Plan => new(
         FolderPath.From(Repository), SessionName.From("Fix flaky tests"), new LaunchPlace.CurrentBranch(),
@@ -38,10 +39,10 @@ public sealed class StartSessionHandlerShould
             InMemoryState store = new();
             GitCli git = new(processes, "git");
             FakeTimeProvider clock = new(Fixtures.Noon);
-            LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock, new LaunchProgress());
+            LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock, progress);
             OpenTabHandler tabs = new(store, new FakeProcessRegistry(), terminal, clock, new TabScripts(Claude, OwnExecutable));
 
-            return new StartSessionHandler(service, tabs, terminal, new TabScripts(Claude, OwnExecutable));
+            return new StartSessionHandler(service, tabs, terminal, new TabScripts(Claude, OwnExecutable), progress);
         }
     }
 
@@ -54,6 +55,18 @@ public sealed class StartSessionHandlerShould
         TabLaunch tab = terminal.Opened.Single();
         tab.Title.ShouldBe("Fix flaky tests");
         tab.Script.ShouldContain($"& '{Claude}' 'attach' '81cdb0f9'");
+    }
+
+    [Fact]
+    public async Task ReportOpeningTheTabAsTheLastStep()
+    {
+        List<(LaunchStep Step, int TabsOpened)> heard = [];
+        progress.Follow(() => heard.Add((progress.Latest, terminal.Opened.Count)));
+
+        await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
+
+        heard.Select(step => step.Step.Stage).ShouldBe([LaunchStage.StartingClaude, LaunchStage.FindingSession, LaunchStage.OpeningTab]);
+        heard[^1].ShouldBe((new LaunchStep(Plan.Name, LaunchStage.OpeningTab, 3, 3, new LaunchBase.None()), 0));
     }
 
     [Fact]
