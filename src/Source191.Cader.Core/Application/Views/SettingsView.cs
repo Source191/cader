@@ -39,7 +39,10 @@ public static class SettingsView
 
     private static SettingsUpdate Saved(SettingsState state)
     {
-        return Settings.Validate(state.Text, state.FolderExists, state.FileExists) switch
+        Func<string, bool> folderExists = state.Scope.Fields.Contains(SettingsField.Roots) ? state.FolderExists : _ => true;
+        Func<string, bool> fileExists = state.Scope.Fields.Contains(SettingsField.Executable) ? state.FileExists : _ => true;
+
+        return Settings.Validate(state.Text, folderExists, fileExists) switch
         {
             SettingsValidation.Valid valid => new SettingsUpdate(state with { Problem = new SettingsProblemLine.None() }, new SettingsEffect.Save(valid.Settings)),
             SettingsValidation.Refused refused => Changed(state with { Problem = new SettingsProblemLine.Shows(refused.Problem), Focus = FieldOf(refused.Problem) }),
