@@ -245,6 +245,19 @@ public sealed class GitCliShould
     }
 
     [Fact]
+    public async Task PruneOriginWithoutEverPrompting()
+    {
+        await Git.PruneOriginAsync(FolderPath.From(Repository), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["remote", "prune", "origin"]),
+            request => request.Variables.Count.ShouldBe(2),
+            request => request.Variables["GIT_TERMINAL_PROMPT"].ShouldBe("0"),
+            request => request.Variables["GCM_INTERACTIVE"].ShouldBe("false"));
+    }
+
+    [Fact]
     public async Task ThrowGitsWordsWhenAFetchFails()
     {
         processes.AnswerAll(new ProcessResult(128, string.Empty, "fatal: unable to access 'https://github.com/northwind/Northwind.Orders.git/': Could not resolve host: github.com\n"));
