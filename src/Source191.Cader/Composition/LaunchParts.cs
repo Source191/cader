@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Source191.Cader.Composition;
 
 /// <summary>What the console and <c>cader here</c> both build once Claude Code and git are found.</summary>
-internal sealed record LaunchParts(RequiredPrograms.Found Programs, ClaudeCli Claude, GitCli Git, LaunchService Launches, LaunchProgress Progress, LaunchHold Hold)
+internal sealed record LaunchParts(RequiredPrograms.Found Programs, ClaudeCli Claude, GitCli Git, LaunchService Launches, LaunchProgress Progress, LaunchHold Hold, BaseFetches Fetches)
 {
     // Claude Code and git, found once for the console and cader here; the sentence and exit code 1 when either cannot be run.
     public static async Task<int> RunAsync(SharedParts parts, TextWriter error, Func<LaunchParts, Task<int>> run)
@@ -18,8 +18,9 @@ internal sealed record LaunchParts(RequiredPrograms.Found Programs, ClaudeCli Cl
                 ClaudeCli claude = new(parts.Processes, found.Claude);
                 GitCli git = new(parts.Processes, found.Git);
                 LaunchProgress progress = new();
-                LaunchService launchService = new(claude, git, new BaseUpdater(git), parts.Store, parts.Store, new WorktreeIncludeCopier(git), TimeProvider.System, progress);
-                return await run(new LaunchParts(found, claude, git, launchService, progress, new LaunchHold()));
+                BaseFetches fetches = new(git, TimeProvider.System);
+                LaunchService launchService = new(claude, git, new BaseUpdater(git, fetches), parts.Store, parts.Store, new WorktreeIncludeCopier(git), TimeProvider.System, progress);
+                return await run(new LaunchParts(found, claude, git, launchService, progress, new LaunchHold(), fetches));
             case RequiredPrograms.Missing missing:
                 await error.WriteLineAsync(missing.Sentence);
                 return 1;

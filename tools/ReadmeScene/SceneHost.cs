@@ -59,7 +59,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         GitCli gitCli = new(processes, git);
         LaunchProgress progress = new();
         LaunchHold hold = new();
-        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
+        BaseFetches fetches = new(gitCli, clock);
+        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli, fetches), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
         FolderPath home = FolderPath.From(folders.Home);
         CurrentSettings settings = await CurrentSettings.LoadAsync(store, home);
         ClaudeTranscripts transcripts = new(folders.ClaudeHome);

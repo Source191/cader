@@ -30,14 +30,14 @@ public sealed class LaunchServiceShould
         get
         {
             GitCli git = new(processes, "git");
-            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress);
+            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress);
         }
     }
 
     private LaunchService ServiceWith(FakeWorktreeIncludeCopier copier)
     {
         GitCli git = new(processes, "git");
-        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git), store, store, copier, new FakeTimeProvider(Fixtures.Noon), progress);
+        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, copier, new FakeTimeProvider(Fixtures.Noon), progress);
     }
 
     private static readonly PlannedWorktree FlakyTests = new(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"), BranchName.From("fix-flaky-tests"));
