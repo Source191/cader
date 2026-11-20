@@ -3,12 +3,18 @@ namespace Source191.Cader.Application.Views;
 /// <summary>Which one setting a dialog edits, and the field it opens on; the Config tab raises one per setting row.</summary>
 public abstract record SettingsScope(SettingsField Field)
 {
+    /// <summary>Every field the dialog shows, which is what focus may be on; Core's statement of what SettingsControls builds per scope.</summary>
+    public virtual IReadOnlyList<SettingsField> Fields => [Field];
+
     /// <summary>Every repository root, one per line, to change, add or remove together.</summary>
     public sealed record Roots() : SettingsScope(SettingsField.Roots);
 
     public sealed record WorktreeRoot() : SettingsScope(SettingsField.WorktreeRoot);
 
-    public sealed record Editor() : SettingsScope(SettingsField.Editor);
+    public sealed record Editor() : SettingsScope(SettingsField.Editor)
+    {
+        public override IReadOnlyList<SettingsField> Fields => [SettingsField.Editor, SettingsField.Executable, SettingsField.Arguments];
+    }
 
     public sealed record Base() : SettingsScope(SettingsField.Base);
 
