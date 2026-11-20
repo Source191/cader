@@ -42,7 +42,7 @@ One Windows Terminal tab with three tabs of its own; Left and Right step between
 - **Settings row:** Cader's version and memory, and Claude Code's version, with a warning when it is below 2.1.309. A newer release shows here too.
 - **Status line:** under the settings row while an action runs or has something to say; ✕ closes it, and a success clears itself after ten seconds.
 - **Counts:** beside the tab titles, how many sessions are in each state, and the automated runs (Agent SDK and `claude -p`) with their memory.
-- **Detail pane:** under the table, what the selected row does not show.
+- **Detail pane:** under the table, what the selected row does not show. Drag its divider up or down, or press `+` and `-`, to give the pane or the table more room; it keeps at least one line, the table keeps its heading and three rows, and the Sessions pane grows no taller than its six rows of facts. Each tab keeps its own height, saved in `config.json` (`sessionsDetailRows` and `worktreesDetailRows`) a second after you stop resizing, so the console opens as you left it; a terminal too short for it shows less without forgetting it.
 - **Key bar:** the keys for the selected row; click one to press it.
 
 ### The Sessions tab
@@ -77,7 +77,7 @@ Every git worktree under your repository roots, with or without a session, group
 
 Gone and origin rows are read from git's records as of the last fetch, and the scan itself never fetches. When a repository shows an origin row, Cader prunes its records of origin's branches afterwards (`git remote prune origin`, at most once an hour per repository, never prompting), so a branch deleted on GitHub leaves the tab by itself within a refresh or two, and a local branch whose upstream was deleted then reads ✗ gone. A branch is left behind only when its shown pull request has merged and the branch has commits that the pull request's head commit does not contain and whose changes origin's default branch lacks, so a squash merge, a branch rebased before its merge and a branch moved forward to main after it are judged correctly. Merge commits never count. In a repository that records no default branch for origin (no `origin/HEAD`; `git remote set-head origin -a` sets it), every commit after the head counts. Nothing reads · no PR or ✗ closed while the pull request cannot be looked up (no origin, the CLI missing or signed out).
 
-The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch (or, when BRANCH flags it, the flag's reason, such as `1 commit after #298 merged`), the pull request, the folder and when Cader created it. For a branch or origin row it gives the repository instead of the folder, and the branch's unpushed commits.
+The detail pane gives the health's reason in full, the branch and whether it is merged into origin's default branch (or, when BRANCH flags it, the flag's reason, such as `1 commit after #298 merged`), the pull request, the folder and when Cader created it, then as many unpushed commits (or changed files, when none are unpushed) as the pane has lines for, and how many more. For a branch or origin row it gives the repository instead of the folder, and the branch's unpushed commits.
 
 ### The Config tab
 
