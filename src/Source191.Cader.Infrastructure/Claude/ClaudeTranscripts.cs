@@ -10,8 +10,9 @@ namespace Source191.Cader.Adapters.Claude;
 /// Looks for <c>~\.claude\projects\&lt;project&gt;\&lt;sessionId&gt;.jsonl</c>. The project folder name encodes the
 /// working directory, so every project folder is checked rather than reproducing that encoding. A transcript has
 /// messages once it holds a user or assistant line: after <c>/bg</c> Claude writes a new session's transcript with only
-/// its title and name (2.1.325), which <c>--resume</c> cannot find. Of each line only the top-level type is read, and
-/// of the first <c>session-owner</c> line (2.1.325 on) its <c>organizationUuid</c>.
+/// its title and name (2.1.325), which <c>--resume</c> cannot find. Lines are read as UTF-8 bytes and never decoded whole:
+/// of each line only the top-level type is read, and of the first <c>session-owner</c> line (2.1.325 on) its
+/// <c>organizationUuid</c>.
 /// </summary>
 public sealed class ClaudeTranscripts(string claudeHome) : ITranscripts
 {
