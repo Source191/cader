@@ -6,11 +6,11 @@ Each task is red, green, refactor, with a commit per step. Tests run the real `G
 
 ## 1. Launch steps
 
-- [ ] 1.1 `LaunchStepsShould.CountFiveStepsForAFetchedNewWorktree`, `CountFourWithoutAnUpdate`, `CountThreeWithoutANewWorktree` and `NumberEachStageInOrder`: `LaunchStage` (closed enum) and `LaunchSteps` with `Step(stage)` answering `LaunchStep(Name, Stage, Number, Count)` (design 1). Commit.
-- [ ] 1.2 `LaunchProgressShould.StartWithNoStep`, `KeepTheLatestStep`, `CallItsListenerOnEachStep`, `ShowTheStepForTheLaunchItNames` and `LeaveAnotherLaunchsMessageAlone`: `LaunchProgress` over `SharedSnapshot<LaunchStep>`, `Follow(Action)` and `Shown(StatusMessage)` (design 2). Commit.
-- [ ] 1.3 `WordingShould.SayALaunchStep` (one fact per stage, `fetching origin/main` and `pulling origin/main` naming the remote branch) and `StatusTonesShould` for `StatusMessage.Launching`: the new case, its words and its tone (design 2). Commit.
-- [ ] 1.4 `LaunchServiceShould.ReportEachStepItRuns` for the 5-, 4- and 3-step launches (the reported steps in order, read from a `LaunchProgress`), `ReportNoFetchStepWithoutOriginHead`, and `ReportNothingAfterAFailedStart`: `LaunchService` takes `LaunchProgress`, builds `LaunchSteps` and reports as each step begins; `LaunchOutcome.Listed` carries its steps. Commit.
-- [ ] 1.5 `StartSessionHandlerShould.ReportOpeningTheTabAsTheLastStep`: the handler reports `OpeningTab` with the listed outcome's steps before opening the tab. Commit.
+- [x] 1.1 `LaunchStepsShould.CountFiveStepsForAFetchedNewWorktree`, `CountFourWithoutAnUpdate`, `CountThreeWithoutANewWorktree` and `NumberEachStageInOrder`: `LaunchStage` (closed enum) and `LaunchSteps` with `Step(stage)` answering `LaunchStep(Name, Stage, Number, Count)` (design 1). Commit.
+- [x] 1.2 `LaunchProgressShould.StartWithNoStep`, `KeepTheLatestStep`, `CallItsListenerOnEachStep`, `ShowTheStepForTheLaunchItNames` and `LeaveAnotherLaunchsMessageAlone`: `LaunchProgress` over `SharedSnapshot<LaunchStep>`, `Follow(Action)` and `Shown(StatusMessage)` (design 2). Commit.
+- [x] 1.3 `WordingShould.SayALaunchStep` (one fact per stage, `fetching origin/main` and `pulling origin/main` naming the remote branch) and `StatusTonesShould` for `StatusMessage.Launching`: the new case, its words and its tone (design 2). Commit.
+- [x] 1.4 `LaunchServiceShould.ReportEachStepItRuns` for the 5-, 4- and 3-step launches (the reported steps in order, read from a `LaunchProgress`), `ReportNoFetchStepWithoutOriginHead`, and `ReportNothingAfterAFailedStart`: `LaunchService` takes `LaunchProgress`, builds `LaunchSteps` and reports as each step begins; `LaunchOutcome.Listed` carries its steps. Commit.
+- [x] 1.5 `StartSessionHandlerShould.ReportOpeningTheTabAsTheLastStep`: the handler reports `OpeningTab` with the listed outcome's steps before opening the tab. Commit.
 
 ## 2. Hold refreshes during a launch
 
