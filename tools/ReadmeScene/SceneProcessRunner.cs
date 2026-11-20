@@ -5,8 +5,9 @@ namespace Source191.Cader.ReadmeScene;
 /// <summary>
 /// Answers Claude Code, gh and az from the scene and hands every other program (git, wt, pwsh) to the real runner,
 /// sending Windows Terminal's tabs to the scene's own window. Nothing the scene does not script is ever run as Claude Code:
-/// stop, rm, attach and the rest fail with exit code 1. A git fetch from a remote is answered as done, because the scene's
-/// remotes are made up and the scene never reaches the network; its origin/main already stands where main does.
+/// stop, rm, attach and the rest fail with exit code 1. A git fetch from a remote and the prune of origin are answered as
+/// done, because the scene's remotes are made up and the scene never reaches the network; its origin/main already stands
+/// where main does, and its origin row stays.
 /// </summary>
 public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests pullRequests, SceneExecutables executables, IProcessRunner others) : IProcessRunner
 {
@@ -19,7 +20,7 @@ public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests p
             return Task.FromResult(Claude(request));
         }
 
-        if (IsFetchFromARemote(request))
+        if (ReachesARemote(request))
         {
             return Task.FromResult(Answer(string.Empty));
         }
@@ -73,8 +74,8 @@ public sealed class SceneProcessRunner(SceneListing listing, ScenePullRequests p
 
     private static bool Is(ProcessRequest request, string executable) => string.Equals(request.FileName, executable, StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsFetchFromARemote(ProcessRequest request) =>
-        string.Equals(Path.GetFileNameWithoutExtension(request.FileName), "git", StringComparison.OrdinalIgnoreCase) && request.Arguments is ["fetch", not ".", ..];
+    private static bool ReachesARemote(ProcessRequest request) =>
+        string.Equals(Path.GetFileNameWithoutExtension(request.FileName), "git", StringComparison.OrdinalIgnoreCase) && request.Arguments is ["fetch", not ".", ..] or ["remote", "prune", ..];
 
     private static ProcessResult Answer(string output) => new(0, output, string.Empty);
 
