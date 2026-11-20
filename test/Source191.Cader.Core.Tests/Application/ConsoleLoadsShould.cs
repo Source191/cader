@@ -206,7 +206,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     {
         GitCli git = new(gitRuns, "git");
         SessionRowEnricher enricher = new(git, folders, store, registry, clock, new FakeTranscripts(), catalogue, accounts);
-        WorktreeInventory inventory = new(git, folders, settings, catalogue, log);
+        WorktreeInventory inventory = new(git, folders, settings, catalogue, new OriginPruner(git, clock, log), log);
         SetupFactsReader setup = new(new FakeTerminalFragment(), new FakeTerminalSettings(), new FakeClaudeSettings(new NotificationChannelState.Unset()), store, logFiles, TestSettings.DefaultClaudeFolder, SettingsFile, log);
 
         return new ConsoleLoads(new LatestSessions(new ClaudeCli(claudeRuns, Claude)), enricher, inventory, setup, settings, folders, accounts, refreshes, watches, TestSettings.DefaultClaudeFolder);

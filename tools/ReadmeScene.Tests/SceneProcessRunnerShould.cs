@@ -175,6 +175,18 @@ public sealed class SceneProcessRunnerShould
         others.CapturedRequests.ShouldHaveSingleItem().ShouldBe(local);
     }
 
+    /// <summary>The prune a scan starts asks origin for its branches, so it is answered as done too, and the scene's origin row stays.</summary>
+    [Fact]
+    public async Task AnswerAPruneOfOriginWithoutTheNetwork()
+    {
+        ProcessRequest prune = new(@"C:\Program Files\Git\cmd\git.exe", ["remote", "prune", "origin"], new WorkingFolder.At(@"C:\ReadmeDemo\me\source\repos\Northwind.Inventory"));
+
+        ProcessResult pruned = await runner.RunAsync(prune, TestContext.Current.CancellationToken);
+
+        pruned.ExitCode.ShouldBe(0);
+        others.CapturedRequests.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task HandEveryOtherProgramToTheRealRunner()
     {

@@ -30,6 +30,9 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
     public Task FetchBranchAsync(FolderPath repository, RemoteBranch branch, CancellationToken cancellationToken) =>
         RunOrThrowAsync(repository.Value, ["fetch", branch.Remote, $"+refs/heads/{branch.Branch.Value}:{TrackingRef(branch)}"], NoPrompts, cancellationToken);
 
+    public Task PruneOriginAsync(FolderPath repository, CancellationToken cancellationToken) =>
+        RunOrThrowAsync(repository.Value, ["remote", "prune", "origin"], NoPrompts, cancellationToken);
+
     public async Task<bool> BranchExistsAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunAsync(repository.Value, ["rev-parse", "--verify", "--quiet", $"refs/heads/{branch.Value}"], cancellationToken);

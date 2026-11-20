@@ -28,7 +28,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
 
     private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
 
-    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, log);
+    private WorktreeInventory Inventory => new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), log), log);
 
     [Fact]
     public async Task AskGitThreeThingsPerRegisteredWorktreeAndNothingAboutMergeState()
@@ -199,7 +199,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     public async Task ListNoEmptyRowsWhenTheWorktreeRootIsARepositoryRoot()
     {
         folders.WithDirectory(Path.Combine(Root, "Northwind.Billing"));
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, log);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), log), log);
 
         (await inventory.ScanAsync([], CancellationToken.None)).ShouldBeEmpty();
     }
@@ -209,7 +209,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
     {
         string sibling = Path.Combine(Root, "Northwind.Orders-republish");
         folders.WithFile(Path.Combine(sibling, ".git"), "gitdir: C:/Users/me/source/repos/Northwind.Orders/.git/worktrees/republish\n");
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, log);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(TestSettings.For([Root], worktreeRoot: Root)), catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), log), log);
 
         (await inventory.ScanAsync([], CancellationToken.None)).Select(row => row.Path.Value).ShouldBe([sibling]);
     }
@@ -221,7 +221,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         string sibling = Path.Combine(Work, "Northwind.Ledger-republish");
         folders.WithFile(Path.Combine(sibling, ".git"), "gitdir: D:/work/Northwind.Ledger/.git/worktrees/republish\n");
         CurrentSettings settings = TestSettings.Current(Root);
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, settings, catalogue, log);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, settings, catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), log), log);
 
         await settings.SaveAsync(TestSettings.For(Root, Work));
 
@@ -281,7 +281,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         FakeProcessRunner origin = new FakeProcessRunner().Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
         FakeTimeProvider clock = new(Fixtures.Noon);
         using PullRequestCatalogue lookups = new(new GitCli(origin, "git"), hosts, clock, new RefreshCounts(clock, log));
-        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), lookups, log);
+        WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, TestSettings.Current(Root), lookups, new OriginPruner(new GitCli(processes, "git"), clock, log), log);
 
         await inventory.ScanAsync([], CancellationToken.None);
         await hosts.WhenCalledAsync(1).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);

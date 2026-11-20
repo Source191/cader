@@ -11,9 +11,9 @@ namespace Source191.Cader.Application;
 /// Everything under the repository roots and the worktree root that is, or was, a worktree: git's own listing per repository, plus the
 /// leftovers git has forgotten (orphans under .claude\worktrees, folders under a root or the worktree root whose registration is gone, empty folders
 /// that worktree tools leave behind, and any empty folder under the worktree root, which git leaves when a program held a worktree's folder as it
-/// was removed). Read-only: nothing here prunes, deletes or touches git state.
+/// was removed). Read-only: nothing here deletes or changes git state but the origin pruner it starts after a scan that shows an origin row.
 /// </summary>
-public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests, DiagnosticLog log)
+public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSettings settings, PullRequestCatalogue pullRequests, OriginPruner pruner, DiagnosticLog log)
 {
     private readonly WorktreeInspector inspector = new(git);
     private readonly OncePerFolder unreadableRepositories = new(log, FailureSite.Load, CodeName.For(typeof(WorktreeInventory)));
@@ -97,7 +97,12 @@ public sealed class WorktreeInventory(IGit git, IFolders folders, CurrentSetting
         // Never awaited: the rows show what the catalogue already holds, and the next rescan picks up what lands.
         _ = pullRequests.RefreshStaleAsync(BranchesOf([.. rows, .. originCandidates]));
 
-        return await ShownAsync(rows, originCandidates, upstreams, sessions, cancellationToken);
+        IReadOnlyList<WorktreeRow> shown = await ShownAsync(rows, originCandidates, upstreams, sessions, cancellationToken);
+
+        // Never awaited: only the prune reaches origin, and the next rescan stops listing what it removed.
+        _ = pruner.PruneDueAsync(shown.Where(row => row.Health.Kind is WorktreeHealthKind.Origin).Select(row => row.Repository));
+
+        return shown;
     }
 
     private FolderKind Classify(FolderPath child)
