@@ -10,7 +10,7 @@ namespace Source191.Cader.Domain;
 /// </summary>
 public sealed record Settings
 {
-    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching, RefreshInterval sessionsRefresh, RefreshInterval worktreesRefresh)
+    private Settings(IReadOnlyList<FolderPath> repositoryRoots, FolderPath worktreeRoot, EditorChoice editor, WorktreeBase defaultBase, bool checkForUpdates, LaunchMode defaultPlace, bool diagnosticLog, BeforeBranching beforeBranching, RefreshInterval sessionsRefresh, RefreshInterval worktreesRefresh, PaneHeights paneHeights)
     {
         RepositoryRoots = repositoryRoots;
         WorktreeRoot = worktreeRoot;
@@ -22,6 +22,7 @@ public sealed record Settings
         BeforeBranching = beforeBranching;
         SessionsRefresh = sessionsRefresh;
         WorktreesRefresh = worktreesRefresh;
+        PaneHeights = paneHeights;
     }
 
     public IReadOnlyList<FolderPath> RepositoryRoots { get; }
@@ -49,6 +50,9 @@ public sealed record Settings
 
     /// <summary>How often the Worktrees tab rescans on its own while it is shown; off for no timer.</summary>
     public RefreshInterval WorktreesRefresh { get; }
+
+    /// <summary>The lines under each detail pane's divider, as the user last left them.</summary>
+    public PaneHeights PaneHeights { get; }
 
     /// <summary>The base a file without one branches from: origin's default branch.</summary>
     public const WorktreeBase BaseWhenUnset = WorktreeBase.RemoteDefault;
@@ -86,7 +90,7 @@ public sealed record Settings
             _ => throw new UnreachableException(),
         };
 
-        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace, diagnosticLog, beforeBranching, sessionsRefresh, worktreesRefresh);
+        return new Settings(resolvedRoots, resolvedWorktreeRoot, editor, defaultBase, checkForUpdates, defaultPlace, diagnosticLog, beforeBranching, sessionsRefresh, worktreesRefresh, PaneHeights.WhenUnset);
     }
 
     /// <summary>
@@ -136,10 +140,13 @@ public sealed record Settings
     }
 
     /// <summary>These settings with the update check turned the other way.</summary>
-    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh);
+    public Settings WithUpdateCheckToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, !CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh, PaneHeights);
 
     /// <summary>These settings with the diagnostic log turned the other way.</summary>
-    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh);
+    public Settings WithDiagnosticLogToggled() => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, !DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh, PaneHeights);
+
+    /// <summary>These settings with the panes' heights replaced.</summary>
+    public Settings WithPaneHeights(PaneHeights heights) => new(RepositoryRoots, WorktreeRoot, Editor, DefaultBase, CheckForUpdates, DefaultPlace, DiagnosticLog, BeforeBranching, SessionsRefresh, WorktreesRefresh, heights);
 
     public bool Equals(Settings? other)
     {
@@ -153,7 +160,8 @@ public sealed record Settings
             && DiagnosticLog == other.DiagnosticLog
             && BeforeBranching == other.BeforeBranching
             && SessionsRefresh.Equals(other.SessionsRefresh)
-            && WorktreesRefresh.Equals(other.WorktreesRefresh);
+            && WorktreesRefresh.Equals(other.WorktreesRefresh)
+            && PaneHeights.Equals(other.PaneHeights);
     }
 
     public override int GetHashCode() => HashCode.Combine(RepositoryRoots.Count, WorktreeRoot, Editor, DefaultBase);
@@ -177,14 +185,14 @@ public sealed record Settings
 
         if (text.Preset != EditorPreset.Custom)
         {
-            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh));
+            return new SettingsValidation.Valid(new Settings(roots, worktreeRoot, EditorChoice.Of(text.Preset), text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh, PaneHeights.WhenUnset));
         }
 
         IReadOnlyList<string> arguments = CommandArguments.Split(text.Arguments);
 
         return EditorChoice.Validate(text.Executable, arguments, fileExists) switch
         {
-            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh)),
+            EditorChoiceValidation.Valid valid => new SettingsValidation.Valid(new Settings(roots, worktreeRoot, valid.Editor, text.Base, text.CheckForUpdates, text.Place, text.DiagnosticLog, text.BeforeBranching, sessionsRefresh, worktreesRefresh, PaneHeights.WhenUnset)),
             EditorChoiceValidation.Refused refused => Refused(refused.Problem),
             _ => throw new UnreachableException(),
         };

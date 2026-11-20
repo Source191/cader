@@ -390,4 +390,24 @@ public sealed class SettingsShould
         Refusal(Typed with { SessionsRefresh = typed }).ShouldBe(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Sessions));
         Refusal(Typed with { WorktreesRefresh = typed }).ShouldBe(new SettingsProblem.RefreshIntervalNotWholeSeconds(RefreshedTab.Worktrees));
     }
+
+    [Fact]
+    public void ResolveDefaultPaneHeightsOfSixAndTen()
+    {
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, Settings.BaseWhenUnset, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
+
+        settings.PaneHeights.ShouldBe(new PaneHeights(Sessions: 6, Worktrees: 10));
+    }
+
+    [Fact]
+    public void KeepPaneHeightsThroughWithPaneHeights()
+    {
+        Settings settings = Settings.Resolve(roots: [], new WorktreeRootChoice.BesideFirstRoot(), EditorChoice.VsCode, Settings.BaseWhenUnset, Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset)
+            .WithPaneHeights(new PaneHeights(Sessions: 4, Worktrees: 20));
+
+        settings.PaneHeights.ShouldBe(new PaneHeights(Sessions: 4, Worktrees: 20));
+        settings.WithUpdateCheckToggled().PaneHeights.ShouldBe(settings.PaneHeights);
+        settings.WithDiagnosticLogToggled().PaneHeights.ShouldBe(settings.PaneHeights);
+        settings.ShouldNotBe(settings.WithPaneHeights(PaneHeights.WhenUnset));
+    }
 }
