@@ -2,6 +2,7 @@ using Source191.Cader.Application;
 using Source191.Cader.Application.Detail;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Terminal.Gui.Drawing;
 
@@ -33,16 +34,24 @@ internal sealed class SessionsScreenDefinition(StateTransitionNotifier notifier,
         TableColumn<SessionRow>.Plain(Wording.AgeColumn, (row, now, _) => Durations.Age(now - row.Session.StartedAt), new ColumnFit.RightAligned()),
     ];
 
+    private static readonly CellPaint HollowBlock = new CellPaint.Text(Palette.Grey);
+    private static readonly CellPaint Unpainted = new CellPaint.None();
+
+    // The cell is painted on every draw, so each tab colour's fill is worked out once; the colours are the tab palette's.
+    private static readonly ConcurrentDictionary<TabColour, CellPaint> Fills = new();
+
     /// <summary>The block keeps its tab's colour, in the shade the tab shows while the console's own tab is selected, on every row, the selected one too; a plain claude in its own terminal shows a grey hollow block.</summary>
     private static CellPaint TabPaint(SessionRow row)
     {
         return row switch
         {
-            { Session: Session.Interactive } => new CellPaint.Text(Palette.Grey),
-            { Tab: LiveTab.Open { Colour: TabColour colour } } when Color.TryParse(TabShade.Unselected(colour), out Color? parsed) => new CellPaint.Fill(parsed.Value),
-            _ => new CellPaint.None(),
+            { Session: Session.Interactive } => HollowBlock,
+            { Tab: LiveTab.Open { Colour: TabColour colour } } => Fills.GetOrAdd(colour, FillOf),
+            _ => Unpainted,
         };
     }
+
+    private static CellPaint FillOf(TabColour colour) => Color.TryParse(TabShade.Unselected(colour), out Color? parsed) ? new CellPaint.Fill(parsed.Value) : Unpainted;
     public Color RowColour(SessionRow row) => Palette.ForState(row.Session.State.Kind);
 
     public string RowTip(SessionRow row) => Wording.SessionRowTip(row);

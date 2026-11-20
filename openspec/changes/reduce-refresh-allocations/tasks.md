@@ -33,7 +33,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 
 - [x] 5.1 Red: `PaletteShould.HandOutOneSchemePerColour`: `Plain` and `SelectedRow` of one colour answer the same instance twice, and the second call allocates nothing. Commit.
 - [x] 5.2 Green: `Palette`'s two caches (design 3); 5.1 and every Tui fact pass. Commit.
-- [ ] 5.3 Red then green: `SessionsScreenDefinitionShould` and `WorktreesScreenDefinitionShould`: the TAB paint of an open tab, of a plain claude and of none, and the BRANCH paint of each flag, answer the same instance for the same row twice and allocate nothing the second time; the paints are cached (design 3) and the existing paint facts pass. Commit.
+- [x] 5.3 Red then green: `SessionsScreenDefinitionShould` and `WorktreesScreenDefinitionShould`: the TAB paint of an open tab, of a plain claude and of none, and the BRANCH paint of each flag, answer the same instance for the same row twice and allocate nothing the second time; the paints are cached (design 3) and the existing paint facts pass. Commit.
 - [ ] 5.4 Red: `TableSourceShould.WorkEachCellOutOnce`: reading every cell three times, and `Widest` of each column, calls the cell function once per row cell and allocates nothing after the first read. Commit.
 - [ ] 5.5 Green: `TableSource` memoises its cells and answers `Widest` (design 4); 5.4 and the existing facts pass. Commit.
 - [ ] 5.6 Refactor: `ColumnSizing` measures through `Widest` and builds its source before the elastic width is known (design 4). Verify the smoke check over a Release build (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`) exits 0, so both tables still draw with their headings and widths. Commit.

@@ -32,7 +32,12 @@ internal sealed class WorktreesScreenDefinition(FolderLabels folders, IDetailSou
     ];
 
     /// <summary>A flag keeps its own colour off the selected row; a blank cell takes the row's.</summary>
-    private static CellPaint FlagPaint(WorktreeRow row) => row.Flag is BranchFlagKind.None ? new CellPaint.None() : new CellPaint.Text(Palette.ForTone(Wording.ToneOf(row.Flag)));
+    private static CellPaint FlagPaint(WorktreeRow row) => FlagPaints[row.Flag];
+
+    // The cell is painted on every draw, so each flag's paint is made once.
+    private static readonly Dictionary<BranchFlagKind, CellPaint> FlagPaints = Enum.GetValues<BranchFlagKind>().ToDictionary(flag => flag, PaintOf);
+
+    private static CellPaint PaintOf(BranchFlagKind flag) => flag is BranchFlagKind.None ? new CellPaint.None() : new CellPaint.Text(Palette.ForTone(Wording.ToneOf(flag)));
 
     /// <summary>The folder's part after its repository, which the heading names, or a row with no folder's branch.</summary>
     private static string WorktreeOf(FolderLabels folders, WorktreeRow row) => (row.Placement, row.Head) switch
