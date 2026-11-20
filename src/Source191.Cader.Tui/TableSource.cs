@@ -32,6 +32,9 @@ internal sealed class TableSource<TRow>(IReadOnlyList<TableLine<TRow>> lines, IR
 
     public TableLine<TRow> LineAt(int index) => lines[index];
 
+    /// <summary>The length of a column's longest cell over the lines, a heading's empty cells included.</summary>
+    public int Widest(int column) => lines.Count == 0 ? 0 : Enumerable.Range(0, lines.Count).Max(line => ((string)this[line, column]).Length);
+
     /// <summary>The cells a row's first cell is indented by: none on a view with no headings.</summary>
     public static int IndentOf(IReadOnlyList<TableLine<TRow>> lines) => lines.Any(line => line is TableLine<TRow>.Heading) ? Indent : 0;
 }

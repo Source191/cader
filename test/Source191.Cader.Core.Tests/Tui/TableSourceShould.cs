@@ -1,4 +1,5 @@
 using Source191.Cader.Application.Views;
+using Source191.Cader.TestDoubles;
 using Source191.Cader.Tui;
 
 namespace Source191.Cader.Core.Tests.Tui;
@@ -42,6 +43,38 @@ public sealed class TableSourceShould
 
         source[0, 0].ShouldBe("apple");
         TableSource<string>.IndentOf(ungrouped).ShouldBe(0);
+    }
+
+    [Fact]
+    public void WorkEachCellOutOnce()
+    {
+        int calls = 0;
+        TableSource<string> source = new(Grouped, ["FRUIT", "LENGTH"], (row, column) =>
+        {
+            calls++;
+
+            return Cell(row, column);
+        });
+
+        void ReadEveryCellThreeTimesAndEachWidest()
+        {
+            for (int round = 0; round < 3; round++)
+            {
+                for (int line = 0; line < source.Rows; line++)
+                {
+                    _ = source[line, 0];
+                    _ = source[line, 1];
+                }
+            }
+
+            source.Widest(0).ShouldBe("  avocado".Length);
+            source.Widest(1).ShouldBe(1);
+        }
+
+        ReadEveryCellThreeTimesAndEachWidest();
+
+        calls.ShouldBe(4);
+        Allocations.Of(ReadEveryCellThreeTimesAndEachWidest).ShouldBe(0);
     }
 
     private static string Cell(string row, int column) => column == 0 ? row : row.Length.ToString(System.Globalization.CultureInfo.InvariantCulture);
