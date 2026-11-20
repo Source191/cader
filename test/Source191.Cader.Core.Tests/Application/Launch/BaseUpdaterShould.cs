@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Git;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Domain;
@@ -17,7 +18,14 @@ public sealed class BaseUpdaterShould
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
 
-    private BaseUpdater Updater => new(new GitCli(processes, "git"));
+    private readonly BaseFetches fetches;
+
+    public BaseUpdaterShould()
+    {
+        fetches = new BaseFetches(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon));
+    }
+
+    private BaseUpdater Updater => new(new GitCli(processes, "git"), fetches);
 
     [Fact]
     public async Task RunNoGitWhenAskedForNothing()
@@ -162,4 +170,32 @@ public sealed class BaseUpdaterShould
     private static bool IsFastForward(ProcessRequest request) => request.Arguments is ["merge", ..] or ["fetch", ".", ..];
 
     private static bool IsFetchFromOrigin(ProcessRequest request) => request.Arguments is ["fetch", "origin", ..];
+
+    [Fact]
+    public async Task JoinAnEarlyFetch()
+    {
+        processes.Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty));
+        await fetches.Begin(FolderPath.From(Repository));
+
+        BaseUpdate update = await Updater.UpdateAsync(FolderPath.From(Repository), OriginMain, BeforeBranching.Fetch, CancellationToken.None);
+
+        update.ShouldBe(new BaseUpdate.Current());
+        processes.CapturedRequests.Count(IsFetchFromOrigin).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task FastForwardOnlyAfterTheLaunchAsks()
+    {
+        processes.Answer(request => request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty));
+        ListWorktrees(Block(Repository, "main"), Block(FixWorktree, "fix-99"));
+
+        await fetches.Begin(FolderPath.From(Repository));
+
+        processes.CapturedRequests.Select(request => request.Arguments[0]).ShouldBe(["symbolic-ref", "fetch"], "the early fetch updates only the remote-tracking branch");
+
+        BaseUpdate update = await Updater.UpdateAsync(FolderPath.From(Repository), OriginMain, BeforeBranching.Pull, CancellationToken.None);
+
+        update.ShouldBe(new BaseUpdate.Current());
+        processes.CapturedRequests.Select(request => request.Arguments[0]).ShouldBe(["symbolic-ref", "fetch", "rev-parse", "worktree", "merge"]);
+    }
 }
