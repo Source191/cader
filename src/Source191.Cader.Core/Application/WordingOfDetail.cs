@@ -16,9 +16,6 @@ public static partial class Wording
     /// <summary>The rows a worktree's facts take.</summary>
     public const int WorktreeFactRows = 4;
 
-    /// <summary>The most commits or changed files a worktree's pane lists; a line beneath says how many more.</summary>
-    public const int DetailListedItems = 5;
-
     private const string Unavailable = "unavailable";
     private const string NotInARepository = "not in a repository";
     private const string FolderGoneWords = "folder gone";

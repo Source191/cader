@@ -1,6 +1,7 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Detail;
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.Application.Views;
 using Terminal.Gui.App;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -35,13 +36,19 @@ internal abstract class DetailReader<TRow>
     /// <summary>A tab shown again reads its selected row's detail afresh.</summary>
     public abstract void AskAgain();
 
+    /// <summary>Grows the pane by a line for 1 or shrinks it for -1, within its limits, and remembers the height the user wants.</summary>
+    public abstract void Resize(int step);
+
     /// <summary>Drops a read still running; the tab calls it before it disposes its view.</summary>
     public abstract void Release();
 
-    /// <summary>The reader for a tab's detail: the pane under the table (which then stops short of it), or none.</summary>
-    public static DetailReader<TRow> For(TableDetail<TRow> detail, TableView table, IApplication app, DiagnosticLog log, Heartbeat heartbeat, ITabHost host) => detail switch
+    /// <summary>
+    /// The reader for a tab's detail: the pane under the table (which then stops short of it), or none. <paramref name="redraw"/> is
+    /// the tab's redraw, which asks for the selected row's detail again after the pane changes height.
+    /// </summary>
+    public static DetailReader<TRow> For(TableDetail<TRow> detail, ConsoleTab tab, TableView table, View tabView, IApplication app, ScreenContext context, ITabHost host, Action redraw) => detail switch
     {
-        TableDetail<TRow>.Pane pane => new Reading(pane.Source, table, app, log, heartbeat, host),
+        TableDetail<TRow>.Pane pane => new Reading(pane.Source, new PaneSizing.Place(tab, context.PaneHeights, table, tabView), app, context.Diagnostics, context.Heartbeat, host, redraw),
         TableDetail<TRow>.None => new None(),
     };
 
@@ -62,6 +69,10 @@ internal abstract class DetailReader<TRow>
         {
         }
 
+        public override void Resize(int step)
+        {
+        }
+
         public override void Release()
         {
         }
@@ -69,6 +80,7 @@ internal abstract class DetailReader<TRow>
 
     private sealed class Reading : DetailReader<TRow>, IDisposable
     {
+        private readonly PaneSizing sizing;
         private readonly IDetailSource<TRow> source;
         private readonly IApplication app;
         private readonly DiagnosticLog log;
@@ -84,17 +96,20 @@ internal abstract class DetailReader<TRow>
         /// <summary>The key of the row whose detail was last asked for, or <see cref="askAgain"/>.</summary>
         private object key;
 
-        public Reading(IDetailSource<TRow> source, TableView table, IApplication app, DiagnosticLog log, Heartbeat heartbeat, ITabHost host)
+        public Reading(IDetailSource<TRow> source, PaneSizing.Place place, IApplication app, DiagnosticLog log, Heartbeat heartbeat, ITabHost host, Action redraw)
         {
+            sizing = new PaneSizing(source.MostRows, place, app, () =>
+            {
+                AskAgain();
+                redraw();
+            });
             this.source = source;
             this.app = app;
             this.log = log;
             this.heartbeat = heartbeat;
             this.host = host;
             key = askAgain;
-            pane = new DetailPane(source.Rows);
-            pane.Y = Pos.AnchorEnd(pane.Rows);
-            table.Height = Dim.Fill(pane.Rows);
+            pane = sizing.Pane;
         }
 
         public override object Current => key;
@@ -102,6 +117,8 @@ internal abstract class DetailReader<TRow>
         public override IReadOnlyList<View> Views => [pane];
 
         public override void AskAgain() => key = askAgain;
+
+        public override void Resize(int step) => sizing.Resize(step);
 
         public override void AskFor(TRow? selected, bool shown, bool refreshed)
         {
@@ -140,9 +157,10 @@ internal abstract class DetailReader<TRow>
         private void Read(TRow row, DetailRequest request)
         {
             CancellationToken token = lifetime.Token;
+            int lines = sizing.Shown;
             Task.Run(async () =>
             {
-                DetailAnswer read = await Attempt.RunAsync<DetailAnswer>(log, FailureSite.Load, CodeName.For(typeof(DetailContent)), () => ReadAsync(row, token), _ => new DetailAnswer.Dropped());
+                DetailAnswer read = await Attempt.RunAsync<DetailAnswer>(log, FailureSite.Load, CodeName.For(typeof(DetailContent)), () => ReadAsync(row, lines, token), _ => new DetailAnswer.Dropped());
                 if (read is not DetailAnswer.Show { Content: DetailContent content } || token.IsCancellationRequested)
                 {
                     return;
@@ -153,11 +171,11 @@ internal abstract class DetailReader<TRow>
         }
 
         /// <summary>The row's detail as read, or dropped when the tab was disposed while it was being read.</summary>
-        private async Task<DetailAnswer> ReadAsync(TRow row, CancellationToken token)
+        private async Task<DetailAnswer> ReadAsync(TRow row, int lines, CancellationToken token)
         {
             try
             {
-                return new DetailAnswer.Show(await source.ReadAsync(row, token));
+                return new DetailAnswer.Show(await source.ReadAsync(row, lines, token));
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {

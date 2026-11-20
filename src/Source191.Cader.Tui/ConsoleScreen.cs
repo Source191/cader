@@ -447,6 +447,8 @@ public sealed class ConsoleScreen(
 
         private void RefreshWhatIsDue()
         {
+            // Off the UI thread and never failing: a failed write is recorded and tried again on the next settled change.
+            _ = screen.context.PaneHeightSaves.SaveIfSettledAsync();
             if (IsDue(sessions))
             {
                 ListSessions();

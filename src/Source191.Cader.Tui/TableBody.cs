@@ -73,7 +73,7 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         scroll = new TableScroll(table);
         sizing = new ColumnSizing<TRow>(table, definition.Columns, definition.RowColour, definition.Heading, app);
         TableToolTips<TRow> toolTips = new(table, app, [.. definition.Columns.Select(column => column.Help)], definition.RowTip);
-        detail = DetailReader<TRow>.For(definition.Detail, table, app, context.Diagnostics, context.Heartbeat, host);
+        detail = DetailReader<TRow>.For(definition.Detail, definition.Tab, table, View, app, context, host, Redraw);
 
         // In the middle of the table, whatever the pane under it takes, so the spinner never lands in the pane.
         waiting = new WaitingIndicator(definition.WaitingText) { Y = Pos.Func(_ => table.Frame.Y + (table.Frame.Height / 2), table) };
@@ -154,6 +154,12 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
         if (!State.List.FilterEditing && ScrollKeys.TryFor(mapped, out int step))
         {
             sizing.Scroll(step);
+            return;
+        }
+
+        if (!State.List.FilterEditing && PaneKeys.TryFor(mapped, out int lines))
+        {
+            detail.Resize(lines);
             return;
         }
 

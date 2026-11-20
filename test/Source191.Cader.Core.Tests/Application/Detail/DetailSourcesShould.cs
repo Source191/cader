@@ -27,9 +27,9 @@ public sealed class DetailSourcesShould
         Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, Fixtures.Noon.AddMinutes(-5), DisplayState.Stopped, new JobProcess.None());
         SessionRow row = new(session, new SessionLocation.Outside("Northwind.Billing"), new Head.OnBranch(BranchName.From("invoice-pdf")), new LiveTab.None(), HasTranscript: true);
 
-        DetailContent content = await source.ReadAsync(row, CancellationToken.None);
+        DetailContent content = await source.ReadAsync(row, lines: 6, CancellationToken.None);
 
-        source.Rows.ShouldBe(Wording.SessionFactRows);
+        source.MostRows.ShouldBe(Wording.SessionFactRows);
         source.KeyOf(row).ShouldBe(session.SessionId);
         content.Title.ShouldBe("invoice-pdf");
         content.Facts[0][1].Text.ShouldBe("11:55 (5m ago)");
@@ -41,13 +41,30 @@ public sealed class DetailSourcesShould
         WorktreeDetails source = new(Loader(), clock);
         WorktreeRow row = new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 12, new LastCommit.Made(Fixtures.Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: false, FolderExists: true);
 
-        DetailContent content = await source.ReadAsync(row, CancellationToken.None);
+        DetailContent content = await source.ReadAsync(row, lines: 10, CancellationToken.None);
 
-        source.Rows.ShouldBe(Wording.WorktreeFactRows + Wording.DetailListedItems + 1);
+        source.MostRows.ShouldBe(200);
         source.KeyOf(row).ShouldBe(Worktree.Key);
         content.Title.ShouldBe("Northwind.Billing-invoice-pdf");
         content.Facts[0][0].Text.ShouldBe("ok");
-        processes.CapturedRequests.ShouldContain(request => request.Arguments.Count > 2 && request.Arguments[0] == "log" && request.Arguments[2] == $"{Wording.DetailListedItems}");
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Count > 2 && request.Arguments[0] == "log" && request.Arguments[2] == "5");
+    }
+
+    [Theory]
+    [InlineData(12, 10, "… 2 more")]
+    [InlineData(8, 8, null)]
+    public async Task ListAsManyItemsAsTheLinesHold(int unpushed, int listed, string? more)
+    {
+        processes.Answer(request => request.Arguments.Count > 2 && request.Arguments[0] == "log" && request.Arguments[1] == "-n", new ProcessResult(0, string.Join('\n', Enumerable.Range(1, listed).Select(commit => $"abc{commit:D4}\t2026-11-20T09:00:00+00:00\tCommit {commit}")), string.Empty));
+        WorktreeDetails source = new(Loader(), clock);
+        WorktreeRow row = new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, unpushed, new LastCommit.Made(Fixtures.Noon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: false, FolderExists: true);
+
+        DetailContent content = await source.ReadAsync(row, lines: 15, CancellationToken.None);
+
+        processes.CapturedRequests.ShouldContain(request => request.Arguments.Count > 2 && request.Arguments[0] == "log" && request.Arguments[2] == "10");
+        content.Facts.Count.ShouldBe(Wording.WorktreeFactRows);
+        content.Below.Count(line => line.Text.Contains("Commit ", StringComparison.Ordinal)).ShouldBe(listed);
+        content.Below.LastOrDefault(line => line.Text.Contains("more", StringComparison.Ordinal))?.Text.ShouldBe(more);
     }
 
     [Fact]
@@ -70,7 +87,7 @@ public sealed class DetailSourcesShould
         Session.Background session = new(SessionId.From("81cdb0f9-0000-4000-8000-000000000001"), JobId.From("81cdb0f9"), Listed.As("invoice-pdf"), Worktree, SummerNoon.AddMinutes(-5), DisplayState.Stopped, new JobProcess.None());
         SessionRow row = new(session, new SessionLocation.Outside("Northwind.Billing"), new Head.OnBranch(BranchName.From("invoice-pdf")), new LiveTab.None(), HasTranscript: true);
 
-        DetailContent content = await source.ReadAsync(row, CancellationToken.None);
+        DetailContent content = await source.ReadAsync(row, lines: 6, CancellationToken.None);
 
         content.Facts[0][1].Text.ShouldBe("12:55 (5m ago)");
     }
@@ -85,7 +102,7 @@ public sealed class DetailSourcesShould
         WorktreeDetails source = new(Loader(state, summer), summer);
         WorktreeRow row = new(Repository, Worktree, new Head.OnBranch(BranchName.From("invoice-pdf")), new WorktreeHealth(WorktreeHealthKind.Ok, new HealthReason.None()), 0, 0, new LastCommit.Made(SummerNoon), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true);
 
-        DetailContent content = await source.ReadAsync(row, CancellationToken.None);
+        DetailContent content = await source.ReadAsync(row, lines: 10, CancellationToken.None);
 
         content.Facts[2][1].Text.ShouldBe("by Cader, 09:14");
     }

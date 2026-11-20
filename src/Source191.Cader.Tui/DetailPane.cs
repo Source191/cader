@@ -8,28 +8,24 @@ namespace Source191.Cader.Tui;
 
 /// <summary>
 /// The pane under a tab's table: a grey divider titled with the selected row's name and the row's detail beneath it,
-/// laid out by <see cref="DetailLayout"/> at the pane's width. It is as tall as the tab's detail can be, so the table's
-/// height never changes with the selection; the tab places it above the status line.
+/// laid out by <see cref="DetailLayout"/> at the pane's width. Its height is the user's (<see cref="PaneSizing"/>), whatever row
+/// is selected, so the table's height never changes with the selection; the divider can be dragged, which Terminal.Gui's
+/// <see cref="ViewArrangement.TopResizable"/> does, and the tab places it above the status line.
 /// </summary>
 internal sealed class DetailPane : View
 {
     private DetailContent content = DetailContent.Empty;
 
-    /// <param name="lines">The most lines the tab's detail takes under the divider.</param>
-    public DetailPane(int lines)
+    public DetailPane()
     {
-        Rows = lines + 1;
         CanFocus = false;
         BorderStyle = LineStyle.Single;
         Border.Thickness = new Thickness(0, 1, 0, 0);
+        Arrangement = ViewArrangement.TopResizable;
         SetScheme(Palette.TabFrame());
         X = 0;
         Width = Dim.Fill();
-        Height = Rows;
     }
-
-    /// <summary>The pane's height, divider included.</summary>
-    public int Rows { get; }
 
     /// <summary>Shows a row's detail, or <see cref="DetailContent.Empty"/> for none: its divider then has no title, not two stray spaces.</summary>
     public void Show(DetailContent shown)

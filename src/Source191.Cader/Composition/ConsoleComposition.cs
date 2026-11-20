@@ -49,7 +49,7 @@ internal static class ConsoleComposition
         Started start = parts.RecordStart(claudeVersionReport);
 
         DialogEffects dialogs = Dialogs(parts, launch, settings, folders, updates, start);
-        ScreenContext context = Context(parts, claudeVersionReport, updates, clipboard);
+        ScreenContext context = Context(parts, settings, claudeVersionReport, updates, clipboard);
         FolderLabels folderLabels = new(settings, home);
         RefreshSchedule sessionsRefresh = new(() => settings.Value.SessionsRefresh, TimeProvider.System, launch.Hold);
         RefreshSchedule worktreesRefresh = new(() => settings.Value.WorktreesRefresh, TimeProvider.System, launch.Hold);
@@ -113,14 +113,16 @@ internal static class ConsoleComposition
             repositories, parts.Store, folders, settings, solutions, updates, deleteSession, removeWorktree, reports, parts.ProcessRegistry, presets, TimeProvider.System, launch.Fetches);
     }
 
-    private static ScreenContext Context(SharedParts parts, ClaudeVersionReport claudeVersionReport, UpdateCheck updates, ScreenClipboard clipboard)
+    private static ScreenContext Context(SharedParts parts, CurrentSettings settings, ClaudeVersionReport claudeVersionReport, UpdateCheck updates, ScreenClipboard clipboard)
     {
         ClaudeCodeVersion claudeCode = ClaudeCodeSupport.Check(claudeVersionReport);
         HeaderSettingsRow header = new(parts.Version, claudeCode, updates, parts.ProcessRegistry, Environment.ProcessId);
 
         Heartbeat heartbeat = new(TimeProvider.System, parts.Counts.Stalls, parts.Log);
 
-        return new ScreenContext(Wording.TabTitle, header.Rows, () => updates.Status is UpdateStatus.Available, updates.TakeAnnouncement, clipboard, parts.Log, heartbeat);
+        SettlingPaneHeights paneHeights = new(settings.Value.PaneHeights, TimeProvider.System);
+
+        return new ScreenContext(Wording.TabTitle, header.Rows, () => updates.Status is UpdateStatus.Available, updates.TakeAnnouncement, clipboard, parts.Log, heartbeat, paneHeights, new PaneHeightSaves(paneHeights, settings, parts.Log));
     }
 
     private static ConsoleLoads Loads(

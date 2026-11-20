@@ -99,7 +99,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
             new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock, fetches);
 
         HeaderSettingsRow header = new(version, ClaudeCodeSupport.Check(claudeVersion), updates, processRegistry, Environment.ProcessId);
-        ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log));
+        SettlingPaneHeights paneHeights = new(settings.Value.PaneHeights, clock);
+        ScreenContext context = new(Wording.TabTitle, header.Rows, () => false, updates.TakeAnnouncement, clipboard, log, new Heartbeat(clock, counts.Stalls, log), paneHeights, new PaneHeightSaves(paneHeights, settings, log));
         FolderLabels folderLabels = new(settings, home);
         SessionRowEnricher enricher = new(gitCli, fileFolders, store, processRegistry, clock, transcripts, pullRequests, accounts);
         WorktreeInventory inventory = new(gitCli, fileFolders, settings, pullRequests, new OriginPruner(gitCli, clock, log), log);

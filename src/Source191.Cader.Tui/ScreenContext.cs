@@ -7,7 +7,7 @@ namespace Source191.Cader.Tui;
 /// <summary>
 /// What the console screen is handed from the tool's <c>ConsoleComposition</c>: the tab title, the settings row for a width (asked for on
 /// every redraw so a saved setting shows at once), whether a newer release is known, the announcement of a newly found one (taken once, on the next redraw), the clipboard the copy key writes to
-/// the diagnostic log that loads, background failures and dialogs are recorded in, and the heartbeat that watches the UI
-/// thread.
+/// the diagnostic log that loads, background failures and dialogs are recorded in, the heartbeat that watches the UI
+/// thread, the heights the user wants for the detail panes and the saves that write them once they settle.
 /// </summary>
-public sealed record ScreenContext(string Title, Func<int, IReadOnlyList<IReadOnlyList<TextPart>>> SettingsRows, Func<bool> UpdateKnown, Func<StatusMessage> TakeAnnouncement, ScreenClipboard Clipboard, DiagnosticLog Diagnostics, Heartbeat Heartbeat);
+public sealed record ScreenContext(string Title, Func<int, IReadOnlyList<IReadOnlyList<TextPart>>> SettingsRows, Func<bool> UpdateKnown, Func<StatusMessage> TakeAnnouncement, ScreenClipboard Clipboard, DiagnosticLog Diagnostics, Heartbeat Heartbeat, SettlingPaneHeights PaneHeights, PaneHeightSaves PaneHeightSaves);
