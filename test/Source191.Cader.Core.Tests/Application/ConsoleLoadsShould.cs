@@ -49,7 +49,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     {
         log = new DiagnosticLog(clock, []);
         refreshes = new RefreshCounts(clock, log);
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, new LaunchHold());
         watches = new ChangeWatches(changes, schedule, schedule, log);
         accounts = new AccountCatalogue(new ClaudeCli(new FakeProcessRunner(), Claude), store, clock);
         catalogue = new PullRequestCatalogue(new GitCli(new FakeProcessRunner().AnswerAll(new ProcessResult(2, string.Empty, string.Empty)), "git"), new FakePullRequests(), clock, new RefreshCounts(clock, new DiagnosticLog(clock, [])));

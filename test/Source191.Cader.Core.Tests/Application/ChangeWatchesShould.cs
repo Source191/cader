@@ -25,8 +25,8 @@ public sealed class ChangeWatchesShould : IDisposable
 
     public ChangeWatchesShould()
     {
-        sessions = new RefreshSchedule(() => RefreshInterval.Off, clock);
-        worktrees = new RefreshSchedule(() => RefreshInterval.Off, clock);
+        sessions = new RefreshSchedule(() => RefreshInterval.Off, clock, new LaunchHold());
+        worktrees = new RefreshSchedule(() => RefreshInterval.Off, clock, new LaunchHold());
         watches = new ChangeWatches(changes, sessions, worktrees, new DiagnosticLog(clock, [sink]));
     }
 

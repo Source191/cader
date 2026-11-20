@@ -25,7 +25,7 @@ public sealed class WorktreesScreenDefinitionShould
         FakeProcessRunner processes = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty));
         DetailLoader loader = new(new GitCli(processes, "git"), new InMemoryState(), new SessionActivity(clock), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         FolderLabels folders = new(TestSettings.Current(TestSettings.For([@"C:\Users\me\source\repos"], @"D:\work")), FolderPath.From(@"C:\Users\me"));
-        schedule = new RefreshSchedule(() => Settings.WorktreesRefreshWhenUnset, clock);
+        schedule = new RefreshSchedule(() => Settings.WorktreesRefreshWhenUnset, clock, new LaunchHold());
         definition = new WorktreesScreenDefinition(folders, new WorktreeDetails(loader, clock), schedule);
     }
 

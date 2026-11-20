@@ -195,7 +195,7 @@ public sealed class DiagnosticsPrivacyShould : IDisposable
     {
         FakeFolderChanges changes = new();
         changes.Refused.Add(FolderPath.From(Repository).Combine(".git"));
-        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock);
+        RefreshSchedule schedule = new(() => RefreshInterval.Off, clock, new LaunchHold());
         using ChangeWatches watches = new(changes, schedule, schedule, log);
 
         watches.Follow(WatchPlan.For(TestSettings.For(RepositoryRoot), TestSettings.DefaultClaudeFolder, [FolderPath.From(Repository)]));
