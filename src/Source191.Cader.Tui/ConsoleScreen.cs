@@ -2,6 +2,7 @@ using Source191.Cader.Application;
 using Source191.Cader.Application.Detail;
 using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.Effects;
+using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.Views;
 using System.Diagnostics;
 using Terminal.Gui.App;
@@ -34,7 +35,8 @@ public sealed class ConsoleScreen(
     string claudeExecutable,
     FolderLabels folders,
     RefreshSchedule sessionsRefresh,
-    RefreshSchedule worktreesRefresh)
+    RefreshSchedule worktreesRefresh,
+    LaunchProgress launchProgress)
     : IConsoleScreen
 {
     private readonly Func<CancellationToken, Task<ViewInput>> loadSessions = loadSessions;
@@ -54,6 +56,7 @@ public sealed class ConsoleScreen(
     private readonly FolderLabels folders = folders;
     private readonly RefreshSchedule sessionsRefresh = sessionsRefresh;
     private readonly RefreshSchedule worktreesRefresh = worktreesRefresh;
+    private readonly LaunchProgress launchProgress = launchProgress;
 
     public ConsoleExit Run(ConsoleState initial, WhatsNewAtStart opening)
     {
@@ -171,6 +174,8 @@ public sealed class ConsoleScreen(
             Window.KeyDown += (_, key) => Active.OnKey(key);
             tabs.ValueChanged += (_, _) => OnTabClicked();
             Window.Initialized += (_, _) => Show(active);
+            // A launch reports its steps from a pool thread; the status line is redrawn on the UI thread.
+            screen.launchProgress.Follow(() => app.Invoke(FrameChanged));
 
             StartRefreshing();
             sessions.Redraw();
@@ -247,6 +252,8 @@ public sealed class ConsoleScreen(
 
         public void StopTimers()
         {
+            // A launch still running after the console closes reports to no one.
+            screen.launchProgress.Follow(() => { });
             foreach (object timer in timers)
             {
                 app.RemoveTimeout(timer);
@@ -512,16 +519,19 @@ public sealed class ConsoleScreen(
         private void ShowStatus(StatusMessage message, bool running)
         {
             int width = Math.Max(ScreenWidth - settingsIndent - StatusWordsAt - StatusCloseRoom, 1);
+            // A launch's step replaces its plain working words; the message itself still owns the line.
+            StatusMessage shownMessage = screen.launchProgress.Shown(message);
+            string text = Wording.Describe(shownMessage);
             // By reference: a new message with the same words as the last is still a new message, with its own timer.
             bool newMessage = shownStatus is not StatusShown.Message shown || !ReferenceEquals(shown.Status, message);
-            if (!newMessage && shownStatus is StatusShown.Message same && same.Running == running && same.Width == width)
+            if (!newMessage && shownStatus is StatusShown.Message same && same.Running == running && same.Width == width && same.Words == text)
             {
                 return;
             }
 
-            shownStatus = new StatusShown.Message(message, running, width, Active);
-            IReadOnlyList<string> lines = StatusLayout.Lines(Wording.Describe(message), width);
-            StatusTone tone = running ? StatusTone.Working : Wording.ToneOf(message);
+            shownStatus = new StatusShown.Message(message, running, width, Active, text);
+            IReadOnlyList<string> lines = StatusLayout.Lines(text, width);
+            StatusTone tone = running ? StatusTone.Working : Wording.ToneOf(shownMessage);
             TextPart mark = Wording.StatusMark(tone);
             // The glyph and the spinner share a cell; the glyph, drawn after it, would blank the spinner.
             statusSpinner.Show(running);
@@ -671,13 +681,13 @@ public sealed class ConsoleScreen(
             return label;
         }
 
-        /// <summary>What the status line shows: nothing yet, or a message with whether its action runs, the width it was laid out at and the tab that showed it.</summary>
+        /// <summary>What the status line shows: nothing yet, or a message with whether its action runs, the width it was laid out at, the tab that showed it and the words shown for it, which a launch's steps change.</summary>
         private closed record StatusShown
         {
             public sealed record Nothing : StatusShown;
 
             /// <summary>A message shown, compared by reference: the same words again are still a new message.</summary>
-            public sealed record Message(StatusMessage Status, bool Running, int Width, ITabBody Owner) : StatusShown;
+            public sealed record Message(StatusMessage Status, bool Running, int Width, ITabBody Owner, string Words) : StatusShown;
         }
     }
 }

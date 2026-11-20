@@ -178,6 +178,7 @@ internal static class ConsoleComposition
             launch.Programs.Claude,
             folderLabels,
             sessionsRefresh,
-            worktreesRefresh);
+            worktreesRefresh,
+            launch.Progress);
     }
 }
