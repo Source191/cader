@@ -33,6 +33,23 @@ public sealed class OriginPrunerShould
         PrunedFolders().ShouldBe([Orders.Value, Billing.Value], ignoreOrder: true);
     }
 
+    [Fact]
+    public async Task WaitAnHourAfterAnAttempt()
+    {
+        // Each prune takes ten minutes, so the hour counts from the attempt only if it is claimed before git runs.
+        processes.OnRun = _ => clock.Advance(TimeSpan.FromMinutes(10));
+        await pruner.PruneDueAsync([Orders]);
+        clock.Advance(TimeSpan.FromMinutes(49));
+        await pruner.PruneDueAsync([Orders]);
+
+        PrunedFolders().Count.ShouldBe(1);
+
+        clock.Advance(TimeSpan.FromMinutes(1));
+        await pruner.PruneDueAsync([Orders]);
+
+        PrunedFolders().ShouldBe([Orders.Value, Orders.Value]);
+    }
+
     private IReadOnlyList<string> PrunedFolders()
     {
         return [.. processes.CapturedRequests
