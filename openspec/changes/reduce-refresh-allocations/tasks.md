@@ -41,7 +41,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 ## 6. Finish
 
 - [x] 6.1 `CLAUDE.md`'s disposal rule names the allocation-budget facts (`Allocations`) beside `HandleCounts`. Commit.
-- [ ] 6.2 Re-run the scratch probe of design's Context against the new registry and put the before and after figures in the pull request. Raise `Version` to 0.22.0-preview.49 (one step above #355) with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass. Commit.
+- [x] 6.2 Re-run the scratch probe of design's Context against the new registry and put the before and after figures in the pull request. Raise `Version` to 0.22.0-preview.49 (one step above #355) with `.github\scripts\Step-Version.ps1` and add an Internal entry under Unreleased in `CHANGELOG.md`. Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution and `dotnet format --verify-no-changes` pass. Commit.
 
 ## Workflow follow-up
 
