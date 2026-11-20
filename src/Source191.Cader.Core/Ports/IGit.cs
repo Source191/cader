@@ -6,8 +6,8 @@ namespace Source191.Cader.Ports;
 /// The git commands the console needs. Every call names the directory it runs in; nothing depends on the current directory.
 /// The convention: every method but IsMerged, BranchExists and the nullable queries throws <see cref="GitException"/> when
 /// git fails or answers with something unreadable; the queries that return a nullable answer null instead; IsMerged and
-/// BranchExists answer false. The fetch is the one command that reaches the network, and it never prompts: a remote that
-/// needs signing in fails it at once.
+/// BranchExists answer false. The fetch and the prune are the commands that reach the network, and they never prompt: a
+/// remote that needs signing in fails them at once.
 /// </summary>
 public interface IGit
 {
@@ -16,6 +16,13 @@ public interface IGit
     /// <see cref="GitException"/> when git fails, as it does offline or when the remote needs credentials that are not stored.
     /// </summary>
     Task FetchBranchAsync(FolderPath repository, RemoteBranch branch, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes the repository's records of origin's branches that origin no longer has, downloading nothing and never
+    /// prompting. Throws <see cref="GitException"/> when git fails, as it does offline or when origin needs credentials
+    /// that are not stored.
+    /// </summary>
+    Task PruneOriginAsync(FolderPath repository, CancellationToken cancellationToken);
 
     /// <summary>Whether the repository has the local branch; false when git fails.</summary>
     Task<bool> BranchExistsAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken);
