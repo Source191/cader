@@ -6,16 +6,16 @@ This is an investigation: no task changes `src`, `test` or `tools`, so there is 
 
 ## 1. Read
 
-- [ ] 1.1 Decompile Terminal.Gui 2.5.0's `Tabs`, `Tab` (or the SubView's title drawing) and `Border` with `ilspycmd` into a scratch folder under `%TEMP%`, and write down a read answer to each of design's questions 1, 2, 4 and 5, naming the members that decide it. Verify each answer names a member. Nothing committed.
+- [x] 1.1 Decompile Terminal.Gui 2.5.0's `Tabs`, `Tab` (or the SubView's title drawing) and `Border` with `ilspycmd` into a scratch folder under `%TEMP%`, and write down a read answer to each of design's questions 1, 2, 4 and 5, naming the members that decide it. Verify each answer names a member. Nothing committed.
 
 ## 2. Spike
 
-- [ ] 2.1 A throwaway Terminal.Gui 2.5.0 program in a scratch folder under `%TEMP%` (design 3): three tabs, a timer that grows and shrinks the first title through count-like text, a log of `ValueChanged`, focus and the strip's width. Verify it starts in `tools\HeadlessTerminal` at 120 x 36 with NO_COLOR, CLAUDECODE, CLAUDE_PID and CLAUDE_CODE_* cleared.
-- [ ] 2.2 Question 1, re-measuring: try a changed title with no further call, then each candidate call from 1.1; verify by a headless capture whether the strip's width follows the title, and from the log whether the shown tab, focus and `ValueChanged` stay as they were.
+- [x] 2.1 A throwaway Terminal.Gui 2.5.0 program in a scratch folder under `%TEMP%` (design 3): three tabs, a timer that grows and shrinks the first title through count-like text, a log of `ValueChanged`, focus and the strip's width. Verify it starts in `tools\HeadlessTerminal` at 120 x 36 with NO_COLOR, CLAUDECODE, CLAUDE_PID and CLAUDE_CODE_* cleared.
+- [x] 2.2 Question 1, re-measuring: try a changed title with no further call, then each candidate call from 1.1; verify by a headless capture whether the strip's width follows the title, and from the log whether the shown tab, focus and `ValueChanged` stay as they were.
 - [ ] 2.3 Questions 2 and 3, colour and glyphs: run the program in Windows Terminal by hand with the counts' glyphs in the title; verify by a screenshot whether a title can take more than one colour and whether each glyph is one cell.
-- [ ] 2.4 Question 4, movement and clicks: grow the first title by ten cells while the pointer rests on Config, then click; verify from the log which tab was selected, and capture the strip with titles wider than the screen.
-- [ ] 2.5 Questions 5 and 6, overlay and cost: draw text on the tab's top edge from `DrawComplete`, then switch tabs and run a spinner on the hidden tab; verify by captures whether the text survives, and note whether a title change redraws the window and whether it flickers at a 5 s timer and at ten changes a second.
-- [ ] 2.6 Record each answer in `.claude\rules\terminal-gui.md` under the `Tabs` fact, with the date, Terminal.Gui 2.5.0 and Windows Terminal's version, saying for each whether it was observed or read; correct the existing "a title that changed left the strip measured for the old one" fact if the spike finds a call that re-measures. Verify the file reads as facts, not as a log of the spike. Commit.
+- [x] 2.4 Question 4, movement and clicks: grow the first title by ten cells while the pointer rests on Config, then click; verify from the log which tab was selected, and capture the strip with titles wider than the screen.
+- [x] 2.5 Questions 5 and 6, overlay and cost: draw text on the tab's top edge from `DrawComplete`, then switch tabs and run a spinner on the hidden tab; verify by captures whether the text survives, and note whether a title change redraws the window and whether it flickers at a 5 s timer and at ten changes a second.
+- [x] 2.6 Record each answer in `.claude\rules\terminal-gui.md` under the `Tabs` fact, with the date, Terminal.Gui 2.5.0 and Windows Terminal's version, saying for each whether it was observed or read; correct the existing "a title that changed left the strip measured for the old one" fact if the spike finds a call that re-measures. Verify the file reads as facts, not as a log of the spike. Commit.
 
 ## 3. Recommend
 
