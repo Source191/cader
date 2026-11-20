@@ -18,6 +18,8 @@ public sealed class StartSessionHandler(LaunchService service, OpenTabHandler ta
     public async Task<Outcome> HandleAsync(StartSession effect, CancellationToken cancellationToken)
     {
         using IDisposable held = hold.Hold();
+        // An earlier launch's last step would otherwise decorate a retry under the same name until its own first step.
+        progress.Report(LaunchStep.None);
         LaunchOutcome outcome = await service.LaunchAsync(effect.Plan, cancellationToken);
 
         string name = effect.Plan.Name.Value;

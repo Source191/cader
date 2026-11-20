@@ -66,7 +66,8 @@ public sealed class StartSessionHandlerShould
 
         await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
 
-        heard.Select(step => step.Step.Stage).ShouldBe([LaunchStage.StartingClaude, LaunchStage.FindingSession, LaunchStage.OpeningTab]);
+        LaunchSteps steps = LaunchSteps.WithoutANewWorktree(Plan.Name);
+        heard.Select(step => step.Step).ShouldBe([LaunchStep.None, steps.Step(LaunchStage.StartingClaude), steps.Step(LaunchStage.FindingSession), steps.Step(LaunchStage.OpeningTab)]);
         heard[^1].ShouldBe((new LaunchStep(Plan.Name, LaunchStage.OpeningTab, 3, 3, new LaunchBase.None()), 0));
     }
 
