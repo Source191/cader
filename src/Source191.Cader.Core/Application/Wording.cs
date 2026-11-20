@@ -283,6 +283,31 @@ public static partial class Wording
         };
     }
 
+    /// <summary>What the status line says while a session started from the console is launched, once its first step has begun.</summary>
+    public static string Launching(LaunchStep step) => $"Starting {step.Name.Value}: {StageWords(step)} ({step.Number} of {step.Count})...";
+
+    private static string StageWords(LaunchStep step)
+    {
+        return step.Stage switch
+        {
+            LaunchStage.Fetching => $"fetching {BaseWords(step.Base)}",
+            LaunchStage.Pulling => $"pulling {BaseWords(step.Base)}",
+            LaunchStage.CreatingWorktree => "creating the worktree",
+            LaunchStage.StartingClaude => "starting Claude Code",
+            LaunchStage.FindingSession => "finding the new session",
+            LaunchStage.OpeningTab => "opening its tab",
+        };
+    }
+
+    private static string BaseWords(LaunchBase remoteBase)
+    {
+        return remoteBase switch
+        {
+            LaunchBase.Remote remote => remote.Branch.Value,
+            LaunchBase.None => "origin's default branch",
+            _ => throw new UnreachableException(),
+        };
+    }
     /// <summary>What the status line says, beside the busy spinner, while an effect runs off the UI thread.</summary>
     public static string Working(ViewEffect effect)
     {
@@ -587,7 +612,7 @@ public static partial class Wording
             StatusMessage.NothingToResume => "Nothing to resume.",
             StatusMessage.NoDialogFor missing => $"No dialog is defined for {missing.EffectName}.",
             StatusMessage.Working working => Working(working.Effect),
-            StatusMessage.Launching launching => $"Starting {launching.Step.Name.Value}...",
+            StatusMessage.Launching launching => Launching(launching.Step),
             StatusMessage.Reported reported => Describe(reported.Outcome),
             StatusMessage.BranchKept kept => $"{Describe(kept.Removal)} Branch kept.",
             StatusMessage.Followed followed => $"{Describe(followed.First)} {Describe(followed.Then)}",
