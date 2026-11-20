@@ -45,10 +45,13 @@ public static class SettingsView
         return Settings.Validate(state.Text, folderExists, fileExists) switch
         {
             SettingsValidation.Valid valid => new SettingsUpdate(state with { Problem = new SettingsProblemLine.None() }, new SettingsEffect.Save(valid.Settings)),
-            SettingsValidation.Refused refused => Changed(state with { Problem = new SettingsProblemLine.Shows(refused.Problem), Focus = FieldOf(refused.Problem) }),
+            SettingsValidation.Refused refused => Changed(state with { Problem = new SettingsProblemLine.Shows(refused.Problem), Focus = FocusAfter(state, refused.Problem) }),
             _ => throw new UnreachableException(),
         };
     }
+
+    /// <summary>The problem's field when the dialog shows it, otherwise where focus already is, which the dialog always shows.</summary>
+    private static SettingsField FocusAfter(SettingsState state, SettingsProblem problem) => state.Scope.Fields.Contains(FieldOf(problem)) ? FieldOf(problem) : state.Focus;
 
     /// <summary>The field a problem is about, so focus goes where the fix is typed.</summary>
     private static SettingsField FieldOf(SettingsProblem problem)
