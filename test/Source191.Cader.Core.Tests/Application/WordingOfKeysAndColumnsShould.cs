@@ -7,6 +7,8 @@ public sealed class WordingOfKeysAndColumnsShould
 {
     private static readonly string[] TabKeys = ["← ", "→ ", "< ", "> ", "f5 "];
 
+    private static readonly string[] PaneKeys = ["+ ", "- "];
+
     [Fact]
     public void NameEachColumnOnce()
     {
@@ -35,13 +37,13 @@ public sealed class WordingOfKeysAndColumnsShould
         [
             "enter Open", "n New session", "r Rename", "x Stop", "d Delete",
             "R Resume", "C Close empty", "b Adopt", "/ Filter", "? Help", "q Quit",
-            "c Copy path", "f Open folder", "s Open solution", "p Open PR", "m Memory", "U Update", "! Report", .. TabKeys,
+            "c Copy path", "f Open folder", "s Open solution", "p Open PR", "m Memory", "U Update", "! Report", .. TabKeys, .. PaneKeys,
         ]);
         Wording.WorktreesKeys.Select(key => $"{key.Key} {key.Hint}").ShouldBe(
         [
             "d Remove", "D Force remove", "P Prune", "n New session", "o Open shell", "enter Open session",
             "esc Sessions", "/ Filter", "? Help", "q Quit",
-            "c Copy path", "f Open folder", "s Open solution", "p Open PR", "U Update", "! Report", .. TabKeys,
+            "c Copy path", "f Open folder", "s Open solution", "p Open PR", "U Update", "! Report", .. TabKeys, .. PaneKeys,
         ]);
         Wording.ConfigKeys.Select(key => $"{key.Key} {key.Hint}").ShouldBe(
         [
@@ -126,8 +128,8 @@ public sealed class WordingOfKeysAndColumnsShould
     [Fact]
     public void ExplainEveryLineOfEachPane()
     {
-        Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory", "Account"]);
-        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Health", "Branch", "PR", "Folder", "Created", "Repository", "Changes", "Unpushed"]);
+        Wording.SessionsPane.Select(line => line.Name).ShouldBe(["Divider", "Waiting", "Started", "Prompted", "Folder", "Session", "Worktree", "Branch", "Tab", "Changes", "Memory", "Account"]);
+        Wording.WorktreesPane.Select(line => line.Name).ShouldBe(["Divider", "Health", "Branch", "PR", "Folder", "Created", "Repository", "Changes", "Unpushed"]);
         Wording.SessionsPane.Concat(Wording.WorktreesPane).ShouldAllBe(line => line.Meaning.Length > 0);
     }
 
@@ -147,7 +149,8 @@ public sealed class WordingOfKeysAndColumnsShould
             U      update in a new tab                           !      report a problem on GitHub
             ←      the tab to the left                           →      the tab to the right
             <      scroll the columns left                       >      scroll the columns right
-            F5     refresh this tab now
+            F5     refresh this tab now                          +      make the detail pane taller
+            -      make the detail pane shorter
 
             Columns
             NAME     the session name given at launch, or the folder name for an unnamed one, under a heading
@@ -163,6 +166,7 @@ public sealed class WordingOfKeysAndColumnsShould
             AGE      time since the session started
 
             Pane
+            Divider   drag it up or down, or press + and -, for a taller or shorter pane; each tab keeps its own
             Waiting   what it waits for: Claude Code's reason, a first prompt, or nothing
             Started   when the session started
             Prompted  when it was last seen going from waiting or idle to working
@@ -201,7 +205,8 @@ public sealed class WordingOfKeysAndColumnsShould
             U      update in a new tab                           !      report a problem on GitHub
             ←      the tab to the left                           →      the tab to the right
             <      scroll the columns left                       >      scroll the columns right
-            F5     refresh this tab now
+            F5     refresh this tab now                          +      make the detail pane taller
+            -      make the detail pane shorter
 
             Columns
             WORKTREE     the folder's slug, or its label when not named after its repository, or a branch row's branch,
@@ -217,6 +222,7 @@ public sealed class WordingOfKeysAndColumnsShould
             SESSION      the session running in it, if any
 
             Pane
+            Divider     drag it up or down, or press + and -, for a taller or shorter pane; each tab keeps its own
             Health      ok; locked (by another tool); orphan (a folder git has forgotten);
                         broken (registration or owner gone); empty (a leftover folder);
                         elsewhere (a worktree of a repository outside the roots);
@@ -228,7 +234,7 @@ public sealed class WordingOfKeysAndColumnsShould
             Created     when Cader created it, or not by Cader
             Repository  a branch or origin row's repository, in place of Folder and Created
             Changes     changed or untracked files, and commits on its branch that no remote has
-            Unpushed    the newest five unpushed commits, or the changed files when none, and how many more
+            Unpushed    the newest unpushed commits, or the changed files when none, as many as the pane holds, and how many more
 
             Report a problem (!)
             A report holds the latest diagnostic events kept in memory (whether or not Diagnostic log is on),

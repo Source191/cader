@@ -61,13 +61,13 @@ public sealed class KeyHelpParityShould
         {
             Key key = KeyFor(help.Key);
 
-            (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _) || RefreshKeys.TryFor(key, out _)).ShouldBeTrue($"{help.Key} is listed by the help alone and is neither a tab key, a scroll key nor the refresh key");
+            (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _) || PaneKeys.TryFor(key, out _) || RefreshKeys.TryFor(key, out _)).ShouldBeTrue($"{help.Key} is listed by the help alone and is neither a tab key, a scroll key, a pane key nor the refresh key");
         }
     }
 
     private static bool IsAnswered(Key key, Func<(object State, IReadOnlyList<ViewEffect> Effects)> reduce, object before)
     {
-        if (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _))
+        if (TabKeys.TryFor(key, out _) || ScrollKeys.TryFor(key, out _) || PaneKeys.TryFor(key, out _))
         {
             return true;
         }

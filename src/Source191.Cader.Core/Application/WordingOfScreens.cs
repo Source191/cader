@@ -129,6 +129,13 @@ public static partial class Wording
         KeyHelp.HelpOnly(Key.F5, "refresh this tab now", tip: "Refresh this tab now, as its timer would; nothing starts while it is refreshing."),
     ];
 
+    /// <summary>The keys that resize the detail pane on the tabs that have one; only the help lists them.</summary>
+    private static readonly KeyHelp[] PaneKeyHelp =
+    [
+        KeyHelp.HelpOnly(Key.Of('+'), "make the detail pane taller", tip: "Make the detail pane a line taller; the table gives up the row."),
+        KeyHelp.HelpOnly(Key.Of('-'), "make the detail pane shorter", tip: "Make the detail pane a line shorter; the table takes the row."),
+    ];
+
     public static IReadOnlyList<KeyHelp> SessionsKeys { get; } =
     [
         new(Key.Enter, "Open", "open in its own tab, or switch to it", Tip: "Open this session in its own tab, or switch to that tab if it is open."),
@@ -150,6 +157,7 @@ public static partial class Wording
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
+        .. PaneKeyHelp,
     ];
 
     public static IReadOnlyList<KeyHelp> WorktreesKeys { get; } =
@@ -171,6 +179,7 @@ public static partial class Wording
         new(Key.Of('U'), "Update", UpdateLine, Tip: "Update to the newest release, in a tab of its own."),
         new(Key.Of('!'), "Report", ReportLine, Tip: ReportTip),
         .. TabKeyHelp,
+        .. PaneKeyHelp,
     ];
 
     public static IReadOnlyList<KeyHelp> ConfigKeys { get; } =
@@ -308,9 +317,13 @@ public static partial class Wording
 
     public static IReadOnlyList<ColumnHelp> ConfigColumns { get; } = [SettingColumn, ValueColumn];
 
+    /// <summary>The pane's divider, which both panes' help begins with.</summary>
+    private static readonly ColumnHelp PaneDivider = new("Divider", "drag it up or down, or press + and -, for a taller or shorter pane; each tab keeps its own");
+
     /// <summary>The sessions pane's lines, for the help.</summary>
     public static IReadOnlyList<ColumnHelp> SessionsPane { get; } =
     [
+        PaneDivider,
         new("Waiting", "what it waits for: Claude Code's reason, a first prompt, or nothing"),
         new("Started", "when the session started"),
         new("Prompted", "when it was last seen going from waiting or idle to working"),
@@ -327,6 +340,7 @@ public static partial class Wording
     /// <summary>The worktrees pane's lines, for the help.</summary>
     public static IReadOnlyList<ColumnHelp> WorktreesPane { get; } =
     [
+        PaneDivider,
         new("Health", "ok; locked (by another tool); orphan (a folder git has forgotten);\nbroken (registration or owner gone); empty (a leftover folder);\nelsewhere (a worktree of a repository outside the roots);\nbranch (checked out in no worktree); origin (only on origin); then the reason in full"),
         new("Branch", "the branch and whether a worktree's is merged into origin's default branch,\nor, when BRANCH flags it, the flag's reason in full"),
         new("PR", "its pull request, as the sessions table shows it, or none; p opens it"),
@@ -334,7 +348,7 @@ public static partial class Wording
         new("Created", "when Cader created it, or not by Cader"),
         new("Repository", "a branch or origin row's repository, in place of Folder and Created"),
         new("Changes", "changed or untracked files, and commits on its branch that no remote has"),
-        new("Unpushed", "the newest five unpushed commits, or the changed files when none, and how many more"),
+        new("Unpushed", "the newest unpushed commits, or the changed files when none, as many as the pane holds, and how many more"),
     ];
 
     /// <summary>The sessions view's help: its keys and columns, then the Claude Code executable the console drives.</summary>
