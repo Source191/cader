@@ -97,7 +97,7 @@ The settings SHALL be shown and edited on the Config tab, a row at a time: the r
 - **THEN** nothing opens and nothing changes
 
 ### Requirement: Settings are validated before they are saved
-A setting's dialog SHALL refuse to save, name the problem and keep the dialog open when a repository root is not a full path, does not exist or is already a root, or when the worktree root is not a full path. A worktree root that does not exist yet SHALL be accepted. Saving the repository roots dialog with no root left SHALL be refused.
+A setting's dialog SHALL refuse to save, name the problem and keep the dialog open when a repository root is not a full path, does not exist or is already a root, or when the worktree root is not a full path. A worktree root that does not exist yet SHALL be accepted. Saving the repository roots dialog with no root left SHALL be refused. Whether a repository root's folder or a custom editor's executable exists SHALL be checked only by the dialog that edits it, so a folder or file that has gone since it was saved never stops another setting being saved. A refusal SHALL keep the focus on a field the dialog shows.
 
 #### Scenario: Batch file editor
 - **WHEN** the user enters `C:\Tools\edit.cmd` as a custom editor's executable
@@ -122,6 +122,18 @@ A setting's dialog SHALL refuse to save, name the problem and keep the dialog op
 #### Scenario: No root left
 - **WHEN** the user deletes every line of the repository roots dialog and presses F5
 - **THEN** nothing is saved and the dialog asks for a repository root
+
+#### Scenario: A saved root has gone
+- **WHEN** the saved repository roots include `D:\work`, which no longer exists, and the user changes Sessions refresh from 5 to 2 and presses F5
+- **THEN** the settings are saved with Sessions refresh 2 and the repository roots unchanged
+
+#### Scenario: A saved custom editor has gone
+- **WHEN** the saved editor is a custom editor whose executable `E:\Tools\subl.exe` no longer exists, and the user changes Default place and presses F5
+- **THEN** the settings are saved with the new place and the custom editor unchanged
+
+#### Scenario: Another setting is refused
+- **WHEN** `config.json` lists `D:\work` twice as a repository root and the user changes Worktrees refresh and presses F5
+- **THEN** nothing is saved, the dialog stays open and says `D:\work` is already a root, and the cursor stays in the Worktrees refresh box
 
 ### Requirement: Saved settings apply without a restart
 Saving SHALL write `config.json` and SHALL make every later scan, wizard, worktree creation, editor launch, diagnostic event, refresh timer and the Config tab use the saved values, without restarting Cader. Saving SHALL keep the file readable by hand, with the property names `repositoryRoots`, `worktreeRoot`, `editor`, `defaultBase`, `diagnosticLog`, `sessionsRefreshSeconds` and `worktreesRefreshSeconds`.
