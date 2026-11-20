@@ -23,4 +23,6 @@ public sealed class CurrentSettings(Settings initial, IUserConfig store)
         await store.WriteConfigAsync(SettingsFile.ToConfig(settings));
         snapshot.Replace(settings);
     }
+
+    public Task SavePaneHeightsAsync(PaneHeights heights) => SaveAsync(Value.WithPaneHeights(heights));
 }

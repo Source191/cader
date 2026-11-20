@@ -38,4 +38,51 @@ public sealed class CurrentSettingsShould
 
         (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(Saved);
     }
+
+    [Fact]
+    public async Task SavePaneHeightsOverTheCurrentSettings()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = new(Saved, state);
+
+        await current.SavePaneHeightsAsync(new PaneHeights(Sessions: 4, Worktrees: 20));
+
+        current.Value.ShouldBe(Saved.WithPaneHeights(new PaneHeights(Sessions: 4, Worktrees: 20)));
+        (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(current.Value);
+    }
+
+    [Fact]
+    public async Task KeepThePaneHeightsThroughASaveOfTheOtherSettings()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = new(Saved, state);
+        await current.SavePaneHeightsAsync(new PaneHeights(Sessions: 4, Worktrees: 20));
+
+        await current.SaveAsync(Saved.WithUpdateCheckToggled());
+
+        current.Value.ShouldBe(Saved.WithUpdateCheckToggled().WithPaneHeights(new PaneHeights(Sessions: 4, Worktrees: 20)));
+        (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(current.Value);
+    }
+
+    [Fact]
+    public async Task WriteTwoSavesOneAfterTheOther()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = new(Saved, state);
+        TaskCompletionSource firstWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        state.HoldNextConfigWrite(firstWrite.Task);
+        Settings dialog = Saved.WithDiagnosticLogToggled();
+
+        Task dialogSave = current.SaveAsync(dialog);
+        Task paneSave = current.SavePaneHeightsAsync(new PaneHeights(Sessions: 4, Worktrees: 20));
+        await Task.Delay(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken);
+        state.ConfigWrites.ShouldBe(0, "the pane's save waits for the dialog's write");
+        firstWrite.SetResult();
+        await Task.WhenAll(dialogSave, paneSave);
+
+        state.ConfigWrites.ShouldBe(2);
+        Settings expected = dialog.WithPaneHeights(new PaneHeights(Sessions: 4, Worktrees: 20));
+        current.Value.ShouldBe(expected);
+        (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(expected);
+    }
 }

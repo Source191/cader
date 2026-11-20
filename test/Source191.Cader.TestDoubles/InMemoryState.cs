@@ -21,6 +21,7 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
     private IReadOnlyList<KnownAccount> accounts = [];
     private Exception? nextRecordFailure;
     private Task nextAccountWrite = Task.CompletedTask;
+    private Task nextConfigWrite = Task.CompletedTask;
 
     public Task<IReadOnlyList<TabRegistration>> ReadTabsAsync()
     {
@@ -119,10 +120,33 @@ public sealed class InMemoryState : ITabRegistry, IRecentRepositories, ICreatedW
         return Task.FromResult(config);
     }
 
-    public Task WriteConfigAsync(UserConfig config)
+    /// <summary>How many times config.json was written.</summary>
+    public int ConfigWrites { get; private set; }
+
+    /// <summary>Makes the next <c>WriteConfigAsync</c> wait for the task before writing, as a slow disc would.</summary>
+    public void HoldNextConfigWrite(Task until)
     {
-        this.config = config;
-        return Task.CompletedTask;
+        lock (gate)
+        {
+            nextConfigWrite = until;
+        }
+    }
+
+    public async Task WriteConfigAsync(UserConfig config)
+    {
+        Task held;
+        lock (gate)
+        {
+            held = nextConfigWrite;
+            nextConfigWrite = Task.CompletedTask;
+        }
+
+        await held;
+        lock (gate)
+        {
+            this.config = config;
+            ConfigWrites++;
+        }
     }
 
     public Task<UpdateCheckRecord> ReadUpdateCheckAsync()

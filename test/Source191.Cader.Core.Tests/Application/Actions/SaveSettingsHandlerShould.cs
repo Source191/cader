@@ -21,4 +21,19 @@ public sealed class SaveSettingsHandlerShould
         current.Value.ShouldBe(saved);
         SettingsFile.From(await state.ReadConfigAsync(), TestSettings.Home).ShouldBe(saved);
     }
+
+    [Fact]
+    public async Task KeepThePaneHeightsAtTheMomentOfTheSave()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = new(TestSettings.For(@"C:\Users\me\source\repos"), state);
+        Settings fromTheDialog = TestSettings.For([@"C:\Users\me\source\repos"], @"D:\worktrees");
+        await current.SavePaneHeightsAsync(new PaneHeights(Sessions: 4, Worktrees: 20));
+
+        await new SaveSettingsHandler(current).HandleAsync(new SaveSettings(fromTheDialog), CancellationToken.None);
+
+        Settings expected = fromTheDialog.WithPaneHeights(new PaneHeights(Sessions: 4, Worktrees: 20));
+        current.Value.ShouldBe(expected);
+        SettingsFile.From(await state.ReadConfigAsync(), TestSettings.Home).ShouldBe(expected);
+    }
 }
