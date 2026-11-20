@@ -6,7 +6,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 
 ## 1. Measuring
 
-- [ ] 1.1 `TestDoubles\Allocations.Of(Action)`: warm once, then answer the current thread's allocated bytes over a second run (design 1); its first user below is its test. Verify `dotnet build -c Debug`. Commit.
+- [x] 1.1 `TestDoubles\Allocations.Of(Action)`: warm once, then answer the current thread's allocated bytes over a second run (design 1); its first user below is its test. Verify `dotnet build -c Debug`. Commit.
 
 ## 2. Process registry
 
