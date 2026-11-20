@@ -116,11 +116,11 @@ public sealed partial class ProcessRegistry : IProcessRegistry
     /// <summary>The executable's name without its folder or extension, as <see cref="Snapshot"/> names it; empty when it cannot be read.</summary>
     private static string NameOf(SafeProcessHandle handle)
     {
-        char[] buffer = new char[1024];
+        Span<char> buffer = stackalloc char[1024];
         int length = buffer.Length;
 
         return QueryFullProcessImageNameW(handle, 0, buffer, ref length)
-            ? Path.GetFileNameWithoutExtension(new string(buffer, 0, length))
+            ? new string(Path.GetFileNameWithoutExtension(buffer[..length]))
             : string.Empty;
     }
 

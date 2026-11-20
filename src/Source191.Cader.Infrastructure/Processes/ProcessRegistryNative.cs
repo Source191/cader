@@ -107,7 +107,7 @@ public sealed partial class ProcessRegistry
 
     [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool QueryFullProcessImageNameW(SafeProcessHandle processHandle, uint flags, [Out] char[] imageName, ref int size);
+    private static partial bool QueryFullProcessImageNameW(SafeProcessHandle processHandle, uint flags, Span<char> imageName, ref int size);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

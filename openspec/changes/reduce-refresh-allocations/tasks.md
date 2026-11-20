@@ -11,7 +11,7 @@ Each budget fact is red against today's code first (its message shows today's fi
 ## 2. Process registry
 
 - [x] 2.1 Red: `ProcessRegistryIntegrationShould.NameAParentWithoutABufferPerCall`: `ParentOf(Environment.ProcessId)` allocates under 512 bytes. Commit.
-- [ ] 2.2 Green: `NameOf` reads into `stackalloc char[1024]` through a span (or `ref char`) parameter and makes one string through the span overload of `GetFileNameWithoutExtension` (design 2); 2.1 and the existing registry facts pass. Commit.
+- [x] 2.2 Green: `NameOf` reads into `stackalloc char[1024]` through a span (or `ref char`) parameter and makes one string through the span overload of `GetFileNameWithoutExtension` (design 2); 2.1 and the existing registry facts pass. Commit.
 - [ ] 2.3 Red: `ProcessRegistryIntegrationShould.ListTheTableWithOneStringPerProcess`: `Snapshot` allocates no more than its entries, their names and the list need (worked out from the answer) plus 4 KB. Commit.
 - [ ] 2.4 Green: `ExecutableName.FileNameWithoutExtension()` replaces `ToString()` in `ReadEntries` (design 2); 2.3 and the existing registry facts pass. Commit.
 
