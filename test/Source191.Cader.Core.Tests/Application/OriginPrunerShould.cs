@@ -50,6 +50,29 @@ public sealed class OriginPrunerShould
         PrunedFolders().ShouldBe([Orders.Value, Orders.Value]);
     }
 
+    [Fact]
+    public async Task WaitAnHourAfterAFailure()
+    {
+        processes.AnswerAll(new ProcessResult(128, string.Empty, @"fatal: could not read Username for 'https://github.com': terminal prompts disabled"));
+
+        Task pruned = pruner.PruneDueAsync([Orders]);
+        await pruned;
+        clock.Advance(TimeSpan.FromMinutes(59));
+        await pruner.PruneDueAsync([Orders]);
+
+        pruned.IsCompletedSuccessfully.ShouldBeTrue();
+        PrunedFolders().Count.ShouldBe(1);
+        Failed failed = log.Snapshot().Single().Event.ShouldBeOfType<Failed>();
+        failed.Site.ShouldBe(FailureSite.BackgroundTask);
+        failed.What.ShouldBe(CodeName.For(typeof(OriginPruner)));
+
+        clock.Advance(TimeSpan.FromMinutes(1));
+        await pruner.PruneDueAsync([Orders]);
+
+        PrunedFolders().Count.ShouldBe(2);
+        log.Snapshot().Count.ShouldBe(1, "a repository that keeps failing is recorded once");
+    }
+
     private IReadOnlyList<string> PrunedFolders()
     {
         return [.. processes.CapturedRequests
