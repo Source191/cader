@@ -42,6 +42,15 @@ public sealed class SettingsViewShould
         opened.Text.Roots.ShouldBe($"{Root}\n{Work}");
     }
 
+    [Theory]
+    [MemberData(nameof(Scopes))]
+    public void NameTheFieldsEachDialogShows(SettingsScope scope, SettingsField field)
+    {
+        SettingsField[] expected = scope is SettingsScope.Editor ? [SettingsField.Editor, SettingsField.Executable, SettingsField.Arguments] : [field];
+
+        scope.Fields.ShouldBe(expected);
+    }
+
     [Fact]
     public void FollowEachControlChange()
     {
@@ -85,6 +94,59 @@ public sealed class SettingsViewShould
         saved.Effect.ShouldBe(new SettingsEffect.None());
         saved.State.Problem.ShouldBe(new SettingsProblemLine.Shows(problem));
         saved.State.Focus.ShouldBe(field);
+    }
+
+    [Fact]
+    public void SaveAnotherSettingWhenASavedRootHasGone()
+    {
+        Settings saved = TestSettings.For([Root, @"D:\gone"], @"D:\worktrees");
+        SettingsState state = Reduce(SettingsState.Open(saved, new SettingsScope.SessionsRefresh(), Exists, Installed), new SettingsInput.SessionsRefreshChanged("2"));
+
+        Settings result = SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        result.SessionsRefresh.ShouldBe(RefreshInterval.From(2));
+        result.RepositoryRoots.ShouldBe([FolderPath.From(Root), FolderPath.From(@"D:\gone")]);
+    }
+
+    [Fact]
+    public void SaveAnotherSettingWhenASavedCustomEditorHasGone()
+    {
+        EditorChoice gone = EditorChoice.Custom(@"E:\Tools\subl.exe", ["-n", "{folder}"]);
+        Settings saved = Settings.Resolve([FolderPath.From(Root)], new WorktreeRootChoice.BesideFirstRoot(), gone, WorktreeBase.RemoteDefault, TestSettings.Home, checkForUpdates: Settings.ChecksForUpdatesWhenUnset, defaultPlace: Settings.PlaceWhenUnset, diagnosticLog: Settings.DiagnosticLogWhenUnset, beforeBranching: Settings.BeforeBranchingWhenUnset, sessionsRefresh: Settings.SessionsRefreshWhenUnset, worktreesRefresh: Settings.WorktreesRefreshWhenUnset);
+        SettingsState state = Reduce(SettingsState.Open(saved, new SettingsScope.Place(), Exists, Installed), new SettingsInput.PlaceChanged(LaunchMode.CurrentBranch));
+
+        Settings result = SettingsView.Reduce(state, new SettingsInput.Save()).Effect.ShouldBeOfType<SettingsEffect.Save>().Settings;
+
+        result.DefaultPlace.ShouldBe(LaunchMode.CurrentBranch);
+        result.Editor.ShouldBe(gone);
+    }
+
+    [Fact]
+    public void KeepFocusInTheDialogWhenAnotherSettingIsRefused()
+    {
+        SettingsState refresh = Reduce(SettingsState.Open(TestSettings.For(Root, Root), new SettingsScope.WorktreesRefresh(), Exists, Installed), new SettingsInput.FieldFocused(SettingsField.WorktreesRefresh));
+        SettingsState editor = Reduce(Reduce(SettingsState.Open(TestSettings.For(Root, Root), new SettingsScope.Editor(), Exists, Installed), new SettingsInput.PresetChanged(EditorPreset.Custom)), new SettingsInput.FieldFocused(SettingsField.Arguments));
+
+        SettingsUpdate refreshSaved = SettingsView.Reduce(refresh, new SettingsInput.Save());
+        SettingsUpdate editorSaved = SettingsView.Reduce(Reduce(editor, new SettingsInput.ExecutableChanged(@"C:\Tools\subl.exe")), new SettingsInput.Save());
+
+        refreshSaved.State.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        refreshSaved.State.Focus.ShouldBe(SettingsField.WorktreesRefresh);
+        editorSaved.State.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        editorSaved.State.Focus.ShouldBe(SettingsField.Arguments);
+    }
+
+    [Theory]
+    [MemberData(nameof(Scopes))]
+    public void NeverFocusAFieldTheDialogDoesNotShow(SettingsScope scope, SettingsField field)
+    {
+        SettingsState state = SettingsState.Open(TestSettings.For(Root, Root), scope, Exists, Installed);
+
+        SettingsState refused = SettingsView.Reduce(state, new SettingsInput.Save()).State;
+
+        refused.Problem.ShouldBe(new SettingsProblemLine.Shows(new SettingsProblem.RootAlreadyListed(FolderPath.From(Root))));
+        scope.Fields.ShouldContain(refused.Focus);
+        refused.Focus.ShouldBe(scope is SettingsScope.Roots ? SettingsField.Roots : field);
     }
 
     [Fact]
