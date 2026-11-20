@@ -56,6 +56,7 @@ public sealed class TableSourceShould
             return Cell(row, column);
         });
 
+        int[] widest = [0, 0];
         void ReadEveryCellThreeTimesAndEachWidest()
         {
             for (int round = 0; round < 3; round++)
@@ -67,13 +68,14 @@ public sealed class TableSourceShould
                 }
             }
 
-            source.Widest(0).ShouldBe("  avocado".Length);
-            source.Widest(1).ShouldBe(1);
+            widest[0] = source.Widest(0);
+            widest[1] = source.Widest(1);
         }
 
         ReadEveryCellThreeTimesAndEachWidest();
 
         calls.ShouldBe(4);
+        widest.ShouldBe(["  avocado".Length, 1]);
         Allocations.Of(ReadEveryCellThreeTimesAndEachWidest).ShouldBe(0);
     }
 
