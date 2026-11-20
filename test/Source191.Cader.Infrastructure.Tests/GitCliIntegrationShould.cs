@@ -327,6 +327,26 @@ public sealed class GitCliIntegrationShould : IDisposable
     }
 
     [Fact]
+    public async Task PruneOnlyTheBranchesOriginHasDeleted()
+    {
+        await CloneABareOriginAsync();
+        await PushABranchFromElsewhereAsync("kept", "me@example.test");
+        await PushABranchFromElsewhereAsync("old-fix", "me@example.test");
+        await RunGitAsync("fetch", "-q");
+        await RunGitAsync("branch", "-q", "spike", "main");
+        await OutputOfGitAsync(Elsewhere, "push", "-q", "origin", "--delete", "old-fix");
+        FolderPath repository = FolderPath.From(Repository);
+        IReadOnlyList<GitBranch> before = await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken);
+
+        await git.PruneOriginAsync(repository, TestContext.Current.CancellationToken);
+
+        IReadOnlyList<GitBranch> after = await git.ListBranchesAsync(repository, TestContext.Current.CancellationToken);
+        before.OfType<GitBranch.OriginOnly>().Select(branch => branch.Name.Value).ShouldBe(["kept", "old-fix"], ignoreOrder: true);
+        after.OfType<GitBranch.OriginOnly>().Select(branch => branch.Name.Value).ShouldBe(["kept"]);
+        after.OfType<GitBranch.Local>().ShouldBe(before.OfType<GitBranch.Local>(), ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task ReadAnUpstreamThatIsALocalBranchAsNoneEvenOnceItIsDeleted()
     {
         await CloneABareOriginAsync();
