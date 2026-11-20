@@ -10,7 +10,7 @@ namespace Source191.Cader.Application.Effects;
 /// </summary>
 public static class Composition
 {
-    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, TabScripts scripts, CurrentSettings settings, AccountCatalogue accounts, OwnProcess own, DiagnosticLog log, string diagnosticLogFile)
+    public static EffectDispatcher Handlers(EffectPorts ports, LaunchService launches, LaunchProgress progress, TabScripts scripts, CurrentSettings settings, AccountCatalogue accounts, OwnProcess own, DiagnosticLog log, string diagnosticLogFile)
     {
         OpenTabHandler tabs = new(ports.Tabs, ports.Processes, ports.Terminal, ports.Clock, scripts);
         SessionTabs sessionTabs = new(ports.Tabs, ports.Processes);
@@ -26,7 +26,7 @@ public static class Composition
             .Register(new DeleteBranchHandler(ports.Git))
             .Register(new PruneRepositoryHandler(ports.Git))
             .Register(new OpenShellHandler(ports.Terminal))
-            .Register(new StartSessionHandler(launches, tabs, ports.Terminal, scripts))
+            .Register(new StartSessionHandler(launches, tabs, ports.Terminal, scripts, progress))
             .Register(new CopyFolderPathHandler(ports.Clipboard))
             .Register(new OpenProblemReportHandler(ports.Desktop, ports.CrashFile))
             .Register(new CopyProblemReportHandler(ports.Clipboard))

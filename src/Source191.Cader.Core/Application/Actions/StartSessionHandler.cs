@@ -11,7 +11,7 @@ namespace Source191.Cader.Application.Actions;
 /// Starts the session the launch wizard planned, from either view, and opens the new session's tab; when the workspace
 /// is not trusted it opens a plain Claude tab there so the trust prompt can be accepted.
 /// </summary>
-public sealed class StartSessionHandler(LaunchService service, OpenTabHandler tabs, IWindowsTerminal terminal, TabScripts scripts)
+public sealed class StartSessionHandler(LaunchService service, OpenTabHandler tabs, IWindowsTerminal terminal, TabScripts scripts, LaunchProgress progress)
     : IEffectHandler<StartSession>
 {
     public async Task<Outcome> HandleAsync(StartSession effect, CancellationToken cancellationToken)
@@ -22,12 +22,19 @@ public sealed class StartSessionHandler(LaunchService service, OpenTabHandler ta
 
         return outcome switch
         {
-            LaunchOutcome.Listed listed => new StartSessionOutcome.StartedAndOpened(name, listed.JobId, await tabs.OpenAsync(listed.Session, cancellationToken), listed.Update),
+            LaunchOutcome.Listed listed => new StartSessionOutcome.StartedAndOpened(name, listed.JobId, await OpenTabAsync(listed, cancellationToken), listed.Update),
             LaunchOutcome.NotListedYet notListed => new StartSessionOutcome.NotListedYet(name, notListed.JobId, notListed.Update),
             LaunchOutcome.WorkspaceNotTrusted => await OpenTrustTabAsync(effect.Plan.Directory, cancellationToken),
             LaunchOutcome.Failed failed => new StartSessionOutcome.Failed(failed.Message),
             _ => throw new UnreachableException(),
         };
+    }
+
+    private Task<OpenTabOutcome> OpenTabAsync(LaunchOutcome.Listed listed, CancellationToken cancellationToken)
+    {
+        progress.Report(listed.Steps.Step(LaunchStage.OpeningTab));
+
+        return tabs.OpenAsync(listed.Session, cancellationToken);
     }
 
     private async Task<StartSessionOutcome> OpenTrustTabAsync(FolderPath directory, CancellationToken cancellationToken)

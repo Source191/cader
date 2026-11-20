@@ -57,7 +57,8 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
 
         ClaudeCli claude = new(processes, executables.Claude);
         GitCli gitCli = new(processes, git);
-        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli), store, store, new WorktreeIncludeCopier(gitCli), clock, new LaunchProgress());
+        LaunchProgress progress = new();
+        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
         FolderPath home = FolderPath.From(folders.Home);
         CurrentSettings settings = await CurrentSettings.LoadAsync(store, home);
         ClaudeTranscripts transcripts = new(folders.ClaudeHome);
@@ -84,7 +85,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         EffectPorts ports = new(claude, gitCli, processRegistry, transcripts, terminal, store, clock, clipboard, desktop, editors, fileFolders, crashFile, logFiles);
         TabScripts tabScripts = new(executables.Claude, ownPath);
         OwnProcess own = new(Environment.ProcessId, home, new ProgramLocation.Missing());
-        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, tabScripts, settings, accounts, own, log, Path.Combine(folders.State, "cader.log"));
+        EffectDispatcher dispatcher = HandlerComposition.Handlers(ports, launches, progress, tabScripts, settings, accounts, own, log, Path.Combine(folders.State, "cader.log"));
 
         ProblemReports reports = new(log, counts.Processes, crashFile, start, settings, clock);
         SessionTabs sessionTabs = new(store, processRegistry);

@@ -266,7 +266,7 @@ public sealed class DiagnosticsPrivacyShould : IDisposable
         LaunchService launches = new(claude, git, new BaseUpdater(git), store, store, new WorktreeIncludeCopier(git), clock, new LaunchProgress());
         EffectPorts ports = new(claude, git, new FakeProcessRegistry(), new FakeTranscripts(), new FakeWindowsTerminal(), store, clock, new FakeClipboard(), new FakeDesktop(), new FakeEditorLocator(), new FakeFolders(), new FakeCrashFile(), new FakeDiagnosticLogFiles());
 
-        return Composition.Handlers(ports, launches, new TabScripts(Claude, OwnExecutable), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
+        return Composition.Handlers(ports, launches, new LaunchProgress(), new TabScripts(Claude, OwnExecutable), TestSettings.Current(), accounts, new OwnProcess(4242, FolderPath.From(@"C:\Users\me"), new ProgramLocation.Missing()), log, DiagnosticLogFile);
     }
 
     private async Task StartASessionWithAPromptAsync(ClaudeCli claude, GitCli git)
