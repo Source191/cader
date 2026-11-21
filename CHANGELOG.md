@@ -54,6 +54,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Internal
 
+- The origin pruner no longer passes an unread true or false through its failure handling, which a mutation run flagged as untested (#368)
 - Each refresh allocates less: the process table names a process with one string and reads a parent's image name into a stack buffer, the worktree listing is parsed as spans, transcripts are read as bytes with Utf8JsonReader so a long message line is never decoded, the table paints and colour schemes are shared, and a table works each cell out once; allocation-budget facts hold each path (#369)
 - The nightly Claude Code contract check expects claude auth status to exit 1 when no one is logged in, as it does on the runner, instead of failing; the tab title rule and the new-session wizard's list drop a guard and a duplicate walk that mutation testing could not tell apart, and two new facts pin a glyph straight before a session's name and a heading clicked with nothing selected (#340)
 - The process table's handles are now SafeHandles closed as each read ends, the tab switch keeps one UI Automation client and releases the rest of each search instead of leaving them to the garbage collector, the tests dispose every process they read, and the build fails on a disposable left undisposed outside the Terminal.Gui layer (#320)
