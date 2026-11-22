@@ -496,6 +496,27 @@ public sealed class GitCliIntegrationShould : IDisposable
         Directory.Delete(root, recursive: true);
     }
 
+    [Fact]
+    public async Task ReadWhenABranchWasCreated()
+    {
+        DateTimeOffset began = TimeProvider.System.GetUtcNow().AddSeconds(-5);
+        await CreateRepositoryWithOneCommitAsync();
+        await RunGitAsync("branch", "tidy-logging");
+        await git.AddWorktreeAsync(Repository, Worktree, "fix-123", "main", TestContext.Current.CancellationToken);
+        await RunGitAsync("branch", "spike-cache");
+        await RunGitAsync("branch", "-m", "spike-cache", "refund-retry");
+        DateTimeOffset ended = TimeProvider.System.GetUtcNow().AddSeconds(5);
+        FolderPath repository = FolderPath.From(Repository);
+
+        foreach (string created in new[] { "tidy-logging", "fix-123", "refund-retry" })
+        {
+            DateTimeOffset? at = await git.BranchCreatedAtAsync(repository, BranchName.From(created), TestContext.Current.CancellationToken);
+            at.ShouldNotBeNull(created);
+            at.Value.ShouldBeInRange(began, ended);
+        }
+
+        (await git.BranchCreatedAtAsync(repository, BranchName.From("main"), TestContext.Current.CancellationToken)).ShouldBeNull();
+    }
     private async Task CreateRepositoryWithOneCommitAsync()
     {
         Directory.CreateDirectory(Repository);
