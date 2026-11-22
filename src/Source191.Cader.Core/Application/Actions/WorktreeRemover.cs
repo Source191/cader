@@ -20,18 +20,20 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private static readonly TimeSpan BetweenAttempts = TimeSpan.FromMilliseconds(250);
 
-    public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, bool merged, CancellationToken cancellationToken)
+    private readonly WorktreeInspector inspector = new(git);
+
+    public async Task<RemoveWorktreeOutcome> CarryOutAsync(WorktreeRow row, RemovalDecision decision, bool createdHere, CancellationToken cancellationToken)
     {
         return decision switch
         {
             RemovalDecision.Refused refused => new RemoveWorktreeOutcome.Refused(refused.Reason),
             RemovalDecision.DeleteFolder deleteFolder => await DeleteFolderAsync(row, deleteFolder, cancellationToken),
-            RemovalDecision.RemoveWorktree removeWorktree => await RemoveThroughGitAsync(row, removeWorktree, createdHere, merged, cancellationToken),
+            RemovalDecision.RemoveWorktree removeWorktree => await RemoveThroughGitAsync(row, removeWorktree, createdHere, cancellationToken),
             _ => throw new UnreachableException(),
         };
     }
 
-    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, bool merged, CancellationToken cancellationToken)
+    private async Task<RemoveWorktreeOutcome> RemoveThroughGitAsync(WorktreeRow row, RemovalDecision.RemoveWorktree decision, bool createdHere, CancellationToken cancellationToken)
     {
         GitRemoval removal = await RemoveWithGitAsync(row, decision.Forced, cancellationToken);
         if (removal == GitRemoval.StillRegistered)
@@ -41,6 +43,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
         bool folderLeft = removal == GitRemoval.FolderLeft;
         await createdWorktrees.ForgetCreatedWorktreeAsync(row.Path);
+        bool merged = await IsMergedNowAsync(row, createdHere, cancellationToken);
         return (RemovalDecision.BranchActionFor(createdHere, merged), row.Head) switch
         {
             (BranchAction.Delete, Head.OnBranch deleted) => await DeleteBranchAsync(row, deleted.Branch, folderLeft, cancellationToken),
@@ -48,6 +51,28 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
             (_, Head.Detached or Head.Unknown) => new RemoveWorktreeOutcome.Removed(row.FolderName, folderLeft),
             _ => throw new UnreachableException(),
         };
+    }
+
+    /// <summary>
+    /// Read once the worktree is gone: the branch is then checked out nowhere, so nothing can commit to it between this
+    /// check and its deletion, and a branch Cader created and merged can be deleted with force. Needs a branch Cader made
+    /// and a repository that still exists; a git failure reads as not merged, so the user is asked.
+    /// </summary>
+    private async Task<bool> IsMergedNowAsync(WorktreeRow row, bool createdHere, CancellationToken cancellationToken)
+    {
+        if (!createdHere || !row.OwnerExists || row.Head is not Head.OnBranch onBranch)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await inspector.IsMergedAsync(row.Repository, onBranch.Branch, cancellationToken);
+        }
+        catch (GitException)
+        {
+            return false;
+        }
     }
 
     /// <summary>How git's removal ended: the folder went, git removed the worktree but its folder is held, or git still lists the worktree.</summary>
@@ -137,7 +162,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private async Task<RemoveWorktreeOutcome> DeleteBranchAsync(WorktreeRow row, BranchName branch, bool folderLeft, CancellationToken cancellationToken)
     {
-        await git.DeleteBranchAsync(row.Repository.Value, branch.Value, force: false, cancellationToken);
+        await git.DeleteBranchAsync(row.Repository.Value, branch.Value, force: true, cancellationToken);
 
         return new RemoveWorktreeOutcome.RemovedAndDeletedBranch(row.FolderName, branch, folderLeft);
     }
