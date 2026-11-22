@@ -14,7 +14,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
     private static readonly RemoteRepository.GitHub Orders = new("northwind", "Northwind.Orders");
     private static readonly BranchName Fix = BranchName.From("fix-123");
     private static readonly Head OnFix = new Head.OnBranch(Fix);
-    private static readonly PullRequest Open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero), new HeadCommit.NotRecorded());
+    private static readonly PullRequest Open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero), new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded());
     private static readonly PullRequest Merged = Open with { State = PullRequestState.Merged };
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(5);
 

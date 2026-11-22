@@ -53,7 +53,7 @@ public sealed class GitHubPullRequests(IProcessRunner processes, ProgramLocation
 
         DateTimeOffset createdAt = DateTimeOffset.Parse(item.GetProperty("createdAt").GetString() ?? string.Empty, CultureInfo.InvariantCulture);
 
-        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.GitHub, item.GetProperty("number").GetInt32(), url, state.Value, createdAt, PullRequestListingJson.HeadCommitIn(item, "headRefOid")));
+        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.GitHub, item.GetProperty("number").GetInt32(), url, state.Value, createdAt, PullRequestListingJson.HeadCommitIn(item, "headRefOid"), new RecordedTime.NotRecorded()));
     }
 
     private static PullRequestState? State(string? state, bool isDraft) => state switch

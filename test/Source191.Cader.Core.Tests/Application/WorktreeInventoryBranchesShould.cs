@@ -354,7 +354,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
     private static string Origin(string name, string email = Email) => $"refs/remotes/origin/{name}\0\0\0{TipAt}\0<{email}>\0\n";
 
     private static PullRequestListing.Listed Listing(params (string Branch, PullRequestState State, HeadCommit Head)[] pullRequests) =>
-        new([.. pullRequests.Select((pullRequest, index) => new BranchPullRequest(BranchName.From(pullRequest.Branch), new PullRequest(PullRequestHost.GitHub, 290 + index, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{290 + index}"), pullRequest.State, Fixtures.Noon.AddDays(-index - 1), pullRequest.Head)))]);
+        new([.. pullRequests.Select((pullRequest, index) => new BranchPullRequest(BranchName.From(pullRequest.Branch), new PullRequest(PullRequestHost.GitHub, 290 + index, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{290 + index}"), pullRequest.State, Fixtures.Noon.AddDays(-index - 1), pullRequest.Head, new RecordedTime.NotRecorded())))]);
 
     private Task Landed(params string[] branches) => catalogue.RefreshStaleAsync([.. branches.Select(branch => (FolderPath.From(Repository), BranchName.From(branch)))]);
 

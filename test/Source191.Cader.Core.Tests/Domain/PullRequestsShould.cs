@@ -59,5 +59,5 @@ public sealed class PullRequestsShould
     private static PullRequest GitHub(int number, PullRequestState state, DateTimeOffset createdAt) => GitHub(number, state, createdAt, new HeadCommit.NotRecorded());
 
     private static PullRequest GitHub(int number, PullRequestState state, DateTimeOffset createdAt, HeadCommit head) =>
-        new(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, createdAt, head);
+        new(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, createdAt, head, new RecordedTime.NotRecorded());
 }

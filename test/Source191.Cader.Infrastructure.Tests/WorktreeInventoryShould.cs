@@ -39,7 +39,7 @@ public sealed class WorktreeInventoryShould : IDisposable
     {
         string repository = await root.CreateRepositoryAsync("Northwind.Orders");
         await root.AddSiblingWorktreeAsync(repository, "fix-1");
-        PullRequest open = new(PullRequestHost.GitHub, 7, new Uri("https://github.com/northwind/Northwind.Orders/pull/7"), PullRequestState.Open, Noon, new HeadCommit.NotRecorded());
+        PullRequest open = new(PullRequestHost.GitHub, 7, new Uri("https://github.com/northwind/Northwind.Orders/pull/7"), PullRequestState.Open, Noon, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded());
         hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix-1"), open)]));
 
         // Held, so the lookup the scan starts and never awaits cannot land before the scan reads its rows.

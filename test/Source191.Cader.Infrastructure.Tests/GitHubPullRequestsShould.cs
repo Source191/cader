@@ -140,7 +140,7 @@ public sealed class GitHubPullRequestsShould
     private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) => Row(branch, number, state, createdAt, new HeadCommit.NotRecorded());
 
     private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt, HeadCommit head) =>
-        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), head));
+        new(BranchName.From(branch), new PullRequest(PullRequestHost.GitHub, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), head, new RecordedTime.NotRecorded()));
 
     private static HeadCommit.Known Head(string commit) => new(CommitId.From(commit));
 
