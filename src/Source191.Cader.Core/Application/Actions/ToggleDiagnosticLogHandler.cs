@@ -9,8 +9,7 @@ public sealed class ToggleDiagnosticLogHandler(CurrentSettings settings, string 
 {
     public async Task<Outcome> HandleAsync(ToggleDiagnosticLog effect, CancellationToken cancellationToken)
     {
-        Settings toggled = settings.Value.WithDiagnosticLogToggled();
-        await settings.SaveAsync(toggled);
+        Settings toggled = await settings.UpdateAsync(current => current.WithDiagnosticLogToggled());
 
         return new ToggleDiagnosticLogOutcome(toggled.DiagnosticLog, logFile);
     }

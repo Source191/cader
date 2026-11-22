@@ -8,7 +8,8 @@ public sealed class SaveSettingsHandler(CurrentSettings settings) : IEffectHandl
 {
     public async Task<Outcome> HandleAsync(SaveSettings effect, CancellationToken cancellationToken)
     {
-        await settings.SaveAsync(effect.Settings);
+        // The dialog's settings replace the whole, after any toggle already being saved.
+        await settings.UpdateAsync(_ => effect.Settings);
 
         return new SaveSettingsOutcome();
     }
