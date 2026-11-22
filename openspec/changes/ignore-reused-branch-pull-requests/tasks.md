@@ -24,7 +24,7 @@ Each task is red, green, refactor, with a commit per step. Tests are sociable: t
 ## 4. Documentation and release
 
 - [x] 4.1 `docs\user-guide.md`: the PR column's line says a finished pull request from before the branch was created is not shown, so a reused branch name starts blank. `CHANGELOG.md` Unreleased, Fixed: a branch name reused for new work no longer shows the earlier branch's merged or closed pull request. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` as CONTRIBUTING's Versions says for a fix. Verify `Assert-VersionBumped.ps1` passes and `SpellBritish` holds.
-- [ ] 4.2 Full check: `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate ignore-reused-branch-pull-requests`; all pass.
+- [x] 4.2 Full check: `dotnet build -c Debug`, `dotnet test -c Debug --no-build` at the solution, `dotnet format --verify-no-changes` and `openspec validate ignore-reused-branch-pull-requests`; all pass.
 - [ ] 4.3 Manual check with a local build (`tools\install-local.ps1`): the `c-status` worktree's row shows a blank PR column and Worktrees flags it · no PR; a worktree whose pull request merged after it was created still shows it merged.
 
 ## Workflow follow-up
