@@ -6,7 +6,6 @@ using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Collections.ObjectModel;
 using Terminal.Gui.App;
-using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using GuiKey = Terminal.Gui.Input.Key;
 
@@ -21,7 +20,7 @@ namespace Source191.Cader.Tui;
 internal static class LaunchWizardDialog
 {
     /// <summary>The effect the wizard ended on: <see cref="WizardEffect.Launch"/> with the plan, or <see cref="WizardEffect.Close"/>.</summary>
-    public static WizardEffect Show(IApplication app, DiagnosticLog log, TimeProvider clock, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin, BaseFetches fetches)
+    public static WizardEffect Show(IApplication app, DiagnosticLog log, TimeProvider clock, RepositoryCatalogue catalogue, IRecentRepositories recentRepositories, IFolders folders, Settings settings, WizardOrigin origin, BaseFetches fetches, WizardFit.Fits fit)
     {
         // Read once, on a pool thread: Terminal.Gui installs a synchronisation context while it runs, so awaiting
         // on the UI thread and then blocking for the result would deadlock (it did, after every attach-and-return).
@@ -34,11 +33,9 @@ internal static class LaunchWizardDialog
         bool binding = false;
         IReadOnlyList<string> listed = [];
         WizardControls controls = new(state);
-        // One 76-cell column, as tall as the screen allows so the repository list gets the rows; a fixed folder's form is
+        // One 76-cell column, as tall as WizardFit allows so the repository list gets the rows; a fixed folder's form is
         // the directory, the name, a two-line preview and the prompt, so its dialog is sized to them.
-        using Dialog dialog = state.ShowsChooser
-            ? new() { Title = Wording.WizardTitle(state), Width = 80, Height = Dim.Percent(90) }
-            : new() { Title = Wording.WizardTitle(state), Width = 84, Height = 23 };
+        using Dialog dialog = new() { Title = Wording.WizardTitle(state), Width = fit.Width, Height = fit.Height };
         dialog.SetScheme(Palette.Focusable(Palette.White));
         DialogTabTitle.Apply(app, log, dialog, DialogName.NewSession);
         dialog.Add(controls.All);

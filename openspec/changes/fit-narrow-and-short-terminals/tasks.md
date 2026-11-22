@@ -10,7 +10,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 - [x] 1.2 `WizardFitShould.FitTheOverviewWizardAt120By36WithFourListRows`, `FitAt120By30WithOneListRow`, `KeepAMarginOfUpToTwoRows`, `NeverShrinkAsTheScreenGrows` (a theory over 30 to 50 rows) and `RefuseBelowItsMinimum` (79 columns; one row short): `Application\Views\WizardFit` (closed hierarchy `Fits`/`TooSmall`, design 1). Commit.
 - [x] 1.3 `WizardFitShould.FitTheFixedFolderWizardAt84By23` and `RefuseTheFixedFolderWizardBelow84By23`. Commit.
 - [x] 1.4 `StatusMessage.WizardTooSmall` with its words in `Wording` (`WordingShould.SayTheSizeTheWizardNeeds`) and its tone in `Wording.ToneOf` (a line in `StatusTonesShould`). Commit.
-- [ ] 1.5 `DialogEffectsShould.RefuseTheWizardOnATooSmallScreen`: `DialogEffects.StartSession` asks `WizardFit` with the screen's size and shows `WizardTooSmall` instead of opening; `LaunchWizardDialog` takes the fit's height, and `WizardControls.Repositories` becomes `Dim.Fill(FormRows)` with no minimum. Commit.
+- [x] 1.5 `DialogEffectsShould.RefuseTheWizardOnATooSmallScreen`: `DialogEffects.StartSession` asks `WizardFit` with the screen's size and shows `WizardTooSmall` instead of opening; `LaunchWizardDialog` takes the fit's height, and `WizardControls.Repositories` becomes `Dim.Fill(FormRows)` with no minimum. Commit.
 
 ## 2. Title and key bar
 
