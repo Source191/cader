@@ -56,6 +56,23 @@ public sealed class WorktreeInventoryShould : IDisposable
     }
 
     [Fact]
+    public async Task FlagAReusedBranchAsHavingNoPullRequest()
+    {
+        string repository = await root.CreateRepositoryAsync("Northwind.Orders");
+        await root.AddSiblingWorktreeAsync(repository, "c-status");
+        DateTimeOffset now = TimeProvider.System.GetUtcNow();
+        PullRequest merged = new(PullRequestHost.GitHub, 371, new Uri("https://github.com/northwind/Northwind.Orders/pull/371"), PullRequestState.Merged, now.AddDays(-2), new HeadCommit.NotRecorded(), new RecordedTime.At(now.AddDays(-1)));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("c-status"), merged)]));
+        remotes.Answer(request => request.Arguments is ["reflog", ..], new ProcessResult(0, $"c-status@{{{now.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)}}}\tbranch: Created from origin/main\n", string.Empty));
+
+        await catalogue.RefreshStaleAsync([(FolderPath.From(repository), BranchName.From("c-status"))]);
+        WorktreeRow row = (await Inventory.ScanAsync([], TestContext.Current.CancellationToken)).Single();
+
+        row.PullRequest.ShouldBe(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), "#371 merged before this c-status was created");
+        row.Flag.ShouldBe(BranchFlagKind.NoPullRequest);
+    }
+
+    [Fact]
     public async Task ListAnEmptyFolderUnderTheWorktreeRootAsEmpty()
     {
         await root.CreateRepositoryAsync("Northwind.Orders");

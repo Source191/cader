@@ -19,7 +19,7 @@ Each task is red, green, refactor, with a commit per step. Tests are sociable: t
 ## 3. Catalogue
 
 - [x] 3.1 `PullRequestCatalogueShould.LeaveOutAReusedBranchsMergedPullRequest` (the reflog answers a creation after #371's close: `Find` answers `Missing(NoPullRequest)`), `KeepThePullRequestWhenTheReflogRecordsNoCreation` and `ReadTheBranchsCreationWithEachLookup` (a second lookup after the window, with the branch recreated, follows the new answer): `RefreshAsync` asks `BranchCreatedAtAsync` beside the listing, keeps it in `Answer`, and `Find` passes it to `ForBranch` (design 4). Adjust any existing fact that counts captured git requests to expect the reflog read. Verify the Core suite passes. Commit.
-- [ ] 3.2 `SessionRowEnricherShould` and `WorktreeInventoryShould` gain one fact each that a reused branch's row shows no pull request and, on Worktrees, the · no PR flag (`BranchFlagKind.NoPullRequest`). Verify both pass. Commit.
+- [x] 3.2 `SessionRowEnricherShould` and `WorktreeInventoryShould` gain one fact each that a reused branch's row shows no pull request and, on Worktrees, the · no PR flag (`BranchFlagKind.NoPullRequest`). Verify both pass. Commit.
 
 ## 4. Documentation and release
 

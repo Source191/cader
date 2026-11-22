@@ -54,6 +54,21 @@ public sealed class SessionRowEnricherShould : IDisposable
     }
 
     [Fact]
+    public async Task ShowNoPullRequestForAReusedBranch()
+    {
+        PullRequest merged = new(PullRequestHost.GitHub, 371, new Uri("https://github.com/northwind/Northwind.Orders/pull/371"), PullRequestState.Merged, Fixtures.Noon.AddDays(-2), new HeadCommit.NotRecorded(), new RecordedTime.At(Fixtures.Noon.AddDays(-1)));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("c-status"), merged)]));
+        remotes.Answer(request => request.Arguments is ["reflog", ..], new ProcessResult(0, $"c-status@{{{Fixtures.Noon.AddHours(-3).ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)}}}\tbranch: Created from origin/main\n", string.Empty));
+        AnswerGit(@"C:\repos\Northwind.Orders-c-status", root: "C:/repos/Northwind.Orders-c-status", commonDir: "C:/repos/Northwind.Orders/.git", branch: "c-status");
+        Session session = Session(@"C:\repos\Northwind.Orders-c-status");
+
+        await catalogue.RefreshStaleAsync([(FolderPath.From(@"C:\repos\Northwind.Orders"), BranchName.From("c-status"))]);
+        SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        row.PullRequest.ShouldBe(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), "#371 merged before this c-status was created");
+    }
+
+    [Fact]
     public async Task LookUpEachRowsBranch()
     {
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
