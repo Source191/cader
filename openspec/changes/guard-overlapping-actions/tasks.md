@@ -29,8 +29,8 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 ## 5. Check and release
 
 - [x] 5.1 Run the smoke check (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`, exit 0). Commit any fix found.
-- [ ] 5.2 `.claude\rules\console-screen.md`: the launch's step is redrawn by the ticker; an equal effect is refused while it runs; q asks while an action runs. Commit.
-- [ ] 5.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan, and add a CHANGELOG `Unreleased` entry under Fixed: a session being started no longer waits for a dialog; pressing a key twice no longer runs its action twice or opens two tabs; q asks before quitting mid-action; and two quick toggles both stick. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate guard-overlapping-actions`. Commit.
+- [x] 5.2 `.claude\rules\console-screen.md`: the launch's step is redrawn by the ticker; an equal effect is refused while it runs; q asks while an action runs. Commit.
+- [x] 5.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan, and add a CHANGELOG `Unreleased` entry under Fixed: a session being started no longer waits for a dialog; pressing a key twice no longer runs its action twice or opens two tabs; q asks before quitting mid-action; and two quick toggles both stick. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate guard-overlapping-actions`. Commit.
 
 ## Workflow follow-up
 
