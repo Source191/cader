@@ -88,8 +88,7 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
         try
         {
             (PullRequestListing listing, LookupHost host) = await ListAsync(checkout, branch);
-            RecordedTime branchCreated = await git.BranchCreatedAtAsync(checkout, branch, CancellationToken.None) is DateTimeOffset created ? new RecordedTime.At(created) : new RecordedTime.NotRecorded();
-            answers[key] = new Answer(listing, host, branchCreated, clock.GetUtcNow());
+            answers[key] = new Answer(listing, host, await CreatedAsync(checkout, branch), clock.GetUtcNow());
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -101,6 +100,10 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
             running.TryRemove(key, out _);
         }
     }
+
+    /// <summary>The branch's creation as git's reflog records it; git's null (no record, or a failed read) leaves nothing out.</summary>
+    private async Task<RecordedTime> CreatedAsync(FolderPath checkout, BranchName branch) =>
+        await git.BranchCreatedAtAsync(checkout, branch, CancellationToken.None) is DateTimeOffset created ? new RecordedTime.At(created) : new RecordedTime.NotRecorded();
 
     private async Task<(PullRequestListing Listing, LookupHost Host)> ListAsync(FolderPath checkout, BranchName branch)
     {
