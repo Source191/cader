@@ -44,7 +44,7 @@ public sealed class GitHubPullRequestsShould
         processes.CapturedRequests.Single().ShouldSatisfyAllConditions(
             request => request.FileName.ShouldBe(Gh),
             request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Checkout.Value)),
-            request => request.Arguments.ShouldBe(["pr", "list", "--repo", "northwind/Northwind.Orders", "--head", "fix-123", "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,headRefOid,createdAt"]));
+            request => request.Arguments.ShouldBe(["pr", "list", "--repo", "northwind/Northwind.Orders", "--head", "fix-123", "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,headRefOid,createdAt,closedAt"]));
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.ShouldBe(
         [
             Row("fix-123", 123, PullRequestState.Open, "2026-10-20T09:12:00Z", Head("afdacd8b1c2e3f4a5b6c7d8e9f0a1b2c3d4e5f60")),
@@ -109,6 +109,63 @@ public sealed class GitHubPullRequestsShould
         PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
 
         listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Head.ShouldBe(new HeadCommit.NotRecorded());
+    }
+
+    [Fact]
+    public async Task AskForClosedAt()
+    {
+        await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        string fields = processes.CapturedRequests.Single().Arguments.SkipWhile(argument => argument != "--json").ElementAt(1);
+        fields.Split(',').ShouldContain("closedAt");
+    }
+
+    [Theory]
+    [InlineData("MERGED")]
+    [InlineData("CLOSED")]
+    public async Task ReadWhenAMergedPullRequestClosed(string state)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"closedAt":"2026-11-21T14:28:23Z","createdAt":"2026-11-20T10:00:00Z","headRefName":"c-status","isDraft":false,"number":371,"state":"{{state}}","url":"https://github.com/northwind/Northwind.Orders/pull/371"}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("c-status"), CancellationToken.None);
+
+        RecordedTime.At finished = listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Finished.ShouldBeOfType<RecordedTime.At>();
+        finished.When.ShouldBe(new DateTimeOffset(2026, 11, 21, 14, 28, 23, TimeSpan.Zero));
+        finished.When.Offset.ShouldBe(TimeSpan.Zero);
+    }
+
+    [Theory]
+    [InlineData(false, ",\"closedAt\":\"2026-11-21T14:28:23Z\"")]
+    [InlineData(true, ",\"closedAt\":\"2026-11-21T14:28:23Z\"")]
+    [InlineData(false, ",\"closedAt\":null")]
+    public async Task RecordNoFinishForAnOpenPullRequest(bool isDraft, string closedAt)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"createdAt":"2026-11-20T10:00:00Z","headRefName":"fix-123","isDraft":{{(isDraft ? "true" : "false")}},"number":123,"state":"OPEN","url":"https://github.com/northwind/Northwind.Orders/pull/123"{{closedAt}}}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Finished.ShouldBe(new RecordedTime.NotRecorded());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(",\"closedAt\":null")]
+    [InlineData(",\"closedAt\":\"\"")]
+    [InlineData(",\"closedAt\":\"yesterday\"")]
+    [InlineData(",\"closedAt\":42")]
+    public async Task RecordNoFinishWhenClosedAtIsMissingOrBlank(string closedAt)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"createdAt":"2026-11-20T10:00:00Z","headRefName":"c-status","isDraft":false,"number":371,"state":"MERGED","url":"https://github.com/northwind/Northwind.Orders/pull/371"{{closedAt}}}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("c-status"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Finished.ShouldBe(new RecordedTime.NotRecorded());
     }
 
     [Fact]
