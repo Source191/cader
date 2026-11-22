@@ -29,7 +29,7 @@
 
   Verify the slim-claude-context fact check (every date and version in the rule as it was on the branch appears in the new rule or its evidence) and that `pwsh .github\scripts\Assert-ClaudeContextBudget.ps1 -Root .` passes. Commit.
 - [x] 3.2 `docs\verified-facts\terminal-gui.md`'s title, and its row in `docs\verified-facts\README.md`, read "Terminal.Gui 2.5.0 and 2.6.0". `CLAUDE.md`'s rule index says Terminal.Gui 2.6.0. Verify the budget script still passes. Commit.
-- [ ] 3.3 `.claude\rules\console-screen.md`: verify that nothing in it rests on a fact task 3.1 changed, including the ticker line #383 added. The re-measure pointer on the tab strip line still holds, because the compare leaves `TitleView` alone. Change only what does not hold, and say so in the commit. Commit.
+- [x] 3.3 `.claude\rules\console-screen.md`: verify that nothing in it rests on a fact task 3.1 changed, including the ticker line #383 added. The re-measure pointer on the tab strip line still holds, because the compare leaves `TitleView` alone. Change only what does not hold, and say so in the commit. Commit.
 
 ## 4. The unbuilt changes and the plan
 
