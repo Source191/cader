@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** 4 of 11, wave 1. Depends on nothing. It lands before the scan and screen changes so their pull requests can quote stall lines from before and after.
+- **Order:** step 8 of the stack in #379. Depends on nothing. It lands before the scan and screen changes so the timing runs at checkpoints B and C can name what stalls.
 - **Together:** ships alone, in one pull request.
 
 ## Out of scope

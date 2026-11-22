@@ -20,7 +20,7 @@ Each task is red, green, refactor, with a commit per step. Tests drive the real 
 
 ## 3. Release
 
-- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges, and add a CHANGELOG `Unreleased` entry under Fixed: removing a merged worktree whose branch origin has deleted no longer reports a failure and deletes the branch, and a started session is never reported as a failed launch. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`. Commit.
+- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379, and add a CHANGELOG `Unreleased` entry under Fixed: removing a merged worktree whose branch origin has deleted no longer reports a failure and deletes the branch, and a started session is never reported as a failed launch. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build` and `dotnet format --verify-no-changes`. Commit.
 
 ## Workflow follow-up
 

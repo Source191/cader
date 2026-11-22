@@ -16,7 +16,7 @@ Each task is red, green, refactor, with a commit per step.
 
 ## 3. Release
 
-- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (sessions listed every 30 seconds by default, a saved interval kept; the login checked every 15 minutes). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate fewer-background-polls`. Commit.
+- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (sessions listed every 30 seconds by default, a saved interval kept; the login checked every 15 minutes). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate fewer-background-polls`. Commit.
 
 ## Workflow follow-up
 

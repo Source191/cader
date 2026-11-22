@@ -24,7 +24,7 @@ None.
 
 ## Delivery
 
-- **Order:** 1 of 11 performance changes, wave 1 (cheap wins). Depends on nothing. Must land before `parallel-scan-reads` and `rescan-only-what-changed`, which change the same methods.
+- **Order:** step 5 of the stack in #379. Depends on nothing. Must land before `parallel-scan-reads` and `rescan-only-what-changed`, which change the same methods. It also covers the index lock that `guard-overlapping-actions` first proposed to fix with `--no-optional-locks` on each read.
 - **Together:** its four parts ship as one pull request; none needs another change to be useful.
 
 ## Out of scope

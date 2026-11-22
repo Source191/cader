@@ -24,7 +24,7 @@ None.
 
 ## Delivery
 
-- **Order:** 2 of 11, wave 1 (cheap wins). Depends on nothing; independent of `lighter-git-reads`, and either may land first.
+- **Order:** step 6 of the stack in #379. Depends on nothing; independent of `lighter-git-reads`.
 - **Together:** both parts ship in one pull request, since both cut Claude Code polls and share the release note.
 
 ## Out of scope

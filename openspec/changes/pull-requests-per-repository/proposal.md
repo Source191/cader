@@ -24,7 +24,7 @@ None.
 
 ## Delivery
 
-- **Order:** 3 of 11, wave 1 (cheap wins). Best after `fewer-background-polls`, whose spec edits it does not touch, so either order works; independent of the scan changes.
+- **Order:** step 9 of the stack in #379, the last before checkpoint B. After `ignore-reused-branch-pull-requests` (step 4), whose branch creation time it keeps per branch through the rework (design 3); independent of the scan changes.
 - **Together:** ships alone, in one pull request.
 - **Expected saving:** one host call per repository a minute instead of one per branch; on the measured hour that is roughly the 568 lookups divided by the branches each repository had on screen. Where every repository has only one branch on screen it saves nothing but the `git remote get-url` runs.
 
@@ -36,7 +36,7 @@ None.
 
 ## Impact
 
-- `Application\PullRequestCatalogue`: answers keyed by repository and by branch for the fallback, the 15-minute fallback window, the origin read per repository.
+- `Application\PullRequestCatalogue`: answers keyed by repository and by branch for the fallback, the 15-minute fallback window, the origin read per repository, and each branch's creation time kept per branch.
 - `Ports\IPullRequests` and `Adapters\PullRequests\GitHubPullRequests` and `AzureDevOpsPullRequests`: a repository listing (`gh pr list --repo <owner>/<name> --state all --limit 100 --json ...`; `az repos pr list ... --status all --top 100 --output json`) beside the branch lookup.
 - `test\Source191.Cader.TestDoubles\FakePullRequests`.
 - `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`.

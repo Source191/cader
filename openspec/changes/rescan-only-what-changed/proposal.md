@@ -24,7 +24,7 @@ None.
 
 ## Delivery
 
-- **Order:** 6 of 11, wave 2 (the scan). Depends on `lighter-git-reads` and `parallel-scan-reads`, in that order; nothing else should change the scan between them.
+- **Order:** step 11 of the stack in #379. Depends on `lighter-git-reads` and `parallel-scan-reads`, in that order; nothing else should change the scan between them. Checkpoint B decides whether it goes ahead as written.
 - **Together:** the cache, its invalidation by the watches and the five-minute safety net must ship in one pull request: the cache without the invalidation would show stale rows, and the invalidation without the cache saves nothing. `show-refresh-progress` follows it and builds its per-repository progress on this cache.
 
 ## Out of scope

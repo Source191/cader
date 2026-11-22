@@ -11,7 +11,7 @@ Each task is red, green, refactor, with a commit per step. Tab facts use `InMemo
 
 ## 2. Launch
 
-- [ ] 2.1 `LaunchServiceShould.AnswerStartedWithoutListing` (the scripted CLI sees no `agents` call after `--bg`) and `LaunchStepsShould.HaveNoFindingStep`. Commit.
+- [ ] 2.1 `LaunchServiceShould.AnswerStartedWithoutListing` (the scripted CLI sees no `agents` call after `--bg`) and `LaunchStepsShould.HaveNoFindingStep`. The `ClaudeCliException` and `ProcessTimedOutException` catch around the listing that `report-what-removals-and-launches-did` added goes with the listing, and so do its two `LaunchServiceShould` facts; its recent-repository guard and `CarryOnWhenTheRecentRepositoryCannotBeRecorded` stay. Commit.
 - [ ] 2.2 Check in the headless terminal, with a throwaway session in a scratch linked worktree under `%TEMP%`, whether `claude attach <job id>` run straight after `claude --bg` answers attaches before the supervisor lists the job; record the answer with the date and CLI version in `.claude\rules\claude-code.md`, then `claude rm` the session. If it refuses, add a short retry to `TabScripts.Attach` with `TabScriptsShould.RetryAnAttachTheSupervisorRefusesAtFirst`. Commit.
 - [ ] 2.3 `StartSessionHandlerShould.OpenTheTabFromTheJobId` (a job-owned pending registration, `claude attach <job id>` in the script) and `OpenTheTabWhenTheJobIsNotListedYet`; `OpenTabHandlerShould` keeps its listed-row facts. Wording for the removed "press Enter once it appears" outcome goes with its fact. Commit.
 
@@ -23,8 +23,8 @@ Each task is red, green, refactor, with a commit per step. Tab facts use `InMemo
 
 ## 4. Checks and release
 
-- [ ] 4.1 The hand-off check (`dotnet build src\Source191.Cader -c Release`, then `dotnet run -- check` from `tools\HeadlessTerminal`, exit 0) and the manual checks in `CONTRIBUTING.md` for tabs and attach in a real Windows Terminal: start from the wizard, see the tab open before the row is listed, then Enter, x and d on the new row. Record the results in the pull request. Commit nothing for this task unless a fact was added.
-- [ ] 4.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (a new session's tab opens about three seconds sooner, and opens even before the session is listed). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate open-new-session-tab-sooner`. Commit.
+- [ ] 4.1 The hand-off check (`dotnet build src\Source191.Cader -c Release`, then `dotnet run -- check` from `tools\HeadlessTerminal`, exit 0) by the agent, then the manual checks in `CONTRIBUTING.md` for tabs and attach in a real Windows Terminal by the owner (#379, checkpoint D): start from the wizard, see the tab open before the row is listed, then Enter, x and d on the new row. Record the results in the pull request. Commit nothing for this task unless a fact was added.
+- [ ] 4.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (a new session's tab opens about three seconds sooner, and opens even before the session is listed). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate open-new-session-tab-sooner`. Commit.
 
 ## Workflow follow-up
 

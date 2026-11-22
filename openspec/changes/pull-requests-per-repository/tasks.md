@@ -17,11 +17,12 @@ Each task is red, green, refactor, with a commit per step. Catalogue facts use `
 - [ ] 2.3 `PullRequestCatalogueShould.LookUpABranchMissingFromAFullListing` and `KeepThatBranchAnswerFifteenMinutes`. Commit.
 - [ ] 2.4 `PullRequestCatalogueShould.KeepAnUnavailableRepositoryAnswerThreeMinutes`, `ReadTheOriginOncePerRepositoryLookup` and `RunAtMostFourLookupsAtOnce` (twelve repositories). Commit.
 - [ ] 2.5 `PullRequestCatalogueShould.MatchAnUnsafeAzureBranchFromTheListingOnly`: a branch failing `BatchFileArgument.IsSafe` is never looked up on its own and takes a pull request from the repository's answer. Commit.
-- [ ] 2.6 `.claude\rules\security.md`, Programs and arguments: the repository listing gives az no branch. Commit.
+- [ ] 2.6 `PullRequestCatalogueShould.ReadEachBranchsCreationWithItsRepositorysLookup`: each on-screen branch's reflog creation time is read with its repository's lookup and reaches `ForBranch` (design 3); `ignore-reused-branch-pull-requests`' catalogue facts still pass. Commit.
+- [ ] 2.7 `.claude\rules\security.md`, Programs and arguments: the repository listing gives az no branch. Commit.
 
 ## 3. Release
 
-- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (pull requests looked up per repository; far fewer gh and az runs). Record the pull-request refresh and `az repos pr list` counts from a diagnostic log before and after in the pull request description. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate pull-requests-per-repository`. Commit.
+- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (pull requests looked up per repository; far fewer gh and az runs). The pull-request refresh and `az repos pr list` counts before and after come from the owner's timing run at #379's checkpoint B, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate pull-requests-per-repository`. Commit.
 
 ## Workflow follow-up
 

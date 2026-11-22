@@ -26,7 +26,7 @@ Each task is red, green, refactor, with a commit per step. Real-git facts use `T
 
 ## 5. Release
 
-- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the scan's reads per worktree and repository. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (fewer git runs per scan; Cader's reads no longer lock a worktree's index while a session commits). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate lighter-git-reads`. Commit.
+- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the scan's reads per worktree and repository. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (fewer git runs per scan; Cader's reads no longer lock a worktree's index while a session commits). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate lighter-git-reads`. Commit.
 
 ## Workflow follow-up
 

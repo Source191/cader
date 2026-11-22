@@ -16,11 +16,11 @@ Each task is red, green, refactor, with a commit per step, except the spike. Hea
 
 ## 3. Screen wiring
 
-- [ ] 3.1 `ConsoleScreen` begins and ends `CodeName`s for layout and drawing on the events the spike found, adding each draw's time to the draw counts; the composition passes `GC.GetTotalPauseDuration`. Verify with the headless smoke check (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`, exit 0) and a diagnostic log from a scratch build showing a draw count line. Commit.
+- [ ] 3.1 `ConsoleScreen` begins and ends `CodeName`s for layout and drawing on the events the spike found, adding each draw's time to the draw counts; the composition passes `GC.GetTotalPauseDuration`. Verify with the headless smoke check (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`, exit 0); the owner sees the draw count line in the timing run at #379's checkpoint B (turning the log on is a saving key). Commit.
 
 ## 4. Release
 
-- [ ] 4.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (stall lines name drawing, layout and the collector's pauses). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate name-ui-stalls`. Commit.
+- [ ] 4.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (stall lines name drawing, layout and the collector's pauses). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate name-ui-stalls`. Commit.
 
 ## Workflow follow-up
 

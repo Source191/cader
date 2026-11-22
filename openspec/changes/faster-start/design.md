@@ -10,9 +10,11 @@ The record holds the executable's length and last write time (UTC) and the versi
 
 Alternative considered: draw first and always read the version; rejected because it still spawns a 2-second process on every start for a value that rarely changes.
 
-### 2. A header that updates once
+### 2. A header that updates once, however late
 
-`HeaderSettingsRow` reads the version through a `SharedSnapshot<ClaudeCodeVersion>`, set once when the background read answers, and the screen redraws its settings row on the next frame (`ShowSettings` already compares rows). `Started` is recorded when the version is known: at once on a match, else when the read answers or gives up.
+`HeaderSettingsRow` reads the version through a `SharedSnapshot<ClaudeCodeVersion>`, set once when the background read answers, and the screen redraws its settings row on the next frame (`ShowSettings` already compares rows). The read is started with no five-second cancellation (the child program time limit still ends it), so a slow cold start still reaches the header; a read that fails or times out answers unknown. A tested `Application\ClaudeVersionWatch` holds it: `Current` answers being read until the task completes, then the version judged by `ClaudeCodeSupport.Check`, and `WithinAsync(TimeSpan, TimeProvider)` waits up to five seconds. `Started` is recorded at once on a match, else when the read answers or after five seconds with unknown, so the start record is never held back longer than today.
+
+Why: the bug hunt's two cold starts both took over five seconds, and a version given up on stayed unknown until the next start (first proposed as `guard-overlapping-actions`' design 8).
 
 ### 3. The first listing before the screen
 

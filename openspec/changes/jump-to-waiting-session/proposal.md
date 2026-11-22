@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** 11 of 11, wave 3 (how it feels). Depends on nothing and touches nothing the other changes touch, so it may be done at any point, for example while waiting for a review of a bigger change.
+- **Order:** step 7 of the stack in #379. Depends on nothing; `fit-narrow-and-short-terminals` (step 2) fits its new key into a narrow key bar.
 - **Together:** ships alone, in one pull request.
 
 ## Out of scope
