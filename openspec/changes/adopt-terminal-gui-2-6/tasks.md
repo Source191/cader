@@ -34,7 +34,7 @@
 ## 4. The unbuilt changes and the plan
 
 - [x] 4.1 `name-ui-stalls`: its proposal's and tasks' "Implement with" lines and task 1.1 say Terminal.Gui 2.6.0. Verify `openspec validate name-ui-stalls --strict`. Commit.
-- [ ] 4.2 `openspec\implementation-plan.md`: add and tick this change as its own step after step 4 and before checkpoint A (Opus 5.5, high), unless the owner has placed it elsewhere. Commit.
+- [x] 4.2 `openspec\implementation-plan.md`: add and tick this change as its own step after step 4 and before checkpoint A (Opus 5.5, high), unless the owner has placed it elsewhere. Commit.
 
 ## 5. The notices and the release
 
