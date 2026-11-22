@@ -38,5 +38,5 @@ None.
 - `Application\ConsoleLoads`, `Application\Views\WorktreesView` and `WorktreesViewState`: a partial rows input that keeps the selection and filter as a full one does, accepted only for the newest load; a scan-progress fact for the waiting words and the title.
 - `Tui\TableBody`: partial inputs carry their load's ticket through `LoadSequence`; `Tui\ConsoleScreen.ShowCounts` adds the mark while the shown tab's `RunningLoads` has a load running.
 - `Application\Wording`: the waiting words with the count, the title's progress and the mark, with their facts.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing and Layout.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md` and `.claude\rules\console-screen.md`, Layout.
 - **Implement with:** Opus 5.5 at high effort (reason above).

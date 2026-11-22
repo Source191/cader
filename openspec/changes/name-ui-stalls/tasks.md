@@ -6,7 +6,7 @@ Each task is red, green, refactor, with a commit per step, except the spike. Hea
 
 ## 1. Spike
 
-- [ ] 1.1 Decompile Terminal.Gui 2.5.0 with ilspycmd and find the window events that begin and end a whole layout pass and a whole draw pass; observe them in a throwaway program in the headless terminal (a 250 ms timeout and a forced redraw). Record what was read and what was observed, with the date, in `.claude\rules\terminal-gui.md`. Delete the throwaway program. Commit the rule file.
+- [ ] 1.1 Decompile Terminal.Gui 2.5.0 with ilspycmd and find the window events that begin and end a whole layout pass and a whole draw pass; observe them in a throwaway program in the headless terminal (a 250 ms timeout and a forced redraw). Record what was read and what was observed, with the date, in `.claude\rules\terminal-gui.md` (the decompilation and probe in `docs\verified-facts\terminal-gui.md`). Delete the throwaway program. Commit the rule file.
 
 ## 2. Heartbeat
 

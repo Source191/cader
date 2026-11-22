@@ -38,5 +38,5 @@ None.
 - `Application\WorktreeInspector`: the count's reads run together when given a slot pool.
 - `Application\ConsoleLoads.ScanWorktreesAsync` and `LatestSessions`: the scan starts before the first listing and hands the inventory a task of sessions.
 - `Application\SessionRowEnricher`: folders located through a pool of eight, the rows kept in listing order.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md`.
 - **Implement with:** Opus 5.5 at high effort (reason above).

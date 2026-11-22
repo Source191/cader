@@ -1,6 +1,6 @@
 name: mutation
 
-# Mutation testing of Source191.Cader.Core (.claude\rules\checks.md, "Mutation testing"), never on the path of a pull
+# Mutation testing of Source191.Cader.Core (.claude\rules\mutation-testing.md), never on the path of a pull
 # request, a merge or a release. After a release (pipeline finishing on main with a v* tag on the commit) it mutates
 # only the code changed since the last mutation run that finished; every Sunday, and by hand, it mutates all of Core.
 # A release made with the workflow's token starts no release event, so workflow_run on pipeline is the trigger.
