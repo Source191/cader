@@ -126,7 +126,7 @@ public sealed class RepositoryCatalogueShould
         CurrentSettings settings = TestSettings.Current(Root);
         RepositoryCatalogue catalogue = new(folders, settings);
 
-        await settings.SaveAsync(TestSettings.For(Root, Work));
+        await settings.UpdateAsync(_ => TestSettings.For(Root, Work));
 
         catalogue.Choices(recent: []).Matching("Ledger").Repositories.Select(choice => choice.Name).ShouldBe(["Northwind.Ledger"]);
     }

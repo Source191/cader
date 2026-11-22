@@ -23,7 +23,7 @@ public sealed class CurrentSettingsShould
     {
         CurrentSettings current = await CurrentSettings.LoadAsync(new InMemoryState(), Home);
 
-        await current.SaveAsync(Saved);
+        await current.UpdateAsync(_ => Saved);
 
         current.Value.ShouldBe(Saved);
     }
@@ -34,7 +34,7 @@ public sealed class CurrentSettingsShould
         InMemoryState state = new();
         CurrentSettings current = await CurrentSettings.LoadAsync(state, Home);
 
-        await current.SaveAsync(Saved);
+        await current.UpdateAsync(_ => Saved);
 
         (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(Saved);
     }

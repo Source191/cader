@@ -19,9 +19,6 @@ public sealed class CurrentSettings(Settings initial, IUserConfig store)
 
     public static async Task<CurrentSettings> LoadAsync(IUserConfig store, FolderPath home) => new(SettingsFile.From(await store.ReadConfigAsync(), home), store);
 
-    /// <summary>Writes config.json, then makes the saved settings the current ones, after any change already being saved.</summary>
-    public Task SaveAsync(Settings settings) => UpdateAsync(_ => settings);
-
     /// <summary>Applies the change to the settings the change before it saved, writes them and then makes them the current ones, answering what was saved.</summary>
     public Task<Settings> UpdateAsync(Func<Settings, Settings> change)
     {

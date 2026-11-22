@@ -27,7 +27,7 @@ public sealed class FolderLabelsShould
         FolderPath worktree = FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-123");
 
         labels.For(worktree).ShouldBe(@"~\source\worktrees\Northwind.Orders-fix-123");
-        await settings.SaveAsync(TestSettings.For([Repos.Value], Worktrees.Value));
+        await settings.UpdateAsync(_ => TestSettings.For([Repos.Value], Worktrees.Value));
 
         labels.For(worktree).ShouldBe("Northwind.Orders-fix-123");
     }

@@ -96,7 +96,7 @@ public sealed class ConsoleLoadsShould : IDisposable
     {
         const string Missing = @"C:\temp\source\repos";
         folders.WithDirectory(Root);
-        await settings.SaveAsync(TestSettings.For(Root, Missing));
+        await settings.UpdateAsync(_ => TestSettings.For(Root, Missing));
         ConsoleLoads loads = Loads();
 
         IReadOnlyList<ConfigRow> read = (await loads.ReadConfigAsync(TestContext.Current.CancellationToken)).ShouldBeOfType<ConfigRowsLoaded>().Rows;
@@ -111,7 +111,7 @@ public sealed class ConsoleLoadsShould : IDisposable
         ConsoleLoads loads = Loads();
 
         IReadOnlyList<ConfigRow> before = loads.ConfigRowsWhileReading();
-        await settings.SaveAsync(settings.Value.WithUpdateCheckToggled());
+        await settings.UpdateAsync(_ => settings.Value.WithUpdateCheckToggled());
         IReadOnlyList<ConfigRow> after = loads.ConfigRowsWhileReading();
 
         before.ShouldBe(ConfigRows.For(TestSettings.For(Root), SetupFacts.Reading, []));
