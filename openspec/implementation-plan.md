@@ -14,7 +14,7 @@ The fifteen open OpenSpec changes are built as one stack of pull requests, botto
 
 - [x] **Step 1:** `report-what-removals-and-launches-did`. Sonnet 5.5, medium.
 - [x] **Step 2:** `fit-narrow-and-short-terminals`. Opus 5.5, medium.
-- [ ] **Step 3:** `guard-overlapping-actions`. Opus 5.5, high.
+- [x] **Step 3:** `guard-overlapping-actions`. Opus 5.5, high.
 - [ ] **Step 4:** `ignore-reused-branch-pull-requests`. Opus 5.5, medium.
 - [ ] **Checkpoint A:** the owner reviews the four fixes, above all `guard-overlapping-actions`' `RunningEffects` in `TableBody`, which later steps also touch, and does its manual check of tabs (Enter twice on a session with no tab).
 
