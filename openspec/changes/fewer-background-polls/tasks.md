@@ -7,7 +7,7 @@ Each task is red, green, refactor, with a commit per step.
 ## 1. Sessions refresh default
 
 - [ ] 1.1 `SettingsFileShould.ReadAMissingSessionsRefreshAsThirtySeconds` and `KeepASavedFiveSeconds`: `Settings.SessionsRefreshWhenUnset` becomes 30. Update every fact that assumed 5 for an unset value (`SettingsShould`, `ConfigRows`, `WordingOfConfig`, `TestSettings`), keeping facts that set 5 on purpose. Commit.
-- [ ] 1.2 `README.md`, `docs\user-guide.md` and `.claude\rules\console-screen.md`, Refreshing: the default and why the folder watches make it safe. Verify by searching the docs for "5 seconds" and "five seconds" next to Sessions refresh. Commit.
+- [ ] 1.2 `README.md`, `docs\user-guide.md` and `.claude\rules\console-refreshing.md`: the default and why the folder watches make it safe. Verify by searching the docs for "5 seconds" and "five seconds" next to Sessions refresh. Commit.
 
 ## 2. Login read less often
 

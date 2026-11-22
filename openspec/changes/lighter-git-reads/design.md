@@ -32,5 +32,5 @@ A worktree whose head is on a branch takes its last commit from that branch's ti
 
 ## Risks / Trade-offs
 
-- [`status` with optional locks off could count a file whose timestamp changed but whose content did not] → git is expected to refresh the index in memory and only skip writing it back; the real-git fact in task 1.2 checks that a touched, unchanged file is not counted, and records the result in `.claude\rules\windows.md` with git's version.
+- [`status` with optional locks off could count a file whose timestamp changed but whose content did not] → git is expected to refresh the index in memory and only skip writing it back; the real-git fact in task 1.2 checks that a touched, unchanged file is not counted, and records the result in `.claude\rules\windows-processes.md` (the evidence in `docs\verified-facts\windows-processes.md`) with git's version.
 - [A user changes `user.email` and an origin branch's yours-flag lags up to ten minutes] → accepted; stated in the spec.
