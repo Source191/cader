@@ -32,15 +32,20 @@ public sealed record KeyBar(IReadOnlyList<KeyBarItem> First, IReadOnlyList<KeyBa
         List<KeyBarItem> items = [.. row];
         while (items.Count > 0 && items[^1].End > width)
         {
-            int dropped = items.FindLastIndex(item => !Kept.Contains(item.Press)) is int index and >= 0 ? index : items.Count - 1;
-            int shift = dropped + 1 < items.Count ? items[dropped + 1].X - items[dropped].X : 0;
-            items.RemoveAt(dropped);
-            for (int moved = dropped; moved < items.Count; moved++)
-            {
-                items[moved] = items[moved] with { X = items[moved].X - shift };
-            }
+            Drop(items, items.FindLastIndex(item => !Kept.Contains(item.Press)) is int index and >= 0 ? index : items.Count - 1);
         }
 
         return items;
+    }
+
+    /// <summary>Removes one item and moves the items after it left by its width and spacing.</summary>
+    private static void Drop(List<KeyBarItem> items, int dropped)
+    {
+        int shift = dropped + 1 < items.Count ? items[dropped + 1].X - items[dropped].X : 0;
+        items.RemoveAt(dropped);
+        for (int moved = dropped; moved < items.Count; moved++)
+        {
+            items[moved] = items[moved] with { X = items[moved].X - shift };
+        }
     }
 }
