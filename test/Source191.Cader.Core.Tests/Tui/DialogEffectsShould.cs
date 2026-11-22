@@ -43,7 +43,7 @@ public sealed class DialogEffectsShould
         WizardFit fit = DialogEffects.FitOrRefuse(context, columns: 70, rows: 24, new WizardOrigin.Anywhere());
 
         fit.ShouldBeOfType<WizardFit.TooSmall>();
-        context.Shown.ShouldBe([new StatusMessage.WizardTooSmall(NeededColumns: 80, NeededRows: 29, Columns: 70, Rows: 24)]);
+        context.Shown.ShouldBe([new StatusMessage.WizardTooSmall(NeededColumns: 80, NeededRows: 30, Columns: 70, Rows: 24)]);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class DialogEffectsShould
 
         WizardFit fit = DialogEffects.FitOrRefuse(context, columns: 120, rows: 30, new WizardOrigin.Anywhere());
 
-        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 29, ListRows: 1));
+        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 30, ListRows: 1));
         context.Shown.ShouldBeEmpty();
     }
 

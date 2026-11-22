@@ -9,7 +9,7 @@ public sealed class WizardFitShould
     {
         WizardFit fit = WizardFit.For(screenColumns: 120, screenRows: 36, chooser: true);
 
-        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 34, ListRows: 6));
+        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 34, ListRows: 5));
     }
 
     [Fact]
@@ -17,15 +17,15 @@ public sealed class WizardFitShould
     {
         WizardFit fit = WizardFit.For(screenColumns: 120, screenRows: 30, chooser: true);
 
-        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 29, ListRows: 1));
+        fit.ShouldBe(new WizardFit.Fits(Width: 80, Height: 30, ListRows: 1));
     }
 
     [Fact]
     public void KeepAMarginOfUpToTwoRows()
     {
-        Height(screenRows: 29).ShouldBe(29);
-        Height(screenRows: 30).ShouldBe(29);
-        Height(screenRows: 31).ShouldBe(29);
+        Height(screenRows: 30).ShouldBe(30);
+        Height(screenRows: 31).ShouldBe(30);
+        Height(screenRows: 32).ShouldBe(30);
         Height(screenRows: 50).ShouldBe(48);
     }
 
@@ -39,10 +39,10 @@ public sealed class WizardFitShould
     [Fact]
     public void RefuseBelowItsMinimum()
     {
-        WizardFit.TooSmall needed = new(NeededColumns: 80, NeededRows: 29);
+        WizardFit.TooSmall needed = new(NeededColumns: 80, NeededRows: 30);
 
         WizardFit.For(screenColumns: 79, screenRows: 36, chooser: true).ShouldBe(needed);
-        WizardFit.For(screenColumns: 120, screenRows: 28, chooser: true).ShouldBe(needed);
+        WizardFit.For(screenColumns: 120, screenRows: 29, chooser: true).ShouldBe(needed);
     }
 
     [Fact]
