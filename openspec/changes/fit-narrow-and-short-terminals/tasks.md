@@ -14,7 +14,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 
 ## 2. Title and key bar
 
-- [ ] 2.1 `KeyBarShould.LeaveARowThatFitsUnchanged`, `DropItemsFromTheEndUntilTheRowFits`, `KeepHelpAndQuitAndMoveThemLeft` and `ShowWhatFitsWhenEvenHelpAndQuitDoNot`: `KeyBar.FittedTo(int width)` (design 4). Commit.
+- [x] 2.1 `KeyBarShould.LeaveARowThatFitsUnchanged`, `DropItemsFromTheEndUntilTheRowFits`, `KeepHelpAndQuitAndMoveThemLeft` and `ShowWhatFitsWhenEvenHelpAndQuitDoNot`: `KeyBar.FittedTo(int width)` (design 4). Commit.
 - [ ] 2.2 `ConsoleScreen.ShowBar` draws `Bar(...).FittedTo(ScreenWidth)`, and `ShowFrameTitle` draws nothing when under two cells are left after the counts (design 3). Commit.
 
 ## 3. Check and release
