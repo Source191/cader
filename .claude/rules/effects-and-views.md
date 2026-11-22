@@ -18,6 +18,9 @@ paths:
   - "src/Source191.Cader.Tui/TableBody*.cs"
   - "src/Source191.Cader.Tui/*Dialog*.cs"
   - "src/Source191.Cader.Tui/*Controls*.cs"
+  - "src/Source191.Cader/**"
+  - "**/CommandLine*.cs"
+  - "**/LayeringShould.cs"
 ---
 
 # Reducers, effects, keys and Wording
@@ -67,3 +70,12 @@ How a view, a key, an effect and their words fit together. Read this before plan
 ## Open hierarchies the reflection facts rely on
 
 - `StatusMessage`, `Outcome`, `LaunchProblem`, `WizardProblem` and `WizardInput` grow a case per feature and keep a delegating or fallback arm in their switches, which the reflection facts rely on to spot a missing case: do not "fix" it to a throwing discard.
+
+## Layers, composition and the command line
+
+- **What each layer holds:** `Domain` rules and value objects, depending on nothing; its one boundary interface is `IProcessRegistry`, beside `ITextValue<T>` (`LayeringShould.DeclareNoDomainInterfaceButTheTwoNamed`). `Ports` the boundary interfaces and their records. `Application` the use cases (`Actions`, `Launch`), `Effects`, read models, `Views`, `Detail`, `Diagnostics`, `Reporting`, `TerminalSetup`, `ScreenLoop`, `CommandLine` and `Wording`.
+- **Adapters and Tui:** `Adapters` are git, the Claude CLI, Windows Terminal, processes, files, state, pull requests, package versions and diagnostics; `Tui` is Terminal.Gui only. `LayeringShould` also holds `KeepPortsFreeOfApplication` and `KeepSystemCommandLineInsideCommandLine`; `SourceConventionsShould` reads the syntax trees under `src`.
+- **The composition root:** `Program.cs` keeps the process-wide start (`Composition\SharedParts`, Terminal.Gui's logger, the crash hooks, the command line); `Composition\LaunchParts` the console's and `here`'s shared preamble (`RequiredPrograms`, then `ClaudeCli`, `GitCli` and `LaunchService` once).
+- **Each command's wiring:** `ConsoleComposition`, `HereComposition` and `TerminalSetupComposition` construct each command and call `ScreenLoop`, `HereCommandRunner` or `TerminalSetupRunner`; `claim-tab` is a lambda calling `TabClaimer`. Every decision the wiring needs is a tested `Application` class (`ConsoleLoads`, `Started.From`, `UpdateCheckSwitch`, `HeaderSettingsRow`, `RequiredPrograms`).
+- **The command line:** one `RootCommand` in `Application\CommandLine.Build` (the console as the root action, `here`, `setup-terminal`, hidden `claim-tab`); `Program.cs` hands it a `CommandActions` record of lambdas and runs `CommandLine.InvokeAsync`, which sets `ProcessTerminationTimeout = null` because the library would otherwise force an exit two seconds after a Ctrl+C, even under an attached session.
+- **Its defaults:** help, `--version`, parse errors and option syntax are the library's; parse errors exit 1; only the console and `here` locate Claude Code. A new option is a symbol with a `Description` in `Build` and a value read in its action; `CommandLineShould` invokes the root with recording actions and `StringWriter`s.
