@@ -179,6 +179,9 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         });
     }
 
+    /// <summary>How the wizard opened on this origin fits the screen; a screen too small for it is refused on the status line.</summary>
+    internal static WizardFit FitOrRefuse(IEffectContext context, int columns, int rows, WizardOrigin origin) => WizardFit.For(columns, rows, chooser: origin is WizardOrigin.Anywhere);
+
     private void StartSession(IEffectContext context, WizardOrigin origin)
     {
         switch (LaunchWizardDialog.Show(context.App, context.Diagnostics, clock, catalogue, recent, folders, settings.Value, origin, fetches))
