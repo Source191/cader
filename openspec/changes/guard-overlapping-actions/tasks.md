@@ -17,7 +17,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 ## 3. Handlers
 
 - [x] 3.1 `OpenTabHandlerShould.SwitchToAPendingTabInsteadOfOpeningAnother` and `SwitchToALiveTabTheRowDidNotKnowOf`: `OpenTabHandler` re-reads the registry for `LiveTab.None` (design 3). Commit.
-- [ ] 3.2 `ToggleUpdateCheckHandlerShould.KeepADiagnosticLogToggleMadeMeanwhile` and `ToggleDiagnosticLogHandlerShould.KeepAnUpdateCheckToggleMadeMeanwhile`: both handlers use `UpdateAsync`; `SaveSettingsHandler` uses it with the dialog's snapshot. Commit.
+- [x] 3.2 `ToggleUpdateCheckHandlerShould.KeepADiagnosticLogToggleMadeMeanwhile` and `ToggleDiagnosticLogHandlerShould.KeepAnUpdateCheckToggleMadeMeanwhile`: both handlers use `UpdateAsync`; `SaveSettingsHandler` uses it with the dialog's snapshot. Commit.
 - [ ] 3.3 `LaunchProgressShould.ReportWithoutCallingAnyone`: `LaunchProgress.Follow` and its listener removed, `Report` only replaces the step (design 1); the existing facts about `Shown` stay. Commit.
 
 ## 4. Screens

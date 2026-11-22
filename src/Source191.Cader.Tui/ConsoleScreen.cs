@@ -129,6 +129,7 @@ public sealed class ConsoleScreen(
         private StatusShown shownStatus = new StatusShown.Nothing();
         private int shownStatusRows;
         private int settingsIndent;
+        private LaunchStep drawnStep = LaunchStep.None;
 
         public Frame(ConsoleScreen screen, IApplication app, ConsoleState initial)
         {
@@ -453,6 +454,14 @@ public sealed class ConsoleScreen(
 
         private void RefreshWhatIsDue()
         {
+            // A launch reports its steps on its own thread and asks nothing of this one, so the ticker draws a new step, at most a tick late, even under a dialog.
+            LaunchStep step = screen.launchProgress.Latest;
+            if (!step.Equals(drawnStep))
+            {
+                drawnStep = step;
+                FrameChanged();
+            }
+
             if (IsDue(sessions))
             {
                 ListSessions();
