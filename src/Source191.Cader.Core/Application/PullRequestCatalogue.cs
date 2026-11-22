@@ -76,7 +76,7 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
     }
 
     private static PullRequestLookup ForBranch(PullRequestListing.Listed listed, BranchName branch) =>
-        PullRequests.ForBranch([.. listed.PullRequests.Where(row => row.Branch == branch).Select(row => row.PullRequest)]);
+        PullRequests.ForBranch([.. listed.PullRequests.Where(row => row.Branch == branch).Select(row => row.PullRequest)], new RecordedTime.NotRecorded());
 
     public void Dispose() => slots.Dispose();
 
