@@ -23,4 +23,13 @@ public sealed class CurrentSettings(Settings initial, IUserConfig store)
         await store.WriteConfigAsync(SettingsFile.ToConfig(settings));
         snapshot.Replace(settings);
     }
+
+    /// <summary>Applies the change to the current settings, writes them and makes them the current ones, answering what was saved.</summary>
+    public async Task<Settings> UpdateAsync(Func<Settings, Settings> change)
+    {
+        Settings changed = change(Value);
+        await SaveAsync(changed);
+
+        return changed;
+    }
 }
