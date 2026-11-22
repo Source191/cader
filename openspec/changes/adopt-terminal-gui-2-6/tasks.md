@@ -16,12 +16,12 @@
 
 ## 2. The wizard's fit, only if P5 differed
 
-- [ ] 2.1 `WizardFitShould`: change the expected heights and list rows to P5's measurements (red, failing on the old numbers). Commit.
-- [ ] 2.2 `Application\Views\WizardFit`: the chrome constant or heights that make 2.1 pass (green); then refactor. Verify `dotnet test test\Source191.Cader.Core.Tests -c Debug --no-build` and the smoke check of a `tools\install-local.ps1` build (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`). Commit each step.
+- [x] 2.1 (not needed: P5 matched #382's measurements) `WizardFitShould`: change the expected heights and list rows to P5's measurements (red, failing on the old numbers). Commit.
+- [x] 2.2 (not needed: P5 matched) `Application\Views\WizardFit`: the chrome constant or heights that make 2.1 pass (green); then refactor. Verify `dotnet test test\Source191.Cader.Core.Tests -c Debug --no-build` and the smoke check of a `tools\install-local.ps1` build (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`). Commit each step.
 
 ## 3. The rule and its references
 
-- [ ] 3.1 `.claude\rules\terminal-gui.md`: head it "Terminal.Gui 2.6.0 facts", with the heading line from design 2. First move the Tabs re-measuring detail and any other evidence still in the rule to `docs\verified-facts\terminal-gui.md`. Then write:
+- [x] 3.1 `.claude\rules\terminal-gui.md`: head it "Terminal.Gui 2.6.0 facts", with the heading line from design 2. First move the Tabs re-measuring detail and any other evidence still in the rule to `docs\verified-facts\terminal-gui.md`. Then write:
   - one bullet replacing #383's two lock bullets, with P1's result and the ticker's own reason (design 2); the 2.5.0 text moves to the evidence as history;
   - #382's chrome bullet re-dated with P5's result;
   - one dated bullet each for P2, P3 (with the reason the spinner stilling stays: design 3), P4, R1 and R2 (under the wizard's guard), and `app.InvokeAsync` (design 4);
