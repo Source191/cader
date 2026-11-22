@@ -31,6 +31,18 @@ public sealed class LaunchProgressShould
     }
 
     [Fact]
+    public void ReportWithoutCallingAnyone()
+    {
+        LaunchStep step = LaunchSteps.WithoutANewWorktree(SessionName.From("fix-123")).Step(LaunchStage.StartingClaude);
+
+        progress.Report(step);
+
+        progress.Latest.ShouldBe(step);
+        typeof(LaunchProgress).GetMethods().Where(method => method.DeclaringType == typeof(LaunchProgress)).Select(method => method.Name).Order(StringComparer.Ordinal).ToList()
+            .ShouldBe(["Report", "Shown", "get_Latest"], customMessage: "a launch's thread only replaces the step, and the screen's ticker reads it, so the launch never waits on the UI thread");
+    }
+
+    [Fact]
     public void CallItsListenerOnEachStep()
     {
         LaunchSteps steps = LaunchSteps.WithoutANewWorktree(SessionName.From("fix-123"));
