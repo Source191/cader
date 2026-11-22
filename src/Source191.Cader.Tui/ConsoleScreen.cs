@@ -195,8 +195,14 @@ public sealed class ConsoleScreen(
             ConsoleTab.Config => config,
         };
 
+        /// <summary>Leaves at once, or, while any tab's action runs, only once the user chooses Quit; quitting ends every pool thread, so it would cut that action off part-way.</summary>
         public void Leave(ViewEffect effect)
         {
+            if ((sessions.Running || worktrees.Running || config.Running) && !Confirm.Ask(app, screen.context.Diagnostics, DialogName.Quit, Wording.QuitWhileRunningTitle, Wording.QuitWhileRunningQuestion, [.. Wording.QuitWhileRunningButtons]))
+            {
+                return;
+            }
+
             leaving = effect;
             app.RequestStop();
         }
