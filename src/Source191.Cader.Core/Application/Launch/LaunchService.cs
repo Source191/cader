@@ -11,7 +11,7 @@ namespace Source191.Cader.Application.Launch;
 /// remember about it. A base that could not be updated never stops the launch; the outcome says so. Each step is
 /// reported to <see cref="LaunchProgress"/> as it begins, numbered out of the steps this launch runs.
 /// </summary>
-public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock, LaunchProgress progress, DiagnosticLog log)
+public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock, IProgress<LaunchStep> progress, DiagnosticLog log)
 {
     public async Task<LaunchOutcome> LaunchAsync(LaunchPlan plan, CancellationToken cancellationToken)
     {

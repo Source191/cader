@@ -24,7 +24,7 @@ public sealed class LaunchServiceShould
         .Answer(request => request.FileName == "git" && request.Arguments.Contains("symbolic-ref"), new ProcessResult(0, "origin/main\n", string.Empty));
 
     private readonly InMemoryState store = new();
-    private readonly LaunchProgress progress = new();
+    private readonly HeardProgress progress = new();
     private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
 
     private LaunchService Service
@@ -338,7 +338,7 @@ public sealed class LaunchServiceShould
     public async Task ReportEachStepAsItBegins()
     {
         List<(LaunchStage Stage, int RunsBefore)> heard = [];
-        progress.Follow(() => heard.Add((progress.Latest.Stage, processes.CapturedRequests.Count)));
+        progress.OnStep = step => heard.Add((step.Stage, processes.CapturedRequests.Count));
 
         await Service.LaunchAsync(NewWorktree, CancellationToken.None);
 
@@ -390,7 +390,7 @@ public sealed class LaunchServiceShould
     private async Task<IReadOnlyList<LaunchStep>> ReportedAsync(LaunchPlan plan)
     {
         List<LaunchStep> reported = [];
-        progress.Follow(() => reported.Add(progress.Latest));
+        progress.OnStep = reported.Add;
 
         await Service.LaunchAsync(plan, CancellationToken.None);
 

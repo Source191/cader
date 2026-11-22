@@ -12,7 +12,7 @@ namespace Source191.Cader.Application.Actions;
 /// is not trusted it opens a plain Claude tab there so the trust prompt can be accepted. The console's timed and heard
 /// refreshes are held for the whole of it, released however it ends, so the launch never competes with Cader's own scans.
 /// </summary>
-public sealed class StartSessionHandler(LaunchService service, OpenTabHandler tabs, IWindowsTerminal terminal, TabScripts scripts, LaunchProgress progress, LaunchHold hold)
+public sealed class StartSessionHandler(LaunchService service, OpenTabHandler tabs, IWindowsTerminal terminal, TabScripts scripts, IProgress<LaunchStep> progress, LaunchHold hold)
     : IEffectHandler<StartSession>
 {
     public async Task<Outcome> HandleAsync(StartSession effect, CancellationToken cancellationToken)

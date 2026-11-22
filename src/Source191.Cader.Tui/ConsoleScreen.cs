@@ -175,8 +175,6 @@ public sealed class ConsoleScreen(
             Window.KeyDown += (_, key) => Active.OnKey(key);
             tabs.ValueChanged += (_, _) => OnTabClicked();
             Window.Initialized += (_, _) => Show(active);
-            // A launch reports its steps from a pool thread; the status line is redrawn on the UI thread.
-            screen.launchProgress.Follow(() => app.Invoke(FrameChanged));
 
             StartRefreshing();
             sessions.Redraw();
@@ -253,8 +251,6 @@ public sealed class ConsoleScreen(
 
         public void StopTimers()
         {
-            // A launch still running after the console closes reports to no one.
-            screen.launchProgress.Follow(() => { });
             foreach (object timer in timers)
             {
                 app.RemoveTimeout(timer);

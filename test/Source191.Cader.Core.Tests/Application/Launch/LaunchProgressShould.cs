@@ -43,20 +43,6 @@ public sealed class LaunchProgressShould
     }
 
     [Fact]
-    public void CallItsListenerOnEachStep()
-    {
-        LaunchSteps steps = LaunchSteps.WithoutANewWorktree(SessionName.From("fix-123"));
-        List<LaunchStep> heard = [];
-        progress.Report(steps.Step(LaunchStage.StartingClaude));
-        progress.Follow(() => heard.Add(progress.Latest));
-
-        progress.Report(steps.Step(LaunchStage.FindingSession));
-        progress.Report(steps.Step(LaunchStage.OpeningTab));
-
-        heard.ShouldBe([steps.Step(LaunchStage.FindingSession), steps.Step(LaunchStage.OpeningTab)]);
-    }
-
-    [Fact]
     public void ShowTheStepForTheLaunchItNames()
     {
         LaunchStep step = LaunchSteps.WithoutANewWorktree(SessionName.From("fix-123")).Step(LaunchStage.StartingClaude);
