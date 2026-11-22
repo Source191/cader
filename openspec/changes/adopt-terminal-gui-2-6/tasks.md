@@ -39,7 +39,7 @@
 ## 5. The notices and the release
 
 - [x] 5.1 `THIRD-PARTY-NOTICES.txt` (design 6): build the list from `dotnet list src\Source191.Cader package --include-transitive` and a `win-x64` publish into `artifacts\publish`. Update every entry whose version differs (Terminal.Gui 2.6.0, Markdig 1.4.2, Microsoft.Extensions.Configuration and FileProviders.Physical 11.0.0, TextMateSharp and TextMateSharp.Grammars 2.0.5, Wcwidth 5.0.2, and any other the list shows). Add or remove entries to match what ships, and check each changed major version's licence text against its package's licence file. Verify that every shipped third-party assembly has an entry and no entry names something that does not ship. Commit.
-- [ ] 5.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above step 4's and add the `CHANGELOG.md` line ("The licence notices name the versions shipped."). Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes`, `Invoke-Pester test\Scripts` and `openspec validate adopt-terminal-gui-2-6 --strict`. Commit.
+- [x] 5.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above step 4's and add the `CHANGELOG.md` line ("The licence notices name the versions shipped."). Verify `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes`, `Invoke-Pester test\Scripts` and `openspec validate adopt-terminal-gui-2-6 --strict`. Commit.
 
 ## Workflow follow-up
 

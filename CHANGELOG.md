@@ -55,6 +55,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 - Opening a folder in VS Code with f no longer writes VS Code's start-up messages, such as a Node.js warning, over the screen (#252)
 - Removing a worktree whose folder a tab or program still had open no longer leaves an empty folder Cader cannot see: Cader waits a few seconds for it, finishes the removal and its branch either way, and the Worktrees tab lists any empty folder under the worktree root as empty, which d deletes (#261)
 - A branch name reused for new work no longer shows the earlier branch's merged or closed pull request: a pull request that finished before the branch was created, as git's reflog records it, is left out, so the PR column starts blank and the Worktrees tab flags the branch · no PR until it has a pull request of its own; an open one is always shown
+- The licence notices name the versions shipped: THIRD-PARTY-NOTICES.txt in the release zip now lists Terminal.Gui 2.6.0 and the current versions of ten other libraries, instead of the older ones it still named
 
 ### Internal
 
