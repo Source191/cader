@@ -4,4 +4,6 @@ namespace Source191.Cader.Application;
 public sealed record KeyBar(IReadOnlyList<KeyBarItem> First, IReadOnlyList<KeyBarItem> Second)
 {
     public int Width => First.Concat(Second).Select(item => item.End).DefaultIfEmpty(0).Max();
+
+    public KeyBar FittedTo(int width) => this;
 }
