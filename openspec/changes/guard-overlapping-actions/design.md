@@ -1,0 +1,62 @@
+## Context
+
+- **Terminal.Gui's timer lock:** it holds a lock while it runs each timeout and each `app.Invoke` callback, and `app.Invoke` from another thread takes that lock to queue its callback (`.claude\rules\terminal-gui.md`).
+  - **The probe:** a throwaway program run in the headless terminal on 22 November 2026, Terminal.Gui 2.5.0 on .NET 11, opened a dialog inside an `app.Invoke` callback. A second thread's `app.Invoke` call did not return until the dialog closed 4.1 s later.
+  - **Where Cader does it:** `TableBody.RunInBackground` settles every action inside `app.Invoke`, and `DialogEffects` opens four dialogs from that settle: `AskAboutBranch`, `AskAboutReport`, `ShowBreakdown` and `ChooseSolution`.
+  - **Why it stalls a launch:** `ConsoleScreen` registers `launchProgress.Follow(() => app.Invoke(FrameChanged))`, and `LaunchProgress.Report` calls the listener on the launch's own thread, so each step waits for any such dialog.
+- **Double presses:** `TableBody.Dispatch` and `RunInBackground` start every effect they are given. `inFlight` counts them but refuses nothing. `SessionsView` decides `OpenTabForSession(session, row.Tab)` from the row, whose `Tab` changes only on the next listing, and `OpenTabHandler.OpenAsync` removes every earlier registration for the session before writing its own pending one.
+- **Quit:** `SharedKeys` maps q to `Quit` for every reducer, and `ConsoleScreen.Leave` stops the application at once. `ScreenLoop` then returns and the process exits, ending every pool thread.
+- **The pane's reads:** `DetailReader.Reading.Read` starts a `Task.Run` per request. Only the tab's lifetime token cancels them, and `ProcessRunner` kills a child whose token is cancelled.
+- **Git's index lock:** `GitCli` runs `status --porcelain` for counts and changed files with no `--no-optional-locks`. Git refreshes and writes back the index under `index.lock` during `status` unless that option (or `GIT_OPTIONAL_LOCKS=0`) is given, and recommends it for background status ([git](https://git-scm.com/docs/git#Documentation/git.txt---no-optional-locks), [git status, Background refresh](https://git-scm.com/docs/git-status#_background_refresh)).
+- **Toggles:** `ToggleUpdateCheckHandler` and `ToggleDiagnosticLogHandler` read `settings.Value`, change one value and call `CurrentSettings.SaveAsync`, which writes and then replaces the snapshot, with no ordering between two saves.
+- **The Claude version:** `ConsoleComposition` starts `VersionAsync` with a 5 s `CancellationTokenSource` and builds the header from the one answer. A timed-out read is killed and answers `NotRead`.
+
+## Goals / Non-Goals
+
+**Goals:**
+- No pool thread doing real work ever waits on the UI thread.
+- One running copy of an action at a time.
+- No silent quit mid-action.
+- At most one detail read per tab, never killed for being superseded.
+- No index lock taken by Cader's reads.
+- Settings changes applied in order.
+- A late version still shown.
+
+**Non-Goals:** moving the post-action dialogs, cancelling git, a queue of actions.
+
+## Decisions
+
+1. **A launch's step is redrawn by the ticker, not by `Invoke`.**
+   - **How:** `RefreshWhatIsDue` (every 250 ms on the UI thread) compares `launchProgress.Latest` with the step it last drew and calls `FrameChanged` when it differs. `LaunchProgress.Follow` and the listener are removed, so `Report` only replaces the snapshot.
+   - **Why:** this deletes code, and the ticker already runs under dialogs; a step shows at most 250 ms late.
+   - **Alternative rejected:** handing the `Invoke` to a throwaway task, which keeps a blocked thread per step.
+2. **`Application\RunningEffects`, one per console, refuses an equal effect already running.**
+   - **Its API:** `TryBegin(ViewEffect)` answers false when an equal one (record equality) is running, and `End(ViewEffect)` releases it. Both are called on the UI thread only (a settle runs inside `app.Invoke`), so it needs no lock. It is handed to each `TableBody` through `ScreenContext`, so the Worktrees tab's Enter on a worktree and the Sessions tab's Enter on its session share one guard.
+   - **How `TableBody` uses it:** `Dispatch` and `RunInBackground` (for a `Working(effect)`) call `TryBegin` first. A refusal shows `StatusMessage.StillRunning(effect)`, worded from the effect's working words in `Wording` with a refusal's tone. `End` runs in the settle.
+   - **Why record equality:** effects are records of the row they act on, so two Enters on fix-123 are equal and Enter on fix-123 then on fix-456 are not.
+3. **`OpenTabHandler` re-reads the registry before opening.** For `LiveTab.None` it checks for a live registration for the session (a pending one counts for its 60 s grace) and switches to it when found, as `LiveTab.Open` does. This covers the Enter pressed after the first opening has finished but before the next listing.
+4. **`ConsoleScreen.Leave` asks before quitting while any tab is running.**
+   - **How:** when `sessions.Running || worktrees.Running || config.Running`, `Confirm.Ask` with `DialogName.Quit` shows `Wording.QuitWhileRunningTitle`, `QuitWhileRunningQuestion` and `QuitWhileRunningButtons` (Quit, Keep open, with Esc keeping it open), and only Quit stops. This holds for the `Quit` that `UpdateTabOpened` raises too.
+   - **Why in the screen:** it runs from the key handler, never inside `Invoke`, and the decision is one boolean the screen already has.
+5. **The pane reads one row at a time per tab, newest wins.**
+   - **How:** `DetailReader.Reading` keeps whether a read runs and the latest request asked meanwhile. When the running read ends, its answer goes through `DetailRequests.Accept` as now, and then the latest request starts if it is still the selected row's. Nothing is cancelled except by the tab's disposal, as now.
+   - **Why not cancel:** `ProcessRunner` kills a cancelled child, and a killed git can leave `index.lock` behind (decision 6 covers Cader's own status; other git reads keep the same rule).
+   - **Where the rule lives:** in `Application\Detail\DetailRequests` (`Begin`, `Ended`, answering the request to start next), so it is tested without Terminal.Gui.
+6. **Cader's read-only git calls pass `--no-optional-locks`.** Every `GitCli` call that only reads (status, the counts, changed files, unpushed commits, the worktree listing, merge-base and rev-parse) puts `--no-optional-locks` before its subcommand. Writes (worktree add and remove, branch delete, fetch, prune, fast-forward) do not. `GitCliShould` pins the argument lists through `FakeProcessRunner`.
+7. **`CurrentSettings.UpdateAsync(Func<Settings, Settings>)` applies changes one at a time.**
+   - **How:** a `SemaphoreSlim(1, 1)` around read, change, write and replace (a lock cannot be held across the write's `await`). The toggles pass their change, and `SaveSettings` from a dialog passes `_ => saved`.
+   - **Why the dialog saves a whole snapshot:** a dialog's save is modal and replaces what its scope edits. A toggle saved while a dialog was open would be overwritten by that dialog's snapshot, which is accepted, since a dialog blocks the toggle's key.
+8. **`Application\ClaudeVersionWatch` holds the version, which may arrive late.**
+   - **How:** it is built from the `VersionAsync` task, started with no cancellation (the child time limit still ends it). `Current` answers `ClaudeCodeVersion.Unknown` until the task completes, then its `ClaudeCodeSupport.Check`, held in a `SharedSnapshot`. `WithinAsync(TimeSpan, TimeProvider)` waits up to 5 s for the start-up record.
+   - **Wiring:** `ConsoleComposition` builds `SettingsRows` from `Current`, so the next redraw after the answer shows it. The start record keeps what was known at start.
+
+## Risks / Trade-offs
+
+- **Refusing equal effects could refuse a wanted repeat,** for example copying the same path twice quickly → the second copy is a no-op anyway, and once the first ends the key works again.
+- **The quit question appears when the user means it** → Esc keeps the console open and Enter on Quit quits, one key more than today and only while something runs.
+- **A detail read that hangs blocks that tab's pane until git's time limit** → the same limit already ends every child; the table and its refreshes are unaffected.
+- **`--no-optional-locks` means `git status` does not refresh the index, so each scan stats every file afresh** → git recommends it for exactly this background use; the allocation-budget and timing facts are rerun in task 6.2.
+
+## Open Questions
+
+None.
