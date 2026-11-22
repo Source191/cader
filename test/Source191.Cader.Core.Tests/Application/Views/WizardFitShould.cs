@@ -45,6 +45,24 @@ public sealed class WizardFitShould
         WizardFit.For(screenColumns: 120, screenRows: 28, chooser: true).ShouldBe(needed);
     }
 
+    [Fact]
+    public void FitTheFixedFolderWizardAt84By23()
+    {
+        WizardFit.Fits fixedSize = new(Width: 84, Height: 23, ListRows: 0);
+
+        WizardFit.For(screenColumns: 84, screenRows: 23, chooser: false).ShouldBe(fixedSize);
+        WizardFit.For(screenColumns: 120, screenRows: 36, chooser: false).ShouldBe(fixedSize);
+    }
+
+    [Fact]
+    public void RefuseTheFixedFolderWizardBelow84By23()
+    {
+        WizardFit.TooSmall needed = new(NeededColumns: 84, NeededRows: 23);
+
+        WizardFit.For(screenColumns: 83, screenRows: 36, chooser: false).ShouldBe(needed);
+        WizardFit.For(screenColumns: 120, screenRows: 22, chooser: false).ShouldBe(needed);
+    }
+
     public static TheoryData<int> ScreenRows() => [.. Enumerable.Range(30, 21)];
 
     private static int Height(int screenRows)
