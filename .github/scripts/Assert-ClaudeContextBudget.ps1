@@ -36,7 +36,8 @@ $files = @(
 $breaches = 0
 foreach ($file in $files) {
     $relative = [IO.Path]::GetRelativePath($root, $file).Replace('\', '/')
-    $bytes = [IO.File]::ReadAllBytes($file).Length
+    # The repository stores LF; a Windows checkout with core.autocrlf adds a byte a line, so measure as stored.
+    $bytes = [Text.Encoding]::UTF8.GetByteCount([IO.File]::ReadAllText($file).Replace("`r`n", "`n"))
     if ($bytes -gt $maximumBytes) {
         Write-Host "::error file=$relative::$relative is $bytes bytes; the budget is $maximumBytes. Move evidence to docs\verified-facts or split it by section."
         $breaches++

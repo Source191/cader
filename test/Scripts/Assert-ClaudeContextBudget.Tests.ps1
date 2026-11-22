@@ -16,9 +16,9 @@ BeforeAll {
         [IO.File]::WriteAllText($Path, $Text, [Text.UTF8Encoding]::new($false))
     }
 
-    # Text of exactly the given number of UTF-8 bytes, in lines of 100 characters.
+    # Text of exactly the given number of UTF-8 bytes with LF endings, as the repository stores it, in lines of 100.
     function New-TextOfBytes([int] $Bytes) {
-        $line = ('a' * 98) + "`r`n"
+        $line = ('a' * 99) + "`n"
         $whole = [math]::Floor($Bytes / $line.Length)
         ($line * $whole) + ('b' * ($Bytes - ($whole * $line.Length)))
     }
