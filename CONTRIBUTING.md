@@ -44,7 +44,7 @@ dotnet build -c Debug
 ```
 
 - **SDK:** `global.json` chooses the SDK (11.0.100, rolling forward to the latest minor) and Microsoft.Testing.Platform as the test runner.
-- **Claude Code:** the `/opsx:*` commands and the OpenSpec skills under `.claude\` work in any Claude Code session opened in the repository; the `openspec` CLI does the same work by hand. Trust the clone in Claude Code once (run `claude` in it and accept the prompt) if you will run the contract tests or the hand-off check.
+- **Claude Code:** the `/opsx:*` commands and the OpenSpec skills under `.claude\` work in any Claude Code session opened in the repository; the `openspec` CLI does the same work by hand. `CLAUDE.md` and the path-scoped rules in `.claude\rules` are what Claude Code reads, held small by `Assert-ClaudeContextBudget.ps1`; the evidence behind their verified facts is in `docs\verified-facts`. Trust the clone in Claude Code once (run `claude` in it and accept the prompt) if you will run the contract tests or the hand-off check.
 - **Your environment:** never start `cader`, or anything that opens tabs, from inside a Claude Code session without clearing `NO_COLOR`, `CLAUDECODE`, `CLAUDE_PID` and `CLAUDE_CODE_*`. Windows Terminal hands the caller's environment to new tabs, and everything in them then runs monochrome.
 
 ## The build and test loop
@@ -119,7 +119,7 @@ Each project's README holds what is worth knowing about it; a `.csproj` carries 
 
 ## The code rules in brief
 
-CLAUDE.md's "Code rules" are the authority; this is their shape.
+CLAUDE.md's "Code rules" and the rules in `.claude\rules` they point to are the authority; this is their shape.
 
 - **Layers:** Domain, Ports, Application, Adapters, Tui, one namespace each, with dependencies pointing one way; `Architecture\LayeringShould` fails otherwise. Nothing outside the adapters touches files or processes, and nothing outside `Tui` touches Terminal.Gui.
 - **Test-driven:** red, green, refactor, a commit per step. No untested code except the tool project's wiring (`Program.cs` and its `Composition` folder).
