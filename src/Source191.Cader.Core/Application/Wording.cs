@@ -603,6 +603,7 @@ public static partial class Wording
             StatusMessage.NotDeletedOnOrigin origin => $"{origin.Branch} is only on origin, and Cader never deletes a branch on origin.",
             StatusMessage.SessionNotListed gone => $"{Name(gone.Name)} is not in the sessions list any more; it may have ended. Try again after the next refresh.",
             StatusMessage.NoSolution none => $"No solution found in {none.FolderName} or its src folder.",
+            StatusMessage.WizardTooSmall small => $"The new-session window needs at least {small.NeededColumns} x {small.NeededRows}; this terminal is {small.Columns} x {small.Rows}.",
             StatusMessage.NothingToMeasure stopped => $"{Name(stopped.Name)} has no process to measure; it is stopped.",
             StatusMessage.NoPullRequest none => Describe(none),
             StatusMessage.UpToDate => "This is the newest release.",
