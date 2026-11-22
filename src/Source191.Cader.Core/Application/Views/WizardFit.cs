@@ -8,8 +8,8 @@ public abstract record WizardFit
 {
     private const int OverviewWidth = 80;
 
-    /// <summary>The form's rows, the caption and the filter, and a dialog's border and button area (measured, terminal-gui.md).</summary>
-    private const int RowsBesideTheList = 21 + 2 + 5;
+    /// <summary>The form's rows, the caption and the filter, and a dialog's border, button area and shadow row (measured, terminal-gui.md).</summary>
+    private const int RowsBesideTheList = 21 + 2 + 6;
 
     private const int OverviewMinimumRows = RowsBesideTheList + 1;
 
