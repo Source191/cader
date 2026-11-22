@@ -21,6 +21,7 @@ public sealed class PullRequestCatalogueShould : IDisposable
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(5);
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
+        .AnswerAll(new ProcessResult(0, string.Empty, string.Empty))
         .Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
 
     private readonly FakePullRequests hosts = new FakePullRequests().Answer(Orders, Listing(Open));

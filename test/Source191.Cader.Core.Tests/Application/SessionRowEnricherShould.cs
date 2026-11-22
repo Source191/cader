@@ -50,7 +50,7 @@ public sealed class SessionRowEnricherShould : IDisposable
         first.PullRequest.ShouldBe(new PullRequestLookup.Missing(PullRequestGap.Looking));
         second.PullRequest.ShouldBe(new PullRequestLookup.Found(open));
         hosts.Calls.Count.ShouldBe(1);
-        remotes.CapturedRequests.Single().WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\repos\Northwind.Orders"));
+        remotes.CapturedRequests.ShouldAllBe(request => request.WorkingDirectory == new WorkingFolder.At(@"C:\repos\Northwind.Orders"), "the origin and the branch's reflog are read in the main checkout");
     }
 
     [Fact]

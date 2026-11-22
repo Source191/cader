@@ -39,7 +39,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
 
     public WorktreeInventoryBranchesShould()
     {
-        FakeProcessRunner origin = new FakeProcessRunner().Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
+        FakeProcessRunner origin = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty)).Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
         catalogue = new(new GitCli(origin, "git"), hosts, new FakeTimeProvider(Fixtures.Noon), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])));
         pruner = new(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         // Recorded as each run starts, on the caller's path, so a prune the scan starts and never awaits is seen as the scan returns.
