@@ -129,7 +129,7 @@ public static partial class Wording
     {
         return outcome switch
         {
-            RemoveWorktreeOutcome.Refused or RemoveWorktreeOutcome.InUse => StatusTone.Notice,
+            RemoveWorktreeOutcome.Refused or RemoveWorktreeOutcome.InUse or RemoveWorktreeOutcome.RemovedBranchNotDeleted => StatusTone.Notice,
             RemoveWorktreeOutcome.Removed { FolderLeft: true } or RemoveWorktreeOutcome.RemovedAndDeletedBranch { FolderLeft: true } or RemoveWorktreeOutcome.BranchKept { FolderLeft: true } => StatusTone.Notice,
             _ => StatusTone.Success,
         };
@@ -317,6 +317,7 @@ public static partial class Wording
             RemoveWorktreeOutcome.InUse inUse => $"Not removed: the folder {inUse.FolderName} is still in use by a tab or program; close it and remove again.",
             RemoveWorktreeOutcome.Removed removed => $"Removed {removed.FolderName}.{FolderLeft(removed.FolderLeft)}",
             RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => $"Removed {removed.FolderName} and deleted its merged branch {removed.Branch}.{FolderLeft(removed.FolderLeft)}",
+            RemoveWorktreeOutcome.RemovedBranchNotDeleted refused => $"Removed {refused.FolderName}; branch {refused.Branch} kept: {refused.Failure}{FolderLeft(refused.FolderLeft)}",
             RemoveWorktreeOutcome.BranchKept { CreatedHere: true } kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} is not merged.{FolderLeft(kept.FolderLeft)}",
             RemoveWorktreeOutcome.BranchKept kept => $"Removed {kept.FolderName}; branch {kept.Branch.Branch} was not created here, so it is kept.{FolderLeft(kept.FolderLeft)}",
             RemoveWorktreeOutcome.DeletedFolder deleted => $"Deleted the folder {deleted.FolderName}.",

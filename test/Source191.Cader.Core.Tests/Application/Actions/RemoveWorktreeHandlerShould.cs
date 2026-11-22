@@ -190,6 +190,34 @@ public sealed class RemoveWorktreeHandlerShould
     }
 
     [Fact]
+    public async Task ReportTheRemovalWhenGitRefusesTheBranch()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("branch"), new ProcessResult(1, string.Empty, "error: cannot lock ref 'refs/heads/fix-123'\n"));
+
+        RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        RemoveWorktreeOutcome.RemovedBranchNotDeleted kept = outcome.ShouldBeOfType<RemoveWorktreeOutcome.RemovedBranchNotDeleted>();
+        kept.FolderName.ShouldBe("Northwind.Orders-fix-123");
+        kept.Branch.ShouldBe(BranchName.From("fix-123"));
+        kept.Failure.ShouldContain("cannot lock ref");
+        kept.FolderLeft.ShouldBeFalse();
+        (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AskWhenTheMergeCheckFails()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("merge-base"), new ProcessResult(128, string.Empty, "fatal: Not a valid object name origin/main"));
+
+        RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: true, FolderLeft: false));
+    }
+
+    [Fact]
     public async Task KeepAnUnmergedBranchCreatedHereAndSaySo()
     {
         await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));

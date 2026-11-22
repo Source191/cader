@@ -56,7 +56,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
     /// <summary>
     /// Read once the worktree is gone: the branch is then checked out nowhere, so nothing can commit to it between this
     /// check and its deletion, and a branch Cader created and merged can be deleted with force. Needs a branch Cader made
-    /// and a repository that still exists; a git failure reads as not merged, so the user is asked.
+    /// and a repository that still exists; git failing to answer reads as not merged (IGit.IsMerged answers false), so the user is asked.
     /// </summary>
     private async Task<bool> IsMergedNowAsync(WorktreeRow row, bool createdHere, CancellationToken cancellationToken)
     {
@@ -65,14 +65,7 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
             return false;
         }
 
-        try
-        {
-            return await inspector.IsMergedAsync(row.Repository, onBranch.Branch, cancellationToken);
-        }
-        catch (GitException)
-        {
-            return false;
-        }
+        return await inspector.IsMergedAsync(row.Repository, onBranch.Branch, cancellationToken);
     }
 
     /// <summary>How git's removal ended: the folder went, git removed the worktree but its folder is held, or git still lists the worktree.</summary>
@@ -162,7 +155,14 @@ public sealed class WorktreeRemover(IGit git, ICreatedWorktrees createdWorktrees
 
     private async Task<RemoveWorktreeOutcome> DeleteBranchAsync(WorktreeRow row, BranchName branch, bool folderLeft, CancellationToken cancellationToken)
     {
-        await git.DeleteBranchAsync(row.Repository.Value, branch.Value, force: true, cancellationToken);
+        try
+        {
+            await git.DeleteBranchAsync(row.Repository.Value, branch.Value, force: true, cancellationToken);
+        }
+        catch (GitException refusal)
+        {
+            return new RemoveWorktreeOutcome.RemovedBranchNotDeleted(row.FolderName, branch, refusal.Message, folderLeft);
+        }
 
         return new RemoveWorktreeOutcome.RemovedAndDeletedBranch(row.FolderName, branch, folderLeft);
     }

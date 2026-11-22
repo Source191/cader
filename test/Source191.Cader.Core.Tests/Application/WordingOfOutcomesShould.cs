@@ -395,6 +395,13 @@ public sealed class WordingOfOutcomesShould
     }
 
     [Fact]
+    public void SayTheWorktreeWasRemovedAndTheBranchKept()
+    {
+        Wording.Describe(new RemoveWorktreeOutcome.RemovedBranchNotDeleted("Northwind.Orders-fix-123", BranchName.From("fix-123"), "error: cannot lock ref", FolderLeft: false))
+            .ShouldBe("Removed Northwind.Orders-fix-123; branch fix-123 kept: error: cannot lock ref");
+    }
+
+    [Fact]
     public void SayAWorktreeAndItsMergedBranchWereRemoved()
     {
         Wording.Describe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: false))

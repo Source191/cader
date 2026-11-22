@@ -69,6 +69,18 @@ public sealed class DeleteSessionHandlerShould
     }
 
     [Fact]
+    public async Task ReportTheRemovalWhenGitRefusesTheBranch()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("branch"), new ProcessResult(1, string.Empty, "error: cannot lock ref 'refs/heads/fix-123'\n"));
+
+        DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+
+        DeleteSessionOutcome.RemovedWorktree removed = outcome.ShouldBeOfType<DeleteSessionOutcome.RemovedWorktree>();
+        removed.Worktree.ShouldBeOfType<RemoveWorktreeOutcome.RemovedBranchNotDeleted>().Failure.ShouldContain("cannot lock ref");
+    }
+
+    [Fact]
     public async Task KeepTheWorktreeWhenItsRepositoryHasGone()
     {
         FakeFolders worktreeOnly = new FakeFolders().WithDirectory(Worktree);
