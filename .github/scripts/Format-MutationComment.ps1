@@ -60,7 +60,7 @@ function Format-ReleaseBody($run, $report) {
     }
     if ($setAside -gt 0) {
         $lines.Add('')
-        $lines.Add("$setAside static mutants (run in a static initialiser) were left to the weekly full run, which judges them reliably; .claude\rules\checks.md says why.")
+        $lines.Add("$setAside static mutants (run in a static initialiser) were left to the weekly full run, which judges them reliably; .claude\rules\mutation-testing.md says why.")
     }
     $lines -join "`n"
 }
