@@ -6,8 +6,8 @@ Each task is red, green, refactor where there is code, with a commit per step. *
 
 ## 1. The budget check
 
-- [ ] 1.1 `test\Scripts\Assert-ClaudeContextBudget.Tests.ps1` (red): over a temporary folder, a `CLAUDE.md` and a rule of exactly 12,288 UTF-8 bytes pass; one byte more fails naming the file; a 601-character line fails naming the file and line as `::error file=...,line=...::`; a folder with no `.claude\rules` passes; `.claude\skills` and `.claude\commands` are never read. Commit.
-- [ ] 1.2 `.github\scripts\Assert-ClaudeContextBudget.ps1 -Root <folder>` (green), in the style of `Assert-ChangelogUpdated.ps1` (comment-based help, `$ErrorActionPreference = 'Stop'`, exit 1 on any breach). Verify `Invoke-Pester test\Scripts\Assert-ClaudeContextBudget.Tests.ps1` passes and that running it at the repository root fails today, listing `CLAUDE.md` and the oversized rules. Commit. (It is wired into `pipeline.yml` in 6.1, once the files fit.)
+- [x] 1.1 `test\Scripts\Assert-ClaudeContextBudget.Tests.ps1` (red): over a temporary folder, a `CLAUDE.md` and a rule of exactly 12,288 UTF-8 bytes pass; one byte more fails naming the file; a 601-character line fails naming the file and line as `::error file=...,line=...::`; a folder with no `.claude\rules` passes; `.claude\skills` and `.claude\commands` are never read. Commit.
+- [x] 1.2 `.github\scripts\Assert-ClaudeContextBudget.ps1 -Root <folder>` (green), in the style of `Assert-ChangelogUpdated.ps1` (comment-based help, `$ErrorActionPreference = 'Stop'`, exit 1 on any breach). Verify `Invoke-Pester test\Scripts\Assert-ClaudeContextBudget.Tests.ps1` passes and that running it at the repository root fails today, listing `CLAUDE.md` and the oversized rules. Commit. (It is wired into `pipeline.yml` in 6.1, once the files fit.)
 
 ## 2. Mutation testing and the checks
 
