@@ -36,7 +36,7 @@ Each task is red, green, refactor where there is code, with a commit per step. *
 ## 6. Wire in and check
 
 - [ ] 6.1 `pipeline.yml`: a "Check the Claude context budget" step in `check`, after "Check the changelog was updated" and before "Skip the build for a documentation-only change", running `.github/scripts/Assert-ClaudeContextBudget.ps1 -Root .`. Verify the script exits 0 at the root, `Invoke-Pester test\Scripts` passes, and the pull request's `check` run shows the step. Commit.
-- [ ] 6.2 Measure and record in the pull request description: the bytes of `CLAUDE.md` and of each rule before and after, and what loads for a Tui file, `TabScripts.cs` and `pipeline.yml` before and after. `dotnet build -c Debug` and `dotnet format --verify-no-changes` still pass (nothing under `src\` changed: `git diff --name-only main -- src` is empty).
+- [x] 6.2 Measure and record in the pull request description: the bytes of `CLAUDE.md` and of each rule before and after, and what loads for a Tui file, `TabScripts.cs` and `pipeline.yml` before and after. `dotnet build -c Debug` and `dotnet format --verify-no-changes` still pass (nothing under `src\` changed: `git diff --name-only main -- src` is empty).
 
 ## Workflow follow-up
 
