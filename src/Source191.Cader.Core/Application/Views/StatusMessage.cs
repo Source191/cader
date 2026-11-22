@@ -102,6 +102,9 @@ public abstract record StatusMessage
     /// <summary>The effect is running off the UI thread.</summary>
     public sealed record Working(ViewEffect Effect) : StatusMessage;
 
+    /// <summary>The same action on the same row was asked for again while the first is still running, so it was not started twice.</summary>
+    public sealed record StillRunning(ViewEffect Effect) : StatusMessage;
+
     /// <summary>A session started from the console is being launched, and has begun this step.</summary>
     public sealed record Launching(LaunchStep Step) : StatusMessage;
 

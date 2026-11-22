@@ -258,6 +258,7 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.UpdateCheckOff)] = StatusTone.Notice,
         [typeof(StatusMessage.NoDialogFor)] = StatusTone.Failure,
         [typeof(StatusMessage.Working)] = StatusTone.Working,
+        [typeof(StatusMessage.StillRunning)] = StatusTone.Notice,
         [typeof(StatusMessage.Launching)] = StatusTone.Working,
         [typeof(StatusMessage.Reported)] = StatusTone.Success,
         [typeof(StatusMessage.BranchKept)] = StatusTone.Success,

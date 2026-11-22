@@ -10,7 +10,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 
 ## 2. Pure rules
 
-- [ ] 2.1 `RunningEffectsShould.RefuseAnEqualEffectWhileItRuns`, `AllowAnotherRowsEffect`, `AllowItAgainOnceEnded` and `TellApartEffectsOfOneRow` (`StopSession` and `DeleteSession` on fix-123): `Application\RunningEffects` (design 2). Commit.
+- [x] 2.1 `RunningEffectsShould.RefuseAnEqualEffectWhileItRuns`, `AllowAnotherRowsEffect`, `AllowItAgainOnceEnded` and `TellApartEffectsOfOneRow` (`StopSession` and `DeleteSession` on fix-123): `Application\RunningEffects` (design 2). Commit.
 - [ ] 2.2 `StatusMessage.StillRunning(ViewEffect)`, its words in `Wording` from the effect's working words (`WordingShould.SayAnActionIsStillRunning`) and its tone in `Wording.ToneOf` (a line in `StatusTonesShould`). Commit.
 - [ ] 2.3 `CurrentSettingsShould.ApplyTwoChangesInOrder` (two `UpdateAsync` calls racing over an `InMemoryState` whose write is held open by a `TaskCompletionSource`; both values end saved) and `ReplaceTheSnapshotOnlyAfterTheWrite`: `CurrentSettings.UpdateAsync` (design 5). Commit.
 
