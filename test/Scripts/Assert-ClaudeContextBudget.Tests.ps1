@@ -65,6 +65,17 @@ Describe 'Assert-ClaudeContextBudget' {
         $result.ExitCode | Should -Be 1
     }
 
+    It 'counts a CRLF checkout as the LF the repository stores' {
+        $root = New-Root
+        # 12,288 bytes with LF endings, 12,288 plus one per line with CRLF.
+        $lf = ((('a' * 99) + "`n") * 122) + ('b' * 88)
+        Write-Text (Join-Path $root 'CLAUDE.md') ($lf -replace "`n", "`r`n")
+
+        $result = Invoke-Budget $root
+
+        $result.ExitCode | Should -Be 0
+    }
+
     It 'fails a line of 601 characters, naming the file and line' {
         $root = New-Root
         Write-Text (Join-Path $root '.claude\rules\area.md') ("---`n---`n" + ('x' * 601) + "`n")
