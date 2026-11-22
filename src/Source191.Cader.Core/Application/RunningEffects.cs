@@ -9,16 +9,10 @@ namespace Source191.Cader.Application;
 /// </summary>
 public sealed class RunningEffects
 {
-    /// <summary>Records the effect as running and answers true, or answers false when an equal one is already running.</summary>
-    private readonly List<ViewEffect> running = [];
+    private readonly HashSet<ViewEffect> running = [];
 
     /// <summary>Records the effect as running and answers true, or answers false when an equal one is already running.</summary>
-    public bool TryBegin(ViewEffect effect)
-    {
-        running.Add(effect);
-
-        return true;
-    }
+    public bool TryBegin(ViewEffect effect) => running.Add(effect);
 
     /// <summary>Releases the effect, so an equal one may start again.</summary>
     public void End(ViewEffect effect) => running.Remove(effect);
