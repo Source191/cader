@@ -11,21 +11,37 @@ public abstract record WizardFit
     /// <summary>The form's rows, the caption and the filter, and a dialog's border and button area (measured, terminal-gui.md).</summary>
     private const int RowsBesideTheList = 21 + 2 + 5;
 
+    private const int OverviewMinimumRows = RowsBesideTheList + 1;
+
     private const int Margin = 2;
 
-    /// <summary>As tall as the screen allows less a margin of up to two rows, the list taking what the rest leaves.</summary>
-    public static WizardFit For(int screenColumns, int screenRows, bool chooser)
+    private const int FixedFolderWidth = 84;
+
+    private const int FixedFolderHeight = 23;
+
+    /// <summary>
+    /// The overview's wizard is as tall as the screen allows less a margin of up to two rows, the list taking what the rest
+    /// leaves; a fixed folder's wizard has no list and keeps its size.
+    /// </summary>
+    public static WizardFit For(int screenColumns, int screenRows, bool chooser) => chooser
+        ? Overview(screenColumns, screenRows)
+        : FixedFolder(screenColumns, screenRows);
+
+    private static WizardFit Overview(int screenColumns, int screenRows)
     {
-        int minimum = RowsBesideTheList + 1;
-        if (screenColumns < OverviewWidth || screenRows < minimum)
+        if (screenColumns < OverviewWidth || screenRows < OverviewMinimumRows)
         {
-            return new TooSmall(OverviewWidth, minimum);
+            return new TooSmall(OverviewWidth, OverviewMinimumRows);
         }
 
-        int height = screenRows - Math.Min(Margin, screenRows - minimum);
+        int height = screenRows - Math.Min(Margin, screenRows - OverviewMinimumRows);
 
         return new Fits(OverviewWidth, height, height - RowsBesideTheList);
     }
+
+    private static WizardFit FixedFolder(int screenColumns, int screenRows) => screenColumns < FixedFolderWidth || screenRows < FixedFolderHeight
+        ? new TooSmall(FixedFolderWidth, FixedFolderHeight)
+        : new Fits(FixedFolderWidth, FixedFolderHeight, ListRows: 0);
 
     public sealed record Fits(int Width, int Height, int ListRows) : WizardFit;
 
