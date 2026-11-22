@@ -79,6 +79,9 @@ public abstract record StatusMessage
     /// <summary>The solution key found no .sln or .slnx in the folder or its src folder.</summary>
     public sealed record NoSolution(string FolderName) : StatusMessage;
 
+    /// <summary>The terminal is smaller than the new-session wizard needs, so it was not opened.</summary>
+    public sealed record WizardTooSmall(int NeededColumns, int NeededRows, int Columns, int Rows) : StatusMessage;
+
     /// <summary>The close-empty-tabs question was answered with Keep.</summary>
     public sealed record Kept : StatusMessage;
 

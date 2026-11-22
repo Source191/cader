@@ -250,6 +250,7 @@ public sealed class StatusTonesShould
         [typeof(StatusMessage.NoPullRequest)] = StatusTone.Notice,
         [typeof(StatusMessage.NothingToMeasure)] = StatusTone.Notice,
         [typeof(StatusMessage.NoSolution)] = StatusTone.Notice,
+        [typeof(StatusMessage.WizardTooSmall)] = StatusTone.Notice,
         [typeof(StatusMessage.Kept)] = StatusTone.Hint,
         [typeof(StatusMessage.NothingToResume)] = StatusTone.Hint,
         [typeof(StatusMessage.UpToDate)] = StatusTone.Success,
