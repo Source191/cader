@@ -60,7 +60,7 @@ public sealed class AzureDevOpsPullRequests(IProcessRunner processes, ProgramLoc
 
         DateTimeOffset createdAt = DateTimeOffset.Parse(item.GetProperty("creationDate").GetString() ?? string.Empty, CultureInfo.InvariantCulture);
 
-        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.AzureDevOps, number, url, state.Value, createdAt, LastMergeSource(item), new RecordedTime.NotRecorded()));
+        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.AzureDevOps, number, url, state.Value, createdAt, LastMergeSource(item), PullRequestListingJson.FinishedIn(item, "closedDate", state.Value)));
     }
 
     /// <summary>The last merge source commit, the source branch's head at the pull request's last merge (security.md records the documentation).</summary>
