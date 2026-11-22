@@ -38,6 +38,7 @@ What changes in each release of Cader, written for the people who use it. The fo
 
 ### Fixed
 
+- Removing a merged worktree whose branch origin has deleted no longer reports a failure and keeps the branch: Cader deletes the branch it created once the worktree is gone, and if git still refuses, the status line says the worktree was removed and the branch kept, with git's reason; a session that has started is never reported as a failed launch when the listing after it fails or Cader's state folder refuses the recent-repository record (#379)
 - Saving a setting on the Config tab no longer crashes Cader, or is refused, because a repository root's folder or a custom editor's program has gone; each is checked only in the dialog that edits it (#358)
 - A refresh no longer throws a long table back to its top: the Sessions, Worktrees and Config tables keep the rows you were looking at on screen when they refresh, and moving the selection past the last row on screen now scrolls the table to keep it in view (#351)
 - A stray space typed along with n no longer empties the new-session wizard's list: the wizard's filter and the tables' / filter ignore spaces and invisible characters before the text, and a new session's name loses spaces at either end (#339, #345)
