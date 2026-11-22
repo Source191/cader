@@ -2,7 +2,6 @@ using Source191.Cader.Application.Effects;
 using Source191.Cader.Application.Views;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
-using System.Diagnostics;
 
 namespace Source191.Cader.Application.Actions;
 
@@ -14,15 +13,8 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
 {
     private readonly TabColourSelection colours = new(TabPalette.Default);
 
-    public async Task<Outcome> HandleAsync(OpenTabForSession effect, CancellationToken cancellationToken)
-    {
-        return effect.Tab switch
-        {
-            // The row's tab is as of the last listing, so a tab opened since, or still being opened, is found in the registry.
-            LiveTab.Open or LiveTab.None => await SwitchToTabAsync(effect.Session, cancellationToken),
-            _ => throw new UnreachableException(),
-        };
-    }
+    /// <summary>Whatever the row says of its tab (as of the last listing), the registry decides, so a tab opened since, or still being opened, is switched to.</summary>
+    public async Task<Outcome> HandleAsync(OpenTabForSession effect, CancellationToken cancellationToken) => await SwitchToTabAsync(effect.Session, cancellationToken);
 
     /// <summary>Opens a tab for a session, a listed row or one the wizard has just started, after forgetting any earlier tab registered for it, so that tab's colour is free again.</summary>
     public Task<OpenTabOutcome> OpenAsync(Session.Background session, CancellationToken cancellationToken) => OpenAsync(session, colours.Choose, cancellationToken);
