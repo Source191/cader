@@ -39,5 +39,5 @@ None.
 - `Application\WorktreeInventory` and `WorktreeInspector`: the last commit from the branch listing, with `git log -1` only for a head the listing does not cover.
 - `Application\SessionRowEnricher`: one located answer from the combined read.
 - `Ports\IGit`: one combined location query; the two old ones stay while other callers use them.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md`.
 - **Implement with:** Sonnet 5.5 at medium effort (reason above).
