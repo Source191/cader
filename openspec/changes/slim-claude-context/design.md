@@ -64,7 +64,7 @@ It keeps the platform, the documented CLI surface and the files Cader must never
 - [A fact is lost or loses its date in the move] → Each rule is moved in its own commit, and the task's check compares the rule's dated facts before and after (each date and version string in the old file appears in the new rule or its evidence file).
 - [A recipe moved to a scoped rule is not loaded when Claude plans a key from a proposal] → The `CLAUDE.md` index names `effects-and-views.md` as the first read for a key, effect, view or dialog, as it already does for the other rules.
 - [Open changes' tasks cite a section that moved] → The pointer line at the top of `checks.md` and `windows.md` names the new file for each moved section; the tasks are not edited.
-- [12 KB is too tight for `console-screen.md` or `terminal-gui.md` once evidence is out] → Measured after the move; a file still over is split by section (Layout and Refreshing, say) rather than given a higher budget.
+- [12 KB is too tight for `console-screen.md` or `terminal-gui.md` once evidence is out] → Measured after the move; a file still over is split by section rather than given a higher budget. `console-screen.md` was (about 20 KB of current description, little evidence): Refreshing and the Config tab became `console-refreshing.md`, scoped to the refresh, scan and Config files rather than all of the Tui, so a Tui edit does not load both.
 - [Conflicts with the open-changes stack] → Proposal, Delivery: landing first; a later step that adds a fact adds one bullet and, if needed, a heading in `docs\verified-facts`.
 
 ## Migration Plan
