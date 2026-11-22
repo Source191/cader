@@ -39,5 +39,5 @@ None.
 - `Application\ChangeFilter` and `ChangeWatches`: a change in a repository's git folder is reported with its repository, as either "rescan" (as today) or "stale only" (references, `packed-refs`, `FETCH_HEAD`); an overflow marks every repository.
 - `Application\ConsoleLoads` and `Tui\ConsoleScreen`: F5 and an action's reload mark every repository stale before their scan.
 - `Adapters\Git\GitBranchListing`: the tip's commit id (`%(objectname)`) for the merged-count key.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md`.
 - **Implement with:** Opus 5.5 at high effort (reason above).

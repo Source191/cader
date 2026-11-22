@@ -36,6 +36,6 @@ None.
 - `Application\Diagnostics\Heartbeat`: a begin and end form of marking for work Cader does not call itself; the collector's pause since the last beat (`GC.GetTotalPauseDuration`, [docs](https://learn.microsoft.com/dotnet/api/system.gc.gettotalpauseduration)) handed in through a delegate so the tests drive it.
 - `Application\Diagnostics`: the stall events gain the pause; a `DrawCounts` sample in `PerformanceCounts`.
 - `Tui\ConsoleScreen`: the window's layout and draw events begin and end their marks.
-- `.claude\rules\terminal-gui.md`: the events used, with the date and version.
+- `.claude\rules\terminal-gui.md` (the decompilation and probe in `docs\verified-facts\terminal-gui.md`): the events used, with the date and version.
 - `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`.
 - **Implement with:** Opus 5.5 at medium effort (reason above).
