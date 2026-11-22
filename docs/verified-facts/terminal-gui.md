@@ -1,4 +1,4 @@
-# Terminal.Gui 2.5.0: the evidence
+# Terminal.Gui 2.5.0 and 2.6.0: the evidence
 
 Moved from `.claude\rules\terminal-gui.md` on 22 November 2026 (slim-claude-context) as it stood; the rule is still `.claude\rules\terminal-gui.md`.
 
