@@ -159,6 +159,7 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         return CountOrThrow(result);
     }
 
+    public Task<DateTimeOffset?> BranchCreatedAtAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken) => Task.FromResult<DateTimeOffset?>(null);
     public async Task<IReadOnlyList<UnpushedCommit>> UnpushedCommitsAsync(string worktree, int limit, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(worktree, ["log", "-n", limit.ToString(CultureInfo.InvariantCulture), "--format=%h%x09%cI%x09%s", "HEAD", "--not", "--remotes"], cancellationToken);
