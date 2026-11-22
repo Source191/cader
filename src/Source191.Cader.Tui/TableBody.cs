@@ -171,8 +171,19 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
 
     public void Dispatch(ViewEffect effect, Func<Outcome, StatusMessage> onUiThread) => RunInBackground(new StatusMessage.Working(effect), token => dispatcher.DispatchAsync(effect, token), onUiThread);
 
+    /// <summary>
+    /// Starts the work unless it is an effect equal to one still running in any tab (the same action on the same row), which
+    /// is refused with <see cref="StatusMessage.StillRunning"/>; the effect is released as its settle begins, on the UI thread.
+    /// </summary>
     public void RunInBackground<T>(StatusMessage working, Func<CancellationToken, Task<T>> action, Func<T, StatusMessage> onUiThread)
     {
+        if (working is StatusMessage.Working { Effect: ViewEffect refused } && !context.RunningEffects.TryBegin(refused))
+        {
+            ShowMessage(new StatusMessage.StillRunning(refused));
+            Redraw();
+            return;
+        }
+
         State = definition.WithMessage(State, working);
         inFlight++;
         Redraw();
@@ -193,6 +204,11 @@ internal sealed class TableBody<TState, TRow> : ITabBody, IEffectContext, IDispo
             app.Invoke(() => context.Heartbeat.Mark(Attempt.What(working), () =>
             {
                 inFlight--;
+                if (working is StatusMessage.Working { Effect: ViewEffect ended })
+                {
+                    context.RunningEffects.End(ended);
+                }
+
                 StatusMessage settled = settle();
                 State = definition.WithMessage(State, settled);
                 Redraw();

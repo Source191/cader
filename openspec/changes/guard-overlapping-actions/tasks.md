@@ -18,11 +18,11 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 
 - [x] 3.1 `OpenTabHandlerShould.SwitchToAPendingTabInsteadOfOpeningAnother` and `SwitchToALiveTabTheRowDidNotKnowOf`: `OpenTabHandler` re-reads the registry for `LiveTab.None` (design 3). Commit.
 - [x] 3.2 `ToggleUpdateCheckHandlerShould.KeepADiagnosticLogToggleMadeMeanwhile` and `ToggleDiagnosticLogHandlerShould.KeepAnUpdateCheckToggleMadeMeanwhile`: both handlers use `UpdateAsync`; `SaveSettingsHandler` uses it with the dialog's snapshot. Commit.
-- [ ] 3.3 `LaunchProgressShould.ReportWithoutCallingAnyone`: `LaunchProgress.Follow` and its listener removed, `Report` only replaces the step (design 1); the existing facts about `Shown` stay. Commit.
+- [x] 3.3 `LaunchProgressShould.ReportWithoutCallingAnyone`: `LaunchProgress.Follow` and its listener removed, `Report` only replaces the step (design 1); the existing facts about `Shown` stay. Commit.
 
 ## 4. Screens
 
-- [ ] 4.1 `ConsoleScreen.RefreshWhatIsDue` calls `FrameChanged` when `launchProgress.Latest` differs from the step last drawn; the `Follow` registrations in the constructor and `StopTimers` go. Commit.
+- [x] 4.1 `ConsoleScreen.RefreshWhatIsDue` calls `FrameChanged` when `launchProgress.Latest` differs from the step last drawn; the `Follow` registrations in the constructor and `StopTimers` go. Commit.
 - [ ] 4.2 `TableBody` takes `RunningEffects` through `ScreenContext` and calls `TryBegin` in `Dispatch` and `RunInBackground` (for a `Working(effect)`), showing `StillRunning` on a refusal and calling `End` in the settle; `ConsoleComposition` and `tools\ReadmeScene`'s `SceneHost` build one per console. Add `EffectDispatcherShould` or `DialogEffectsShould` coverage where a refusal is observable without Terminal.Gui. Commit.
 - [ ] 4.3 `ConsoleScreen.Leave` asks through `Confirm.Ask` with `DialogName.Quit` while any tab is running (design 4); `Wording.QuitWhileRunningTitle`, `QuitWhileRunningQuestion` and `QuitWhileRunningButtons` with their facts in `WordingShould`, and `DialogName.Quit` with its `DiagnosticEventsShould` line if the enum is listed there. Commit.
 
