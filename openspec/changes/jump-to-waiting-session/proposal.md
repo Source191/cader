@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 7 of the stack in #379. Depends on nothing; `fit-narrow-and-short-terminals` (step 2) fits its new key into a narrow key bar.
+- **Order:** step 7 of the stack in `openspec\implementation-plan.md`. Depends on nothing; `fit-narrow-and-short-terminals` (step 2) fits its new key into a narrow key bar.
 - **Together:** ships alone, in one pull request.
 
 ## Out of scope

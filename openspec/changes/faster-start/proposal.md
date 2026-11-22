@@ -22,7 +22,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 14 of the stack in #379. Depends on nothing in the earlier steps and may be pulled forward; placed here because the scan steps cut more total time. It carries the late version first proposed in `guard-overlapping-actions` (its design 8), since both rework the same start-up code and header.
+- **Order:** step 14 of the stack in `openspec\implementation-plan.md`. Depends on nothing in the earlier steps and may be pulled forward; placed here because the scan steps cut more total time. It carries the late version first proposed in `guard-overlapping-actions` (its design 8), since both rework the same start-up code and header.
 - **Together:** both parts ship in one pull request; they move the same start-up code.
 
 ## Out of scope

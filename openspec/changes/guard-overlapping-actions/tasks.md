@@ -2,7 +2,7 @@
 
 **Implement with:** Opus 5.5 at high effort: thread-ordering fixes across the UI thread, pool threads and Terminal.Gui's timer lock, each pinned by a sociable test where the logic can live in Application and checked in the headless terminal where it cannot.
 
-Each task is red, green, refactor, with a commit per step. Never press a saving key, or a key that stops, deletes or opens a tab, when driving a real cader exe headless; those behaviours are proved with fakes and checked by the owner by hand (#379, checkpoint A).
+Each task is red, green, refactor, with a commit per step. Never press a saving key, or a key that stops, deletes or opens a tab, when driving a real cader exe headless; those behaviours are proved with fakes and checked by the owner by hand (the implementation plan, checkpoint A).
 
 ## 1. Facts
 
@@ -30,7 +30,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 
 - [ ] 5.1 Run the smoke check (`dotnet run -- smoke <exe> <worktree-folder>` from `tools\HeadlessTerminal`, exit 0). Commit any fix found.
 - [ ] 5.2 `.claude\rules\console-screen.md`: the launch's step is redrawn by the ticker; an equal effect is refused while it runs; q asks while an action runs. Commit.
-- [ ] 5.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379, and add a CHANGELOG `Unreleased` entry under Fixed: a session being started no longer waits for a dialog; pressing a key twice no longer runs its action twice or opens two tabs; q asks before quitting mid-action; and two quick toggles both stick. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate guard-overlapping-actions`. Commit.
+- [ ] 5.3 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan, and add a CHANGELOG `Unreleased` entry under Fixed: a session being started no longer waits for a dialog; pressing a key twice no longer runs its action twice or opens two tabs; q asks before quitting mid-action; and two quick toggles both stick. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate guard-overlapping-actions`. Commit.
 
 ## Workflow follow-up
 

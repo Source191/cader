@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 10 of the stack in #379, the first of the scan steps, after checkpoint B. Depends on `lighter-git-reads`, which removes reads this change would otherwise parallelise.
+- **Order:** step 10 of the stack in `openspec\implementation-plan.md`, the first of the scan steps, after checkpoint B. Depends on `lighter-git-reads`, which removes reads this change would otherwise parallelise.
 - **Together:** must land before `rescan-only-what-changed`, which builds its per-repository cache on the reads this change restructures; do them one after the other with nothing else on the scan in between.
 
 ## Out of scope

@@ -24,7 +24,7 @@ Alternative considered: keep per-branch lookups and lengthen their window; rejec
 
 ### 3. The branch's creation time stays per branch
 
-`ignore-reused-branch-pull-requests` (step 4 of #379, before this change) reads each branch's creation time from its reflog with each lookup and hands it to `PullRequests.ForBranch`. Here it is read for each on-screen branch of a repository with that repository's lookup (and with a branch's fallback lookup), kept per checkout and branch beside the repository answer, and passed to `ForBranch` by `Find` as before. Its catalogue facts must still pass unchanged.
+`ignore-reused-branch-pull-requests` (step 4 of the implementation plan, before this change) reads each branch's creation time from its reflog with each lookup and hands it to `PullRequests.ForBranch`. Here it is read for each on-screen branch of a repository with that repository's lookup (and with a branch's fallback lookup), kept per checkout and branch beside the repository answer, and passed to `ForBranch` by `Find` as before. Its catalogue facts must still pass unchanged.
 
 ### 4. Origin read per repository
 

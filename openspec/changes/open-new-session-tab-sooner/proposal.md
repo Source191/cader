@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 15, the last, of the stack in #379. It is late because it is the riskiest of the user-facing changes and saves about 3 s per launch, not per refresh. It builds on `report-what-removals-and-launches-did` (step 1), whose catch around the launch's listing it removes with the listing, and on `guard-overlapping-actions` (step 3), whose registry re-read in `OpenTabHandler` must find a job-owned registration too.
+- **Order:** step 15, the last, of the stack in `openspec\implementation-plan.md`. It is late because it is the riskiest of the user-facing changes and saves about 3 s per launch, not per refresh. It builds on `report-what-removals-and-launches-did` (step 1), whose catch around the launch's listing it removes with the listing, and on `guard-overlapping-actions` (step 3), whose registry re-read in `OpenTabHandler` must find a job-owned registration too.
 - **Together:** ships alone, in one pull request, with the manual checks `CONTRIBUTING.md` asks of a pull request that touches tabs and attach, and the hand-off check.
 
 ## Out of scope

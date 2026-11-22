@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 13 of the stack in #379. Depends on nothing; after `name-ui-stalls` so the draw counts show the pane's effect. It carries the one-at-a-time rule first proposed in `guard-overlapping-actions` (its design 5), since both rewrite `DetailReader.Reading` and `DetailRequests`.
+- **Order:** step 13 of the stack in `openspec\implementation-plan.md`. Depends on nothing; after `name-ui-stalls` so the draw counts show the pane's effect. It carries the one-at-a-time rule first proposed in `guard-overlapping-actions` (its design 5), since both rewrite `DetailReader.Reading` and `DetailRequests`.
 - **Together:** ships alone, in one pull request.
 
 ## Out of scope

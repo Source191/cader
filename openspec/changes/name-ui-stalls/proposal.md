@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 8 of the stack in #379. Depends on nothing. It lands before the scan and screen changes so the timing runs at checkpoints B and C can name what stalls.
+- **Order:** step 8 of the stack in `openspec\implementation-plan.md`. Depends on nothing. It lands before the scan and screen changes so the timing runs at checkpoints B and C can name what stalls.
 - **Together:** ships alone, in one pull request.
 
 ## Out of scope

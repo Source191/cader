@@ -16,7 +16,7 @@
 - No silent quit mid-action.
 - Settings changes applied in order.
 
-**Non-Goals:** moving the post-action dialogs, a queue of actions, and the three overlaps other changes in #379 fix (detail reads in `detail-pane-reads-less`, git's optional locks in `lighter-git-reads`, the late Claude version in `faster-start`).
+**Non-Goals:** moving the post-action dialogs, a queue of actions, and the three overlaps other changes in the implementation plan fix (detail reads in `detail-pane-reads-less`, git's optional locks in `lighter-git-reads`, the late Claude version in `faster-start`).
 
 ## Decisions
 

@@ -23,9 +23,10 @@ Each task is red, green, refactor, with a commit per step. Tab facts use `InMemo
 
 ## 4. Checks and release
 
-- [ ] 4.1 The hand-off check (`dotnet build src\Source191.Cader -c Release`, then `dotnet run -- check` from `tools\HeadlessTerminal`, exit 0) by the agent, then the manual checks in `CONTRIBUTING.md` for tabs and attach in a real Windows Terminal by the owner (#379, checkpoint D): start from the wizard, see the tab open before the row is listed, then Enter, x and d on the new row. Record the results in the pull request. Commit nothing for this task unless a fact was added.
-- [ ] 4.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (a new session's tab opens about three seconds sooner, and opens even before the session is listed). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate open-new-session-tab-sooner`. Commit.
+- [ ] 4.1 The hand-off check (`dotnet build src\Source191.Cader -c Release`, then `dotnet run -- check` from `tools\HeadlessTerminal`, exit 0) by the agent, then the manual checks in `CONTRIBUTING.md` for tabs and attach in a real Windows Terminal by the owner (the implementation plan, checkpoint D): start from the wizard, see the tab open before the row is listed, then Enter, x and d on the new row. Record the results in the pull request. Commit nothing for this task unless a fact was added.
+- [ ] 4.2 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (a new session's tab opens about three seconds sooner, and opens even before the session is listed). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate open-new-session-tab-sooner`. Commit.
 
 ## Workflow follow-up
 
 - Archive the change in the pull request that completes it.
+- This is the stack's last step, so the same pull request deletes `openspec\implementation-plan.md`.

@@ -7,7 +7,7 @@ Cader runs its actions and loads on pool threads while the user keeps pressing k
 - **`q` quits mid-action without a word.** A launch or a removal still running is cut off part-way: a session started with no tab, or a folder half deleted.
 - **Two quick settings toggles can undo each other.** Each toggle reads the settings, changes one value and saves the whole, on its own pool thread.
 
-Three more overlaps the bug hunt found are fixed by other changes in the stack (#379): detail reads piling up by `detail-pane-reads-less`, Cader's git status holding `index.lock` by `lighter-git-reads`, and a late Claude version by `faster-start`.
+Three more overlaps the bug hunt found are fixed by other changes in the stack (`openspec\implementation-plan.md`): detail reads piling up by `detail-pane-reads-less`, Cader's git status holding `index.lock` by `lighter-git-reads`, and a late Claude version by `faster-start`.
 
 **Implement with:** Opus 5.5 at high effort: thread-ordering fixes across the UI thread, pool threads and Terminal.Gui's timer lock, each pinned by a sociable test where the logic can live in Application and checked in the headless terminal where it cannot.
 
@@ -34,7 +34,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 3 of the stack in #379, after `fit-narrow-and-short-terminals`. `open-new-session-tab-sooner` (step 15) builds on its registry re-read in `OpenTabHandler`.
+- **Order:** step 3 of the stack in `openspec\implementation-plan.md`, after `fit-narrow-and-short-terminals`. `open-new-session-tab-sooner` (step 15) builds on its registry re-read in `OpenTabHandler`.
 
 ## Out of scope
 

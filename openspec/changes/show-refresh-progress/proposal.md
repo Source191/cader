@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 12 of the stack in #379, the last before checkpoint C. Depends on `rescan-only-what-changed` (the per-repository reads it reports on); land it straight after that change. Its rows wait for the first sessions listing, as `parallel-scan-reads` requires (design 1).
+- **Order:** step 12 of the stack in `openspec\implementation-plan.md`, the last before checkpoint C. Depends on `rescan-only-what-changed` (the per-repository reads it reports on); land it straight after that change. Its rows wait for the first sessions listing, as `parallel-scan-reads` requires (design 1).
 - **Together:** the progressive rows and the refresh mark ship in one pull request, as both report a refresh's progress through the same load path.
 
 ## Out of scope

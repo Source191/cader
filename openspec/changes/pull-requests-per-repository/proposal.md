@@ -24,7 +24,7 @@ None.
 
 ## Delivery
 
-- **Order:** step 9 of the stack in #379, the last before checkpoint B. After `ignore-reused-branch-pull-requests` (step 4), whose branch creation time it keeps per branch through the rework (design 3); independent of the scan changes.
+- **Order:** step 9 of the stack in `openspec\implementation-plan.md`, the last before checkpoint B. After `ignore-reused-branch-pull-requests` (step 4), whose branch creation time it keeps per branch through the rework (design 3); independent of the scan changes.
 - **Together:** ships alone, in one pull request.
 - **Expected saving:** one host call per repository a minute instead of one per branch; on the measured hour that is roughly the 568 lookups divided by the branches each repository had on screen. Where every repository has only one branch on screen it saves nothing but the `git remote get-url` runs.
 

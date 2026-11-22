@@ -22,7 +22,7 @@ Each task is red, green, refactor, with a commit per step. Catalogue facts use `
 
 ## 3. Release
 
-- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (pull requests looked up per repository; far fewer gh and az runs). The pull-request refresh and `az repos pr list` counts before and after come from the owner's timing run at #379's checkpoint B, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate pull-requests-per-repository`. Commit.
+- [ ] 3.1 Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (pull requests looked up per repository; far fewer gh and az runs). The pull-request refresh and `az repos pr list` counts before and after come from the owner's timing run at the implementation plan's checkpoint B, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate pull-requests-per-repository`. Commit.
 
 ## Workflow follow-up
 

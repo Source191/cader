@@ -22,7 +22,7 @@ Each task is red, green, refactor, with a commit per step.
 
 ## 4. Release
 
-- [ ] 4.1 `.claude\rules\console-screen.md`, Layout and Refreshing; `docs\user-guide.md`, where it describes the waiting words. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (the first scan fills the Worktrees tab from the top; a ↻ marks a refresh in progress). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate show-refresh-progress`. Commit.
+- [ ] 4.1 `.claude\rules\console-screen.md`, Layout and Refreshing; `docs\user-guide.md`, where it describes the waiting words. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (the first scan fills the Worktrees tab from the top; a ↻ marks a refresh in progress). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate show-refresh-progress`. Commit.
 
 ## Workflow follow-up
 

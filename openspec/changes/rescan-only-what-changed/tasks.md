@@ -27,7 +27,7 @@ Each task is red, green, refactor, with a commit per step. Inventory facts use t
 
 ## 5. Release
 
-- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the two tiers, the stale causes and the five-minute safety net. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of #379 and add a CHANGELOG `Unreleased` entry under Changed (the Worktrees tab rescans in a fraction of the time, re-reading only the repositories that changed). The worktrees scan count and git runs per hour before and after come from the owner's timing run at #379's checkpoint C, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate rescan-only-what-changed`. Commit.
+- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the two tiers, the stale causes and the five-minute safety net. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (the Worktrees tab rescans in a fraction of the time, re-reading only the repositories that changed). The worktrees scan count and git runs per hour before and after come from the owner's timing run at the implementation plan's checkpoint C, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate rescan-only-what-changed`. Commit.
 
 ## Workflow follow-up
 
