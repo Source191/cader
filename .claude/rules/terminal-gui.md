@@ -61,7 +61,7 @@ paths:
 - **`Shortcut`** draws its command before its key with Terminal.Gui's key names, so the key bar is label pairs with `MouseEvent` handlers on `MouseFlags.LeftButtonClicked` (30 October 2026).
 - **A changed title is not re-measured** (read and observed, 20 November 2026, SDK 11.0.100): `Title`'s setter only calls `SetNeedsDraw`, and one `SetNeedsLayout` leaves the tabs after it placed for the old width.
 - **Two ways that work:** `tabs.SetNeedsLayout(); tabs.Layout(); tabs.SetNeedsLayout();`, or setting `BorderView.TabLength` (via `(BorderView)tab.Border.View`) to the title's width plus two. Neither changes the shown tab or focus or raises `ValueChanged`.
-- **Coloured titles:** cancelling the header's `DrawingText` (`BorderView.TitleView`) and drawing the title in parts with `Move`, `SetAttribute` and `AddStr` kept per-part colours, shown or hidden (observed headless only, not in Windows Terminal).
+- **Coloured titles:** cancel the header's `DrawingText` (`BorderView.TitleView`) and draw the parts with `Move`, `SetAttribute` and `AddStr` (observed headless only).
 - **Glyphs** `◐ ● ✓ ✗ ■` measure one cell each in a title, and a title change redraws every tab, about 4 KB at 120 x 36 (headless only). Later tabs move with a changed title; a click selects the tab drawn under the pointer; text on a tab's frame top edge never shows.
 
 ## Tables
