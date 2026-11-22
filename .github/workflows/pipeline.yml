@@ -154,6 +154,13 @@ jobs:
         shell: pwsh
         run: .github/scripts/Assert-ChangelogUpdated.ps1 -Base HEAD^1 -Head HEAD
 
+      # CLAUDE.md and .claude\rules are read by Claude Code on every turn, so each stays within 12 KB and 600-character
+      # lines (.claude\rules\checks.md). Before the documentation-only skip, because a change to them alone is one.
+      - name: Check the Claude context budget
+        if: matrix.runtime == 'win-x64'
+        shell: pwsh
+        run: .github/scripts/Assert-ClaudeContextBudget.ps1 -Root .
+
       # A pull request that changes only documentation (openspec\, or .md files outside .github\) passes here
       # without building: nothing it changes is compiled, tested or run. Every later step checks the output, so the
       # job still runs and reports `check`, which branch protection requires (a workflow-level paths-ignore would
