@@ -18,8 +18,8 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     {
         return effect.Tab switch
         {
-            LiveTab.Open => await SwitchToTabAsync(effect.Session, cancellationToken),
-            LiveTab.None => await OpenAsync(effect.Session, cancellationToken),
+            // The row's tab is as of the last listing, so a tab opened since, or still being opened, is found in the registry.
+            LiveTab.Open or LiveTab.None => await SwitchToTabAsync(effect.Session, cancellationToken),
             _ => throw new UnreachableException(),
         };
     }
@@ -52,8 +52,8 @@ public sealed class OpenTabHandler(ITabRegistry tabs, IProcessRegistry processes
     }
 
     /// <summary>
-    /// The row says a tab is open: when its registration is live now, select it in the Windows Terminal window that owns
-    /// its shell (every window while it is still being claimed); otherwise forget it and open a new tab.
+    /// When a registration for the session is live now (a pending one for its grace), select its tab in the Windows Terminal
+    /// window that owns its shell (every window while it is still being claimed); otherwise forget it and open a new tab.
     /// </summary>
     private async Task<OpenTabOutcome> SwitchToTabAsync(Session.Background session, CancellationToken cancellationToken)
     {
