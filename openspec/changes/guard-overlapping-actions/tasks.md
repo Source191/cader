@@ -23,7 +23,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 ## 4. Screens
 
 - [x] 4.1 `ConsoleScreen.RefreshWhatIsDue` calls `FrameChanged` when `launchProgress.Latest` differs from the step last drawn; the `Follow` registrations in the constructor and `StopTimers` go. Commit.
-- [ ] 4.2 `TableBody` takes `RunningEffects` through `ScreenContext` and calls `TryBegin` in `Dispatch` and `RunInBackground` (for a `Working(effect)`), showing `StillRunning` on a refusal and calling `End` in the settle; `ConsoleComposition` and `tools\ReadmeScene`'s `SceneHost` build one per console. Add `EffectDispatcherShould` or `DialogEffectsShould` coverage where a refusal is observable without Terminal.Gui. Commit.
+- [x] 4.2 `TableBody` takes `RunningEffects` through `ScreenContext` and calls `TryBegin` in `Dispatch` and `RunInBackground` (for a `Working(effect)`), showing `StillRunning` on a refusal and calling `End` in the settle; `ConsoleComposition` and `tools\ReadmeScene`'s `SceneHost` build one per console. Add `EffectDispatcherShould` or `DialogEffectsShould` coverage where a refusal is observable without Terminal.Gui. Commit.
 - [ ] 4.3 `ConsoleScreen.Leave` asks through `Confirm.Ask` with `DialogName.Quit` while any tab is running (design 4); `Wording.QuitWhileRunningTitle`, `QuitWhileRunningQuestion` and `QuitWhileRunningButtons` with their facts in `WordingShould`, and `DialogName.Quit` with its `DiagnosticEventsShould` line if the enum is listed there. Commit.
 
 ## 5. Check and release

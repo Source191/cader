@@ -1250,6 +1250,14 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void AskBeforeQuittingWhileAnActionRuns()
+    {
+        Wording.QuitWhileRunningTitle.ShouldBe("Quit");
+        Wording.QuitWhileRunningQuestion.ShouldBe("An action is still running; quit anyway?");
+        Wording.QuitWhileRunningButtons.ShouldBe(["Quit", "Keep open"]);
+    }
+
+    [Fact]
     public void NameEveryDialogAndItsButtons()
     {
         Wording.KeysTitle.ShouldBe("Keys");

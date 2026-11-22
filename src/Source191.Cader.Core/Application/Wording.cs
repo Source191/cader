@@ -104,6 +104,13 @@ public static partial class Wording
 
     public static IReadOnlyList<string> CloseEmptyButtons { get; } = ["Close", "Keep"];
 
+    public static string QuitWhileRunningTitle => string.Empty;
+
+    public static string QuitWhileRunningQuestion => string.Empty;
+
+    /// <summary>Quit first, the default; Keep open, like Esc, leaves the console open.</summary>
+    public static IReadOnlyList<string> QuitWhileRunningButtons { get; } = [];
+
     public static string ForceRemoveTitle => "Force remove";
 
     public static string DeleteSessionTitle => "Delete session";

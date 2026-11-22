@@ -32,6 +32,7 @@ public sealed class WordingOfScreensShould
     [InlineData(DialogName.ProblemReport, "Cader (Report a problem)")]
     [InlineData(DialogName.ClearLog, "Cader (Clear log)")]
     [InlineData(DialogName.AccountLabel, "Cader (Rename account)")]
+    [InlineData(DialogName.Quit, "Cader (Quit)")]
     public void NameEachDialogInTheTabTitle(DialogName dialog, string title)
     {
         Wording.TabTitleDuring(dialog).ShouldBe(title);
