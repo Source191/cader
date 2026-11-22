@@ -159,7 +159,27 @@ public sealed class GitCli(IProcessRunner processes, string executable) : IGit
         return CountOrThrow(result);
     }
 
-    public Task<DateTimeOffset?> BranchCreatedAtAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken) => Task.FromResult<DateTimeOffset?>(null);
+    /// <summary>
+    /// The full ref name keeps the branch from reading as an option. --date=unix makes each entry's selector
+    /// branch@{seconds}; the last line is the oldest entry, which git writes as "branch: Created from ..." for git branch,
+    /// checkout -b, switch -c and worktree add -b, and which a rename carries with the reflog.
+    /// </summary>
+    public async Task<DateTimeOffset?> BranchCreatedAtAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken)
+    {
+        ProcessResult result = await RunAsync(repository.Value, ["reflog", "show", "--date=unix", "--format=%gd%x09%gs", $"refs/heads/{branch.Value}"], cancellationToken);
+
+        return result.ExitCode == 0 && Lines(result.StandardOutput) is [.., string oldest] ? CreationIn(oldest) : null;
+    }
+
+    private static DateTimeOffset? CreationIn(string entry) =>
+        entry.Split('\t', 2) is [string selector, string subject]
+        && subject.StartsWith("branch: Created from", StringComparison.Ordinal)
+        && selector.EndsWith('}')
+        && selector.LastIndexOf("@{", StringComparison.Ordinal) is int start and >= 0
+        && long.TryParse(selector[(start + 2)..^1], NumberStyles.None, CultureInfo.InvariantCulture, out long seconds)
+        && seconds <= DateTimeOffset.MaxValue.ToUnixTimeSeconds()
+            ? DateTimeOffset.FromUnixTimeSeconds(seconds)
+            : null;
     public async Task<IReadOnlyList<UnpushedCommit>> UnpushedCommitsAsync(string worktree, int limit, CancellationToken cancellationToken)
     {
         ProcessResult result = await RunOrThrowAsync(worktree, ["log", "-n", limit.ToString(CultureInfo.InvariantCulture), "--format=%h%x09%cI%x09%s", "HEAD", "--not", "--remotes"], cancellationToken);
