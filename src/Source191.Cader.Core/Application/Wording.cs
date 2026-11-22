@@ -613,6 +613,7 @@ public static partial class Wording
             StatusMessage.NothingToResume => "Nothing to resume.",
             StatusMessage.NoDialogFor missing => $"No dialog is defined for {missing.EffectName}.",
             StatusMessage.Working working => Working(working.Effect),
+            StatusMessage.StillRunning still => $"Still running: {Working(still.Effect)}",
             StatusMessage.Launching launching => Launching(launching.Step),
             StatusMessage.Reported reported => Describe(reported.Outcome),
             StatusMessage.BranchKept kept => $"{Describe(kept.Removal)} Branch kept.",
