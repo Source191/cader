@@ -6,7 +6,7 @@ Each task is red, green, refactor, with a commit per step. Never press a saving 
 
 ## 1. Facts
 
-- [ ] 1.1 `.claude\rules\terminal-gui.md`: the dialog-opened-inside-`Invoke` fact becomes observed (22 November 2026, Terminal.Gui 2.5.0 on .NET 11, a throwaway program in the headless terminal: a second thread's `app.Invoke` call returned only when the dialog closed, 4.1 s later). Commit.
+- [x] 1.1 `.claude\rules\terminal-gui.md`: the dialog-opened-inside-`Invoke` fact becomes observed (22 November 2026, Terminal.Gui 2.5.0 on .NET 11, a throwaway program in the headless terminal: a second thread's `app.Invoke` call returned only when the dialog closed, 4.1 s later). Commit.
 
 ## 2. Pure rules
 
