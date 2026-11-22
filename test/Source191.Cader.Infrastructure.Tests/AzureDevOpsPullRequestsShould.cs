@@ -128,6 +128,45 @@ public sealed class AzureDevOpsPullRequestsShould
     }
 
     [Fact]
+    public async Task ReadWhenACompletedPullRequestClosed()
+    {
+        RecordedTime.At finished = (await FinishedOf("completed", ",\"closedDate\":\"2026-11-20T10:05:00Z\"")).ShouldBeOfType<RecordedTime.At>();
+
+        finished.When.ShouldBe(new DateTimeOffset(2026, 11, 20, 10, 5, 0, TimeSpan.Zero));
+        finished.When.Offset.ShouldBe(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task ReadWhenAnAbandonedPullRequestClosed()
+    {
+        (await FinishedOf("abandoned", ",\"closedDate\":\"2026-11-19T16:45:12.3456789+00:00\"")).ShouldBe(new RecordedTime.At(new DateTimeOffset(2026, 11, 19, 16, 45, 12, TimeSpan.Zero).AddTicks(3456789)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RecordNoFinishForAnActivePullRequest(bool isDraft)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"closedDate":"2026-11-20T10:05:00Z","creationDate":"2026-11-18T08:00:00+00:00","isDraft":{{(isDraft ? "true" : "false")}},"pullRequestId":4521,"sourceRefName":"refs/heads/fix-123","status":"active"}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Finished.ShouldBe(new RecordedTime.NotRecorded());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(",\"closedDate\":null")]
+    [InlineData(",\"closedDate\":\"\"")]
+    [InlineData(",\"closedDate\":\"last week\"")]
+    public async Task RecordNoFinishWhenClosedDateIsMissing(string closedDate)
+    {
+        (await FinishedOf("completed", closedDate)).ShouldBe(new RecordedTime.NotRecorded());
+    }
+
+    [Fact]
     public async Task ReportCliMissingWhenAzCannotStart()
     {
         processes.Fail(new Win32Exception(2, "The system cannot find the file specified."));
@@ -163,6 +202,17 @@ public sealed class AzureDevOpsPullRequestsShould
         processes.AnswerAll(new ProcessResult(exitCode, exitCode == 0 ? words : string.Empty, words));
 
         (await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None)).ShouldBe(new PullRequestListing.Unavailable(PullRequestGap.Failed));
+    }
+
+    private async Task<RecordedTime> FinishedOf(string status, string closedDate)
+    {
+        processes.AnswerAll(new ProcessResult(0, $$"""
+            [{"creationDate":"2026-11-18T08:00:00+00:00","isDraft":false,"pullRequestId":4521,"sourceRefName":"refs/heads/fix-123","status":"{{status}}"{{closedDate}}}]
+            """, string.Empty));
+
+        PullRequestListing listing = await Hosts.ListAsync(Orders, Checkout, BranchName.From("fix-123"), CancellationToken.None);
+
+        return listing.ShouldBeOfType<PullRequestListing.Listed>().PullRequests.Single().PullRequest.Finished;
     }
 
     private static BranchPullRequest Row(string branch, int number, PullRequestState state, string createdAt) => Row(branch, number, state, createdAt, new HeadCommit.NotRecorded());
