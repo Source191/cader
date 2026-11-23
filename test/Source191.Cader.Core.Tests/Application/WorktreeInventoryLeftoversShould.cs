@@ -223,7 +223,7 @@ public sealed class WorktreeInventoryLeftoversShould : IDisposable
         CurrentSettings settings = TestSettings.Current(Root);
         WorktreeInventory inventory = new(new GitCli(processes, "git"), folders, settings, catalogue, new OriginPruner(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), log), log);
 
-        await settings.SaveAsync(TestSettings.For(Root, Work));
+        await settings.UpdateAsync(_ => TestSettings.For(Root, Work));
 
         (await inventory.ScanAsync([], CancellationToken.None)).Select(row => row.Path.Value).ShouldBe([sibling]);
     }

@@ -6,6 +6,7 @@ using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Effects;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Core.Tests.Application.Launch;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using Source191.Cader.TestDoubles;
@@ -26,7 +27,7 @@ public sealed class StartSessionHandlerShould
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("--bg"), new ProcessResult(0, Started, string.Empty))
         .Answer(request => request.FileName == Claude && request.Arguments.Contains("agents"), new ProcessResult(0, Listing, string.Empty));
     private readonly FakeWindowsTerminal terminal = new();
-    private readonly LaunchProgress progress = new();
+    private readonly HeardProgress progress = new();
     private readonly LaunchHold hold = new();
 
     private static LaunchPlan Plan => new(
@@ -62,7 +63,7 @@ public sealed class StartSessionHandlerShould
     public async Task ReportOpeningTheTabAsTheLastStep()
     {
         List<(LaunchStep Step, int TabsOpened)> heard = [];
-        progress.Follow(() => heard.Add((progress.Latest, terminal.Opened.Count)));
+        progress.OnStep = step => heard.Add((step, terminal.Opened.Count));
 
         await Handler.HandleAsync(new StartSession(Plan), CancellationToken.None);
 

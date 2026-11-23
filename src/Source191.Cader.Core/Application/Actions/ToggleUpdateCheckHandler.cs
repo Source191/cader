@@ -9,8 +9,7 @@ public sealed class ToggleUpdateCheckHandler(CurrentSettings settings) : IEffect
 {
     public async Task<Outcome> HandleAsync(ToggleUpdateCheck effect, CancellationToken cancellationToken)
     {
-        Settings toggled = settings.Value.WithUpdateCheckToggled();
-        await settings.SaveAsync(toggled);
+        Settings toggled = await settings.UpdateAsync(current => current.WithUpdateCheckToggled());
 
         return new ToggleUpdateCheckOutcome(toggled.CheckForUpdates);
     }

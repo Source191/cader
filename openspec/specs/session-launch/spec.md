@@ -595,3 +595,14 @@ The new-session wizard SHALL fit the terminal it opens in, its repository list t
 #### Scenario: The fixed-folder wizard on a narrow pane
 - **WHEN** the user presses n on a worktree row on a 70 by 24 terminal
 - **THEN** no dialog opens and the status line says the window needs at least 84 x 23 and this terminal is 70 x 24
+
+### Requirement: A launch carries on while a dialog is open
+A session being started SHALL carry on through every step whatever dialog the user opens meanwhile, and its tab SHALL open without waiting for that dialog to close; the status line SHALL show the launch's latest step once the dialog closes.
+
+#### Scenario: Memory breakdown during a launch
+- **WHEN** the user starts fix-123 from the wizard and, while it is creating its worktree, presses m on fix-456 and leaves the memory breakdown open
+- **THEN** fix-123 is started and its tab opens while the breakdown is still open
+
+#### Scenario: A branch question during a launch
+- **WHEN** the user starts fix-123 and, while it is starting, removes a worktree whose branch Cader asks about
+- **THEN** fix-123 is started and its tab opens while the question is still open

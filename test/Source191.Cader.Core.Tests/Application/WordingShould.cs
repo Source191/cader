@@ -239,6 +239,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void SayAnActionIsStillRunning()
+    {
+        Wording.Describe(new StatusMessage.StillRunning(new OpenTabForSession(Job, new LiveTab.None()))).ShouldBe("Still running: Opening a tab for fix-123...");
+    }
+
+    [Fact]
     public void SayTheSizeTheWizardNeeds()
     {
         Wording.Describe(new StatusMessage.WizardTooSmall(NeededColumns: 80, NeededRows: 29, Columns: 70, Rows: 24)).ShouldBe("The new-session window needs at least 80 x 29; this terminal is 70 x 24.");
@@ -1241,6 +1247,14 @@ public sealed class WordingShould
     public void HintWhatToDoWhenTheUpgradeFails()
     {
         Wording.UpdateFailedHint.ShouldBe("Cader: the upgrade failed. If winget says a file is in use, quit every Cader that is still open; if it found no newer package, winget may not have this release yet. Then press U in Cader again.");
+    }
+
+    [Fact]
+    public void AskBeforeQuittingWhileAnActionRuns()
+    {
+        Wording.QuitWhileRunningTitle.ShouldBe("Quit");
+        Wording.QuitWhileRunningQuestion.ShouldBe("An action is still running; quit anyway?");
+        Wording.QuitWhileRunningButtons.ShouldBe(["Quit", "Keep open"]);
     }
 
     [Fact]

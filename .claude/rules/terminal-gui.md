@@ -41,7 +41,7 @@ paths:
 ## Timers
 
 - **Timers tick under a dialog** (observed and read, 1 November 2026): `app.AddTimeout` callbacks keep running while a modal dialog runs its own `app.Run`, so the refresh timers and `Heartbeat` tick under a dialog.
-- **A dialog opened from a timer blocks `Invoke`:** `RunTimers` holds its lock while calling each callback, and `app.Invoke` from another thread is a zero timeout, so a dialog opened inside a timeout callback (and, read only, inside an `Invoke` callback) blocks every other thread's `app.Invoke` until it closes.
+- **A dialog opened from a timer blocks `Invoke`:** `RunTimers` holds its lock while calling each callback, and `app.Invoke` from another thread is a zero timeout, so a dialog opened inside a timeout or `Invoke` callback (observed 22 November 2026) blocks every other thread's `app.Invoke` until it closes.
 - **`SpinnerView.AutoSpin`** is safe to set repeatedly and before the view has an `App`; the default style is Line, and `SpinnerStyle.Dots` renders in the headless capture.
 
 ## Tooltips and disposal

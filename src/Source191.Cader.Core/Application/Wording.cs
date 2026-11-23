@@ -104,6 +104,13 @@ public static partial class Wording
 
     public static IReadOnlyList<string> CloseEmptyButtons { get; } = ["Close", "Keep"];
 
+    public static string QuitWhileRunningTitle => "Quit";
+
+    public static string QuitWhileRunningQuestion => "An action is still running; quit anyway?";
+
+    /// <summary>Quit first, the default; Keep open, like Esc, leaves the console open.</summary>
+    public static IReadOnlyList<string> QuitWhileRunningButtons { get; } = ["Quit", "Keep open"];
+
     public static string ForceRemoveTitle => "Force remove";
 
     public static string DeleteSessionTitle => "Delete session";
@@ -613,6 +620,7 @@ public static partial class Wording
             StatusMessage.NothingToResume => "Nothing to resume.",
             StatusMessage.NoDialogFor missing => $"No dialog is defined for {missing.EffectName}.",
             StatusMessage.Working working => Working(working.Effect),
+            StatusMessage.StillRunning still => $"Still running: {Working(still.Effect)}",
             StatusMessage.Launching launching => Launching(launching.Step),
             StatusMessage.Reported reported => Describe(reported.Outcome),
             StatusMessage.BranchKept kept => $"{Describe(kept.Removal)} Branch kept.",

@@ -23,7 +23,7 @@ public sealed class CurrentSettingsShould
     {
         CurrentSettings current = await CurrentSettings.LoadAsync(new InMemoryState(), Home);
 
-        await current.SaveAsync(Saved);
+        await current.UpdateAsync(_ => Saved);
 
         current.Value.ShouldBe(Saved);
     }
@@ -34,8 +34,46 @@ public sealed class CurrentSettingsShould
         InMemoryState state = new();
         CurrentSettings current = await CurrentSettings.LoadAsync(state, Home);
 
-        await current.SaveAsync(Saved);
+        await current.UpdateAsync(_ => Saved);
 
         (await CurrentSettings.LoadAsync(state, Home)).Value.ShouldBe(Saved);
+    }
+
+    [Fact]
+    public async Task ApplyTwoChangesInOrder()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = await CurrentSettings.LoadAsync(state, Home);
+        TaskCompletionSource written = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        state.HoldNextConfigWrite(written.Task);
+
+        Task<Settings> first = current.UpdateAsync(settings => settings.WithUpdateCheckToggled());
+        Task<Settings> second = current.UpdateAsync(settings => settings.WithDiagnosticLogToggled());
+        written.SetResult();
+        await Task.WhenAll(first, second);
+
+        Settings reloaded = (await CurrentSettings.LoadAsync(state, Home)).Value;
+        reloaded.CheckForUpdates.ShouldBeFalse();
+        reloaded.DiagnosticLog.ShouldBeTrue();
+        current.Value.ShouldBe(reloaded);
+    }
+
+    [Fact]
+    public async Task ReplaceTheSnapshotOnlyAfterTheWrite()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = await CurrentSettings.LoadAsync(state, Home);
+        Settings before = current.Value;
+        TaskCompletionSource written = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        state.HoldNextConfigWrite(written.Task);
+
+        Task<Settings> saving = current.UpdateAsync(_ => Saved);
+        Settings whileWriting = current.Value;
+        written.SetResult();
+        Settings answered = await saving;
+
+        whileWriting.ShouldBe(before);
+        answered.ShouldBe(Saved);
+        current.Value.ShouldBe(Saved);
     }
 }

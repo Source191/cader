@@ -1,7 +1,9 @@
 using Source191.Cader.Application;
 using Source191.Cader.Application.Actions;
 using Source191.Cader.Application.Diagnostics;
+using Source191.Cader.Application.Effects;
 using Source191.Cader.Application.Views;
+using Source191.Cader.Domain;
 using Source191.Cader.TestDoubles;
 
 namespace Source191.Cader.Core.Tests.Application.Actions;
@@ -44,5 +46,24 @@ public sealed class ToggleDiagnosticLogHandlerShould
         await new ToggleDiagnosticLogHandler(current, LogFile).HandleAsync(new ToggleDiagnosticLog(), CancellationToken.None);
 
         logSwitch.IsOn().ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task KeepAnUpdateCheckToggleMadeMeanwhile()
+    {
+        InMemoryState state = new();
+        CurrentSettings current = new(TestSettings.For(@"C:\Users\me\source\repos"), state);
+        TaskCompletionSource written = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        state.HoldNextConfigWrite(written.Task);
+
+        Task<Outcome> checkToggled = new ToggleUpdateCheckHandler(current).HandleAsync(new ToggleUpdateCheck(), CancellationToken.None);
+        Task<Outcome> logToggled = new ToggleDiagnosticLogHandler(current, LogFile).HandleAsync(new ToggleDiagnosticLog(), CancellationToken.None);
+        written.SetResult();
+        await Task.WhenAll(checkToggled, logToggled);
+
+        Settings saved = SettingsFile.From(await state.ReadConfigAsync(), TestSettings.Home);
+        saved.CheckForUpdates.ShouldBeFalse();
+        saved.DiagnosticLog.ShouldBeTrue();
+        current.Value.ShouldBe(saved);
     }
 }

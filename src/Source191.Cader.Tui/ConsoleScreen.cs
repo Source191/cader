@@ -129,6 +129,7 @@ public sealed class ConsoleScreen(
         private StatusShown shownStatus = new StatusShown.Nothing();
         private int shownStatusRows;
         private int settingsIndent;
+        private LaunchStep drawnStep = LaunchStep.None;
 
         public Frame(ConsoleScreen screen, IApplication app, ConsoleState initial)
         {
@@ -174,8 +175,6 @@ public sealed class ConsoleScreen(
             Window.KeyDown += (_, key) => Active.OnKey(key);
             tabs.ValueChanged += (_, _) => OnTabClicked();
             Window.Initialized += (_, _) => Show(active);
-            // A launch reports its steps from a pool thread; the status line is redrawn on the UI thread.
-            screen.launchProgress.Follow(() => app.Invoke(FrameChanged));
 
             StartRefreshing();
             sessions.Redraw();
@@ -196,8 +195,14 @@ public sealed class ConsoleScreen(
             ConsoleTab.Config => config,
         };
 
+        /// <summary>Leaves at once, or, while any tab's action runs, only once the user chooses Quit; quitting ends every pool thread, so it would cut that action off part-way.</summary>
         public void Leave(ViewEffect effect)
         {
+            if ((sessions.Running || worktrees.Running || config.Running) && !Confirm.Ask(app, screen.context.Diagnostics, DialogName.Quit, Wording.QuitWhileRunningTitle, Wording.QuitWhileRunningQuestion, [.. Wording.QuitWhileRunningButtons]))
+            {
+                return;
+            }
+
             leaving = effect;
             app.RequestStop();
         }
@@ -252,8 +257,6 @@ public sealed class ConsoleScreen(
 
         public void StopTimers()
         {
-            // A launch still running after the console closes reports to no one.
-            screen.launchProgress.Follow(() => { });
             foreach (object timer in timers)
             {
                 app.RemoveTimeout(timer);
@@ -453,6 +456,14 @@ public sealed class ConsoleScreen(
 
         private void RefreshWhatIsDue()
         {
+            // A launch reports its steps on its own thread and asks nothing of this one, so the ticker draws a new step, at most a tick late, even under a dialog.
+            LaunchStep step = screen.launchProgress.Latest;
+            if (!step.Equals(drawnStep))
+            {
+                drawnStep = step;
+                FrameChanged();
+            }
+
             if (IsDue(sessions))
             {
                 ListSessions();

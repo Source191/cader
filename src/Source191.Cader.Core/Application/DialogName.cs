@@ -20,4 +20,5 @@ public enum DialogName
     ProblemReport,
     ClearLog,
     AccountLabel,
+    Quit,
 }

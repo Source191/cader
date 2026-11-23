@@ -450,3 +450,14 @@ A key that would resume a session whose working directory no longer exists SHALL
 #### Scenario: The key bar of a stopped session whose folder has gone
 - **WHEN** the selected row is the stopped session fix-123, whose folder has been deleted
 - **THEN** the key bar offers d Delete for the row, and neither Enter nor r
+
+### Requirement: Enter opens one tab per session
+Enter on a session SHALL open at most one Windows Terminal tab for it however often it is pressed: while its tab is being opened, or once it is open but before the next listing shows it, Enter SHALL switch to that tab or say the opening is still running, and SHALL NOT open another.
+
+#### Scenario: Enter pressed twice
+- **WHEN** the user presses Enter twice on fix-123, which has no tab
+- **THEN** one tab opens for fix-123, and stop and delete later close it
+
+#### Scenario: Enter again before the next listing
+- **WHEN** fix-123's tab has just opened and the user presses Enter on fix-123 before the sessions are listed again
+- **THEN** Cader switches to that tab and opens no other

@@ -41,7 +41,7 @@ public sealed class UpdateCheckSwitchShould
         UpdateCheckSwitch updateSwitch = new(settings, string.Empty);
 
         bool before = updateSwitch.IsOn();
-        await settings.SaveAsync(settings.Value.WithUpdateCheckToggled());
+        await settings.UpdateAsync(_ => settings.Value.WithUpdateCheckToggled());
 
         before.ShouldBeTrue();
         updateSwitch.IsOn().ShouldBeFalse();

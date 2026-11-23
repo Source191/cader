@@ -11,16 +11,35 @@ namespace Source191.Cader.Application;
 public sealed class CurrentSettings(Settings initial, IUserConfig store)
 {
     private readonly SharedSnapshot<Settings> snapshot = new(initial);
+    private readonly Lock gate = new();
+    private Task last = Task.CompletedTask;
 
     /// <summary>The settings now: an immutable snapshot, replaced whole on a save.</summary>
     public Settings Value => snapshot.Value;
 
     public static async Task<CurrentSettings> LoadAsync(IUserConfig store, FolderPath home) => new(SettingsFile.From(await store.ReadConfigAsync(), home), store);
 
-    /// <summary>Writes config.json, then makes the saved settings the current ones.</summary>
-    public async Task SaveAsync(Settings settings)
+    /// <summary>Applies the change to the settings the change before it saved, writes them and then makes them the current ones, answering what was saved.</summary>
+    public Task<Settings> UpdateAsync(Func<Settings, Settings> change)
     {
-        await store.WriteConfigAsync(SettingsFile.ToConfig(settings));
-        snapshot.Replace(settings);
+        // Each change waits for the one before it, so it reads what that one saved; a lock cannot be held across the write's await.
+        lock (gate)
+        {
+            Task<Settings> update = ApplyAfterAsync(last, change);
+            last = update;
+
+            return update;
+        }
+    }
+
+    private async Task<Settings> ApplyAfterAsync(Task before, Func<Settings, Settings> change)
+    {
+        // A change that failed saved nothing, so the next applies to the settings as they were.
+        await before.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        Settings changed = change(Value);
+        await store.WriteConfigAsync(SettingsFile.ToConfig(changed));
+        snapshot.Replace(changed);
+
+        return changed;
     }
 }

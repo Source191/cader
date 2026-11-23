@@ -44,6 +44,8 @@ How a view, a key, an effect and their words fit together. Read this before plan
   - **`IRefreshesTab`** (F5) to `ITabHost.RefreshShown`, which starts the shown tab's refresh unless one is running.
   - **Everything else** to its handler through `Application\Effects\EffectDispatcher`.
 - **`EffectRoutingShould`** fails for a marked effect nothing routes.
+- **One running copy of an action:** `Application\RunningEffects`, one per console through `ScreenContext`, refuses an effect equal (by record) to one still running in any tab: `TableBody.RunInBackground` calls `TryBegin` for a `Working(effect)` and shows `StatusMessage.StillRunning` on a refusal; `End` runs as the settle begins, on the UI thread, so a follow-up it dispatches is never refused.
+- **Quitting mid-action:** q (and the `Quit` that `UpdateTabOpened` raises) while any tab is `Running` asks through `Confirm.Ask` with `DialogName.Quit` (Quit, or Keep open with Esc), since quitting ends every pool thread; with nothing running it quits at once. Enter opens no second tab because `OpenTabHandler` reads the registry whatever the row says.
 
 ## A new key
 
