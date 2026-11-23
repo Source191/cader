@@ -2,7 +2,7 @@
 
 The UI thread stalled 342 times in the measured hour (95th percentile 398 ms, longest 2.3 s), and most stall lines say "no marked work" or name a piece of work that took 0 to 2 ms. The heartbeat marks the work Cader runs on the UI thread (a refresh's rows, a detail, a key, an outcome) but not Terminal.Gui's layout and drawing, nor the garbage collector, so the log cannot say what froze the screen. Fixing the stalls blind risks optimising the wrong thing; this change makes the log name the cause, and the later changes are measured by it.
 
-**Implement with:** Opus 5.5 at medium effort: a small diagnostic addition, but it first needs a spike into Terminal.Gui 2.5.0's draw and layout events (decompiled with ilspycmd, as `terminal-gui.md` records), and the stall rules have subtle timing tests.
+**Implement with:** Opus 5.5 at medium effort: a small diagnostic addition, but it first needs a spike into Terminal.Gui 2.6.0's draw and layout events (decompiled with ilspycmd, as `terminal-gui.md` records), and the stall rules have subtle timing tests.
 
 ## What Changes
 

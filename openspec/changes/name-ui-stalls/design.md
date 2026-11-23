@@ -6,7 +6,7 @@ See proposal.md, Why. `Heartbeat.Mark(CodeName, Action)` times work Cader runs a
 
 ### 1. Begin and end marks for work Cader does not call
 
-`Heartbeat.Begin(CodeName)` and `End()` keep one open mark (nesting as `Mark` does), timed and kept exactly as `Mark` keeps its work; `Mark` becomes `Begin`, run, `End` in a `finally`. The console begins a mark when the window starts laying out or drawing and ends it when that finishes. Which Terminal.Gui 2.5.0 events bracket a whole pass (candidates read from the view base: `DrawingContent` or `Drawing` with `DrawComplete`, and `SubViewLayout` with `SubViewsLaidOut`) is settled by a spike first (task 1.1), decompiled with ilspycmd and observed in the headless terminal, and recorded in `terminal-gui.md`.
+`Heartbeat.Begin(CodeName)` and `End()` keep one open mark (nesting as `Mark` does), timed and kept exactly as `Mark` keeps its work; `Mark` becomes `Begin`, run, `End` in a `finally`. The console begins a mark when the window starts laying out or drawing and ends it when that finishes. Which Terminal.Gui 2.6.0 events bracket a whole pass (candidates read from the view base: `DrawingContent` or `Drawing` with `DrawComplete`, and `SubViewLayout` with `SubViewsLaidOut`) is settled by a spike first (task 1.1), decompiled with ilspycmd and observed in the headless terminal, and recorded in `terminal-gui.md`.
 
 Alternative considered: a stopwatch around `app.Run`'s iteration through a custom driver; rejected as far more code for the same answer.
 
