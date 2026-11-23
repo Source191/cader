@@ -189,6 +189,56 @@ public sealed class GitCliShould
     }
 
     [Fact]
+    public async Task AnswerTheBranchsCreationFromTheReflog()
+    {
+        processes.AnswerAll(new ProcessResult(0, "c-status@{1795424000}\tcommit: Show the status line\nc-status@{1795338771}\tbranch: Created from origin/main\n", string.Empty));
+
+        DateTimeOffset? created = await Git.BranchCreatedAtAsync(FolderPath.From(Repository), BranchName.From("c-status"), CancellationToken.None);
+
+        created.ShouldBe(new DateTimeOffset(2026, 11, 22, 9, 12, 51, TimeSpan.Zero));
+        created?.Offset.ShouldBe(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task AnswerNothingWhenTheOldestEntryIsNotACreation()
+    {
+        processes.AnswerAll(new ProcessResult(0, "main@{1795338771}\tcommit: Tidy\nmain@{1795000000}\tclone: from https://github.com/northwind/Northwind.Orders.git\n", string.Empty));
+
+        (await Git.BranchCreatedAtAsync(FolderPath.From(Repository), BranchName.From("main"), CancellationToken.None)).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0, "")]
+    [InlineData(128, "fatal: ambiguous argument 'refs/heads/c-status': unknown revision or path not in the working tree.\n")]
+    public async Task AnswerNothingForNoReflogOrAFailure(int exitCode, string error)
+    {
+        processes.AnswerAll(new ProcessResult(exitCode, string.Empty, error));
+
+        (await Git.BranchCreatedAtAsync(FolderPath.From(Repository), BranchName.From("c-status"), CancellationToken.None)).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("c-status@{yesterday}\tbranch: Created from origin/main\n")]
+    [InlineData("c-status@{1795338771}branch: Created from origin/main\n")]
+    [InlineData("c-status\tbranch: Created from origin/main\n")]
+    [InlineData("c-status@{99999999999999999999}\tbranch: Created from origin/main\n")]
+    public async Task AnswerNothingForAnUnreadableLine(string output)
+    {
+        processes.AnswerAll(new ProcessResult(0, output, string.Empty));
+
+        (await Git.BranchCreatedAtAsync(FolderPath.From(Repository), BranchName.From("c-status"), CancellationToken.None)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AskForTheFullRefName()
+    {
+        await Git.BranchCreatedAtAsync(FolderPath.From(Repository), BranchName.From("c-status"), CancellationToken.None);
+
+        Only.ShouldSatisfyAllConditions(
+            request => request.WorkingDirectory.ShouldBe(new WorkingFolder.At(Repository)),
+            request => request.Arguments.ShouldBe(["reflog", "show", "--date=unix", "--format=%gd%x09%gs", "refs/heads/c-status"]));
+    }
+    [Fact]
     public async Task ReturnNoLastCommitForARepositoryWithoutCommits()
     {
         processes.AnswerAll(new ProcessResult(128, string.Empty, "fatal: your current branch 'main' does not have any commits yet"));

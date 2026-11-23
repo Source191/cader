@@ -79,7 +79,7 @@ public sealed class WordingOfDetailShould
     [Fact]
     public void NameTheFoundPullRequestAndTheKeyThatOpensIt()
     {
-        PullRequestLookup.Found found = new(new PullRequest(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Now, new HeadCommit.NotRecorded()));
+        PullRequestLookup.Found found = new(new PullRequest(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Now, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded()));
         WorktreeDetail detail = new(WorktreeRowOf(unpushed: 0, dirty: 0) with { PullRequest = found }, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.NotApplicable(), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 
         Rows(Wording.Detail(detail, Now, TimeZoneInfo.Utc))[1][1].ShouldBe($"PR {Wording.PullRequestCell(found)} (p opens it)");
@@ -258,7 +258,7 @@ public sealed class WordingOfDetailShould
     [Fact]
     public void DescribeAnOriginRowByItsBranchAndFlagWithNoFolderLines()
     {
-        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded()));
+        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded()));
         WorktreeRow row = NoFolderRowOf(WorktreeHealth.OnlyOnOrigin, "c-new-bug") with { Flag = BranchFlagKind.LeftBehind, CommitsAfterMerge = 1, PullRequest = merged };
 
         DetailContent content = Wording.Detail(NothingRead(row), Now, TimeZoneInfo.Utc);
@@ -328,7 +328,7 @@ public sealed class WordingOfDetailShould
     [Fact]
     public void FitAFlagsReasonInFullBesideAPullRequestAt120Columns()
     {
-        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded()));
+        PullRequestLookup merged = new PullRequestLookup.Found(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), PullRequestState.Merged, Now, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded()));
         WorktreeRow row = WorktreeRowOf(unpushed: 0, dirty: 0) with { Head = new Head.OnBranch(BranchName.From("fix-invoice-rounding")), Flag = BranchFlagKind.Gone, PullRequest = merged };
         WorktreeDetail detail = new(row, new WorktreeOrigin.NotCreatedHere(), new DetailFact<MergeState>.Known(new MergeState("origin/main", Merged: true)), new DetailFact<IReadOnlyList<UnpushedCommit>>.NotApplicable(), new DetailFact<IReadOnlyList<string>>.NotApplicable());
 

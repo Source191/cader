@@ -75,6 +75,12 @@ public interface IGit
 
     /// <summary>The local branch's commits on no remote branch. Throws <see cref="GitException"/> when git fails or its count is not a number.</summary>
     Task<int> CountCommitsOnNoRemoteAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken);
+    /// <summary>
+    /// When git recorded creating the local <paramref name="branch"/>: the oldest entry of its reflog, when that entry is
+    /// git's own "branch: Created from" record, in UTC. Null when git fails, the branch has no reflog, or its oldest entry
+    /// is anything else (a clone, or an entry left after the creation expired).
+    /// </summary>
+    Task<DateTimeOffset?> BranchCreatedAtAsync(FolderPath repository, BranchName branch, CancellationToken cancellationToken);
 
     /// <summary>Null when git fails or there are no commits.</summary>
     Task<DateTimeOffset?> LastCommitAtAsync(string worktree, CancellationToken cancellationToken);

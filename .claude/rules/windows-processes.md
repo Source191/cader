@@ -46,3 +46,7 @@ The facts behind `ProcessRegistry`, `ProcessTree`, `ProcessRunner` and git's fet
 - **A pending read is safe to dispose:** disposing a reader whose `ReadToEndAsync` is pending, because an orphan holds the pipe past `EndAsync`'s five-second wait, neither blocks nor leaves an unobserved task exception (`LeaveNoUnobservedFaultWhenAnOrphanHoldsAPipePastTheLimit`).
 - **Ending a tree** (14 November 2026, runtime 11.0.0): `Kill(entireProcessTree: true)` lists every process, kills the root, then ends recursively each process whose parent id is the root's and whose start time is strictly later. Start times are precise to well under a millisecond.
 - A grandchild left running by killing only the child holds its inherited redirected pipes, so `ProcessRunner` would wait its five seconds for them before reporting the cancellation.
+
+## Git's reflog (checked 22 November 2026, git 2.56.1.windows.1)
+
+- **A branch's creation:** the oldest line of `git reflog show --date=unix --format=%gd%x09%gs refs/heads/<branch>` reads `branch: Created from <start>` for a branch made by `git branch`, `checkout -b`, `switch -c` or `worktree add -b` (a rename keeps it oldest; `main` after `git init`, and a clone, start otherwise), so `GitCli.BranchCreatedAtAsync` answers its time only for that subject (`GitCliIntegrationShould.ReadWhenABranchWasCreated`).

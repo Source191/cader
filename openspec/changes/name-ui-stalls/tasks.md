@@ -1,12 +1,12 @@
 # Tasks
 
-**Implement with:** Opus 5.5 at medium effort: a small diagnostic addition, but it first needs a spike into Terminal.Gui 2.5.0's draw and layout events (decompiled with ilspycmd, as `terminal-gui.md` records), and the stall rules have subtle timing tests.
+**Implement with:** Opus 5.5 at medium effort: a small diagnostic addition, but it first needs a spike into Terminal.Gui 2.6.0's draw and layout events (decompiled with ilspycmd, as `terminal-gui.md` records), and the stall rules have subtle timing tests.
 
 Each task is red, green, refactor, with a commit per step, except the spike. Heartbeat facts use `FakeTimeProvider`.
 
 ## 1. Spike
 
-- [ ] 1.1 Decompile Terminal.Gui 2.5.0 with ilspycmd and find the window events that begin and end a whole layout pass and a whole draw pass; observe them in a throwaway program in the headless terminal (a 250 ms timeout and a forced redraw). Record what was read and what was observed, with the date, in `.claude\rules\terminal-gui.md` (the decompilation and probe in `docs\verified-facts\terminal-gui.md`). Delete the throwaway program. Commit the rule file.
+- [ ] 1.1 Decompile Terminal.Gui 2.6.0 with ilspycmd and find the window events that begin and end a whole layout pass and a whole draw pass; observe them in a throwaway program in the headless terminal (a 250 ms timeout and a forced redraw). Record what was read and what was observed, with the date, in `.claude\rules\terminal-gui.md` (the decompilation and probe in `docs\verified-facts\terminal-gui.md`). Delete the throwaway program. Commit the rule file.
 
 ## 2. Heartbeat
 

@@ -15,6 +15,6 @@ This folder holds what those bullets rest on: the measurements, run ids, probes,
 | [windows.md](windows.md) | Windows Terminal and ShellExecute |
 | [windows-processes.md](windows-processes.md) | Windows processes, git fetches, .NET 11's process APIs |
 | [winget.md](winget.md) | winget, wingetcreate and Arm Windows |
-| [terminal-gui.md](terminal-gui.md) | Terminal.Gui 2.5.0 |
+| [terminal-gui.md](terminal-gui.md) | Terminal.Gui 2.5.0 and 2.6.0 |
 | [console-screen.md](console-screen.md) | The console's layout, refreshing and dialogs |
 | [claude-code.md](claude-code.md) | The Claude Code CLI |

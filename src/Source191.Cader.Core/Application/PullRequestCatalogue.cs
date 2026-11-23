@@ -11,7 +11,7 @@ namespace Source191.Cader.Application;
 /// from what has already landed (Looking before the first answer), and RefreshStaleAsync starts a lookup for each
 /// branch whose answer is older than the window and has none running, keeping the old answer until the new one lands.
 /// A listed answer is kept for a minute; an unavailable one for three, so a signed-out CLI is not asked every minute
-/// per row. The origin remote is read again with each lookup, so a repository that moves host is followed. A refresh that
+/// per row. The origin remote and the branch's creation (git's reflog) are read again with each lookup, so a repository that moves host, or a branch made again under the same name, is followed. A refresh that
 /// starts at least one lookup is timed until its last lookup lands; one with nothing stale, or that only joins lookups
 /// already running, is not, so near-zero runs do not hide the real ones.
 /// </summary>
@@ -38,7 +38,7 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
 
         return answer switch
         {
-            { Listing: PullRequestListing.Listed listed } => ForBranch(listed, branch),
+            { Listing: PullRequestListing.Listed listed } => ForBranch(listed, branch, answer.BranchCreated),
             { Listing: PullRequestListing.Unavailable unavailable } => new PullRequestLookup.Missing(unavailable.Gap, answer.Host),
             _ => throw new UnreachableException(),
         };
@@ -75,8 +75,8 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
         refreshes.Add(RefreshPart.PullRequestRefresh, clock.GetElapsedTime(began));
     }
 
-    private static PullRequestLookup ForBranch(PullRequestListing.Listed listed, BranchName branch) =>
-        PullRequests.ForBranch([.. listed.PullRequests.Where(row => row.Branch == branch).Select(row => row.PullRequest)]);
+    private static PullRequestLookup ForBranch(PullRequestListing.Listed listed, BranchName branch, RecordedTime branchCreated) =>
+        PullRequests.ForBranch([.. listed.PullRequests.Where(row => row.Branch == branch).Select(row => row.PullRequest)], branchCreated);
 
     public void Dispose() => slots.Dispose();
 
@@ -88,18 +88,22 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
         try
         {
             (PullRequestListing listing, LookupHost host) = await ListAsync(checkout, branch);
-            answers[key] = new Answer(listing, host, clock.GetUtcNow());
+            answers[key] = new Answer(listing, host, await CreatedAsync(checkout, branch), clock.GetUtcNow());
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // Nothing awaits a refresh started by a row, so a failure is kept as an answer the status line can explain.
-            answers[key] = new Answer(new PullRequestListing.Unavailable(PullRequestGap.Failed), new LookupHost.NotRead(), clock.GetUtcNow());
+            answers[key] = new Answer(new PullRequestListing.Unavailable(PullRequestGap.Failed), new LookupHost.NotRead(), new RecordedTime.NotRecorded(), clock.GetUtcNow());
         }
         finally
         {
             running.TryRemove(key, out _);
         }
     }
+
+    /// <summary>The branch's creation as git's reflog records it; git's null (no record, or a failed read) leaves nothing out.</summary>
+    private async Task<RecordedTime> CreatedAsync(FolderPath checkout, BranchName branch) =>
+        await git.BranchCreatedAtAsync(checkout, branch, CancellationToken.None) is DateTimeOffset created ? new RecordedTime.At(created) : new RecordedTime.NotRecorded();
 
     private async Task<(PullRequestListing Listing, LookupHost Host)> ListAsync(FolderPath checkout, BranchName branch)
     {
@@ -125,7 +129,7 @@ public sealed class PullRequestCatalogue(IGit git, IPullRequests hosts, TimeProv
         }
     }
 
-    private sealed record Answer(PullRequestListing Listing, LookupHost Host, DateTimeOffset At)
+    private sealed record Answer(PullRequestListing Listing, LookupHost Host, RecordedTime BranchCreated, DateTimeOffset At)
     {
         public TimeSpan Kept => Listing is PullRequestListing.Listed ? Window : UnavailableWindow;
     }

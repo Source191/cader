@@ -26,7 +26,7 @@ public sealed class GitHubPullRequests(IProcessRunner processes, ProgramLocation
 
     private Task<PullRequestListing> ListAsync(string executable, RemoteRepository.GitHub repository, FolderPath checkout, BranchName branch, CancellationToken cancellationToken)
     {
-        ProcessRequest request = new(executable, ["pr", "list", "--repo", $"{repository.Owner}/{repository.Name}", "--head", branch.Value, "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,headRefOid,createdAt"], new WorkingFolder.At(checkout.Value));
+        ProcessRequest request = new(executable, ["pr", "list", "--repo", $"{repository.Owner}/{repository.Name}", "--head", branch.Value, "--state", "all", "--limit", "20", "--json", "number,url,state,isDraft,headRefName,headRefOid,createdAt,closedAt"], new WorkingFolder.At(checkout.Value));
 
         return CliListing.RunAsync(processes, request, Read, cancellationToken);
     }
@@ -53,7 +53,7 @@ public sealed class GitHubPullRequests(IProcessRunner processes, ProgramLocation
 
         DateTimeOffset createdAt = DateTimeOffset.Parse(item.GetProperty("createdAt").GetString() ?? string.Empty, CultureInfo.InvariantCulture);
 
-        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.GitHub, item.GetProperty("number").GetInt32(), url, state.Value, createdAt, PullRequestListingJson.HeadCommitIn(item, "headRefOid")));
+        return new BranchPullRequest(branch, new PullRequest(PullRequestHost.GitHub, item.GetProperty("number").GetInt32(), url, state.Value, createdAt, PullRequestListingJson.HeadCommitIn(item, "headRefOid"), PullRequestListingJson.FinishedIn(item, "closedAt", state.Value)));
     }
 
     private static PullRequestState? State(string? state, bool isDraft) => state switch

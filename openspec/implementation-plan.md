@@ -15,8 +15,9 @@ The fifteen open OpenSpec changes are built as one stack of pull requests, botto
 - [x] **Step 1:** `report-what-removals-and-launches-did`. Sonnet 5.5, medium.
 - [x] **Step 2:** `fit-narrow-and-short-terminals`. Opus 5.5, medium.
 - [x] **Step 3:** `guard-overlapping-actions`. Opus 5.5, high.
-- [ ] **Step 4:** `ignore-reused-branch-pull-requests`. Opus 5.5, medium.
-- [ ] **Checkpoint A:** the owner reviews the four fixes, above all `guard-overlapping-actions`' `RunningEffects` in `TableBody`, which later steps also touch, and does its manual check of tabs (Enter twice on a session with no tab).
+- [x] **Step 4:** `ignore-reused-branch-pull-requests`. Opus 5.5, medium.
+- [x] **Step 4a:** `adopt-terminal-gui-2-6`, added once PR #386 took Terminal.Gui 2.6.0 onto `main`: re-checks the facts 2.6.0 changed, so checkpoint A reviews on the version that ships. Opus 5.5, high.
+- [x] **Checkpoint A:** the owner reviews the four fixes, above all `guard-overlapping-actions`' `RunningEffects` in `TableBody`, which later steps also touch, and does its manual check of tabs (Enter twice on a session with no tab).
 
 **Cheap wins**
 

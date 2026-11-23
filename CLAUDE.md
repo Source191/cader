@@ -10,7 +10,7 @@ Facts that matter only in part of the code are path-scoped rules in `.claude\rul
 - **`values-and-null.md`:** text values and their three doors, sessions, null, the port contracts, closed hierarchies and switches.
 - **`security.md`:** the detail behind the security and privacy invariants below.
 - **`console-screen.md`** and **`console-refreshing.md`:** the layout, detail pane, status line and dialogs; refreshing, worktree scanning and the Config tab.
-- **`claude-code.md`**, **`terminal-gui.md`**, **`windows.md`**, **`windows-processes.md`**, **`winget.md`:** the verified facts about the Claude Code CLI, Terminal.Gui 2.5.0, Windows Terminal and ShellExecute, Windows processes, and winget.
+- **`claude-code.md`**, **`terminal-gui.md`**, **`windows.md`**, **`windows-processes.md`**, **`winget.md`:** the verified facts about the Claude Code CLI, Terminal.Gui 2.6.0, Windows Terminal and ShellExecute, Windows processes, and winget.
 - **`checks.md`** and **`mutation-testing.md`:** the workflows and the hand-off, smoke and contract checks; Stryker and the break score.
 - **`locale.md`:** what must stay invariant, and what another culture would need.
 

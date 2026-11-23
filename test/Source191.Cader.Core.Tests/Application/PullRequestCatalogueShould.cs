@@ -14,11 +14,14 @@ public sealed class PullRequestCatalogueShould : IDisposable
     private static readonly RemoteRepository.GitHub Orders = new("northwind", "Northwind.Orders");
     private static readonly BranchName Fix = BranchName.From("fix-123");
     private static readonly Head OnFix = new Head.OnBranch(Fix);
-    private static readonly PullRequest Open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero), new HeadCommit.NotRecorded());
+    private static readonly PullRequest Open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero), new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded());
     private static readonly PullRequest Merged = Open with { State = PullRequestState.Merged };
+    private static readonly DateTimeOffset MergedAt = new(2026, 10, 24, 14, 28, 23, TimeSpan.Zero);
+    private static readonly PullRequest MergedBeforeTheBranch = Merged with { Finished = new RecordedTime.At(MergedAt) };
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(5);
 
     private readonly FakeProcessRunner processes = new FakeProcessRunner()
+        .AnswerAll(new ProcessResult(0, string.Empty, string.Empty))
         .Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
 
     private readonly FakePullRequests hosts = new FakePullRequests().Answer(Orders, Listing(Open));
@@ -246,6 +249,48 @@ public sealed class PullRequestCatalogueShould : IDisposable
 
         refreshes.Snapshot().Single().Durations.Runs.ShouldBe(1, "one refresh is one timed run however many lookups it starts");
     }
+
+    [Fact]
+    public async Task LeaveOutAReusedBranchsMergedPullRequest()
+    {
+        hosts.Answer(Orders, Listing(MergedBeforeTheBranch));
+        processes.Answer(IsReflog, Reflog(MergedAt.AddHours(18)));
+
+        await catalogue.RefreshStaleAsync([(Checkout, Fix)]);
+
+        catalogue.Find(Checkout, OnFix).ShouldBe(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest));
+        processes.CapturedRequests.ShouldContain(request => IsReflog(request) && request.WorkingDirectory == new WorkingFolder.At(Checkout.Value));
+    }
+
+    [Fact]
+    public async Task KeepThePullRequestWhenTheReflogRecordsNoCreation()
+    {
+        hosts.Answer(Orders, Listing(MergedBeforeTheBranch));
+        processes.Answer(IsReflog, new ProcessResult(0, "fix-123@{1792000000}\tclone: from https://github.com/northwind/Northwind.Orders.git\n", string.Empty));
+
+        await catalogue.RefreshStaleAsync([(Checkout, Fix)]);
+
+        catalogue.Find(Checkout, OnFix).ShouldBe(new PullRequestLookup.Found(MergedBeforeTheBranch));
+    }
+
+    [Fact]
+    public async Task ReadTheBranchsCreationWithEachLookup()
+    {
+        hosts.Answer(Orders, Listing(MergedBeforeTheBranch));
+        processes.AnswerInTurn(IsReflog, Reflog(MergedAt.AddHours(-30)), Reflog(MergedAt.AddHours(18)));
+        await catalogue.RefreshStaleAsync([(Checkout, Fix)]);
+        catalogue.Find(Checkout, OnFix).ShouldBe(new PullRequestLookup.Found(MergedBeforeTheBranch));
+
+        clock.Advance(TimeSpan.FromSeconds(61));
+        await catalogue.RefreshStaleAsync([(Checkout, Fix)]);
+
+        catalogue.Find(Checkout, OnFix).ShouldBe(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), "the branch was deleted and made again under the same name");
+    }
+
+    private static bool IsReflog(ProcessRequest request) => request.Arguments is ["reflog", ..];
+
+    private static ProcessResult Reflog(DateTimeOffset created) =>
+        new(0, $"fix-123@{{{created.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)}}}\tbranch: Created from origin/main\n", string.Empty);
 
     private static PullRequestListing.Listed Listing(PullRequest pullRequest) => new([new BranchPullRequest(Fix, pullRequest)]);
 

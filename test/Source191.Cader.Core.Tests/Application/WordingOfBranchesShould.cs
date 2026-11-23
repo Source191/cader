@@ -61,7 +61,7 @@ public sealed class WordingOfBranchesShould
     }
 
     private static PullRequestLookup.Found Shown(PullRequestHost host, int number, PullRequestState state) =>
-        new(new PullRequest(host, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, Fixtures.Noon, new HeadCommit.NotRecorded()));
+        new(new PullRequest(host, number, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{number}"), state, Fixtures.Noon, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded()));
 
     private static WorktreeRow Row(BranchFlagKind flag, PullRequestLookup lookup) =>
         new(Repository, Repository, new Head.OnBranch(BranchName.From("c-new-bug")), WorktreeHealth.OnlyOnOrigin, 0, 0, new LastCommit.Unknown(), new WorktreeSession.None(), LeftoverFileCount: 0, OwnerExists: true, FolderExists: true)

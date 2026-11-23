@@ -54,7 +54,7 @@ Every Claude Code session on the machine, whether it was started here or not, gr
 | NAME | The session name given at launch, or the folder name for an unnamed one; it takes the width the other columns leave, and a long name is cut at its end |
 | TAB | A block in the tab's colour while a Cader tab shows the session; ▯ grey for a plain `claude` in its own terminal |
 | STATE | ◐ needs input (amber), ● working (cyan), ○ idle (white), ✓ completed (green), ✗ failed (red), ■ stopped (grey), ? unknown (grey) |
-| PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned) |
+| PR | Its pull request: #123 on GitHub (open, draft, merged, closed), !123 on Azure DevOps (active, draft, completed, abandoned); a finished one from before the branch was created (as git's reflog records it) is not shown, so a reused branch name starts blank |
 | ACCOUNT | The label of the Claude account the session belongs to: ● before it for the account logged in now, ? for one Cader has not yet seen logged in, blank when Claude Code did not record it (sessions from before Claude Code 2.1.325) |
 | AGE | Time since the session started |
 

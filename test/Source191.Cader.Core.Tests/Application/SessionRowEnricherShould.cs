@@ -37,7 +37,7 @@ public sealed class SessionRowEnricherShould : IDisposable
     [Fact]
     public async Task CarryEachRowsPullRequest()
     {
-        PullRequest open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Fixtures.Noon, new HeadCommit.NotRecorded());
+        PullRequest open = new(PullRequestHost.GitHub, 123, new Uri("https://github.com/northwind/Northwind.Orders/pull/123"), PullRequestState.Open, Fixtures.Noon, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded());
         hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("fix"), open)]));
         AnswerGit(@"C:\repos\Northwind.Orders-fix", root: "C:/repos/Northwind.Orders-fix", commonDir: "C:/repos/Northwind.Orders/.git", branch: "fix");
         Session session = Session(@"C:\repos\Northwind.Orders-fix");
@@ -50,7 +50,22 @@ public sealed class SessionRowEnricherShould : IDisposable
         first.PullRequest.ShouldBe(new PullRequestLookup.Missing(PullRequestGap.Looking));
         second.PullRequest.ShouldBe(new PullRequestLookup.Found(open));
         hosts.Calls.Count.ShouldBe(1);
-        remotes.CapturedRequests.Single().WorkingDirectory.ShouldBe(new WorkingFolder.At(@"C:\repos\Northwind.Orders"));
+        remotes.CapturedRequests.ShouldAllBe(request => request.WorkingDirectory == new WorkingFolder.At(@"C:\repos\Northwind.Orders"), "the origin and the branch's reflog are read in the main checkout");
+    }
+
+    [Fact]
+    public async Task ShowNoPullRequestForAReusedBranch()
+    {
+        PullRequest merged = new(PullRequestHost.GitHub, 371, new Uri("https://github.com/northwind/Northwind.Orders/pull/371"), PullRequestState.Merged, Fixtures.Noon.AddDays(-2), new HeadCommit.NotRecorded(), new RecordedTime.At(Fixtures.Noon.AddDays(-1)));
+        hosts.Answer(new RemoteRepository.GitHub("northwind", "Northwind.Orders"), new PullRequestListing.Listed([new BranchPullRequest(BranchName.From("c-status"), merged)]));
+        remotes.Answer(request => request.Arguments is ["reflog", ..], new ProcessResult(0, $"c-status@{{{Fixtures.Noon.AddHours(-3).ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)}}}\tbranch: Created from origin/main\n", string.Empty));
+        AnswerGit(@"C:\repos\Northwind.Orders-c-status", root: "C:/repos/Northwind.Orders-c-status", commonDir: "C:/repos/Northwind.Orders/.git", branch: "c-status");
+        Session session = Session(@"C:\repos\Northwind.Orders-c-status");
+
+        await catalogue.RefreshStaleAsync([(FolderPath.From(@"C:\repos\Northwind.Orders"), BranchName.From("c-status"))]);
+        SessionRow row = (await Enricher.EnrichAsync([session], CancellationToken.None)).Single();
+
+        row.PullRequest.ShouldBe(new PullRequestLookup.Missing(PullRequestGap.NoPullRequest), "#371 merged before this c-status was created");
     }
 
     [Fact]

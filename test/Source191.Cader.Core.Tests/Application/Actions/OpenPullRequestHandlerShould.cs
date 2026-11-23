@@ -13,7 +13,7 @@ public sealed class OpenPullRequestHandlerShould
     {
         FakeDesktop desktop = new();
         OpenPullRequestHandler handler = new(desktop);
-        PullRequest pullRequest = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Northwind%20Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Active, DateTimeOffset.UnixEpoch, new HeadCommit.NotRecorded());
+        PullRequest pullRequest = new(PullRequestHost.AzureDevOps, 4521, new Uri("https://dev.azure.com/northwind/Northwind%20Trading/_git/Northwind.Orders/pullrequest/4521"), PullRequestState.Active, DateTimeOffset.UnixEpoch, new HeadCommit.NotRecorded(), new RecordedTime.NotRecorded());
 
         Outcome outcome = await handler.HandleAsync(new OpenPullRequest(pullRequest), CancellationToken.None);
 

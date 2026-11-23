@@ -1,5 +1,6 @@
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
+using System.Globalization;
 using System.Text.Json;
 
 namespace Source191.Cader.Adapters.PullRequests;
@@ -36,6 +37,19 @@ internal static class PullRequestListingJson
         && CommitId.TryParse(value.GetString(), out CommitId? commit)
             ? new HeadCommit.Known(commit)
             : new HeadCommit.NotRecorded();
+
+    /// <summary>
+    /// When a finished pull request finished, from <paramref name="item"/>'s <paramref name="property"/> read as an
+    /// invariant time in UTC, or <see cref="RecordedTime.NotRecorded"/> for an open one, or when the property is missing,
+    /// not text or not a time: the pull request is still listed and never left out as an earlier branch's.
+    /// </summary>
+    public static RecordedTime FinishedIn(JsonElement item, string property, PullRequestState state) =>
+        !state.IsOpen()
+        && item.TryGetProperty(property, out JsonElement value)
+        && value.ValueKind == JsonValueKind.String
+        && DateTimeOffset.TryParse(value.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTimeOffset finished)
+            ? new RecordedTime.At(finished)
+            : new RecordedTime.NotRecorded();
 
     private static BranchPullRequest? Skipping(JsonElement item, Func<JsonElement, BranchPullRequest?> row)
     {

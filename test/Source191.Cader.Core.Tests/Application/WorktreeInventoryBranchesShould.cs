@@ -39,7 +39,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
 
     public WorktreeInventoryBranchesShould()
     {
-        FakeProcessRunner origin = new FakeProcessRunner().Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
+        FakeProcessRunner origin = new FakeProcessRunner().AnswerAll(new ProcessResult(0, string.Empty, string.Empty)).Answer(request => request.Arguments.SequenceEqual(["remote", "get-url", "origin"]), new ProcessResult(0, "git@github.com:northwind/Northwind.Orders.git\n", string.Empty));
         catalogue = new(new GitCli(origin, "git"), hosts, new FakeTimeProvider(Fixtures.Noon), new RefreshCounts(new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), [])));
         pruner = new(new GitCli(processes, "git"), new FakeTimeProvider(Fixtures.Noon), new DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
         // Recorded as each run starts, on the caller's path, so a prune the scan starts and never awaits is seen as the scan returns.
@@ -354,7 +354,7 @@ public sealed class WorktreeInventoryBranchesShould : IDisposable
     private static string Origin(string name, string email = Email) => $"refs/remotes/origin/{name}\0\0\0{TipAt}\0<{email}>\0\n";
 
     private static PullRequestListing.Listed Listing(params (string Branch, PullRequestState State, HeadCommit Head)[] pullRequests) =>
-        new([.. pullRequests.Select((pullRequest, index) => new BranchPullRequest(BranchName.From(pullRequest.Branch), new PullRequest(PullRequestHost.GitHub, 290 + index, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{290 + index}"), pullRequest.State, Fixtures.Noon.AddDays(-index - 1), pullRequest.Head)))]);
+        new([.. pullRequests.Select((pullRequest, index) => new BranchPullRequest(BranchName.From(pullRequest.Branch), new PullRequest(PullRequestHost.GitHub, 290 + index, new Uri($"https://github.com/northwind/Northwind.Orders/pull/{290 + index}"), pullRequest.State, Fixtures.Noon.AddDays(-index - 1), pullRequest.Head, new RecordedTime.NotRecorded())))]);
 
     private Task Landed(params string[] branches) => catalogue.RefreshStaleAsync([.. branches.Select(branch => (FolderPath.From(Repository), BranchName.From(branch)))]);
 

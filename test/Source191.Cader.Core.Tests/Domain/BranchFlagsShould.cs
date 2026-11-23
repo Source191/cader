@@ -88,5 +88,5 @@ public sealed class BranchFlagsShould
     }
 
     private static PullRequestLookup.Found Shown(PullRequestState state, HeadCommit head) =>
-        new(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), state, Fixtures.Noon, head));
+        new(new PullRequest(PullRequestHost.GitHub, 298, new Uri("https://github.com/northwind/Northwind.Orders/pull/298"), state, Fixtures.Noon, head, new RecordedTime.NotRecorded()));
 }
