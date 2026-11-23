@@ -6,7 +6,7 @@ The console gives almost no sign of work in progress after its first load. The W
 
 ## What Changes
 
-- While the Worktrees tab has no rows yet, its scan shows each repository's rows as soon as that repository and every one before it in name order have been read, so the table fills from the top; the waiting words count the repositories read ("Scanning worktrees: 23 of 55 repositories") until the last.
+- While the Worktrees tab has no rows yet, its scan shows each repository's rows as soon as that repository and every one before it in name order have been read and the first sessions listing has returned, so the table fills from the top; the waiting words count the repositories read ("Scanning worktrees: 23 of 55 repositories") until the last.
 - While any later scan of the shown tab is running, its title says how far it has got (`23 of 55 repositories`) when it re-reads more than one repository.
 - While a refresh of the shown tab runs in the background (timed, heard, on show, on F5 or after an action), a dim ↻ follows the tab's counts; it goes when the refresh returns. No spinner turns for these refreshes, as today.
 
@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** 7 of 11, wave 3 (how it feels). Depends on `rescan-only-what-changed` (the per-repository reads it reports on); land it straight after that change.
+- **Order:** step 12 of the stack in `openspec\implementation-plan.md`, the last before checkpoint C. Depends on `rescan-only-what-changed` (the per-repository reads it reports on); land it straight after that change. Its rows wait for the first sessions listing, as `parallel-scan-reads` requires (design 1).
 - **Together:** the progressive rows and the refresh mark ship in one pull request, as both report a refresh's progress through the same load path.
 
 ## Out of scope
@@ -38,5 +38,5 @@ None.
 - `Application\ConsoleLoads`, `Application\Views\WorktreesView` and `WorktreesViewState`: a partial rows input that keeps the selection and filter as a full one does, accepted only for the newest load; a scan-progress fact for the waiting words and the title.
 - `Tui\TableBody`: partial inputs carry their load's ticket through `LoadSequence`; `Tui\ConsoleScreen.ShowCounts` adds the mark while the shown tab's `RunningLoads` has a load running.
 - `Application\Wording`: the waiting words with the count, the title's progress and the mark, with their facts.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing and Layout.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md` and `.claude\rules\console-screen.md`, Layout.
 - **Implement with:** Opus 5.5 at high effort (reason above).

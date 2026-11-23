@@ -15,7 +15,7 @@ Each task is red, green, refactor, with a commit per step. Inventory facts use t
 - [ ] 2.2 `WorktreeInventoryRepositoriesShould.ReadAStaleRepositoryAgain`, `ReadALayoutFiveMinutesOldAgain` and `ReadEveryRepositoryWhenAllAreMarked`. Commit.
 - [ ] 2.3 `WorktreeInventoryLeftoversShould.JudgeOrphansAlikeFromCachedAndFreshLayouts` and `DropARepositoryWhoseFolderWentAndItsCacheEntry`. Commit.
 - [ ] 2.4 `WorktreeInventoryRepositoriesShould.KeepAChangeHeardDuringAScanForTheNext`. Commit.
-- [ ] 2.5 `GitCliIntegrationShould.MarkTheRepositoryForEveryCommandARowDependsOn`: in `TemporaryGitRoot`, run worktree add, remove and prune, switch, commit, fetch from a local remote, branch create and delete, and rebase, and assert each writes a file `ChangeFilter` answers `StaleOnly` or `Rescan` for (via a real `FolderChanges` watch). Record the list with git's version in `.claude\rules\windows.md`. Commit.
+- [ ] 2.5 `GitCliIntegrationShould.MarkTheRepositoryForEveryCommandARowDependsOn`: in `TemporaryGitRoot`, run worktree add, remove and prune, switch, commit, fetch from a local remote, branch create and delete, and rebase, and assert each writes a file `ChangeFilter` answers `StaleOnly` or `Rescan` for (via a real `FolderChanges` watch). Record the list with git's version in `.claude\rules\windows-processes.md` (the evidence in `docs\verified-facts\windows-processes.md`). Commit.
 
 ## 3. Merged counts
 
@@ -27,7 +27,7 @@ Each task is red, green, refactor, with a commit per step. Inventory facts use t
 
 ## 5. Release
 
-- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the two tiers, the stale causes and the five-minute safety net. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (the Worktrees tab rescans in a fraction of the time, re-reading only the repositories that changed). Report the worktrees scan count and git runs per hour from a diagnostic log before and after in the pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate rescan-only-what-changed`. Commit.
+- [ ] 5.1 `.claude\rules\console-refreshing.md`: the two tiers, the stale causes and the five-minute safety net. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (the Worktrees tab rescans in a fraction of the time, re-reading only the repositories that changed). The worktrees scan count and git runs per hour before and after come from the owner's timing run at the implementation plan's checkpoint C, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate rescan-only-what-changed`. Commit.
 
 ## Workflow follow-up
 

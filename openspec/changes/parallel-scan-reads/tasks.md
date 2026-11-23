@@ -22,7 +22,7 @@ Each task is red, green, refactor, with a commit per step. Concurrency facts use
 
 ## 4. Release
 
-- [ ] 4.1 `.claude\rules\console-screen.md`, Refreshing: the start-up scan reads git at once and waits for the listing only to mark sessions. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (the worktrees appear sooner after start and on each scan). Report the worktrees scan and sessions enrichment counts from a diagnostic log before and after in the pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate parallel-scan-reads`. Commit.
+- [ ] 4.1 `.claude\rules\console-refreshing.md`: the start-up scan reads git at once and waits for the listing only to mark sessions. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (the worktrees appear sooner after start and on each scan). The worktrees scan and sessions enrichment counts before and after come from the owner's timing run at the implementation plan's checkpoint C, not from this pull request. Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate parallel-scan-reads`. Commit.
 
 ## Workflow follow-up
 

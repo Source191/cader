@@ -7,7 +7,7 @@ Each task is red, green, refactor, with a commit per step. Real-git facts use `T
 ## 1. Optional locks off
 
 - [ ] 1.1 `GitCliShould.TurnOptionalLocksOffForEveryRun`: every request `GitCli` hands the process runner carries `GIT_OPTIONAL_LOCKS=0`, merged with a fetch's own `GIT_TERMINAL_PROMPT` and `GCM_INTERACTIVE`. Verify the fact fails before the change. Commit.
-- [ ] 1.2 `GitCliIntegrationShould.LeaveTheIndexUnwrittenByStatus` (a modified file in a scratch repository: the index's write time is unchanged after `CountChangedFilesAsync`) and `NotCountATouchedUnchangedFile`. Record the observed behaviour with git's version in `.claude\rules\windows.md`. Commit.
+- [ ] 1.2 `GitCliIntegrationShould.LeaveTheIndexUnwrittenByStatus` (a modified file in a scratch repository: the index's write time is unchanged after `CountChangedFilesAsync`) and `NotCountATouchedUnchangedFile`. Record the observed behaviour with git's version in `.claude\rules\windows-processes.md` (the evidence in `docs\verified-facts\windows-processes.md`). Commit.
 
 ## 2. Email read once per ten minutes
 
@@ -26,7 +26,7 @@ Each task is red, green, refactor, with a commit per step. Real-git facts use `T
 
 ## 5. Release
 
-- [ ] 5.1 `.claude\rules\console-screen.md`, Refreshing: the scan's reads per worktree and repository. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above what `main` holds when this merges and add a CHANGELOG `Unreleased` entry under Changed (fewer git runs per scan; Cader's reads no longer lock a worktree's index while a session commits). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate lighter-git-reads`. Commit.
+- [ ] 5.1 `.claude\rules\console-refreshing.md`: the scan's reads per worktree and repository. Raise `Version` in `src\Source191.Cader\Source191.Cader.csproj` one preview step above the previous step of the implementation plan and add a CHANGELOG `Unreleased` entry under Changed (fewer git runs per scan; Cader's reads no longer lock a worktree's index while a session commits). Verify `.github\scripts\Assert-VersionBumped.ps1`, `dotnet build -c Debug`, `dotnet test -c Debug --no-build`, `dotnet format --verify-no-changes` and `openspec validate lighter-git-reads`. Commit.
 
 ## Workflow follow-up
 

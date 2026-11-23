@@ -23,7 +23,7 @@ None.
 
 ## Delivery
 
-- **Order:** 5 of 11, the first of wave 2 (the scan). Depends on `lighter-git-reads`, which removes reads this change would otherwise parallelise.
+- **Order:** step 10 of the stack in `openspec\implementation-plan.md`, the first of the scan steps, after checkpoint B. Depends on `lighter-git-reads`, which removes reads this change would otherwise parallelise.
 - **Together:** must land before `rescan-only-what-changed`, which builds its per-repository cache on the reads this change restructures; do them one after the other with nothing else on the scan in between.
 
 ## Out of scope
@@ -38,5 +38,5 @@ None.
 - `Application\WorktreeInspector`: the count's reads run together when given a slot pool.
 - `Application\ConsoleLoads.ScanWorktreesAsync` and `LatestSessions`: the scan starts before the first listing and hands the inventory a task of sessions.
 - `Application\SessionRowEnricher`: folders located through a pool of eight, the rows kept in listing order.
-- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-screen.md`, Refreshing.
+- `CHANGELOG.md` and `Version` in `src\Source191.Cader\Source191.Cader.csproj`; `.claude\rules\console-refreshing.md`.
 - **Implement with:** Opus 5.5 at high effort (reason above).

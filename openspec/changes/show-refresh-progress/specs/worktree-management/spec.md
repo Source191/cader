@@ -22,7 +22,7 @@ The worktrees view SHALL show a spinner with the words "Scanning worktrees" and 
 ## ADDED Requirements
 
 ### Requirement: The first scan fills the table from the top
-While the Worktrees tab has no rows yet, its scan SHALL show each repository's rows as soon as that repository and every repository before it in name order have been read, with the rows the finished scan will show for them, and SHALL count the repositories read in the table's title until the scan returns. Rows already shown SHALL NOT be replaced by a later scan's partial rows.
+While the Worktrees tab has no rows yet, its scan SHALL show each repository's rows as soon as that repository and every repository before it in name order have been read and the first sessions listing has returned, with the rows the finished scan will show for them, and SHALL count the repositories read in the table's title until the scan returns. Rows already shown SHALL NOT be replaced by a later scan's partial rows.
 
 #### Scenario: The first repositories read
 - **WHEN** the first scan has read Northwind.Billing and Northwind.Orders, the first two of 55 repositories by name, and is still reading the rest

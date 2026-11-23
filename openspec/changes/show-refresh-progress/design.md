@@ -8,6 +8,8 @@ See proposal.md, Why. `TableBody.TriggerLoad` runs the tab's load function on a 
 
 The scan reports progress through an `IProgress<ScanProgress>`: the rows of the longest run of repositories, in name order, whose reads have all returned, with the number read and the number to read. Only a prefix is reported because a repository's orphans are judged against its own registrations and those before it, so a prefix's rows are exactly what the full scan will show for those repositories; the worktree-root leftovers and broken worktrees, which need every registration, come only with the final rows. Pull requests and branch flags are filled for a prefix's rows as for the final rows.
 
+No prefix is reported before the scan's sessions have arrived: after `parallel-scan-reads` the scan reads git before the first sessions listing returns, but its rows must never show sessions from before that listing (`worktree-management`, "The worktrees are scanned as the console opens"). So progress is held until the sessions task completes, then the longest prefix read by then is reported at once. `faster-start` starts that listing before the screen is built, which keeps the wait short.
+
 ### 2. Partial rows only while the table is empty
 
 `WorktreesView` takes a `WorktreeRowsPartial` input only while the list is not yet loaded; once rows are shown, a later scan's progress changes only the title's count, never the rows, so a rescan never makes rows vanish and reappear. The final `WorktreeRowsLoaded` replaces the partial rows as today, keeping the selection by key. `LoadSequence` gains acceptance of a partial input for the newest ticket only, and never after that ticket's final input.

@@ -22,7 +22,11 @@ Alternative considered: keep per-branch lookups and lengthen their window; rejec
 
 `IPullRequests.ListRepositoryAsync(repository, checkout)` beside the existing `ListAsync(repository, checkout, branch)`. GitHub: `pr list --repo <owner>/<name> --state all --limit 100 --json <same fields>`. Azure DevOps: `repos pr list --org ... --project ... --repository ... --status all --top 100 --output json`. Each row already carries its branch (`headRefName`, `sourceRefName`), which `GitHubPullRequests` and `AzureDevOpsPullRequests` read today, so the parsing is shared. The repository listing passes no branch to az, so the batch-file rule (`BatchFileArgument.IsSafe`) still guards only the per-branch fallback, and a branch that fails it is matched from the listing.
 
-### 3. Origin read per repository
+### 3. The branch's creation time stays per branch
+
+`ignore-reused-branch-pull-requests` (step 4 of the implementation plan, before this change) reads each branch's creation time from its reflog with each lookup and hands it to `PullRequests.ForBranch`. Here it is read for each on-screen branch of a repository with that repository's lookup (and with a branch's fallback lookup), kept per checkout and branch beside the repository answer, and passed to `ForBranch` by `Find` as before. Its catalogue facts must still pass unchanged.
+
+### 4. Origin read per repository
 
 `git remote get-url origin` runs once per repository lookup; the branch fallback reuses the repository answer's parsed remote, so a repository that moves host is still followed within a minute.
 
