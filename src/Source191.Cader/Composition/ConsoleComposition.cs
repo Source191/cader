@@ -104,7 +104,7 @@ internal static class ConsoleComposition
         SessionTabs sessionTabs = new(parts.Store, parts.ProcessRegistry);
         WorktreeRemover remover = new(launch.Git, parts.Store, folders, settings, TimeProvider.System);
         DeleteSessionHandler deleteSession = new(launch.Claude, launch.Git, parts.Store, sessionTabs, folders, remover);
-        RemoveWorktreeHandler removeWorktree = new(launch.Git, parts.Store, folders, remover);
+        RemoveWorktreeHandler removeWorktree = new(parts.Store, folders, remover);
         RepositoryCatalogue repositories = new(folders, settings);
         SolutionFinder solutions = new(folders);
         EditorPresets presets = new(new EditorLocator(folders, parts.Processes, EditorFolders.ForCurrentUser()));

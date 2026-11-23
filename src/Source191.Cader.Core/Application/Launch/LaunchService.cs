@@ -1,3 +1,4 @@
+using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ namespace Source191.Cader.Application.Launch;
 /// remember about it. A base that could not be updated never stops the launch; the outcome says so. Each step is
 /// reported to <see cref="LaunchProgress"/> as it begins, numbered out of the steps this launch runs.
 /// </summary>
-public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock, LaunchProgress progress)
+public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updater, IRecentRepositories recent, ICreatedWorktrees created, IWorktreeIncludeCopier copier, TimeProvider clock, LaunchProgress progress, DiagnosticLog log)
 {
     public async Task<LaunchOutcome> LaunchAsync(LaunchPlan plan, CancellationToken cancellationToken)
     {
@@ -42,7 +43,7 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updat
     private async Task<LaunchOutcome.Started> StartedAsync(LaunchPlan plan, JobId jobId, Prepared prepared, CancellationToken cancellationToken)
     {
         progress.Report(prepared.Steps.Step(LaunchStage.FindingSession));
-        await recent.RecordRecentRepositoryAsync(plan.Repository.Path);
+        await RecordRecentRepositoryAsync(plan.Repository.Path);
         Session.Background? listed = await ListedSessionAsync(jobId, cancellationToken);
 
         return listed is null ? new LaunchOutcome.NotListedYet(jobId, prepared.Update) : new LaunchOutcome.Listed(jobId, listed, prepared.Update, prepared.Steps);
@@ -94,12 +95,35 @@ public sealed class LaunchService(IClaudeCli claude, IGit git, BaseUpdater updat
         await copier.CopyAsync(repository, worktree.Path, cancellationToken);
     }
 
-    /// <summary>The new session as the supervisor lists it, which is where its full session id comes from.</summary>
+    /// <summary>The session is started whatever the state folder says, so a refused write is logged, never raised.</summary>
+    private async Task RecordRecentRepositoryAsync(FolderPath repository)
+    {
+        try
+        {
+            await recent.RecordRecentRepositoryAsync(repository);
+        }
+        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+        {
+            log.Record(new Failed(FailureSite.Effect, CodeName.For(typeof(LaunchService)), ExceptionSummary.From(failure)));
+        }
+    }
+
+    /// <summary>
+    /// The new session as the supervisor lists it, which is where its full session id comes from; null when it is not
+    /// listed yet, or the listing failed (the session is running either way, and the next timed listing shows the failure).
+    /// </summary>
     private async Task<Session.Background?> ListedSessionAsync(JobId jobId, CancellationToken cancellationToken)
     {
-        SessionListing listing = await claude.ListSessionsAsync(cancellationToken);
+        try
+        {
+            SessionListing listing = await claude.ListSessionsAsync(cancellationToken);
 
-        return listing.Sessions.OfType<Session.Background>().FirstOrDefault(session => session.JobId == jobId);
+            return listing.Sessions.OfType<Session.Background>().FirstOrDefault(session => session.JobId == jobId);
+        }
+        catch (Exception failure) when (failure is ClaudeCliException or ProcessTimedOutException)
+        {
+            return null;
+        }
     }
 
     /// <summary>The steps this launch runs and what bringing its base up to date came to, once its worktree, if any, is made.</summary>

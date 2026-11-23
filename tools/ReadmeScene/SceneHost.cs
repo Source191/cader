@@ -60,7 +60,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         LaunchProgress progress = new();
         LaunchHold hold = new();
         BaseFetches fetches = new(gitCli, clock);
-        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli, fetches), store, store, new WorktreeIncludeCopier(gitCli), clock, progress);
+        LaunchService launches = new(claude, gitCli, new BaseUpdater(gitCli, fetches), store, store, new WorktreeIncludeCopier(gitCli), clock, progress, log);
         FolderPath home = FolderPath.From(folders.Home);
         CurrentSettings settings = await CurrentSettings.LoadAsync(store, home);
         ClaudeTranscripts transcripts = new(folders.ClaudeHome);
@@ -93,7 +93,7 @@ internal sealed class SceneHost(SceneFolders folders, Scene scene, ToolVersion v
         SessionTabs sessionTabs = new(store, processRegistry);
         WorktreeRemover remover = new(gitCli, store, fileFolders, settings, clock);
         DeleteSessionHandler deleteSession = new(claude, gitCli, store, sessionTabs, fileFolders, remover);
-        RemoveWorktreeHandler removeWorktree = new(gitCli, store, fileFolders, remover);
+        RemoveWorktreeHandler removeWorktree = new(store, fileFolders, remover);
         DialogEffects dialogs = new(
             new RepositoryCatalogue(fileFolders, settings), store, fileFolders, settings, new SolutionFinder(fileFolders), updates, deleteSession, removeWorktree, reports, processRegistry,
             new EditorPresets(new EditorLocator(fileFolders, processes, EditorFolders.ForCurrentUser())), clock, fetches);

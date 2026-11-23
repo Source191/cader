@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Time.Testing;
 using Source191.Cader.Adapters.Claude;
 using Source191.Cader.Adapters.Git;
+using Source191.Cader.Application.Diagnostics;
 using Source191.Cader.Application.Launch;
 using Source191.Cader.Domain;
 using Source191.Cader.Ports;
@@ -24,20 +25,21 @@ public sealed class LaunchServiceShould
 
     private readonly InMemoryState store = new();
     private readonly LaunchProgress progress = new();
+    private readonly DiagnosticLog log = new(new FakeTimeProvider(Fixtures.Noon), []);
 
     private LaunchService Service
     {
         get
         {
             GitCli git = new(processes, "git");
-            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress);
+            return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress, log);
         }
     }
 
     private LaunchService ServiceWith(FakeWorktreeIncludeCopier copier)
     {
         GitCli git = new(processes, "git");
-        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, copier, new FakeTimeProvider(Fixtures.Noon), progress);
+        return new LaunchService(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), store, store, copier, new FakeTimeProvider(Fixtures.Noon), progress, log);
     }
 
     private static readonly PlannedWorktree FlakyTests = new(FolderPath.From(@"C:\Users\me\source\worktrees\Northwind.Orders-fix-flaky-tests"), BranchName.From("fix-flaky-tests"));
@@ -228,6 +230,49 @@ public sealed class LaunchServiceShould
         LaunchOutcome outcome = await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
 
         outcome.ShouldBe(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()));
+    }
+
+    [Fact]
+    public async Task ReportNotListedYetWhenTheListingFailsAfterTheStart()
+    {
+        processes.Answer(request => request.Arguments.Contains("agents"), new ProcessResult(1, string.Empty, "Couldn't reach the background service"));
+
+        LaunchOutcome outcome = await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
+
+        outcome.ShouldBe(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()));
+    }
+
+    [Fact]
+    public async Task ReportNotListedYetWhenTheListingTimesOut()
+    {
+        processes.Throw(request => request.Arguments.Contains("agents"), new ProcessTimedOutException("claude", TimeSpan.FromSeconds(30)));
+
+        LaunchOutcome outcome = await Service.LaunchAsync(CurrentBranch, CancellationToken.None);
+
+        outcome.ShouldBe(new LaunchOutcome.NotListedYet(JobId.From("81cdb0f9"), new BaseUpdate.Current()));
+    }
+
+    [Fact]
+    public async Task CarryOnWhenTheRecentRepositoryCannotBeRecorded()
+    {
+        GitCli git = new(processes, "git");
+        LaunchService service = new(new ClaudeCli(processes, Claude), git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), new RefusesToRecord(), store, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), progress, log);
+
+        LaunchOutcome outcome = await service.LaunchAsync(CurrentBranch, CancellationToken.None);
+
+        outcome.ShouldBeOfType<LaunchOutcome.Listed>();
+        Failed recorded = log.Snapshot().Select(timed => timed.Event).ShouldHaveSingleItem().ShouldBeOfType<Failed>();
+        recorded.Site.ShouldBe(FailureSite.Effect);
+        recorded.What.ShouldNotBeNull().ToString().ShouldBe(CodeName.For(typeof(LaunchService)).ToString());
+        recorded.Failure.ToString().ShouldNotContain("the state folder refused");
+    }
+
+    /// <summary>A state folder that refuses the write.</summary>
+    private sealed class RefusesToRecord : IRecentRepositories
+    {
+        public Task<IReadOnlyList<FolderPath>> ReadRecentRepositoriesAsync() => Task.FromResult<IReadOnlyList<FolderPath>>([]);
+
+        public Task RecordRecentRepositoryAsync(FolderPath repository) => throw new IOException("the state folder refused");
     }
 
     [Fact]

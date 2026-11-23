@@ -11,20 +11,16 @@ namespace Source191.Cader.Application.Actions;
 /// <see cref="WorktreeRemover"/>.
 /// Not a dispatcher handler: the screen may ask about the branch afterwards, so it needs the outcome.
 /// </summary>
-public sealed class RemoveWorktreeHandler(IGit git, ICreatedWorktrees createdWorktrees, IFolders folders, WorktreeRemover remover)
+public sealed class RemoveWorktreeHandler(ICreatedWorktrees createdWorktrees, IFolders folders, WorktreeRemover remover)
 {
-    private readonly WorktreeInspector inspector = new(git);
-
     public async Task<RemoveWorktreeOutcome> RemoveAsync(WorktreeRow scanned, bool forced, CancellationToken cancellationToken)
     {
         WorktreeRow row = AsOnDisc(scanned);
         CreatedWorktree? created = (await createdWorktrees.ReadCreatedWorktreesAsync())
             .FirstOrDefault(candidate => candidate.Path == row.Path);
-        // Merge state needs a branch and a repository that still exists.
-        bool merged = created is not null && row is { Head: Head.OnBranch { Branch: BranchName branch }, OwnerExists: true } && await inspector.IsMergedAsync(row.Repository, branch, cancellationToken);
         RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
 
-        return await remover.CarryOutAsync(row, decision, createdHere: created is not null, merged, cancellationToken);
+        return await remover.CarryOutAsync(row, decision, createdHere: created is not null, cancellationToken);
     }
 
     /// <summary>A leftover row with its folder's facts read again; a live worktree is git's to judge, through git worktree remove.</summary>

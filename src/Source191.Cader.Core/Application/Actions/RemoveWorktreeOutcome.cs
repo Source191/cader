@@ -15,6 +15,9 @@ public abstract record RemoveWorktreeOutcome : Outcome
 
     public sealed record RemovedAndDeletedBranch(string FolderName, BranchName Branch, bool FolderLeft) : RemoveWorktreeOutcome;
 
+    /// <summary>The worktree was removed and its merged branch should have been deleted, but git refused; Failure is git's own words.</summary>
+    public sealed record RemovedBranchNotDeleted(string FolderName, BranchName Branch, string Failure, bool FolderLeft) : RemoveWorktreeOutcome;
+
     /// <summary>The branch was kept: it was not created here, or was created here and it is not merged. The user is asked.</summary>
     public sealed record BranchKept(string FolderName, BranchToConfirm Branch, bool CreatedHere, bool FolderLeft) : RemoveWorktreeOutcome;
 

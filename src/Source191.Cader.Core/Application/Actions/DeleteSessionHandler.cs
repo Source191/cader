@@ -45,11 +45,9 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
         }
 
         WorktreeRow row;
-        bool merged;
         try
         {
             row = await RowAsync(created, cancellationToken);
-            merged = await inspector.IsMergedAsync(created.Repository, created.Branch, cancellationToken);
         }
         catch (GitException failure)
         {
@@ -58,7 +56,7 @@ public sealed class DeleteSessionHandler(IClaudeCli claude, IGit git, ICreatedWo
 
         RemovalDecision decision = RemovalDecision.For(row.Facts(), forced);
 
-        return await remover.CarryOutAsync(row, decision, createdHere: true, merged, cancellationToken) switch
+        return await remover.CarryOutAsync(row, decision, createdHere: true, cancellationToken) switch
         {
             RemoveWorktreeOutcome.Refused refused => new DeleteSessionOutcome.KeptWorktree(name, refused.Reason, tabClosed),
             RemoveWorktreeOutcome.RemovedAndDeletedBranch removed => new DeleteSessionOutcome.RemovedWorktreeAndBranch(name, removed.Branch, tabClosed, removed.FolderLeft),

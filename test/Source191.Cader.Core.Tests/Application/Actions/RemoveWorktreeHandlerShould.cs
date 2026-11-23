@@ -16,7 +16,7 @@ public sealed class RemoveWorktreeHandlerShould
     private readonly InMemoryState store = new();
     private readonly FakeTimeProvider clock = new(Fixtures.Noon);
 
-    private RemoveWorktreeHandler Handler => new(new GitCli(processes, "git"), store, folders, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
+    private RemoveWorktreeHandler Handler => new(store, folders, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
 
     [Fact]
     public async Task WaitForAFolderThatIsLetGoAndRemoveTheWorktreeAsUsual()
@@ -93,7 +93,7 @@ public sealed class RemoveWorktreeHandlerShould
         RemoveWorktreeOutcome outcome = await RemoveWhileTheClockRuns(Row(WorktreeHealthKind.Ok));
 
         outcome.ShouldBe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: true));
-        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "--", "fix-123"]);
+        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
         folders.DirectoryExists(Worktree).ShouldBeTrue();
     }
@@ -160,9 +160,61 @@ public sealed class RemoveWorktreeHandlerShould
 
         RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
 
-        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "--", "fix-123"]);
+        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
         outcome.ShouldBe(new RemoveWorktreeOutcome.RemovedAndDeletedBranch("Northwind.Orders-fix-123", BranchName.From("fix-123"), FolderLeft: false));
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task JudgeMergedAfterTheWorktreeIsRemoved()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+
+        await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        List<ProcessRequest> calls = [.. GitCalls(processes)];
+        int removed = calls.FindIndex(request => request.Arguments.Contains("remove"));
+        int judged = calls.FindIndex(request => request.Arguments.Contains("merge-base"));
+        removed.ShouldBeGreaterThanOrEqualTo(0);
+        judged.ShouldBeGreaterThan(removed);
+    }
+
+    [Fact]
+    public async Task DeleteAMergedBranchItCreatedWithForce()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+
+        await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        GitCalls(processes).Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
+    }
+
+    [Fact]
+    public async Task ReportTheRemovalWhenGitRefusesTheBranch()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("branch"), new ProcessResult(1, string.Empty, "error: cannot lock ref 'refs/heads/fix-123'\n"));
+
+        RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        RemoveWorktreeOutcome.RemovedBranchNotDeleted kept = outcome.ShouldBeOfType<RemoveWorktreeOutcome.RemovedBranchNotDeleted>();
+        kept.FolderName.ShouldBe("Northwind.Orders-fix-123");
+        kept.Branch.ShouldBe(BranchName.From("fix-123"));
+        kept.Failure.ShouldContain("cannot lock ref");
+        kept.FolderLeft.ShouldBeFalse();
+        (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AskWhenTheMergeCheckFails()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("merge-base"), new ProcessResult(128, string.Empty, "fatal: Not a valid object name origin/main"));
+
+        RemoveWorktreeOutcome outcome = await Handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
+
+        GitCalls(processes).ShouldNotContain(request => request.Arguments.Contains("branch"));
+        outcome.ShouldBe(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", new BranchToConfirm(FolderPath.From(Repository), BranchName.From("fix-123")), CreatedHere: true, FolderLeft: false));
     }
 
     [Fact]
@@ -343,7 +395,7 @@ public sealed class RemoveWorktreeHandlerShould
     {
         folders.WithFile(Path.Combine(Worktree, "Program.cs"));
         FoldersThatCountWalks counting = new(folders);
-        RemoveWorktreeHandler handler = new(new GitCli(processes, "git"), store, counting, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
+        RemoveWorktreeHandler handler = new(store, counting, new WorktreeRemover(new GitCli(processes, "git"), store, folders, TestSettings.Current(Root), clock));
 
         await handler.RemoveAsync(Row(WorktreeHealthKind.Ok), forced: false, CancellationToken.None);
 

@@ -39,9 +39,45 @@ public sealed class DeleteSessionHandlerShould
         DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
 
         processes.CapturedRequests.Single(request => request.Arguments.Contains("remove")).Arguments.ShouldBe(["worktree", "remove", Worktree]);
-        processes.CapturedRequests.Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-d", "--", "fix-123"]);
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
         (await store.ReadCreatedWorktreesAsync()).ShouldBeEmpty();
         outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: false));
+    }
+
+    [Fact]
+    public async Task JudgeMergedAfterTheWorktreeIsRemoved()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+
+        await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+
+        List<ProcessRequest> calls = [.. processes.CapturedRequests.Where(request => request.FileName == "git")];
+        int removed = calls.FindIndex(request => request.Arguments.Contains("remove"));
+        removed.ShouldBeGreaterThanOrEqualTo(0);
+        calls.FindIndex(request => request.Arguments.Contains("merge-base")).ShouldBeGreaterThan(removed);
+    }
+
+    [Fact]
+    public async Task RemoveTheWorktreeAndBranchOfAPushedMergedSession()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+
+        DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+
+        processes.CapturedRequests.Single(request => request.Arguments.Contains("branch")).Arguments.ShouldBe(["branch", "-D", "--", "fix-123"]);
+        outcome.ShouldBe(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: false, FolderLeft: false));
+    }
+
+    [Fact]
+    public async Task ReportTheRemovalWhenGitRefusesTheBranch()
+    {
+        await store.RecordCreatedWorktreeAsync(new CreatedWorktree(FolderPath.From(Worktree), BranchName.From("fix-123"), FolderPath.From(Repository), Fixtures.Noon));
+        processes.Answer(request => request.Arguments.Contains("branch"), new ProcessResult(1, string.Empty, "error: cannot lock ref 'refs/heads/fix-123'\n"));
+
+        DeleteSessionOutcome outcome = await Handler.DeleteAsync(Job(Worktree), forced: false, CancellationToken.None);
+
+        DeleteSessionOutcome.RemovedWorktree removed = outcome.ShouldBeOfType<DeleteSessionOutcome.RemovedWorktree>();
+        removed.Worktree.ShouldBeOfType<RemoveWorktreeOutcome.RemovedBranchNotDeleted>().Failure.ShouldContain("cannot lock ref");
     }
 
     [Fact]

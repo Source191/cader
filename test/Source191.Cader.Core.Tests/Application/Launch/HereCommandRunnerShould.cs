@@ -28,7 +28,7 @@ public sealed class HereCommandRunnerShould : IDisposable
             ClaudeCli claude = new(processes, Claude);
             GitCli git = new(processes, "git");
             InMemoryState state = new();
-            LaunchService launches = new(claude, git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), state, state, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), new LaunchProgress());
+            LaunchService launches = new(claude, git, new BaseUpdater(git, new BaseFetches(git, new FakeTimeProvider(Fixtures.Noon))), state, state, new WorktreeIncludeCopier(git), new FakeTimeProvider(Fixtures.Noon), new LaunchProgress(), new Source191.Cader.Application.Diagnostics.DiagnosticLog(new FakeTimeProvider(Fixtures.Noon), []));
 
             return new HereCommandRunner(launches, new TerminalEffects(claude, console), console, output, error);
         }

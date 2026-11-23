@@ -69,6 +69,7 @@ public sealed class StatusTonesShould
         [typeof(RemoveWorktreeOutcome.Removed)] = StatusTone.Notice,
         [typeof(RemoveWorktreeOutcome.RemovedAndDeletedBranch)] = StatusTone.Notice,
         [typeof(RemoveWorktreeOutcome.BranchKept)] = StatusTone.Notice,
+        [typeof(RemoveWorktreeOutcome.RemovedBranchNotDeleted)] = StatusTone.Notice,
         [typeof(RemoveWorktreeOutcome.DeletedFolder)] = StatusTone.Success,
         [typeof(RemoveWorktreeOutcome.DeletedFolderAndPruned)] = StatusTone.Success,
         [typeof(RemoveWorktreeOutcome.InUse)] = StatusTone.Notice,
@@ -179,6 +180,12 @@ public sealed class StatusTonesShould
         Wording.ToneOf(new RemoveWorktreeOutcome.BranchKept("Northwind.Orders-fix-123", Branch, CreatedHere: false, FolderLeft: false)).ShouldBe(StatusTone.Success);
         Wording.ToneOf(new DeleteSessionOutcome.RemovedWorktreeAndBranch(Listed.As("fix-123"), BranchName.From("fix-123"), TabClosed: true, FolderLeft: false)).ShouldBe(StatusTone.Success);
         Wording.ToneOf(new DeleteSessionOutcome.BranchNotMerged(Listed.As("fix-123"), Branch, TabClosed: true, FolderLeft: false)).ShouldBe(StatusTone.Success);
+    }
+
+    [Fact]
+    public void MarkARemovalWhoseBranchWasKeptAsANotice()
+    {
+        Wording.ToneOf(new RemoveWorktreeOutcome.RemovedBranchNotDeleted("Northwind.Orders-fix-123", BranchName.From("fix-123"), "error: cannot lock ref", FolderLeft: false)).ShouldBe(StatusTone.Notice);
     }
 
     [Fact]
