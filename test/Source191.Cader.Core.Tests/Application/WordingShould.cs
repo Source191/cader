@@ -239,6 +239,12 @@ public sealed class WordingShould
     }
 
     [Fact]
+    public void SayTheSizeTheWizardNeeds()
+    {
+        Wording.Describe(new StatusMessage.WizardTooSmall(NeededColumns: 80, NeededRows: 29, Columns: 70, Rows: 24)).ShouldBe("The new-session window needs at least 80 x 29; this terminal is 70 x 24.");
+    }
+
+    [Fact]
     public void SayNoSolutionWasFound()
     {
         Wording.Describe(new StatusMessage.NoSolution("Northwind.Orders-fix-123")).ShouldBe("No solution found in Northwind.Orders-fix-123 or its src folder.");

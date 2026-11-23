@@ -44,8 +44,8 @@ internal sealed class WizardControls
 
     public TextField Filter { get; } = new() { X = LeftColumn, Y = 1, Width = ColumnWidth };
 
-    /// <summary>The repositories and folders under their headings, taking every row between the filter and the form, never fewer than four.</summary>
-    public ListView Repositories { get; } = new() { X = LeftColumn, Y = 2, Width = ColumnWidth, Height = Dim.Fill(FormRows, 4) };
+    /// <summary>The repositories and folders under their headings, taking every row between the filter and the form; WizardFit sizes the dialog so there is at least one.</summary>
+    public ListView Repositories { get; } = new() { X = LeftColumn, Y = 2, Width = ColumnWidth, Height = Dim.Fill(FormRows) };
 
     public Label Chosen { get; } = Text(LeftColumn, 1, Palette.Cyan, ColumnWidth);
 

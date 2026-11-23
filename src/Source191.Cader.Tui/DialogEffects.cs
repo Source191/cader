@@ -179,9 +179,26 @@ public sealed class DialogEffects(RepositoryCatalogue catalogue, IRecentReposito
         });
     }
 
+    /// <summary>How the wizard opened on this origin fits the screen; a screen too small for it is refused on the status line.</summary>
+    internal static WizardFit FitOrRefuse(IEffectContext context, int columns, int rows, WizardOrigin origin)
+    {
+        WizardFit fit = WizardFit.For(columns, rows, chooser: origin is WizardOrigin.Anywhere);
+        if (fit is WizardFit.TooSmall small)
+        {
+            context.ShowMessage(new StatusMessage.WizardTooSmall(small.NeededColumns, small.NeededRows, columns, rows));
+        }
+
+        return fit;
+    }
+
     private void StartSession(IEffectContext context, WizardOrigin origin)
     {
-        switch (LaunchWizardDialog.Show(context.App, context.Diagnostics, clock, catalogue, recent, folders, settings.Value, origin, fetches))
+        if (FitOrRefuse(context, context.App.Screen.Width, context.App.Screen.Height, origin) is not WizardFit.Fits fits)
+        {
+            return;
+        }
+
+        switch (LaunchWizardDialog.Show(context.App, context.Diagnostics, clock, catalogue, recent, folders, settings.Value, origin, fetches, fits))
         {
             case WizardEffect.Launch launch:
                 context.Dispatch(new StartSession(launch.Plan));

@@ -244,7 +244,7 @@ public sealed class ConsoleScreen(
             ShowSettings();
             ShowCounts(Active.Counts);
             ShowFrameTitle(Active.FrameTitle);
-            ShowBar(Active.Bar(screen.context.UpdateKnown()));
+            ShowBar(Active.Bar(screen.context.UpdateKnown()).FittedTo(ScreenWidth));
             Announce(screen.context.TakeAnnouncement());
             ShowStatus(Active.Status, Active.Running);
             Window.SetNeedsDraw();
@@ -383,12 +383,18 @@ public sealed class ConsoleScreen(
             }
         }
 
-        /// <summary>The table's title at the right end of the tab titles' row, a cell from the edge; cut at its end with an ellipsis when it would reach the counts.</summary>
+        /// <summary>The table's title at the right end of the tab titles' row, a cell from the edge; cut at its end with an ellipsis when it would reach the counts, and left out when not even that fits.</summary>
         private void ShowFrameTitle(TextPart title)
         {
             int countsEnd = HeaderSpan() + 2 + string.Join(Wording.Dot.Text, shownCounts.Select(part => part.Text)).Length;
             int room = Math.Max(ScreenWidth - 1 - (countsEnd + 2), 0);
-            string text = title.Text.Length <= room ? title.Text : title.Text[..Math.Max(room - 1, 0)] + "…";
+            // Under two cells (an ellipsis and one character) the title is left out, so nothing is drawn over the counts.
+            string text = room switch
+            {
+                < 2 => string.Empty,
+                _ when title.Text.Length <= room => title.Text,
+                _ => title.Text[..(room - 1)] + "…",
+            };
             frameTitle.X = Math.Max(ScreenWidth - 1 - text.Length, 0);
             frameTitle.Width = text.Length;
             frameTitle.Text = text;
